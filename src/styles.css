@@ -1,0 +1,36 @@
+/* styles.css */
+
+/* Change the background color on hover for menu items */
+.ant-menu-item:hover,
+.ant-menu-submenu-title:hover {
+    background-color: #e6f7ff !important; /* Change to desired hover color */
+    color: inherit !important; /* Maintain text color */
+}
+
+/* Change the background color on active/clicked items */
+.ant-menu-item-active,
+.ant-menu-submenu-title-active {
+    background-color: #bae7ff !important; /* Change to desired active color */
+}
+
+/* Customize default menu item color */
+.ant-menu-item {
+    color: #000; /* Set default text color */
+}
+
+.ant-menu-submenu-title {
+    color: #fff; /* Adjust submenu title color */
+}
+
+/* Adjust dropdown menu item color */
+.ant-dropdown-menu-item {
+    color: #000; /* Set dropdown text color */
+}
+
+.ant-dropdown-menu-item:hover {
+    background-color: #e6f7ff !important; /* Change to desired hover color */
+    color: inherit !important; /* Maintain text color */
+}
+.sucess{
+    color: green;
+}

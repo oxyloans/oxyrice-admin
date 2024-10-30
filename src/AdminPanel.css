@@ -1,0 +1,7 @@
+.ant-menu-dark .ant-menu-item:hover {
+    background-color: #1890ff !important; /* Blue hover color */
+  }
+  
+  .ant-menu-dark .ant-menu-submenu-title:hover {
+    background-color: #1890ff !important; /* Blue hover color for submenu titles */
+  }
