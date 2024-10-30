@@ -218,7 +218,7 @@ const CategoryList = () => {
             <Table.Column
               title="Category Status"
               dataIndex="isActive"
-              render={(isActive) => (isActive ? "Active" : "Inactive")}
+              render={(isActive) => (isActive ? "Yes" : "No")}
             />
             <Table.Column
               title="Action"
