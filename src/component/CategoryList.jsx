@@ -24,7 +24,7 @@ const CategoryList = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://182.18.139.138:8282/api/erice-service/categories/getAllcategories");
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/categories/getAllcategories");
       setCategories(response.data);
       setFilteredCategories(response.data);
     } catch (error) {
@@ -91,10 +91,10 @@ const CategoryList = () => {
 
     try {
       if (editingCategory) {
-        await axios.patch("http://182.18.139.138:8282/api/erice-service/categories/category_update", payload);
+        await axios.patch("https://meta.oxyloans.com/api/erice-service/categories/category_update", payload);
         message.success("Category updated successfully");
       } else {
-        await axios.post("http://182.18.139.138:8282/api/erice-service/categories/saveCategory", payload);
+        await axios.post("https://meta.oxyloans.com/api/erice-service/categories/saveCategory", payload);
         message.success("Category added successfully");
       }
       fetchCategories();
@@ -130,7 +130,7 @@ const CategoryList = () => {
     };
 
     try {
-      await axios.post("http://182.18.139.138:8282/api/erice-service/items/itemAddAdmin", payload, {
+      await axios.post("https://meta.oxyloans.com/api/erice-service/items/itemAddAdmin", payload, {
         headers: { "Content-Type": "application/json" },
       });
       message.success("Item added successfully");
@@ -153,7 +153,7 @@ const CategoryList = () => {
       isActive: false,
     };
     try {
-      await axios.delete("http://182.18.139.138:8282/api/erice-service/categories/delete", {
+      await axios.delete("https://meta.oxyloans.com/api/erice-service/categories/delete", {
         headers: { "Content-Type": "application/json" },
         data: payload,
       });

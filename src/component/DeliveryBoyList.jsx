@@ -32,7 +32,7 @@ const DeliveryBoyList = () => {
   useEffect(() => {
     const fetchDeliveryBoys = async () => {
       try {
-        const response = await axios.get("http://182.18.139.138:8282/api/erice-service/deliveryboy/list");
+        const response = await axios.get("https://meta.oxyloans.com/api/erice-service/deliveryboy/list");
         setDeliveryBoys(response.data);
       } catch (err) {
         setError("Failed to fetch delivery boys");
@@ -48,7 +48,7 @@ const DeliveryBoyList = () => {
   const updateStatus = async (id, currentStatus) => {
     try {
       const newStatus = !currentStatus; // Toggle status
-      await axios.patch(`http://182.18.139.138:8282/api/erice-service/deliveryboy/status`, {
+      await axios.patch(`https://meta.oxyloans.com/api/erice-service/deliveryboy/status`, {
         id,
         isActive: newStatus,
       });
@@ -64,7 +64,7 @@ const DeliveryBoyList = () => {
   const handleEdit = async (id) => {
     try {
       const response = await axios.post(
-        `http://182.18.139.138:8282/api/erice-service/deliveryboy/deliveryBoyDataBasedOnId`, 
+        `https://meta.oxyloans.com/api/erice-service/deliveryboy/deliveryBoyDataBasedOnId`, 
         { id }
       );
       setSelectedBoy(response.data);
@@ -84,7 +84,7 @@ const DeliveryBoyList = () => {
   // Update delivery boy details
   const handleUpdate = async () => {
     try {
-      await axios.patch(`http://182.18.139.138:8282/api/erice-service/deliveryboy/update`, editForm);
+      await axios.patch(`https://meta.oxyloans.com/api/erice-service/deliveryboy/update`, editForm);
       setDeliveryBoys((prevBoys) =>
         prevBoys.map((boy) => (boy.id === selectedBoy.id ? { ...boy, ...editForm } : boy))
       );
@@ -126,7 +126,7 @@ const DeliveryBoyList = () => {
   const handleAddDeliveryBoy = async () => {
     try {
       const response = await axios.post(
-        "http://182.18.139.138:8282/api/erice-service/deliveryboy/save",
+        "https://meta.oxyloans.com/api/erice-service/deliveryboy/save",
         addForm
       );
       setDeliveryBoys((prevBoys) => [...prevBoys, response.data]);

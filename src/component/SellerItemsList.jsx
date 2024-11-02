@@ -13,7 +13,7 @@ const SellerItemsList = () => {
   useEffect(() => {
     // Fetch initial data from API
     axios
-      .get("http://182.18.139.138:8282/api/erice-service/selleritems/ItemsGetTotal", {
+      .get("https://meta.oxyloans.com/api/erice-service/selleritems/ItemsGetTotal", {
         headers: { accept: "*/*" }
       })
       .then((response) => {
@@ -100,7 +100,7 @@ const SellerItemsList = () => {
     if (selectedItem) {
       axios
         .patch(
-          "http://182.18.139.138:8282/api/erice-service/selleritems/sellerItemPriceFix",
+          "https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix",
           {
             active: selectedItem.active,
             itemId: selectedItem.itemId,

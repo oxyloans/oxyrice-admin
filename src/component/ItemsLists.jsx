@@ -15,7 +15,7 @@ const ItemList = () => {
   // Fetch items data from the API
   const fetchItemsData = async () => {
     try {
-      const response = await axios.get("http://182.18.139.138:8282/api/erice-service/items/getItemsData");
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData");
       setItems(response.data);
     } catch (error) {
       console.error("Error fetching items data:", error);
@@ -26,7 +26,7 @@ const ItemList = () => {
   const handleUpdateItem = async (values) => {
     if (selectedItem) {
       try {
-        await axios.patch("http://182.18.139.138:8282/api/erice-service/items/updateData", {
+        await axios.patch("https://meta.oxyloans.com/api/erice-service/items/updateData", {
           itemId: selectedItem.itemId,
           itemName: values.itemName,
           itemPrice: values.itemPrice,

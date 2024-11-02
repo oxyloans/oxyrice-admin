@@ -164,7 +164,7 @@ function LoginOrRegister() {
   // Function to handle mobile number submission
   const handleLoginOrRegister = async () => {
     try {
-      const response = await fetch('http://182.18.139.138:8282/api/erice-service/user/login-or-register', {
+      const response = await fetch('https://meta.oxyloans.com/api/erice-service/user/login-or-register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ function LoginOrRegister() {
     };
 
     try {
-      const response = await axios.post('http://182.18.139.138:8282/api/erice-service/user/login-or-register', data);
+      const response = await axios.post('https://meta.oxyloans.com/api/erice-service/user/login-or-register', data);
       const responseData = response.data;
 
       localStorage.setItem('accessToken', responseData.accessToken);

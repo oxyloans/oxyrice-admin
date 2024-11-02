@@ -13,7 +13,7 @@ const SellerList = () => {
   useEffect(() => {
     const fetchSellerDetails = async () => {
       try {
-        const response = await axios.get('http://182.18.139.138:8282/api/erice-service/user/sellerDetails', {
+        const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails', {
           headers: {
             accept: '*/*',
           },
@@ -41,7 +41,7 @@ const SellerList = () => {
 
   const handleUpdate = async (values) => {
     try {
-      await axios.patch('http://182.18.139.138:8282/api/erice-service/user/saveSellerDetails', {
+      await axios.patch('https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails', {
         ...values,
         id: editingSeller.userId,
       }, {
