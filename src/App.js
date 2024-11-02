@@ -5,7 +5,7 @@ import DeliveryBoyList from './component/DeliveryBoyList';
 import SellersList from './component/SellersList';
 import SellerItemsList from './component/SellerItemsList';
 import ItemsList from './component/ItemsLists';
-import SellerAdd from './component/SellerAdd';
+// import SellerAdd from './component/SellerAdd';
 import PendingOrders from './component/PendingOrders';
 import CouponList from './component/CouponList';
 import OrdersList from './component/OrdersList';
@@ -32,13 +32,17 @@ function App() {
           <Routes>
             {/* Redirect from the root URL to the desired default path */}
             
+
+
+
+            
             <Route path="/" element={<LoginOrRegister/>} />    
             <Route path='/dashboard' element={<Dashboard/>}/>
             <Route path="/delivery-boys" element={<DeliveryBoyList />} />
             <Route path="/sellerslist" element={<SellersList />} />
             <Route path="/selleritems" element={<SellerItemsList />} />
             <Route path="/items" element={<ItemsList />} />
-            <Route path="/seller/add" element={<SellerAdd />} />
+            {/* <Route path="/seller/add" element={<SellerAdd />} /> */}
             <Route path="/subscriptionplans" element={<SubscriptionPlanList />} />
             <Route path="/subscribers" element={<SubscriberDetails />} />
             <Route path="/coupons" element={<CouponList />} />
