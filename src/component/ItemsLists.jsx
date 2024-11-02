@@ -13,20 +13,31 @@ const ItemList = () => {
   }, []);
 
   // Fetch items data from the API
+
+
+
   const fetchItemsData = async () => {
     try {
-      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData");
+      const response = await axios.get(
+        "https://meta.oxyloans.com/api/erice-service/items/getItemsData"
+       
+      );
+
       setItems(response.data);
     } catch (error) {
       console.error("Error fetching items data:", error);
     }
   };
 
+
   // Handle updating the item data
   const handleUpdateItem = async (values) => {
     if (selectedItem) {
       try {
-        await axios.patch("https://meta.oxyloans.com/api/erice-service/items/updateData", {
+        await axios.patch("https://meta.oxyloans.com/api/erice-service/items/updateData",
+       
+          
+          {
           itemId: selectedItem.itemId,
           itemName: values.itemName,
           itemPrice: values.itemPrice,
@@ -61,41 +72,41 @@ const ItemList = () => {
       title: 'Item Id',
       dataIndex: 'itemId',
       key: 'itemId',
-      align:'center'
+      align: 'center'
     },
     {
       title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
-       align:'center'
+      align: 'center'
     },
     {
       title: 'Category Name',
       dataIndex: 'categoryName',
       key: 'categoryName',
-       align:'center'
+      align: 'center'
     },
     {
       title: 'Quantity',
       dataIndex: 'quantity',
       key: 'quantity',
-       align:'center'
+      align: 'center'
     },
     {
       title: 'Units',
       dataIndex: 'units',
       key: 'units',
-       align:'center'
+      align: 'center'
     },
     {
       title: 'Item Logo',
       dataIndex: 'itemImage',
       key: 'itemImage',
-       align:'center',
+      align: 'center',
       render: (text) => (
-        <img 
-          src={text} 
-          alt="Item Logo" 
+        <img
+          src={text}
+          alt="Item Logo"
           style={{ width: 50, height: 50, objectFit: 'cover' }} // Style the image
         />
       ),
@@ -103,7 +114,7 @@ const ItemList = () => {
     {
       title: 'Action',
       key: 'action',
-       align:'center',
+      align: 'center',
       render: (text, item) => (
         <Button onClick={() => showUpdateModal(item)}>Update</Button>
       ),
