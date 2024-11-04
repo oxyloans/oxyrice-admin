@@ -31,9 +31,14 @@ const DeliveryBoyList = () => {
   // Fetch delivery boys on component mount
   useEffect(() => {
     const fetchDeliveryBoys = async () => {
+      const accessToken=localStorage.getItem('accessToken')
       setLoading(true);
       try {
-        const response = await axios.get("https://meta.oxyloans.com/api/erice-service/deliveryboy/list");
+        const response = await axios.get("https://meta.oxyloans.com/api/erice-service/deliveryboy/list",{
+          headers:{
+            Authorization:`Bearer ${accessToken}`
+          }
+        });
         setDeliveryBoys(response.data);
       } catch (err) {
         setError("Failed to fetch delivery boys");

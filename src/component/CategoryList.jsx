@@ -22,9 +22,14 @@ const CategoryList = () => {
   const entriesPerPage = 5;
 
   const fetchCategories = async () => {
+    const accessToken=localStorage.getItem('accessToken')
     setLoading(true);
     try {
-      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/categories/getAllcategories");
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/categories/getAllcategories",{
+        headers:{
+          Authorization:`Bearer ${accessToken}`
+        }
+      });
       setCategories(response.data);
       setFilteredCategories(response.data);
     } catch (error) {

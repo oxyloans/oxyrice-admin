@@ -15,9 +15,15 @@ const ItemList = () => {
 
   // Fetch items data from the API
   const fetchItemsData = async () => {
+    const accessToken=localStorage.getItem('accessToken')
+    console.log(accessToken)
     setLoading(true);
     try {
-      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData");
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData",{
+        headers:{
+          Authorization:`Bearer ${accessToken}`
+        }
+      });
       setItems(response.data);
     } catch (error) {
       message.error("Error fetching items data: " + error.message);
