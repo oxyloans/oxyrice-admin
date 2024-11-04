@@ -5,3 +5,22 @@
   .ant-menu-dark .ant-menu-submenu-title:hover {
     background-color: #1890ff !important; /* Blue hover color for submenu titles */
   }
+
+
+
+  .fixed-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+  
+  .fixed-content {
+    margin-left: 0px; /* Set this according to your sidebar width */
+    padding: 24px; /* Add padding to avoid overlap */
+    min-height: 100vh; /* Ensure content covers the full height */
+    overflow-y: auto; /* Allow content to scroll */
+  }
+  

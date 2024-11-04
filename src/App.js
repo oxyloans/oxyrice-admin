@@ -5,7 +5,6 @@ import DeliveryBoyList from './component/DeliveryBoyList';
 import SellersList from './component/SellersList';
 import SellerItemsList from './component/SellerItemsList';
 import ItemsList from './component/ItemsLists';
-
 import PendingOrders from './component/PendingOrders';
 import CouponList from './component/CouponList';
 import OrdersList from './component/OrdersList';
@@ -51,7 +50,7 @@ function App() {
             <Route path="/itemrequirements" element={<ItemRequirements />} />
             <Route path="/refunds" element={<RefundOrders />} />
             <Route path="/orders/report" element={<OrdersReport />} />
-            <Route path="/customers" element={<CustomerList />} />
+            <Route path="/customerslist" element={<CustomerList />} />
             <Route path="/changepassword" element={<ChangePassword />} />
             <Route path="/settings" element={<SettingsForm />} />
             <Route path="/categories" element={<CategoryList />} />

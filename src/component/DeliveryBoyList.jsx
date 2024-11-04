@@ -31,6 +31,7 @@ const DeliveryBoyList = () => {
   // Fetch delivery boys on component mount
   useEffect(() => {
     const fetchDeliveryBoys = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("https://meta.oxyloans.com/api/erice-service/deliveryboy/list");
         setDeliveryBoys(response.data);
@@ -136,9 +137,7 @@ const DeliveryBoyList = () => {
     }
   };
 
-  // Render loading state
-  if (loading) return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+
 
   // Pagination logic
   const indexOfLastBoy = currentPage * itemsPerPage;

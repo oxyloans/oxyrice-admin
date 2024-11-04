@@ -17,6 +17,7 @@ const SellerList = () => {
 
   // Function to fetch seller details
   const fetchSellerDetails = async () => {
+    setLoading(true);
     try {
       const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails');
       setSellerDetails(response.data);
@@ -29,6 +30,7 @@ const SellerList = () => {
 
   // Handle form submission
   const onFinish = async (values) => {
+    
     try {
       await axios.patch('https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails', {
         id: editingSeller.sellerId,
@@ -64,18 +66,6 @@ const SellerList = () => {
     });
   };
 
-  // Centered loading state and empty seller details
-  if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <Spin size="large" />
-    </div>
-  );
-
-  if (sellerDetails.length === 0) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <h2>No seller details found.</h2>
-    </div>
-  );
 
   const columns = [
     {
@@ -132,85 +122,91 @@ const SellerList = () => {
   return (
     <AdminPanelLayout>
       <div style={{ padding: '20px', marginTop: '20px' }}>
-        <Table
-          dataSource={sellerDetails}
-          columns={columns}
-          rowKey="sellerId"
-          pagination={false}
-          scroll={{ x: 'max-content' }} // Allow horizontal scrolling
-        />
+        {loading ? (
+          <Spin tip="Loading seller details..." style={{ display: 'block', margin: 'auto', marginTop: '50px' }} />
+        ) : (
+          <>
+            <Table
+              dataSource={sellerDetails}
+              columns={columns}
+              rowKey="sellerId"
+              pagination={false}
+              scroll={{ x: 'max-content' }} // Allow horizontal scrolling
+            />
 
-        <Modal
-          title="Edit Seller Details"
-          visible={!!editingSeller}
-          onCancel={() => {
-            setEditingSeller(null);
-            form.resetFields();
-          }}
-          footer={null}
-        >
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-          >
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Store Name" name="sellerStoreName" rules={[{ required: true, message: 'Please enter store name' }]}>
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Seller Name" name="sellerName" rules={[{ required: true, message: 'Please enter your name' }]}>
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Email" name="sellerEmail" rules={[{ required: true, message: 'Please enter your email' }]}>
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Mobile" name="sellerMobile" rules={[{ required: true, message: 'Please enter your mobile number' }]}>
-                  <Input />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Address" name="sellerAddress" rules={[{ required: true, message: 'Please enter your address' }]}>
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Latitude" name="sellerLat">
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Longitude" name="sellerLng">
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Radius" name="sellerRadious">
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row justify="center">
-              <Col>
-                <Button type="primary" htmlType="submit">
-                  Update
-                </Button>
-              </Col>
-            </Row>
-          </Form>
-        </Modal>
+            <Modal
+              title="Edit Seller Details"
+              visible={!!editingSeller}
+              onCancel={() => {
+                setEditingSeller(null);
+                form.resetFields();
+              }}
+              footer={null}
+            >
+              <Form
+                form={form}
+                layout="vertical"
+                onFinish={onFinish}
+              >
+                <Row gutter={16}>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Store Name" name="sellerStoreName" rules={[{ required: true, message: 'Please enter store name' }]}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Seller Name" name="sellerName" rules={[{ required: true, message: 'Please enter your name' }]}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Email" name="sellerEmail" rules={[{ required: true, message: 'Please enter your email' }]}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Mobile" name="sellerMobile" rules={[{ required: true, message: 'Please enter your mobile number' }]}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Address" name="sellerAddress" rules={[{ required: true, message: 'Please enter your address' }]}>
+                      <Input />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Latitude" name="sellerLat">
+                      <Input type="number" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row gutter={16}>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Longitude" name="sellerLng">
+                      <Input type="number" />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={24} sm={12}>
+                    <Form.Item label="Radius" name="sellerRadious">
+                      <Input type="number" />
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row justify="center">
+                  <Col>
+                    <Button type="primary" htmlType="submit">
+                      Update
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            </Modal>
+          </>
+        )}
       </div>
     </AdminPanelLayout>
   );

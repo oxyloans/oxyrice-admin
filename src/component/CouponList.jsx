@@ -1,185 +1,186 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { Table, Button, message, Modal, Form, Input, Select, DatePicker, Spin, Row, Col } from 'antd';
-import { EditOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
-import moment from 'moment';
+// import React, { useState, useEffect, useCallback } from 'react';
+// import axios from 'axios';
+// import { Table, Button, message, Modal, Form, Input, Select, DatePicker, Spin, Row, Col } from 'antd';
+// import { EditOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+// import moment from 'moment';
 import AdminPanelLayout from './AdminPanelLayout';
 
-const { Option } = Select;
+// const { Option } = Select;
 
 const CouponList = () => {
-  const [coupons, setCoupons] = useState([]);
-  const [filteredCoupons, setFilteredCoupons] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingCouponId, setEditingCouponId] = useState(null);
-  const [form] = Form.useForm();
-  const [searchCouponCode, setSearchCouponCode] = useState('');
-  const [searchResult, setSearchResult] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
+  // const [coupons, setCoupons] = useState([]);
+  // const [filteredCoupons, setFilteredCoupons] = useState([]);
+  // const [isModalVisible, setIsModalVisible] = useState(false);
+  // const [isEditMode, setIsEditMode] = useState(false);
+  // const [editingCouponId, setEditingCouponId] = useState(null);
+  // const [form] = Form.useForm();
+  // const [searchCouponCode, setSearchCouponCode] = useState('');
+  // const [searchResult, setSearchResult] = useState('');
+  // const [loading, setLoading] = useState(false);
+  // const [fetching, setFetching] = useState(false);
 
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
+  // useEffect(() => {
+  //   fetchCoupons();
+  // }, []);
 
-  const fetchCoupons = useCallback(async () => {
-    setFetching(true);
-    try {
-      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/coupons/get_all_coupons');
-      setCoupons(response.data);
-      setFilteredCoupons(response.data);
-    } catch (error) {
-      console.error('Error fetching coupons:', error);
-      message.error('Failed to fetch coupons.');
-    } finally {
-      setFetching(false);
-    }
-  }, []);
+  // const fetchCoupons = useCallback(async () => {
+  //   setFetching(true);
+  //   try {
+  //     const response = await axios.get('https://meta.oxyloans.com/api/erice-service/coupons/get_all_coupons');
+  //     setCoupons(response.data);
+  //     setFilteredCoupons(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching coupons:', error);
+  //     message.error('Failed to fetch coupons.');
+  //   } finally {
+  //     setFetching(false);
+  //   }
+  // }, []);
 
-  const checkCouponAvailability = useCallback(async () => {
-    if (!searchCouponCode) {
-      message.warning('Please enter a coupon code to search.');
-      return;
-    }
+  // const checkCouponAvailability = useCallback(async () => {
+  //   if (!searchCouponCode) {
+  //     message.warning('Please enter a coupon code to search.');
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const response = await axios.post('https://meta.oxyloans.com/api/erice-service/coupons/check_coupon_available', {
-        couponCode: searchCouponCode,
-        couponId: coupons.find(coupon => coupon.couponCode === searchCouponCode)?.couponId || 0,
-      });
+  //   setLoading(true);
+  //   try {
+  //     const response = await axios.post('https://meta.oxyloans.com/api/erice-service/coupons/check_coupon_available', {
+  //       couponCode: searchCouponCode,
+  //       couponId: coupons.find(coupon => coupon.couponCode === searchCouponCode)?.couponId || 0,
+  //     });
 
-      if (response.data) {
-        const matchedCoupon = coupons.find(coupon => coupon.couponCode === searchCouponCode);
-        if (matchedCoupon) {
-          setFilteredCoupons([matchedCoupon]);
-          setSearchResult(`Coupon "${searchCouponCode}" is available!`);
-          message.success(`Coupon "${searchCouponCode}" is available!`);
-        }
-      } else {
-        setFilteredCoupons([]);
-        setSearchResult(`Coupon "${searchCouponCode}" is not available.`);
-        message.warning(`Coupon "${searchCouponCode}" is not available.`);
-      }
-    } catch (error) {
-      console.error('Error checking coupon availability:', error);
-      message.error('Failed to check coupon availability.');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchCouponCode, coupons]);
+  //     if (response.data) {
+  //       const matchedCoupon = coupons.find(coupon => coupon.couponCode === searchCouponCode);
+  //       if (matchedCoupon) {
+  //         setFilteredCoupons([matchedCoupon]);
+  //         setSearchResult(`Coupon "${searchCouponCode}" is available!`);
+  //         message.success(`Coupon "${searchCouponCode}" is available!`);
+  //       }
+  //     } else {
+  //       setFilteredCoupons([]);
+  //       setSearchResult(`Coupon "${searchCouponCode}" is not available.`);
+  //       message.warning(`Coupon "${searchCouponCode}" is not available.`);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking coupon availability:', error);
+  //     message.error('Failed to check coupon availability.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [searchCouponCode, coupons]);
 
-  const updateCouponStatus = async (couponId, isActive) => {
-    setLoading(true);
-    try {
-      await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_status_couponid', {
-        couponId,
-        status: isActive ? 0 : 1,
-      });
-      message.success('Coupon status updated successfully.');
-      fetchCoupons();
-    } catch (error) {
-      console.error('Error updating coupon status:', error);
-      message.error('Failed to update coupon status.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const updateCouponStatus = async (couponId, isActive) => {
+  //   setLoading(true);
+  //   try {
+  //     await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_status_couponid', {
+  //       couponId,
+  //       status: isActive ? 0 : 1,
+  //     });
+  //     message.success('Coupon status updated successfully.');
+  //     fetchCoupons();
+  //   } catch (error) {
+  //     console.error('Error updating coupon status:', error);
+  //     message.error('Failed to update coupon status.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const columns = [
-    { title: 'CouponId', dataIndex: 'couponId', key: 'couponId', responsive: ['md'] },
-    { title: 'Coupon Code', dataIndex: 'couponCode', key: 'couponCode' },
-    { title: 'Coupon Value', dataIndex: 'couponValue', key: 'couponValue', responsive: ['md'] },
-    { title: 'Minimum Order', dataIndex: 'minOrder', key: 'minOrder', responsive: ['lg'] },
-    { title: 'Max Discount', dataIndex: 'maxDiscount', key: 'maxDiscount', responsive: ['lg'] },
-    { title: 'Usage', dataIndex: 'couponUsage', key: 'couponUsage', responsive: ['lg'] },
-    { title: 'Discount Type', dataIndex: 'discountType', key: 'discountType', responsive: ['lg'] },
-    { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', render: text => moment(text).format('YYYY-MM-DD') },
-    { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: text => moment(text).format('YYYY-MM-DD') },
-    {
-      title: 'Status',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      render: (isActive, record) => (
-        <Button
-          type={isActive ? 'danger' : 'primary'}
-          icon={isActive ? <StopOutlined /> : <CheckCircleOutlined />}
-          onClick={() => updateCouponStatus(record.couponId, isActive)}
-        >
-          {isActive ? 'Deactivate' : 'Activate'}
-        </Button>
-      ),
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      render: (_, record) => (
-        <Button type="primary" icon={<EditOutlined />} onClick={() => showModal(record)}>Edit</Button>
-      ),
-    },
-  ];
+  // const columns = [
+  //   { title: 'CouponId', dataIndex: 'couponId', key: 'couponId', responsive: ['md'] },
+  //   { title: 'Coupon Code', dataIndex: 'couponCode', key: 'couponCode' },
+  //   { title: 'Coupon Value', dataIndex: 'couponValue', key: 'couponValue', responsive: ['md'] },
+  //   { title: 'Minimum Order', dataIndex: 'minOrder', key: 'minOrder', responsive: ['lg'] },
+  //   { title: 'Max Discount', dataIndex: 'maxDiscount', key: 'maxDiscount', responsive: ['lg'] },
+  //   { title: 'Usage', dataIndex: 'couponUsage', key: 'couponUsage', responsive: ['lg'] },
+  //   { title: 'Discount Type', dataIndex: 'discountType', key: 'discountType', responsive: ['lg'] },
+  //   { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', render: text => moment(text).format('YYYY-MM-DD') },
+  //   { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: text => moment(text).format('YYYY-MM-DD') },
+  //   {
+  //     title: 'Status',
+  //     dataIndex: 'isActive',
+  //     key: 'isActive',
+  //     render: (isActive, record) => (
+  //       <Button
+  //         type={isActive ? 'danger' : 'primary'}
+  //         icon={isActive ? <StopOutlined /> : <CheckCircleOutlined />}
+  //         onClick={() => updateCouponStatus(record.couponId, isActive)}
+  //       >
+  //         {isActive ? 'Deactivate' : 'Activate'}
+  //       </Button>
+  //     ),
+  //   },
+  //   {
+  //     title: 'Action',
+  //     key: 'action',
+  //     render: (_, record) => (
+  //       <Button type="primary" icon={<EditOutlined />} onClick={() => showModal(record)}>Edit</Button>
+  //     ),
+  //   },
+  // ];
 
-  const showModal = (record = {}) => {
-    setIsModalVisible(true);
-    if (record.couponId) {
-      setIsEditMode(true);
-      setEditingCouponId(record.couponId);
-      form.setFieldsValue({
-        ...record,
-        startDate: moment(record.startDate),
-        endDate: moment(record.endDate),
-      });
-    } else {
-      setIsEditMode(false);
-      form.resetFields();
-    }
-  };
+  // const showModal = (record = {}) => {
+  //   setIsModalVisible(true);
+  //   if (record.couponId) {
+  //     setIsEditMode(true);
+  //     setEditingCouponId(record.couponId);
+  //     form.setFieldsValue({
+  //       ...record,
+  //       startDate: moment(record.startDate),
+  //       endDate: moment(record.endDate),
+  //     });
+  //   } else {
+  //     setIsEditMode(false);
+  //     form.resetFields();
+  //   }
+  // };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
-  };
+  // const handleCancel = () => {
+  //   setIsModalVisible(false);
+  //   form.resetFields();
+  // };
 
-  const handleAddCoupon = async () => {
-    try {
-      const values = await form.validateFields();
-      const formattedValues = {
-        couponCode: values.couponCode,
-        couponDesc: values.couponDesc,
-        couponType: values.couponType === 'Discount' ? 1 : 2,
-        discountType: values.discountType,
-        couponValue: values.couponValue,
-        minOrder: values.minOrder,
-        maxDiscount: values.maxDiscount,
-        couponUsage: values.couponUsage === 'New User' ? 1 : values.couponUsage === 'One Time' ? 2 : 3,
-        startDate: values.startDate.format('YYYY-MM-DDTHH:mm:ss'),
-        endDate: values.endDate.format('YYYY-MM-DDTHH:mm:ss'),
-        isActive: true,
-      };
+  // const handleAddCoupon = async () => {
+  //   try {
+  //     const values = await form.validateFields();
+  //     const formattedValues = {
+  //       couponCode: values.couponCode,
+  //       couponDesc: values.couponDesc,
+  //       couponType: values.couponType === 'Discount' ? 1 : 2,
+  //       discountType: values.discountType,
+  //       couponValue: values.couponValue,
+  //       minOrder: values.minOrder,
+  //       maxDiscount: values.maxDiscount,
+  //       couponUsage: values.couponUsage === 'New User' ? 1 : values.couponUsage === 'One Time' ? 2 : 3,
+  //       startDate: values.startDate.format('YYYY-MM-DDTHH:mm:ss'),
+  //       endDate: values.endDate.format('YYYY-MM-DDTHH:mm:ss'),
+  //       isActive: true,
+  //     };
 
-      if (isEditMode) {
-        await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_coupon', {
-          couponId: editingCouponId,
-          ...formattedValues,
-        });
-        message.success('Coupon updated successfully.');
-      } else {
-        await axios.post('https://meta.oxyloans.com/api/erice-service/coupons/add_coupon', formattedValues);
-        message.success('Coupon added successfully.');
-      }
+  //     if (isEditMode) {
+  //       await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_coupon', {
+  //         couponId: editingCouponId,
+  //         ...formattedValues,
+  //       });
+  //       message.success('Coupon updated successfully.');
+  //     } else {
+  //       await axios.post('https://meta.oxyloans.com/api/erice-service/coupons/add_coupon', formattedValues);
+  //       message.success('Coupon added successfully.');
+  //     }
 
-      fetchCoupons();
-      handleCancel();
-    } catch (errorInfo) {
-      console.log('Failed to submit:', errorInfo);
-      message.error('Failed to submit coupon. Please try again.');
-    }
-  };
+  //     fetchCoupons();
+  //     handleCancel();
+  //   } catch (errorInfo) {
+  //     console.log('Failed to submit:', errorInfo);
+  //     message.error('Failed to submit coupon. Please try again.');
+  //   }
+  // };
 
   return (
+    <>
     <AdminPanelLayout>
-      <div className="flex flex-col h-screen">
+      {/* <div className="flex flex-col h-screen">
         <div className="flex-1 p-6 overflow-auto">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Coupon List</h2>
@@ -299,8 +300,8 @@ const CouponList = () => {
             </Form>
           </Modal>
         </div>
-      </div>
-    </AdminPanelLayout>
+      </div> */}
+    </AdminPanelLayout></>
   );
 };
 

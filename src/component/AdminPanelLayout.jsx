@@ -171,9 +171,6 @@
 
 // export default AdminPanelLayout;
 
-
-
-
 import React, { useState } from 'react';
 import { Layout, Menu, Button, Dropdown, Avatar, Row, Col } from 'antd';
 import {
@@ -194,37 +191,37 @@ const { Header, Sider, Content, Footer } = Layout;
 const sidebarItems = [
   { key: "dashboard", label: "Dashboard", icon: <FaTachometerAlt />, link: "/dashboard" },
   { key: "settings", label: "Settings", icon: <FaClipboardList />, link: "/settings" },
-  { key: "changePassword", label: "Change Password", icon: <FaKey />, link: "/changepassword" },
+  // { key: "changePassword", label: "Change Password", icon: <FaKey />, link: "/changepassword" },
   {
     key: "categories",
     label: "Categories",
     icon: <FaFolder />,
     dropdownItems: [{ key: "categoryList", label: "Category List", icon: <FaBox />, link: '/categories' }]
   },
-  {
-    key: "subscriptionPlans",
-    label: "Subscription Plans",
-    icon: <FaUsers />,
-    dropdownItems: [
-      { key: "subscriptionPlanList", label: "Subscription Plan List", icon: <FaUsers />, link: '/subscriptionplans' },
-      { key: "subscribersList", label: "Subscribers List", icon: <FaUsers />, link: '/subscribers' }
-    ]
-  },
+  // {
+  //   key: "subscriptionPlans",
+  //   label: "Subscription Plans",
+  //   icon: <FaUsers />,
+  //   dropdownItems: [
+  //     { key: "subscriptionPlanList", label: "Subscription Plan List", icon: <FaUsers />, link: '/subscriptionplans' },
+  //     { key: "subscribersList", label: "Subscribers List", icon: <FaUsers />, link: '/subscribers' }
+  //   ]
+  // },
   {
     key: "users",
     label: "Users",
     icon: <FaUsers />,
     dropdownItems: [
-      { key: "customerList", label: "Customer List", icon: <FaUsers />, link: '/customers' },
+      // { key: "customerList", label: "Customer List", icon: <FaUsers />, link: '/customerslist' },
       { key: "deliveryBoys", label: "Delivery Boy List", icon: <FaUsers />, link: "/deliveryboys" }
     ]
   },
-  {
-    key: "slides",
-    label: "Slides",
-    icon: <FaSlideshare />,
-    dropdownItems: [{ key: "slidesList", label: "Slides List", icon: <FaSlideshare />, link: "/slides" }]
-  },
+  // {
+  //   key: "slides",
+  //   label: "Slides",
+  //   icon: <FaSlideshare />,
+  //   dropdownItems: [{ key: "slidesList", label: "Slides List", icon: <FaSlideshare />, link: "/slides" }]
+  // },
   {
     key: "items",
     label: "Items",
@@ -237,35 +234,35 @@ const sidebarItems = [
     icon: <FaStore />,
     dropdownItems: [
       { key: "sellersList", label: "Sellers List", icon: <FaStore />, link: "/sellerslist" },
-      { key: "sellerAdd", label: "Seller Add", icon: <FaShoppingCart />, link: '/selleradd' }
+      // { key: "sellerAdd", label: "Seller Add", icon: <FaShoppingCart />, link: '/selleradd' }
     ]
   },
-  {
-    key: "coupons",
-    label: "Coupons",
-    icon: <FaTags />,
-    dropdownItems: [{ key: "listCoupons", label: "List Coupons", icon: <FaTags />, link: '/coupons' }]
-  },
-  {
-    key: "orders",
-    label: "Orders",
-    icon: <FaShoppingCart />,
-    dropdownItems: [
-      { key: "ordersList", label: "Orders List", icon: <FaBox />, link: "/orders" },
-      { key: "returnPendingList", label: "Return Pending List", icon: <FaShippingFast />, link: '/pendingorders' },
-      { key: "returnRepliedList", label: "Return Replied List", icon: <FaReply />, link: '/repliedordersse' }
-    ]
-  },
-  {
-    key: "reports",
-    label: "Reports",
-    icon: <FaFileAlt />,
-    dropdownItems: [
-      { key: "itemRequirement", label: "Item Requirement", icon: <FaChartBar />, link: '/itemrequirements' },
-      { key: "refundOrders", label: "Refund Orders", icon: <FaExchangeAlt />, link: '/refunds' },
-      { key: "ordersReport", label: "Orders Report", icon: <FaChartBar />, link: '/orders/report' }
-    ]
-  }
+  // {
+  //   key: "coupons",
+  //   label: "Coupons",
+  //   icon: <FaTags />,
+  //   dropdownItems: [{ key: "listCoupons", label: "List Coupons", icon: <FaTags />, link: '/coupons' }]
+  // },
+  // {
+  //   key: "orders",
+  //   label: "Orders",
+  //   icon: <FaShoppingCart />,
+  //   dropdownItems: [
+  //     { key: "ordersList", label: "Orders List", icon: <FaBox />, link: "/orders" },
+  //     { key: "returnPendingList", label: "Return Pending List", icon: <FaShippingFast />, link: '/pendingorders' },
+  //     { key: "returnRepliedList", label: "Return Replied List", icon: <FaReply />, link: '/repliedorders' }
+  //   ]
+  // },
+  // {
+  //   key: "reports",
+  //   label: "Reports",
+  //   icon: <FaFileAlt />,
+  //   dropdownItems: [
+  //     { key: "itemRequirement", label: "Item Requirement", icon: <FaChartBar />, link: '/itemrequirements' },
+  //     { key: "refundOrders", label: "Refund Orders", icon: <FaExchangeAlt />, link: '/refunds' },
+  //     { key: "ordersReport", label: "Orders Report", icon: <FaChartBar />, link: '/orders/report' }
+  //   ]
+  // }
 ];
 
 const ProfileMenu = ({ onSignOut }) => (
@@ -287,10 +284,14 @@ const AdminPanelLayout = ({ children }) => {
   const toggleCollapse = () => setCollapsed(!collapsed);
   const handleOpenChange = (keys) => setOpenKeys(keys.length ? [keys.pop()] : []);
   const handleSignOut = () => console.log("User signed out");
-
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed || isMobile} width={250}>
+      <Sider
+        className="fixed-sidebar"
+        collapsible
+        collapsed={collapsed || isMobile}
+        width={250}
+      >
         <div className="logo" style={{ padding: '10px 0' }}>
           <Row justify="center" align="middle">
             <Col>
@@ -324,7 +325,7 @@ const AdminPanelLayout = ({ children }) => {
         </Menu>
       </Sider>
 
-      <Layout>
+      <Layout style={{ marginLeft: collapsed || isMobile ? 80 : 250 }}>
         <Header style={{ padding: 0, background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Button type="primary" onClick={toggleCollapse} style={{ marginLeft: '16px' }}>
             {collapsed || isMobile ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -334,7 +335,7 @@ const AdminPanelLayout = ({ children }) => {
           </Dropdown>
         </Header>
 
-        <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 400 }}>
+        <Content className="fixed-content">
           {children}
         </Content>
 
@@ -347,4 +348,3 @@ const AdminPanelLayout = ({ children }) => {
 };
 
 export default AdminPanelLayout;
-
