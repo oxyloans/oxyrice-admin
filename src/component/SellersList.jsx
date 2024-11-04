@@ -1,180 +1,216 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Spin, message, Modal, Form, Input, Button, Row, Col } from 'antd';
+import { Form, Input, Button, message, Table, Modal, Row, Col, Spin } from 'antd';
 import axios from 'axios';
 import AdminPanelLayout from './AdminPanelLayout';
 import { Link } from 'react-router-dom';
 
 const SellerList = () => {
-  const [sellerData, setSellerData] = useState([]);
+  const [sellerDetails, setSellerDetails] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSeller, setEditingSeller] = useState(null);
+  const [form] = Form.useForm();
 
+  // Fetch seller details on mount
   useEffect(() => {
-    const fetchSellerDetails = async () => {
-      try {
-        const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails', {
-          headers: {
-            accept: '*/*',
-          },
-        });
-        setSellerData(response.data);
-      } catch (error) {
-        message.error('Failed to fetch seller details');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSellerDetails();
   }, []);
 
-  const handleEdit = (seller) => {
-    setEditingSeller(seller);
-    setIsModalVisible(true);
+  // Function to fetch seller details
+  const fetchSellerDetails = async () => {
+    try {
+      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails');
+      setSellerDetails(response.data);
+      setLoading(false);
+    } catch (error) {
+      message.error('Failed to fetch seller details');
+      setLoading(false);
+    }
   };
 
-  const handleModalClose = () => {
-    setIsModalVisible(false);
-    setEditingSeller(null);
-  };
-
-  const handleUpdate = async (values) => {
+  // Handle form submission
+  const onFinish = async (values) => {
     try {
       await axios.patch('https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails', {
-        ...values,
-        id: editingSeller.userId,
-      }, {
-        headers: {
-          accept: '*/*',
-          'Content-Type': 'application/json',
-        },
+        id: editingSeller.sellerId,
+        sellerAddress: values.sellerAddress,
+        sellerEmail: values.sellerEmail,
+        sellerLat: values.sellerLat,
+        sellerLng: values.sellerLng,
+        sellerMobile: values.sellerMobile,
+        sellerName: values.sellerName,
+        sellerRadious: values.sellerRadious,
+        sellerStoreName: values.sellerStoreName,
       });
       message.success('Seller details updated successfully');
-      setSellerData((prevData) =>
-        prevData.map((seller) => (seller.userId === editingSeller.userId ? { ...seller, ...values } : seller))
-      );
-      handleModalClose();
+      setEditingSeller(null);
+      form.resetFields();
+      await fetchSellerDetails();
     } catch (error) {
       message.error('Failed to update seller details');
     }
   };
 
+  const handleEdit = (seller) => {
+    setEditingSeller(seller);
+    form.setFieldsValue({
+      sellerStoreName: seller.sellerStoreName,
+      sellerName: seller.sellerName,
+      sellerEmail: seller.sellerEmail,
+      sellerMobile: seller.sellerMobile,
+      sellerAddress: seller.sellerAddress,
+      sellerLat: seller.sellerLat,
+      sellerLng: seller.sellerLng,
+      sellerRadious: seller.sellerRadious,
+    });
+  };
+
+  // Centered loading state and empty seller details
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Spin size="large" />
+    </div>
+  );
+
+  if (sellerDetails.length === 0) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <h2>No seller details found.</h2>
+    </div>
+  );
+
   const columns = [
-    { title: 'Seller Name', dataIndex: 'sellerName', key: 'sellerName', align: 'center' },
-    { title: 'Mobile', dataIndex: 'sellerMobile', key: 'sellerMobile', align: 'center' },
-    { title: 'Email', dataIndex: 'sellerEmail', key: 'sellerEmail', align: 'center' },
-    { title: 'Address', dataIndex: 'sellerAddress', key: 'sellerAddress', align: 'center' },
-    { title: 'Store Name', dataIndex: 'sellerStoreName', key: 'sellerStoreName', align: 'center' },
-   
-    { title: 'Latitude', dataIndex: 'sellerLat', key: 'sellerLat', align: 'center' },
-    { title: 'Longitude', dataIndex: 'sellerLng', key: 'sellerLng', align: 'center' },
     {
-      title: 'Action',
-      key: 'action',
-      render: (_, seller) => (
-        <>
-          <Button type="primary" onClick={() => handleEdit(seller)}>Edit</Button>
-          <Link className="ml-2" to="/selleritems">
-            <Button type="primary">Items</Button>
-          </Link>
-        </>
-      ),
+      title: 'Store Name',
+      dataIndex: 'sellerStoreName',
+      key: 'sellerStoreName',
       align: 'center',
+    },
+    {
+      title: 'Seller Name',
+      dataIndex: 'sellerName',
+      key: 'sellerName',
+      align: 'center',
+    },
+    {
+      title: 'Email',
+      dataIndex: 'sellerEmail',
+      key: 'sellerEmail',
+      align: 'center',
+    },
+    {
+      title: 'Mobile',
+      dataIndex: 'sellerMobile',
+      key: 'sellerMobile',
+      align: 'center',
+    },
+    {
+      title: 'Address',
+      dataIndex: 'sellerAddress',
+      key: 'sellerAddress',
+      align: 'center',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      align: 'center',
+      render: (text, record) => (
+        <Row gutter={16} justify="center">
+          <Col>
+            <Button onClick={() => handleEdit(record)} type="primary">
+              Edit
+            </Button>
+          </Col>
+          <Col>
+            <Link to={`/selleritems`}>
+              <Button>Items</Button>
+            </Link>
+          </Col>
+        </Row>
+      ),
     },
   ];
 
   return (
     <AdminPanelLayout>
-      <div style={{ padding: '20px' }}>
-        {loading ? (
-          <Spin tip="Loading..." />
-        ) : (
-          <>
-            <Table dataSource={sellerData} columns={columns} rowKey="userId" />
-            <Modal
-              title="Edit Seller Details"
-              visible={isModalVisible}
-              onCancel={handleModalClose}
-              footer={null}
-            >
-              <Form initialValues={editingSeller} onFinish={handleUpdate}>
-                <Row gutter={[16, 16]}>
-                <Col span={12}>
-                    <Form.Item
-                      label="Seller Name"
-                      name="sellerName"
-                      rules={[{ required: false, message: 'Please input the seller name!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                    <Col span={12}>
-                    <Form.Item
-                      label="Email"
-                      name="sellerEmail"
-                      rules={[{ required: false, type: 'email', message: 'Please input a valid email!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      label="Mobile"
-                      name="sellerMobile"
-                      rules={[{ required: false, message: 'Please input the mobile number!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      label="Address"
-                      name="sellerAddress"
-                      rules={[{ required: false, message: 'Please input the address!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      label="Store Name"
-                      name="sellerStoreName"
-                      rules={[{ required: true, message: 'Please input the store name!' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-                
-                  
-                  
-                 
-                  <Col span={12}>
-                    <Form.Item
-                      label="Latitude"
-                      name="sellerLat"
-                      rules={[{ required: false, message: 'Please input the latitude!' }]}
-                    >
-                      <Input type="number" />
-                    </Form.Item>
-                  </Col>
-                  <Col span={12}>
-                    <Form.Item
-                      label="Longitude"
-                      name="sellerLng"
-                      rules={[{ required: false, message: 'Please input the longitude!' }]}
-                    >
-                      <Input type="number" />
-                    </Form.Item>
-                  </Col>
-                </Row>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">Update</Button>
+      <div style={{ padding: '20px', marginTop: '20px' }}>
+        <Table
+          dataSource={sellerDetails}
+          columns={columns}
+          rowKey="sellerId"
+          pagination={false}
+          scroll={{ x: 'max-content' }} // Allow horizontal scrolling
+        />
+
+        <Modal
+          title="Edit Seller Details"
+          visible={!!editingSeller}
+          onCancel={() => {
+            setEditingSeller(null);
+            form.resetFields();
+          }}
+          footer={null}
+        >
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+          >
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Store Name" name="sellerStoreName" rules={[{ required: true, message: 'Please enter store name' }]}>
+                  <Input />
                 </Form.Item>
-              </Form>
-            </Modal>
-          </>
-        )}
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Seller Name" name="sellerName" rules={[{ required: true, message: 'Please enter your name' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Email" name="sellerEmail" rules={[{ required: true, message: 'Please enter your email' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Mobile" name="sellerMobile" rules={[{ required: true, message: 'Please enter your mobile number' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Address" name="sellerAddress" rules={[{ required: true, message: 'Please enter your address' }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Latitude" name="sellerLat">
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Longitude" name="sellerLng">
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Radius" name="sellerRadious">
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row justify="center">
+              <Col>
+                <Button type="primary" htmlType="submit">
+                  Update
+                </Button>
+              </Col>
+            </Row>
+          </Form>
+        </Modal>
       </div>
     </AdminPanelLayout>
   );

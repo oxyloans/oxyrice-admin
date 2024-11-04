@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Table, Button, message, Modal, Form, Input, Select, DatePicker, Spin } from 'antd';
+import { Table, Button, message, Modal, Form, Input, Select, DatePicker, Spin, Row, Col } from 'antd';
 import { EditOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import AdminPanelLayout from './AdminPanelLayout';
@@ -23,7 +23,6 @@ const CouponList = () => {
     fetchCoupons();
   }, []);
 
-  // Fetch all coupons
   const fetchCoupons = useCallback(async () => {
     setFetching(true);
     try {
@@ -38,7 +37,6 @@ const CouponList = () => {
     }
   }, []);
 
-  // Check coupon availability
   const checkCouponAvailability = useCallback(async () => {
     if (!searchCouponCode) {
       message.warning('Please enter a coupon code to search.');
@@ -72,16 +70,15 @@ const CouponList = () => {
     }
   }, [searchCouponCode, coupons]);
 
-  // Update coupon status
   const updateCouponStatus = async (couponId, isActive) => {
     setLoading(true);
     try {
       await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_status_couponid', {
         couponId,
-        status: isActive ? 0 : 1, // Toggle status
+        status: isActive ? 0 : 1,
       });
       message.success('Coupon status updated successfully.');
-      fetchCoupons(); // Refresh the list
+      fetchCoupons();
     } catch (error) {
       console.error('Error updating coupon status:', error);
       message.error('Failed to update coupon status.');
@@ -90,15 +87,14 @@ const CouponList = () => {
     }
   };
 
-  // Table columns
   const columns = [
-    { title: 'CouponId', dataIndex: 'couponId', key: 'couponId' },
+    { title: 'CouponId', dataIndex: 'couponId', key: 'couponId', responsive: ['md'] },
     { title: 'Coupon Code', dataIndex: 'couponCode', key: 'couponCode' },
-    { title: 'Coupon Value', dataIndex: 'couponValue', key: 'couponValue' },
-    { title: 'Minimum Order', dataIndex: 'minOrder', key: 'minOrder' },
-    { title: 'Max Discount', dataIndex: 'maxDiscount', key: 'maxDiscount' },
-    { title: 'Usage', dataIndex: 'couponUsage', key: 'couponUsage' },
-    { title: 'Discount Type', dataIndex: 'discountType', key: 'discountType' },
+    { title: 'Coupon Value', dataIndex: 'couponValue', key: 'couponValue', responsive: ['md'] },
+    { title: 'Minimum Order', dataIndex: 'minOrder', key: 'minOrder', responsive: ['lg'] },
+    { title: 'Max Discount', dataIndex: 'maxDiscount', key: 'maxDiscount', responsive: ['lg'] },
+    { title: 'Usage', dataIndex: 'couponUsage', key: 'couponUsage', responsive: ['lg'] },
+    { title: 'Discount Type', dataIndex: 'discountType', key: 'discountType', responsive: ['lg'] },
     { title: 'Start Date', dataIndex: 'startDate', key: 'startDate', render: text => moment(text).format('YYYY-MM-DD') },
     { title: 'End Date', dataIndex: 'endDate', key: 'endDate', render: text => moment(text).format('YYYY-MM-DD') },
     {
@@ -124,7 +120,6 @@ const CouponList = () => {
     },
   ];
 
-  // Modal handling
   const showModal = (record = {}) => {
     setIsModalVisible(true);
     if (record.couponId) {
@@ -146,7 +141,6 @@ const CouponList = () => {
     form.resetFields();
   };
 
-  // Add or edit coupon
   const handleAddCoupon = async () => {
     try {
       const values = await form.validateFields();
@@ -165,14 +159,12 @@ const CouponList = () => {
       };
 
       if (isEditMode) {
-        // Update existing coupon
         await axios.patch('https://meta.oxyloans.com/api/erice-service/coupons/update_coupon', {
           couponId: editingCouponId,
           ...formattedValues,
         });
         message.success('Coupon updated successfully.');
       } else {
-        // Add new coupon
         await axios.post('https://meta.oxyloans.com/api/erice-service/coupons/add_coupon', formattedValues);
         message.success('Coupon added successfully.');
       }
@@ -186,90 +178,129 @@ const CouponList = () => {
   };
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Coupon List</h2>
-          <Button type="primary" className="bg-blue-500 hover:bg-blue-600 text-white" onClick={showModal}>
-            Add New Coupon
-          </Button>
+      <div className="flex flex-col h-screen">
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">Coupon List</h2>
+            <Button type="primary" onClick={showModal}>
+              Add New Coupon
+            </Button>
+          </div>
+
+          <Row gutter={[16, 16]} className="mb-4">
+            <Col xs={24} sm={12} md={6}>
+              <Input placeholder="Enter coupon code" value={searchCouponCode} onChange={e => setSearchCouponCode(e.target.value)} />
+            </Col>
+            <Col xs={24} sm={12} md={4}>
+              <Button type="primary" onClick={checkCouponAvailability} loading={loading} block>Check Coupon</Button>
+            </Col>
+          </Row>
+
+          {searchResult && <p className="text-lg font-semibold">{searchResult}</p>}
+
+          {fetching ? (
+            <div className="flex justify-center items-center h-full">
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredCoupons}
+              rowKey="couponId"
+              scroll={{ x: 1000 }}
+            />
+          )}
+
+          <Modal
+            title={isEditMode ? 'Edit Coupon' : 'Add New Coupon'}
+            visible={isModalVisible}
+            onCancel={handleCancel}
+            onOk={handleAddCoupon}
+            okText="Save"
+            cancelText="Cancel"
+            width={450}
+          >
+            <Form form={form} layout="vertical">
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="couponCode" label="Coupon Code" rules={[{ required: true, message: 'Please enter coupon code!' }]}>
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="couponDesc" label="Description">
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="couponType" label="Coupon Type">
+                    <Select placeholder="Select coupon type">
+                      <Option value="Discount">Discount</Option>
+                      <Option value="Cashback">Cashback</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="discountType" label="Discount Type">
+                    <Select placeholder="Select discount type">
+                      <Option value="Percentage">Percentage</Option>
+                      <Option value="Fixed">Fixed</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="couponValue" label="Coupon Value" rules={[{ required: true, message: 'Please enter coupon value!' }]}>
+                    <Input type="number" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="minOrder" label="Minimum Order" rules={[{ required: true, message: 'Please enter minimum order!' }]}>
+                    <Input type="number" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="maxDiscount" label="Max Discount" rules={[{ required: true, message: 'Please enter max discount!' }]}>
+                    <Input type="number" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="couponUsage" label="Usage">
+                    <Select placeholder="Select usage type">
+                      <Option value="New User">New User</Option>
+                      <Option value="One Time">One Time</Option>
+                      <Option value="Unlimited">Unlimited</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="startDate" label="Start Date" rules={[{ required: true, message: 'Please select start date!' }]}>
+                    <DatePicker showTime />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="endDate" label="End Date" rules={[{ required: true, message: 'Please select end date!' }]}>
+                    <DatePicker showTime />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
         </div>
-
-        <div className="flex mb-4 space-x-4">
-          <Input className="w-1/5" placeholder="Enter coupon code" value={searchCouponCode} onChange={e => setSearchCouponCode(e.target.value)} />
-          <Button type="primary" onClick={checkCouponAvailability} loading={loading}>Check Coupon</Button>
-        </div>
-
-        {searchResult && <p className="text-lg font-semibold">{searchResult}</p>}
-
-        {fetching ? (
-          <div className="flex justify-center items-center h-64"><Spin size="large" /></div>
-        ) : (
-          <Table columns={columns} dataSource={filteredCoupons} rowKey="couponId" pagination={{ pageSize: 5 }} />
-        )}
       </div>
-
-      <Modal
-        title={isEditMode ? 'Edit Coupon' : 'Add Coupon'}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleAddCoupon}>
-            Submit
-          </Button>,
-        ]}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="couponCode" label="Coupon Code" rules={[{ required: true, message: 'Please enter the coupon code' }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="couponDesc" label="Description">
-            <Input />
-          </Form.Item>
-          <Form.Item name="couponType" label="Coupon Type" rules={[{ required: true, message: 'Please select coupon type' }]}>
-            <Select placeholder="Select coupon type">
-              <Option value="Discount">Discount</Option>
-              <Option value="Cashback">Cashback</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="discountType" label="Discount Type" rules={[{ required: true, message: 'Please select discount type' }]}>
-            <Select placeholder="Select discount type">
-              <Option value="Percentage">Percentage</Option>
-              <Option value="Flat">Flat</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="couponValue" label="Coupon Value" rules={[{ required: true, message: 'Please enter coupon value' }]}>
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="minOrder" label="Minimum Order" rules={[{ required: true, message: 'Please enter minimum order' }]}>
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="maxDiscount" label="Max Discount" rules={[{ required: true, message: 'Please enter max discount' }]}>
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item name="couponUsage" label="Usage" rules={[{ required: true, message: 'Please select usage' }]}>
-            <Select placeholder="Select usage">
-              <Option value="New User">New User</Option>
-              <Option value="One Time">One Time</Option>
-              <Option value="Unlimited">Unlimited</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="startDate" label="Start Date" rules={[{ required: true, message: 'Please select start date' }]}>
-            <DatePicker showTime />
-          </Form.Item>
-          <Form.Item name="endDate" label="End Date" rules={[{ required: true, message: 'Please select end date' }]}>
-            <DatePicker showTime />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
     </AdminPanelLayout>
-    </>
   );
 };
 

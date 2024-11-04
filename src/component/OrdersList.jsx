@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { Table, Button, message, Input, Modal, Form, Select, DatePicker, InputNumber } from 'antd';
+import { Table, Button, message, Input, Modal, Form, Select, DatePicker, InputNumber, Row, Col } from 'antd';
 import axios from 'axios';
 import AdminPanelLayout from './AdminPanelLayout';
 
@@ -110,75 +108,93 @@ const OrderList = () => {
   ];
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 p-6 bg-gray-100">
-        <h2 className="text-2xl font-bold mb-4">Order List</h2>
+      <div className="flex flex-col h-screen">
+        <div className="flex-1 p-6 bg-gray-100">
+          <h2 className="text-2xl font-bold mb-4">Order List</h2>
 
-        {/* Search Order by ID */}
-        <div className="mb-4 flex items-center">
-          <Input
-            placeholder="Enter Order ID"
-            value={searchOrderId}
-            onChange={(e) => setSearchOrderId(e.target.value)}
-            className="mr-4"
-            style={{ width: 200 }}
+          {/* Search Order by ID */}
+          <div className="mb-4 flex items-center">
+            <Input
+              placeholder="Enter Order ID"
+              value={searchOrderId}
+              onChange={(e) => setSearchOrderId(e.target.value)}
+              className="mr-4"
+              style={{ width: 'auto', maxWidth: 200 }}
+            />
+            <Button onClick={fetchOrderById} type="primary" loading={loading}>
+              Search Order
+            </Button>
+          </div>
+
+          {/* Orders Table */}
+          <Table
+            dataSource={orders}
+            columns={columns}
+            rowKey="orderId"
+            pagination={{ pageSize: 6 }}
+            loading={loading}
+            scroll={{ x: 'max-content' }} 
+            className="bg-white border border-gray-300 rounded shadow"
           />
-          <Button onClick={fetchOrderById} type="primary" loading={loading}>
-            Search Order
-          </Button>
+
+          {/* Edit Order Modal */}
+          <Modal
+            title="Edit Order"
+            visible={isModalOpen}
+            onCancel={() => setIsModalOpen(false)}
+            onOk={handleSaveOrder}
+            okText="Save"
+            width={600} // Adjust modal width as needed
+            bodyStyle={{ padding: '24px' }} // Add padding to modal body
+          >
+            <Form form={form} layout="vertical">
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Order Status" name="orderStatus" rules={[{ required: true, message: 'Please select an order status' }]}>
+                    <Select>
+                      <Option value="OrderPlaced">Order Placed</Option>
+                      <Option value="Dispatched">Dispatched</Option>
+                      <Option value="Delivered">Delivered</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Order Date" name="orderDate" rules={[{ required: true, message: 'Please select a date' }]}>
+                    <DatePicker style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Wallet Amount" name="walletAmount" rules={[{ required: true, message: 'Please enter wallet amount' }]}>
+                    <InputNumber min={0} style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Payment Type" name="paymentType" rules={[{ required: true, message: 'Please enter payment type' }]}>
+                    <Input style={{ width: '100%' }} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Payment Status" name="paymentStatus" rules={[{ required: true, message: 'Please enter payment status' }]}>
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Payment ID" name="paymentId" rules={[{ required: true, message: 'Please enter payment ID' }]}>
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Form>
+          </Modal>
         </div>
-
-        {/* Orders Table */}
-        <Table
-          dataSource={orders}
-          columns={columns}
-          rowKey="orderId"
-          pagination={{ pageSize: 6 }}
-          loading={loading}
-          className="bg-white border border-gray-300 rounded shadow"
-        />
-
-        {/* Edit Order Modal */}
-        <Modal
-          title="Edit Order"
-          visible={isModalOpen}
-          onCancel={() => setIsModalOpen(false)}
-          onOk={handleSaveOrder}
-          okText="Save"
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item label="Order Status" name="orderStatus" rules={[{ required: true, message: 'Please select an order status' }]}>
-              <Select>
-                <Option value="OrderPlaced">Order Placed</Option>
-                <Option value="Dispatched">Dispatched</Option>
-                <Option value="Delivered">Delivered</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Order Date" name="orderDate" rules={[{ required: true, message: 'Please select a date' }]}>
-              <DatePicker />
-            </Form.Item>
-            <Form.Item label="Wallet Amount" name="walletAmount" rules={[{ required: true, message: 'Please enter wallet amount' }]}>
-              <InputNumber min={0} />
-            </Form.Item>
-            <Form.Item label="Payment Type" name="paymentType" rules={[{ required: true, message: 'Please enter payment type' }]}>
-              <InputNumber min={0} />
-            </Form.Item>
-            <Form.Item label="Payment Status" name="paymentStatus" rules={[{ required: true, message: 'Please enter payment status' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Payment ID" name="paymentId" rules={[{ required: true, message: 'Please enter payment ID' }]}>
-              <Input />
-            </Form.Item>
-          </Form>
-        </Modal>
       </div>
-    </div>
     </AdminPanelLayout>
-    </>
   );
 };
 
 export default OrderList;
-

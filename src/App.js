@@ -22,6 +22,7 @@ import SubscriberDetails from './component/SubscriberDetails';
 import CustomerList from './component/CustomerList';
 import LoginOrRegister from './component/LoginOrRegister';
 import Dashboard from './component/Dashboard';
+import SellerAdd from './component/SellerAdd';
 
 function App() {
   return (
@@ -34,8 +35,9 @@ function App() {
             
             <Route path="/" element={<LoginOrRegister/>} />    
             <Route path='/dashboard' element={<Dashboard/>}/>
-            <Route path="/delivery-boys" element={<DeliveryBoyList />} />
+            <Route path="/deliveryboys" element={<DeliveryBoyList />} />
             <Route path="/sellerslist" element={<SellersList />} />
+            <Route path="/selleradd" element={<SellerAdd />} />
             <Route path="/selleritems" element={<SellerItemsList />} />
             <Route path="/items" element={<ItemsList />} />
         
@@ -43,10 +45,10 @@ function App() {
             <Route path="/subscribers" element={<SubscriberDetails />} />
             <Route path="/coupons" element={<CouponList />} />
             <Route path="/orders" element={<OrdersList />} />
-            <Route path="/pending-orders" element={<PendingOrders />} />
-            <Route path="/replied-orders" element={<RepliedList />} />
+            <Route path="/pendingorders" element={<PendingOrders />} />
+            <Route path="/repliedorders" element={<RepliedList />} />
             <Route path="/slides" element={<SlidesList />} />
-            <Route path="/item-requirements" element={<ItemRequirements />} />
+            <Route path="/itemrequirements" element={<ItemRequirements />} />
             <Route path="/refunds" element={<RefundOrders />} />
             <Route path="/orders/report" element={<OrdersReport />} />
             <Route path="/customers" element={<CustomerList />} />

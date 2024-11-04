@@ -8,6 +8,7 @@ const PendingOrders = () => {
 
   useEffect(() => {
     const fetchPendingOrders = async () => {
+      setLoading(true); // Start loading when fetching begins
       try {
         const response = await fetch(`https://meta.oxyloans.com/api/erice-service/order/cancelled-incomplete`, {
           method: 'GET',
@@ -21,17 +22,15 @@ const PendingOrders = () => {
         }
 
         const data = await response.json();
-        console.log('Fetched data:', data); // Log the fetched data to see its structure
-
         if (Array.isArray(data)) {
-          setPendingOrders(data); // Set the orders directly
+          setPendingOrders(data);
         } else {
           console.error('Fetched data is not an array:', data);
         }
       } catch (error) {
         console.error('Error fetching pending orders:', error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop loading after the fetching is done
       }
     };
 
@@ -51,6 +50,7 @@ const PendingOrders = () => {
       title: 'Order ID',
       dataIndex: 'orderId',
       key: 'orderId',
+      responsive: ['lg'], // Show on large screens and up
     },
     {
       title: 'Order Date',
@@ -72,6 +72,7 @@ const PendingOrders = () => {
       title: 'Discount',
       dataIndex: 'discount',
       key: 'discount',
+      responsive: ['lg'], // Show on large screens and up
     },
     {
       title: 'Delivery Fee',
@@ -87,11 +88,13 @@ const PendingOrders = () => {
       title: 'PT',
       dataIndex: 'pt',
       key: 'pt',
+      responsive: ['lg'], // Show on large screens and up
     },
     {
       title: 'PGC',
       dataIndex: 'pgc',
       key: 'pgc',
+      responsive: ['lg'], // Show on large screens and up
     },
     {
       title: 'Status',
@@ -107,12 +110,14 @@ const PendingOrders = () => {
             type="primary"
             onClick={() => handleView(record.orderId)}
             className="mr-2"
+            size="small"
           >
             View
           </Button>
           <Button
             type="default"
             onClick={() => handlePrint(record.orderId)}
+            size="small"
           >
             Print
           </Button>
@@ -123,7 +128,7 @@ const PendingOrders = () => {
 
   if (loading) {
     return (
-      <Row justify="center" style={{ height: '100vh', alignItems: 'flex-start' }}>
+      <Row justify="center" style={{ height: '100vh', alignItems: 'center' }}>
         <Col>
           <Spin tip="Loading..." />
         </Col>
@@ -132,24 +137,20 @@ const PendingOrders = () => {
   }
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-1">
-        <div className="flex-1 p-4 bg-gray-100">
+      <Row justify="center">
+        <Col xs={24} md={22} lg={20} style={{ padding: '20px' }}>
           <Table
             dataSource={pendingOrders}
             columns={columns}
             rowKey="orderId"
-            pagination={{ pageSize: 10 }}
+            pagination={{ pageSize: 5 }}
             className="bg-white rounded-lg shadow-lg"
-            scroll={{ x: 'max-content' }} // Enable horizontal scrolling on smaller screens
+            scroll={{ x: 'max-content' }} // Enable horizontal scrolling for smaller screens
           />
-        </div>
-      </div>
-    </div>
+        </Col>
+      </Row>
     </AdminPanelLayout>
-    </>
   );
 };
 

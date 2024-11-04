@@ -1,159 +1,152 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Modal, Input, Form, message } from 'antd';
 import axios from 'axios';
+import { Table, Form, Input, Button, message, Modal, Row, Col } from 'antd';
 import AdminPanelLayout from './AdminPanelLayout';
 
 const SellerItemsList = () => {
-  const [data, setData] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [newPrice, setNewPrice] = useState('');
-  const [newName, setNewName] = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingItem, setEditingItem] = useState(null);
+  const [sellerId, setSellerId] = useState(7); // Updated to initialize as null
+
+  // Fetch seller details (including sellerId) from an API
+  const fetchSellerDetails = async () => {
+    try {
+      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/seller/sellerDetails');
+      setSellerId(response.data.sellerId);
+    } catch (error) {
+      console.error('Error fetching seller details:', error);
+      message.error('Failed to fetch seller details.');
+    }
+  };
+
+  // Fetch item details from the API
+  const fetchItemDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/selleritems/ItemsGetTotal');
+      setItems(response.data);
+    } catch (error) {
+      console.error('Error fetching item details:', error);
+      message.error('Failed to fetch item details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update item price using the PATCH API
+  const updateItemPrice = async (values) => {
+    if (!editingItem || sellerId === null) return;
+
+    try {
+      await axios.patch('https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix', {
+        active: true,
+        itemId: editingItem.itemId,
+        itemMrp: values.itemMrp,
+        sellerId: sellerId,
+      });
+      message.success('Item price updated successfully!');
+      setEditingItem(null);
+      fetchItemDetails();
+    } catch (error) {
+      console.error('Error updating item price:', error);
+      message.error('Failed to update item price.');
+    }
+  };
+
+  // Handle Edit Button Click
+  const handleEditClick = (item) => {
+    setEditingItem(item);
+  };
 
   useEffect(() => {
-    // Fetch initial data from API
-    axios
-      .get("https://meta.oxyloans.com/api/erice-service/selleritems/ItemsGetTotal", {
-        headers: { accept: "*/*" }
-      })
-      .then((response) => {
-        setData(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+    fetchSellerDetails();
+    fetchItemDetails();
   }, []);
 
   const columns = [
     {
-      title: "S.NO",
-      render: (_, __, index) => index + 1,
-      key: 'serialNumber',
-      align: 'center'
-    },
-    {
       title: 'Item Name',
       dataIndex: 'itemName',
       key: 'itemName',
-      render: (text) => text || 'N/A',
-      align: 'center'
     },
     {
       title: 'Quantity',
       dataIndex: 'quantity',
       key: 'quantity',
-      align: 'center'
     },
     {
       title: 'Units',
       dataIndex: 'units',
       key: 'units',
-      align: 'center'
     },
     {
-      title: 'MRP',
+      title: 'Current MRP',
       dataIndex: 'itemMrp',
       key: 'itemMrp',
-      align: 'center'
     },
     {
-      title: 'Image',
+      title: 'Item Image',
       dataIndex: 'itemImage',
       key: 'itemImage',
-      align: 'center',
-      render: (image) => (
-        <img src={image} alt="Item" style={{ width: 50, height: 50 }} />
-      ),
-    },
-    {
-      title: 'Active',
-      dataIndex: 'active',
-      key: 'active',
-      render: (active) => (active ? 'Active' : 'Inactive'),
-      align: 'center'
+      render: (text) => <img src={text} alt="Item" style={{ width: 50, height: 50 }} />, // Displaying image
     },
     {
       title: 'Action',
       key: 'action',
-      align: 'center',
-      render: (_, record) => (
-        <>
-          <Button type="primary" onClick={() => openEditModal(record)}>
-            Edit
-          </Button>
-          <Button type="primary" className="ml-2" onClick={() => handleItems(record)}>
-            View
-          </Button>
-        </>
+      render: (text, record) => (
+        <Button type="primary" onClick={() => handleEditClick(record)}>
+          Edit Price
+        </Button>
       ),
     },
   ];
 
-  const openEditModal = (record) => {
-    setSelectedItem(record);
-    setNewPrice(record.itemMrp);
-    setNewName(record.itemName);
-    setIsModalVisible(true);
-  };
-
-  const handleEditSave = () => {
-    if (selectedItem) {
-      axios
-        .patch(
-          "https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix",
-          {
-            active: selectedItem.active,
-            itemId: selectedItem.itemId,
-            itemMrp: newPrice,
-            itemName: newName,
-            sellerId: selectedItem.sellerId
-          },
-          {
-            headers: { accept: "*/*", "Content-Type": "application/json" }
-          }
-        )
-        .then((response) => {
-          console.log("Item updated:", response.data);
-          message.success("Item updated successfully!");
-          setData((prevData) =>
-            prevData.map((item) =>
-              item.itemId === selectedItem.itemId
-                ? { ...item, itemMrp: newPrice, itemName: newName }
-                : item
-            )
-          );
-          setIsModalVisible(false);
-        })
-        .catch((error) => {
-          console.error("Error updating item:", error);
-          message.error("Failed to update item.");
-        });
-    }
-  };
-
-  const handleItems = (record) => {
-    console.log("Show items for:", record);
-  };
-
   return (
     <AdminPanelLayout>
-      <Table columns={columns} dataSource={data} rowKey="itemId" pagination={{ pageSize: 5 }} />
-      
-      <Modal
-        title="Edit Item"
-        visible={isModalVisible}
-        onOk={handleEditSave}
-        onCancel={() => setIsModalVisible(false)}
-      >
-        <Form layout="vertical">
-          <Form.Item label="Item Name">
-            <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
-          </Form.Item>
-          <Form.Item label="MRP">
-            <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-          </Form.Item>
-        </Form>
-      </Modal>
+      <div style={{ padding: '20px' }}>
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <Table 
+              dataSource={items} 
+              columns={columns} 
+              rowKey="itemId" 
+              loading={loading} 
+              pagination={{ pageSize: 10 }} // Adjust pagination for mobile
+              bordered 
+            />
+          </Col>
+        </Row>
+        
+        {editingItem && (
+          <Modal
+            title={`Update Price for ${editingItem.itemName}`}
+            visible={true}
+            onCancel={() => setEditingItem(null)}
+            footer={null}
+            width={400} // Width of modal for small screens
+          >
+            <Form onFinish={updateItemPrice} layout="vertical">
+              <Form.Item
+                label="New MRP"
+                name="itemMrp"
+                rules={[{ required: true, message: 'Please input the new MRP!' }]}
+                initialValue={editingItem.itemMrp}
+              >
+                <Input type="number" />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Update Price
+                </Button>
+                <Button style={{ marginLeft: 8 }} onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
+        )}
+      </div>
     </AdminPanelLayout>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, Select, message } from "antd";
-import {  EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Modal, Form, Input, Select,Switch, message } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
 
@@ -97,7 +97,7 @@ const CategoryList = () => {
         await axios.post("https://meta.oxyloans.com/api/erice-service/categories/saveCategory", payload);
         message.success("Category added successfully");
       }
-      fetchCategories();
+      fetchCategories(); // Re-fetch categories after saving
       closeModal();
     } catch (error) {
       console.error("Error saving category:", error);
@@ -144,21 +144,12 @@ const CategoryList = () => {
 
   const handleDeleteCategory = async (id) => {
     setLoading(true);
-    const payload = {
-      categoryBanner: "",
-      categoryLogo: "",
-      categoryName: "",
-      deleted: true,
-      id: id,
-      isActive: false,
-    };
     try {
-      await axios.delete("https://meta.oxyloans.com/api/erice-service/categories/delete", {
+      await axios.delete(`https://meta.oxyloans.com/api/erice-service/categories/delete?id=${id}`, {
         headers: { "Content-Type": "application/json" },
-        data: payload,
       });
       message.success("Category deleted successfully");
-      fetchCategories();
+      fetchCategories(); // Re-fetch categories after deletion
     } catch (error) {
       console.error("Error deleting category:", error);
       message.error("Failed to delete category");
@@ -168,10 +159,8 @@ const CategoryList = () => {
   };
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      <div className="flex flex-1">
+      <div className="flex flex-col h-screen">
         <div className="flex-1 p-6 bg-gray-100">
           <div className="mb-4 flex justify-between flex-wrap">
             <Input.Search
@@ -200,25 +189,27 @@ const CategoryList = () => {
               onChange: handlePaginationChange,
             }}
             scroll={{ x: true }}
+            size="middle" // Use a middle size for better responsiveness
           >
-            <Table.Column title="S.No" render={(text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage}/>
-            <Table.Column title="Category Id" dataIndex="id"/>
-            <Table.Column title="Category Name" dataIndex="categoryName" />
-            <Table.Column title="Category Type" dataIndex="categoriesType" />
+            <Table.Column title="S.No" render={(text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage}
+              align="center"/>
+            <Table.Column title="Category Id" dataIndex="id" align="center"/>
+            <Table.Column title="Category Name" dataIndex="categoryName" align="center"/>
+            <Table.Column title="Category Type" dataIndex="categoriesType" align="center" />
             <Table.Column
               title="Category Logo"
               dataIndex="categoryLogo"
-              render={(image) => <img src={image} alt="Logo" width={50} />}
+              render={(image) => <img src={image} alt="Logo" width={50}  align="center"/>}
             />
             <Table.Column
               title="Category Banner"
               dataIndex="categoryBanner"
-              render={(banner) => <img src={banner} alt="Banner" width={100} />}
+              render={(banner) => <img src={banner} alt="Banner" width={100} align="center" />}
             />
             <Table.Column
               title="Category Status"
               dataIndex="isActive"
-              render={(isActive) => (isActive ? "Yes" : "No")}
+              render={(isActive) => (isActive ? "Yes" : "No")}align="center"
             />
             <Table.Column
               title="Action"
@@ -234,7 +225,7 @@ const CategoryList = () => {
                     Add Item
                   </Button>
                 </span>
-              )}
+              )} align="center"
             />
           </Table>
 
@@ -248,66 +239,65 @@ const CategoryList = () => {
             destroyOnClose
           >
             <Form form={form} onFinish={handleSaveCategory}>
-              <Form.Item name="categoryName" label="Category Name" rules={[{ required: true }]}>
+              <Form.Item name="categoryName" label="Category Name" rules={[{ required:false }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="categoryLogo" label="Category Logo" rules={[{ required: true }]}>
+              <Form.Item name="categoryLogo" label="Category Logo" rules={[{ required: false }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="categoryBanner" label="Category Banner" rules={[{ required: true }]}>
+              <Form.Item name="categoryBanner" label="Category Banner" rules={[{ required: false }]}>
                 <Input />
               </Form.Item>
               <Form.Item
                 name="categoriesType"
                 label="Category Type"
-                rules={[{ required: true, message: "Please select a category type" }]}
+                rules={[{ required: false, message: "Please select a category type" }]}
               >
                 <Select placeholder="Select Category Type">
                   <Option value="RICE">RICE</Option>
                   <Option value="Service">SERVICE</Option>
                 </Select>
               </Form.Item>
-              <Form.Item name="isActive" label="Active">
-                <Select>
-                  <Option value={true}>Active</Option>
-                  <Option value={false}>Inactive</Option>
-                </Select>
+              <Form.Item name="isActive" label="Active" valuePropName="checked">
+                <Switch />
               </Form.Item>
             </Form>
           </Modal>
 
           {/* Add Item Modal */}
           <Modal
-            title="Add Item"
+            title="Add New Item"
             visible={isAddItemModalVisible}
             onCancel={closeAddItemModal}
             onOk={() => addItemForm.submit()}
-            okText="Add Item"
+            okText="Save"
             destroyOnClose
           >
             <Form form={addItemForm} onFinish={handleAddItem}>
-              <Form.Item name="itemName" label="Item Name" rules={[{ required: true, message: "Please enter item name" }]}>
+              <Form.Item name="itemName" label="Item Name" rules={[{ required: false }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="itemLogo" label="Item Logo URL" rules={[{ required: true, message: "Please enter item logo URL" }]}>
+              <Form.Item name="itemLogo" label="Item Logo" rules={[{ required: false }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="itemQty" label="Quantity" rules={[{ required: true, message: "Please enter quantity" }]}>
+              <Form.Item name="itemQty" label="Item Quantity" rules={[{ required: false }]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="itemUnit" label="Unit" rules={[{ required: true, message: "Please enter unit" }]}>
-                <Input />
+              <Form.Item name="itemUnit" label="Item Unit" rules={[{ required: false }]}>
+                <Select placeholder="Select Unit">
+                  <Option value="kg">kg</Option>
+                  <Option value="ltr">ltr</Option>
+                  <Option value="pcs">pcs</Option>
+                </Select>
               </Form.Item>
-              <Form.Item name="tag" label="Tag" rules={[{ required: true, message: "Please enter tag" }]}>
+              <Form.Item name="tag" label="Tag">
                 <Input />
               </Form.Item>
             </Form>
           </Modal>
         </div>
       </div>
-    </div>
     </AdminPanelLayout>
-    </>
   );
 };
 

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Select, Button } from 'antd';
+import { Table, Select, Button, Row, Col } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';  // Corrected import
 import axios from 'axios';
 import AdminPanelLayout from './AdminPanelLayout';
-
 
 const { Option } = Select;
 
@@ -48,59 +47,58 @@ const CustomerList = () => {
   };
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-    
-
-      <div className="flex flex-1">
-        {/* Sidebar */}
-       
-        {/* Main Content */}
+      <div className="flex flex-col h-screen">
         <div className="flex-1 p-4">
-          <div className="flex justify-between items-center mb-4">
-            {/* Dropdown to select entries */}
-  
-            <Select
-              defaultValue={25}
-              onChange={value => setEntriesPerPage(value)}
-              style={{ width: 120 }}
-            >
-              <Option value={25}>25</Option>
-              <Option value={50}>50</Option>
-              <Option value={75}>75</Option>
-            </Select>
+          <Row gutter={[16, 16]} justify="space-between" align="middle" className="mb-4">
+            <Col xs={24} sm={12} md={8}>
+              <Select
+                defaultValue={25}
+                onChange={value => setEntriesPerPage(value)}
+                style={{ width: '100%' }}
+              >
+                <Option value={25}>25</Option>
+                <Option value={50}>50</Option>
+                <Option value={75}>75</Option>
+              </Select>
+            </Col>
+            <Col xs={24} sm={12} md={8} style={{ textAlign: 'right' }}>
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                onClick={downloadXLSX}
+                style={{ width: '100%' }}
+              >
+                Download XLSX
+              </Button>
+            </Col>
+          </Row>
 
-            {/* Download XLSX button */}
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={downloadXLSX}
-            >
-              Download XLSX
-            </Button>
-          </div>
-
-          {/* Table */}
           <Table
             dataSource={paginatedCustomers}
             loading={loading}
             pagination={false}
-            rowKey="id" // Assuming each customer has a unique ID
+            rowKey="id"
+            scroll={{ x: true }}  // Enable horizontal scrolling for mobile
+            responsive  // Enable responsive table
           >
-            <Table.Column title="SI. No" render={(text, record, index) => (currentPage - 1) * entriesPerPage + index + 1} />
+            <Table.Column
+              title="SI. No"
+              render={(text, record, index) => (currentPage - 1) * entriesPerPage + index + 1}
+              responsive={['sm']}
+            />
             <Table.Column title="Customer Name" dataIndex="customerName" />
             <Table.Column title="Email" dataIndex="email" />
-            <Table.Column title="Mobile Number" dataIndex="mobileNumber" />
-            <Table.Column title="Wallet Balance" dataIndex="walletBalance" />
+            <Table.Column title="Mobile Number" dataIndex="mobileNumber" responsive={['md']} />
+            <Table.Column title="Wallet Balance" dataIndex="walletBalance" responsive={['lg']} />
             <Table.Column 
               title="Mobile Verify" 
               render={(text, record) => (
-                <Button type={record.isMobileVerified ? "primary" : "default"}>
+                <Button type={record.isMobileVerified ? "primary" : "default"} size="small">
                   {record.isMobileVerified ? "Verified" : "Verify"}
                 </Button>
               )}
+              responsive={['md']}
             />
             <Table.Column 
               title="Subscriptions" 
@@ -109,6 +107,7 @@ const CustomerList = () => {
                   View
                 </Button>
               )}
+              responsive={['sm']}
             />
             <Table.Column 
               title="Orders" 
@@ -117,13 +116,12 @@ const CustomerList = () => {
                   View
                 </Button>
               )}
+              responsive={['sm']}
             />
           </Table>
         </div>
       </div>
-    </div>
     </AdminPanelLayout>
-    </>
   );
 };
 

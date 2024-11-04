@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios'; // Ensure you have axios installed: npm install axios
-import Header from './Header'; // Import your Header component
-import Sidebar from './Sidebar'; // Import your Sidebar component
-import { Table, Button, Select, Pagination } from 'antd';
+import axios from 'axios';
+import { Table, Button, Select, Pagination, Row, Col } from 'antd';
 import AdminPanelLayout from './AdminPanelLayout';
 
 const { Option } = Select;
@@ -30,7 +28,7 @@ const SlidesList = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`/api/slides/${id}`);
-      fetchSlides(); // Refresh the slides list after deletion
+      fetchSlides();
     } catch (error) {
       console.error("Error deleting slide:", error);
     }
@@ -40,11 +38,13 @@ const SlidesList = () => {
     {
       title: 'SI. No',
       render: (_, __, index) => (currentPage - 1) * entries + index + 1,
+      responsive: ['md'],  // Visible on medium and larger screens
     },
     {
       title: 'Slide Name',
       dataIndex: 'name',
       key: 'name',
+      responsive: ['xs', 'sm', 'md', 'lg'],  // Visible on all screens
     },
     {
       title: 'Slide Image',
@@ -53,6 +53,7 @@ const SlidesList = () => {
       render: (imageUrl, slide) => (
         <img src={imageUrl} alt={slide.name} className="h-16 w-16 object-cover mx-auto" />
       ),
+      responsive: ['sm', 'md', 'lg'],  // Visible on small screens and larger
     },
     {
       title: 'Action',
@@ -74,68 +75,60 @@ const SlidesList = () => {
           </Button>
         </div>
       ),
+      responsive: ['xs', 'sm', 'md', 'lg'],  // Visible on all screens
     },
   ];
 
   return (
-    <>
     <AdminPanelLayout>
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-     
-
-      <div className="flex flex-1">
-        {/* Sidebar */}
-       
-        <div className="flex-1 p-6 bg-gray-100">
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <label htmlFor="entries" className="mr-2">Show entries:</label>
-              <Select
-                id="entries"
-                value={entries}
-                onChange={(value) => setEntries(value)}
-                className="border border-gray-300 rounded"
-                style={{ width: 100 }}
-              >
-                <Option value={25}>25</Option>
-                <Option value={50}>50</Option>
-                <Option value={70}>70</Option>
-              </Select>
-            </div>
+      <div className="flex flex-col h-screen p-4 bg-gray-100">
+        <Row gutter={[16, 16]} justify="space-between" align="middle" className="mb-4">
+          <Col xs={24} sm={12} md={8}>
+            <label htmlFor="entries" className="mr-2">Show entries:</label>
+            <Select
+              id="entries"
+              value={entries}
+              onChange={(value) => setEntries(value)}
+              style={{ width: 120 }}
+            >
+              <Option value={25}>25</Option>
+              <Option value={50}>50</Option>
+              <Option value={70}>70</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} md={8} className="text-right">
             <Button
               type="primary"
               onClick={() => console.log('Add New Slide')}
             >
               Add New Slide
             </Button>
-          </div>
+          </Col>
+        </Row>
 
-          <Table
-            dataSource={slides}
-            columns={columns}
-            pagination={false}
-            rowKey="id"
-          />
+        <Table
+          dataSource={slides}
+          columns={columns}
+          pagination={false}
+          rowKey="id"
+          scroll={{ x: 500 }}  // Adds horizontal scroll on smaller screens
+        />
 
-          <Pagination
-            current={currentPage}
-            pageSize={entries}
-            total={totalSlides}
-            onChange={(page) => setCurrentPage(page)}
-            showSizeChanger
-            pageSizeOptions={[25, 50, 70]}
-            onShowSizeChange={(current, size) => {
-              setEntries(size);
-              setCurrentPage(1); // Reset to first page on entry change
-            }}
-            className="mt-4"
-          />
-        </div>
+        <Pagination
+          current={currentPage}
+          pageSize={entries}
+          total={totalSlides}
+          onChange={(page) => setCurrentPage(page)}
+          showSizeChanger
+          pageSizeOptions={[25, 50, 70]}
+          onShowSizeChange={(current, size) => {
+            setEntries(size);
+            setCurrentPage(1);
+          }}
+          className="mt-4 text-center"
+        />
       </div>
-    </div>
     </AdminPanelLayout>
-    </>
   );
 };
 
