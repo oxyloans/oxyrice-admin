@@ -1,29 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Modal, Form, Input, message } from 'antd';
+import { Table, Button, Modal, Form, Input, message,Row,Col } from 'antd';
 import AdminPanelLayout from './AdminPanelLayout';
+import '../ItemList.css'; // Import custom CSS for responsive styling
 
 const ItemList = () => {
   const [items, setItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const entriesPerPage = 5;
+
+  const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
     fetchItemsData();
   }, []);
 
-  // Fetch items data from the API
   const fetchItemsData = async () => {
-    const accessToken=localStorage.getItem('accessToken')
-    console.log(accessToken)
     setLoading(true);
     try {
-      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData",{
-        headers:{
-          Authorization:`Bearer ${accessToken}`
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/items/getItemsData", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
         }
       });
+   message.success('Data Fetched Successfully')
       setItems(response.data);
     } catch (error) {
       message.error("Error fetching items data: " + error.message);
@@ -32,46 +35,53 @@ const ItemList = () => {
     }
   };
 
-  // Handle updating the item data
   const handleUpdateItem = async (values) => {
     if (selectedItem) {
       try {
-        await axios.patch("https://meta.oxyloans.com/api/erice-service/items/updateData", {
-          itemId: selectedItem.itemId,
-          itemName: values.itemName,
-          itemPrice: values.itemPrice, // Ensure itemPrice is included if needed
-          itemQty: values.itemQty,
-          itemUnit: values.itemUnit,
-          tags: values.tags,
-        });
+        await axios.patch(
+          "https://meta.oxyloans.com/api/erice-service/items/updateData",
+          {
+            itemId: selectedItem.itemId,
+            itemName: values.itemName,
+            itemPrice: values.itemPrice,
+            itemQty: values.itemQty,
+            itemUnit: values.itemUnit,
+            tags: values.tags,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          }
+        );
         message.success("Item data updated successfully");
-        fetchItemsData(); // Refresh items after update
-        handleCancel(); // Close the modal
+        fetchItemsData();
+        handleCancel();
       } catch (error) {
         message.error("Error updating item: " + error.message);
       }
     }
   };
 
-  // Show the modal for updating an item
   const showUpdateModal = (item) => {
     setSelectedItem(item);
     setIsModalVisible(true);
   };
 
-  // Handle modal cancellation
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedItem(null);
   };
 
-  // Define columns for the Ant Design Table
   const columns = [
     {
-      title: 'Item Id',
-      dataIndex: 'itemId',
-      key: 'itemId',
+      title: 'S.NO',
+      key: 'serialNo',
+      render: (text, record, index) => (
+        index + 1 + (currentPage - 1) * entriesPerPage
+      ),
       align: 'center',
+      responsive: ['md'],
     },
     {
       title: 'Item Name',
@@ -84,6 +94,7 @@ const ItemList = () => {
       dataIndex: 'categoryName',
       key: 'categoryName',
       align: 'center',
+      responsive: ['md'],
     },
     {
       title: 'Quantity',
@@ -96,6 +107,7 @@ const ItemList = () => {
       dataIndex: 'units',
       key: 'units',
       align: 'center',
+      responsive: ['md'],
     },
     {
       title: 'Item Logo',
@@ -103,13 +115,17 @@ const ItemList = () => {
       key: 'itemImage',
       align: 'center',
       render: (text) => (
-        <img
-          src={text}
-          alt="Item Logo"
-          style={{ width: 50, height: 50, objectFit: 'cover' }} // Style the image
-        />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <img
+            src={text}
+            alt="Item Logo"
+            style={{ width: 50, height: 50, objectFit: 'cover' }}
+          />
+        </div>
       ),
-    },
+    }
+    
+,    
     {
       title: 'Action',
       key: 'action',
@@ -127,78 +143,77 @@ const ItemList = () => {
         columns={columns}
         rowKey="itemId"
         loading={loading}
-        pagination={{ pageSize: 5 }} // Adjust pagination as necessary
+        pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
+        scroll={{ x: '100%' }} // Enables horizontal scroll on smaller screens
       />
       <Modal
         title="Update Item"
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
+        className="responsive-modal"
       >
         {selectedItem && (
-       <Form
-       initialValues={{
-         itemName: selectedItem.itemName,
-         itemImage: selectedItem.itemImage || '', // Default value for item image
-         itemPrice: selectedItem.itemPrice || 0, // Default value for item price
-         itemQty: selectedItem.quantity || 0, // Default value for item quantity
-         itemUnit: selectedItem.units || '', // Default value for item unit
-         tags: selectedItem.tags || '', // Default value for tags
-       }}
-       onFinish={handleUpdateItem}
-     >
-       <Form.Item
-         label="Item Name"
-         name="itemName"
-         rules={[{ required: false, message: 'Please input the item name!' }]} // Changed to required
-       >
-         <Input />
-       </Form.Item>
-     
-       <Form.Item
-         label="Item Image URL"
-         name="itemImage"
-         rules={[{ required: false, message: 'Please input the item image URL!' }]} // Updated validation message
-       >
-         <Input />
-       </Form.Item>
-     
-       <Form.Item
-         label="Item Price"
-         name="itemPrice"
-         rules={[{ required: false, message: 'Please input the item price!' }]} // Changed to required
-       >
-         <Input type="number" />
-       </Form.Item>
-     
-       <Form.Item
-         label="Item Quantity"
-         name="itemQty"
-         rules={[{ required: false, message: 'Please input the item quantity!' }]} // Changed to required
-       >
-         <Input type="number" />
-       </Form.Item>
-     
-       <Form.Item
-         label="Item Unit"
-         name="itemUnit"
-         rules={[{ required: false, message: 'Please input the item unit!' }]} // Changed to required
-       >
-         <Input />
-       </Form.Item>
-     
-       <Form.Item
-         label="Tags"
-         name="tags"
-       >
-         <Input placeholder="Comma-separated tags" />
-       </Form.Item>
-     
-       <Form.Item>
-         <Button type="primary" htmlType="submit">Update</Button>
-       </Form.Item>
-     </Form>
-     
+          <Form
+            initialValues={{
+              itemName: selectedItem.itemName,
+              itemImage: selectedItem.itemImage || '',
+              itemPrice: selectedItem.itemPrice || 0,
+              itemQty: selectedItem.quantity || 0,
+              itemUnit: selectedItem.units || '',
+              tags: selectedItem.tags || '',
+            }}
+            onFinish={handleUpdateItem}
+            layout="vertical"
+          >
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Name"
+                  name="itemName"
+                  rules={[{ required: true, message: 'Please input the item name!' }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Item Image URL" name="itemImage">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Price"
+                  name="itemPrice"
+                  rules={[{ required: true, message: 'Please input the item price!' }]}
+                >
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Quantity"
+                  name="itemQty"
+                  rules={[{ required: true, message: 'Please input the item quantity!' }]}
+                >
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Item Unit" name="itemUnit">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Tags" name="tags">
+                  <Input placeholder="Comma-separated tags" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block>Update</Button>
+            </Form.Item>
+          </Form>
         )}
       </Modal>
     </AdminPanelLayout>

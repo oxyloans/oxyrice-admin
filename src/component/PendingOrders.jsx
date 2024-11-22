@@ -1,174 +1,102 @@
-// import React, { useEffect, useState } from 'react';
-// import { Table, Button, Spin, Row, Col } from 'antd';
-// import AdminPanelLayout from './AdminPanelLayout';
+import AdminPanelLayout from "./AdminPanelLayout";
+import React, { useState, useEffect } from 'react';
+import { Table, Button, message } from 'antd';
+import axios from 'axios';
 
-// const PendingOrders = () => {
-//   const [pendingOrders, setPendingOrders] = useState([]);
-//   const [loading, setLoading] = useState(true);
+const accessToken = localStorage.getItem('accessToken');
 
-//   useEffect(() => {
-//     const fetchPendingOrders = async () => {
-//       setLoading(true); // Start loading when fetching begins
-//       try {
-//         const response = await fetch(`https://meta.oxyloans.com/api/erice-service/order/cancelled-incomplete`, {
-//           method: 'GET',
-//           headers: {
-//             'Content-Type': 'application/json',
-//           },
-//         });
-
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-
-//         const data = await response.json();
-//         if (Array.isArray(data)) {
-//           setPendingOrders(data);
-//         } else {
-//           console.error('Fetched data is not an array:', data);
-//         }
-//       } catch (error) {
-//         console.error('Error fetching pending orders:', error);
-//       } finally {
-//         setLoading(false); // Stop loading after the fetching is done
-//       }
-//     };
-
-//     fetchPendingOrders();
-//   }, []);
-
-//   const handleView = (orderId) => {
-//     console.log('View order:', orderId);
-//   };
-
-//   const handlePrint = (orderId) => {
-//     console.log('Print order:', orderId);
-//   };
-
-//   const columns = [
-//     {
-//       title: 'Order ID',
-//       dataIndex: 'orderId',
-//       key: 'orderId',
-//       responsive: ['lg'], // Show on large screens and up
-//     },
-//     {
-//       title: 'Order Date',
-//       dataIndex: 'orderDate',
-//       key: 'orderDate',
-//       render: (text) => new Date(text).toLocaleDateString(),
-//     },
-//     {
-//       title: 'Order By',
-//       dataIndex: 'orderBy',
-//       key: 'orderBy',
-//     },
-//     {
-//       title: 'Amount',
-//       dataIndex: 'amount',
-//       key: 'amount',
-//     },
-//     {
-//       title: 'Discount',
-//       dataIndex: 'discount',
-//       key: 'discount',
-//       responsive: ['lg'], // Show on large screens and up
-//     },
-//     {
-//       title: 'Delivery Fee',
-//       dataIndex: 'deliveryFee',
-//       key: 'deliveryFee',
-//     },
-//     {
-//       title: 'Total',
-//       dataIndex: 'grandTotal',
-//       key: 'grandTotal',
-//     },
-//     {
-//       title: 'PT',
-//       dataIndex: 'pt',
-//       key: 'pt',
-//       responsive: ['lg'], // Show on large screens and up
-//     },
-//     {
-//       title: 'PGC',
-//       dataIndex: 'pgc',
-//       key: 'pgc',
-//       responsive: ['lg'], // Show on large screens and up
-//     },
-//     {
-//       title: 'Status',
-//       dataIndex: 'orderStatus',
-//       key: 'orderStatus',
-//     },
-//     {
-//       title: 'Actions',
-//       key: 'actions',
-//       render: (_, record) => (
-//         <span>
-//           <Button
-//             type="primary"
-//             onClick={() => handleView(record.orderId)}
-//             className="mr-2"
-//             size="small"
-//           >
-//             View
-//           </Button>
-//           <Button
-//             type="default"
-//             onClick={() => handlePrint(record.orderId)}
-//             size="small"
-//           >
-//             Print
-//           </Button>
-//         </span>
-//       ),
-//     },
-//   ];
-
-//   if (loading) {
-//     return (
-//       <Row justify="center" style={{ height: '100vh', alignItems: 'center' }}>
-//         <Col>
-//           <Spin tip="Loading..." />
-//         </Col>
-//       </Row>
-//     );
-//   }
-
-//   return (
-//     <AdminPanelLayout>
-//       <Row justify="center">
-//         <Col xs={24} md={22} lg={20} style={{ padding: '20px' }}>
-//           <Table
-//             dataSource={pendingOrders}
-//             columns={columns}
-//             rowKey="orderId"
-//             pagination={{ pageSize: 5 }}
-//             className="bg-white rounded-lg shadow-lg"
-//             scroll={{ x: 'max-content' }} // Enable horizontal scrolling for smaller screens
-//           />
-//         </Col>
-//       </Row>
-//     </AdminPanelLayout>
-//   );
-// };
-
-// export default PendingOrders;
-
-
-
-
-
-import AdminPanelLayout
- from "./AdminPanelLayout";   
-   const PendingOrders = () =>
-   {
-    return(
+// Define table columns
+const columns = [
+  { title: 'Order Id', dataIndex: 'orderId', key: 'orderId', align: 'center' },
+  { title: 'Order Date', dataIndex: 'orderDate', key: 'orderDate', align: 'center' },
+  { title: 'Grand Total', dataIndex: 'grandTotal', key: 'grandTotal', align: 'center' },
+  {
+    title: 'Payment Type',
+    dataIndex: 'paymentType',
+    key: 'paymentType',
+    align: 'center',
+    render: (type) => (type === 1 ? 'ONLINE' : type === 2 ? 'COD' : 'NA'),
+  },
+  {
+    title: 'Payment Status',
+    dataIndex: 'paymentStatus',
+    key: 'paymentStatus',
+    render: (status) => status || 'Pending',
+    align: 'center'
+  },
+  {
+    title: 'Status',
+    dataIndex: 'orderStatus',
+    key: 'orderStatus',
+    align: 'center',
+    render: (status) => {
+      const statusMap = {
+        '0': 'Incomplete',
+        '4': 'Order Delivered',
+        '6': 'Order Canceled',
+      };
+      return statusMap[status] || 'Pending';
+    },
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    align: 'center',
+    render: () => (
       <>
-      <AdminPanelLayout>
-      </AdminPanelLayout>
+        <Button type="link">View</Button>
+        <Button type="link">Print</Button>
       </>
-    )
-   }
+    ),
+  },
+];
+
+const PendingOrders = () => {
+  const [orderData, setOrderData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/cancelled-incomplete`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      console.log('API Response:', response.data); // Confirm the structure of response data
+
+      if (response.status === 200) {
+        setOrderData(response.data);
+        message.success('Data fetched successfully');
+      } else {
+        message.error('No data found');
+      }
+    } catch (error) {
+      console.error('Error fetching order data:', error);
+      message.error('An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderDetails();
+  }, []);
+  return (
+    <AdminPanelLayout>
+      <div className="p-4">
+        <h2 className="text-1xl mb-6">Return Pending List</h2>
+        
+        <Table
+          columns={columns}
+          dataSource={orderData}
+          loading={loading}
+          rowKey="orderId"
+          scroll={{ x: '100%' }}
+          className="border rounded-md shadow-sm"
+        />
+      </div>
+    </AdminPanelLayout>
+  );
+};
+
 export default PendingOrders;

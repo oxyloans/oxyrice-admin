@@ -2,33 +2,45 @@ import React, { useEffect, useState } from 'react';
 import { Form, Input, InputNumber, Button, message, Spin,Row, Col } from 'antd';
 import axios from 'axios';
 import AdminPanelLayout from './AdminPanelLayout';
-
+const accessToken=localStorage.getItem('accessToken')
 const SettingsForm = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
     setLoading(true);
+    const payload = {
+      id: values.id,
+      cashbackForReference: values.cashbackForReference,
+      customerContactNumber: values.customerContactNumber,
+      deliveryApplicableMinimumBillingAmount: values.deliveryApplicableMinimumBillingAmount,
+      deliveryFee: values.deliveryFee,
+      paymentGateway: values.paymentGateway,
+      paymentGatewayCharge: values.paymentGatewayCharge,
+      walletMaxTransactionAmount: values.walletMaxTransactionAmount,
+    };
+  
     try {
-      const response = await axios.patch('https://meta.oxyloans.com/api/erice-service/user/settings', {
-        id: values.id,
-        cashbackForReference: values.cashbackForReference,
-        customerContactNumber: values.customerContactNumber,
-        deliveryApplicableMinimumBillingAmount: values.deliveryApplicableMinimumBillingAmount,
-        deliveryFee: values.deliveryFee,
-        paymentGateway: values.paymentGateway,
-        paymentGatewayCharge: values.paymentGatewayCharge,
-        walletMaxTransactionAmount: values.walletMaxTransactionAmount,
-      });
-
+      const response = await axios.patch(
+        'https://meta.oxyloans.com/api/erice-service/user/settings',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+  
       if (response.status === 200) {
         message.success('Settings updated successfully!');
       }
     } catch (error) {
+      console.error('Error updating settings:', error);
       message.error('Failed to update settings. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+  
   return (
 
     <>

@@ -3,7 +3,7 @@ import { Form, Input, Button, message, Table, Modal, Row, Col, Spin } from 'antd
 import axios from 'axios';
 import AdminPanelLayout from './AdminPanelLayout';
 import { Link } from 'react-router-dom';
-
+const accessToken=localStorage.getItem('accessToken')
 const SellerList = () => {
   const [sellerDetails, setSellerDetails] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,12 @@ const SellerList = () => {
   const fetchSellerDetails = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails');
+      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails',{
+        headers:{
+          Authorization:`Bearer ${accessToken}`
+        }
+      });
+      message.success('Data fetched successfully');
       setSellerDetails(response.data);
       setLoading(false);
     } catch (error) {
@@ -42,6 +47,10 @@ const SellerList = () => {
         sellerName: values.sellerName,
         sellerRadious: values.sellerRadious,
         sellerStoreName: values.sellerStoreName,
+      },{
+        headers:{
+          Authorization:`Bearer ${accessToken}`
+        }
       });
       message.success('Seller details updated successfully');
       setEditingSeller(null);
@@ -68,6 +77,12 @@ const SellerList = () => {
 
 
   const columns = [
+    {
+      title: 'S.No',
+      dataIndex: 'key', // Use a unique key for the row (you may need to generate this if not available)
+      render: (text, record, index) => index + 1, // This will generate a serial number
+    },
+    
     {
       title: 'Store Name',
       dataIndex: 'sellerStoreName',
@@ -110,7 +125,7 @@ const SellerList = () => {
             </Button>
           </Col>
           <Col>
-            <Link to={`/selleritems`}>
+            <Link to={`/selleritems/${record.sellerId}`}>
               <Button>Items</Button>
             </Link>
           </Col>

@@ -19,31 +19,36 @@ import CategoryList from './component/CategoryList';
 import SubscriptionPlanList from './component/SubscriptionPlanList';
 import SubscriberDetails from './component/SubscriberDetails';
 import CustomerList from './component/CustomerList';
-import LoginOrRegister from './component/LoginOrRegister';
+import LoginOrRegister from './Authentication/LoginOrRegister';
 import Dashboard from './component/Dashboard';
 import SellerAdd from './component/SellerAdd';
+import LoginOrRegister1 from './Authentication/RegisterorLogin';
+import Login from './Authentication/Login';
+import Register from './Authentication/Register';
+import MainLayout from './component/Layout';
 
 function App() {
   return (
     <Router>
  
         {/* Define Routes */}
-        
-          <Routes>
+        <Routes>
             {/* Redirect from the root URL to the desired default path */}
-            
-            <Route path="/" element={<LoginOrRegister/>} />    
+            {/* <Route path="/" element={<LoginOrRegister1/>} /> */}
+            <Route path="/" element={<Login />} />
+           <Route path="/register" element={<Register />} /> 
+            <Route path='/loginwithotp' element={<LoginOrRegister/>}/>
             <Route path='/dashboard' element={<Dashboard/>}/>
             <Route path="/deliveryboys" element={<DeliveryBoyList />} />
             <Route path="/sellerslist" element={<SellersList />} />
             <Route path="/selleradd" element={<SellerAdd />} />
-            <Route path="/selleritems" element={<SellerItemsList />} />
+            <Route path="/selleritems/:sellerId" Component={SellerItemsList} />
             <Route path="/items" element={<ItemsList />} />
-        
+            
             <Route path="/subscriptionplans" element={<SubscriptionPlanList />} />
             <Route path="/subscribers" element={<SubscriberDetails />} />
             <Route path="/coupons" element={<CouponList />} />
-            <Route path="/orders" element={<OrdersList />} />
+            <Route path="/orderslist" element={<OrdersList />} />
             <Route path="/pendingorders" element={<PendingOrders />} />
             <Route path="/repliedorders" element={<RepliedList />} />
             <Route path="/slides" element={<SlidesList />} />
@@ -55,7 +60,6 @@ function App() {
             <Route path="/settings" element={<SettingsForm />} />
             <Route path="/categories" element={<CategoryList />} />
           </Routes>
-        
     </Router>
   );
 }

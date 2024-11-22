@@ -1,0 +1,37 @@
+/* ItemList.css */
+
+/* Style the image to be responsive */
+.responsive-image {
+    width: 100%;
+    max-width: 50px;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  /* Responsive modal styling */
+  .responsive-modal .ant-modal {
+    width: 90% !important;
+    max-width: 600px;
+  }
+  
+  @media (max-width: 768px) {
+    .responsive-modal .ant-modal {
+      padding: 0 15px;
+    }
+  }
+/* 
+  @media only screen and (max-width: 768px) {
+    .ant-table td, .ant-table th {
+      padding: 8px;
+    }
+  }
+  @media only screen and (max-width: 480px) {
+    .ant-modal {
+      width: 90% !important;
+    }
+  }
+  
+   */
+
+
+   

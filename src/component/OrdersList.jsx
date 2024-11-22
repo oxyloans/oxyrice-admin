@@ -1,213 +1,160 @@
-// import React, { useState, useEffect } from 'react';
-// import { Table, Button, message, Input, Modal, Form, Select, DatePicker, InputNumber, Row, Col } from 'antd';
-// import axios from 'axios';
-// import AdminPanelLayout from './AdminPanelLayout';
+import AdminPanelLayout from "./AdminPanelLayout";
+import React, { useState } from 'react';
+import { Table, DatePicker, Select, Button, message } from 'antd';
+import axios from 'axios';
 
-// const { Option } = Select;
+const { RangePicker } = DatePicker;
+const accessToken = localStorage.getItem('accessToken');
 
-// const OrderList = () => {
-//   const [orders, setOrders] = useState([]); // Orders state
-//   const [loading, setLoading] = useState(false); // Loading state
-//   const [searchOrderId, setSearchOrderId] = useState(''); // Search field state
-//   const [isModalOpen, setIsModalOpen] = useState(false); // Modal state
-//   const [selectedOrder, setSelectedOrder] = useState(null); // Selected order for editing
+// Define table columns
+const columns = [
+  { title: 'Order Id', dataIndex: 'orderId', key: 'orderId',align:'center' },
+  { title: 'Order Date', dataIndex: 'orderDate', key: 'orderDate',align:'center' },
+  // {
+  //   title: 'Customer Id',
+  //   dataIndex: 'customerId',
+  //   key: 'customerId',
+  //   render: (text) => text || 'N/A',align:'center'
+  // },
 
-//   const [form] = Form.useForm(); // Ant Design Form instance
-
-//   // Fetch all orders from API
-//   const fetchOrders = async () => {
-//     setLoading(true);
-//     try {
-//       const response = await axios.get('https://meta.oxyloans.com/api/erice-service/order/getAllOrders');
-//       setOrders(response.data);
-//     } catch (error) {
-//       console.error('Error fetching orders:', error);
-//       message.error(`Error fetching orders: ${error.response?.status} - ${error.response?.statusText || 'Unknown error'}`);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Fetch a specific order by Order ID
-//   const fetchOrderById = async () => {
-//     if (!searchOrderId) {
-//       message.warning('Please enter an Order ID');
-//       return;
-//     }
-
-//     setLoading(true);
-//     try {
-//       const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/getOrdersByOrderId/${searchOrderId}`);
-//       setOrders(response.data); // Set the single order into the table
-//       message.success('Order details fetched successfully');
-//     } catch (error) {
-//       console.error('Error fetching order by ID:', error);
-//       message.error(`Error fetching order: ${error.response?.status} - ${error.response?.statusText || 'Unknown error'}`);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchOrders(); // Fetch all orders initially
-//   }, []);
-
-//   // Handle the "Edit" button click
-//   const handleEdit = (order) => {
-//     setSelectedOrder(order);
-//     form.setFieldsValue({
-//       orderStatus: order.orderStatus,
-//       orderDate: order.orderDate,
-//       walletAmount: order.walletAmount,
-//       paymentType: order.paymentType,
-//       paymentStatus: order.paymentStatus,
-//       paymentId: order.paymentId,
-//     });
-//     setIsModalOpen(true);
-//   };
-
-//   // Handle form submission to save the edited order
-//   const handleSaveOrder = async () => {
-//     try {
-//       const updatedOrder = await form.validateFields(); // Validate form fields
-//       const payload = {
-//         ...updatedOrder,
-//         customerId: selectedOrder.customerId,
-//       };
-
-//       await axios.post('https://meta.oxyloans.com/api/erice-service/order/Saveorders', payload);
-//       message.success('Order saved successfully!');
-//       setIsModalOpen(false);
-//       fetchOrders(); // Refresh the order list
-//     } catch (error) {
-//       console.error('Error saving order:', error);
-//       message.error(`Error saving order: ${error.response?.status} - ${error.response?.statusText || 'Unknown error'}`);
-//     }
-//   };
-
-//   // Define columns for the Ant Design Table with centered text
-//   const columns = [
-//     { title: 'Order ID', dataIndex: 'orderId', key: 'orderId', align: 'center' },
-//     { title: 'Order Date', dataIndex: 'orderDate', key: 'orderDate', align: 'center', render: (text) => new Date(text).toLocaleDateString() },
-//     { title: 'Order By', dataIndex: 'orderBy', key: 'orderBy', align: 'center' },
-//     { title: 'Amount', dataIndex: 'amount', key: 'amount', align: 'center' },
-//     { title: 'Discount', dataIndex: 'discount', key: 'discount', align: 'center' },
-//     { title: 'Delivery Fee', dataIndex: 'df', key: 'df', align: 'center' },
-//     { title: 'Total', dataIndex: 'total', key: 'total', align: 'center' },
-//     { title: 'Order Status', dataIndex: 'orderStatus', key: 'orderStatus', align: 'center' },
-//     {
-//       title: 'Action',
-//       key: 'action',
-//       align: 'center',
-//       render: (_, record) => (
-//         <span>
-//           <Button type="link" onClick={() => handleEdit(record)}>Edit</Button>
-//         </span>
-//       ),
-//     },
-//   ];
-
-//   return (
-//     <AdminPanelLayout>
-//       <div className="flex flex-col h-screen">
-//         <div className="flex-1 p-6 bg-gray-100">
-//           <h2 className="text-2xl font-bold mb-4">Order List</h2>
-
-//           {/* Search Order by ID */}
-//           <div className="mb-4 flex items-center">
-//             <Input
-//               placeholder="Enter Order ID"
-//               value={searchOrderId}
-//               onChange={(e) => setSearchOrderId(e.target.value)}
-//               className="mr-4"
-//               style={{ width: 'auto', maxWidth: 200 }}
-//             />
-//             <Button onClick={fetchOrderById} type="primary" loading={loading}>
-//               Search Order
-//             </Button>
-//           </div>
-
-//           {/* Orders Table */}
-//           <Table
-//             dataSource={orders}
-//             columns={columns}
-//             rowKey="orderId"
-//             pagination={{ pageSize: 6 }}
-//             loading={loading}
-//             scroll={{ x: 'max-content' }} 
-//             className="bg-white border border-gray-300 rounded shadow"
-//           />
-
-//           {/* Edit Order Modal */}
-//           <Modal
-//             title="Edit Order"
-//             visible={isModalOpen}
-//             onCancel={() => setIsModalOpen(false)}
-//             onOk={handleSaveOrder}
-//             okText="Save"
-//             width={600} // Adjust modal width as needed
-//             bodyStyle={{ padding: '24px' }} // Add padding to modal body
-//           >
-//             <Form form={form} layout="vertical">
-//               <Row gutter={[16, 16]}>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Order Status" name="orderStatus" rules={[{ required: true, message: 'Please select an order status' }]}>
-//                     <Select>
-//                       <Option value="OrderPlaced">Order Placed</Option>
-//                       <Option value="Dispatched">Dispatched</Option>
-//                       <Option value="Delivered">Delivered</Option>
-//                     </Select>
-//                   </Form.Item>
-//                 </Col>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Order Date" name="orderDate" rules={[{ required: true, message: 'Please select a date' }]}>
-//                     <DatePicker style={{ width: '100%' }} />
-//                   </Form.Item>
-//                 </Col>
-//               </Row>
-//               <Row gutter={[16, 16]}>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Wallet Amount" name="walletAmount" rules={[{ required: true, message: 'Please enter wallet amount' }]}>
-//                     <InputNumber min={0} style={{ width: '100%' }} />
-//                   </Form.Item>
-//                 </Col>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Payment Type" name="paymentType" rules={[{ required: true, message: 'Please enter payment type' }]}>
-//                     <Input style={{ width: '100%' }} />
-//                   </Form.Item>
-//                 </Col>
-//               </Row>
-//               <Row gutter={[16, 16]}>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Payment Status" name="paymentStatus" rules={[{ required: true, message: 'Please enter payment status' }]}>
-//                     <Input />
-//                   </Form.Item>
-//                 </Col>
-//                 <Col xs={24} sm={12}>
-//                   <Form.Item label="Payment ID" name="paymentId" rules={[{ required: true, message: 'Please enter payment ID' }]}>
-//                     <Input />
-//                   </Form.Item>
-//                 </Col>
-//               </Row>
-//             </Form>
-//           </Modal>
-//         </div>
-//       </div>
-//     </AdminPanelLayout>
-//   );
-// };
-
-// export default OrderList;
-
-import AdminPanelLayout
- from "./AdminPanelLayout";   
-   const OrderList = () =>
-   {
-    return(
+  { title: 'Grand Total', dataIndex: 'grandTotal', key: 'grandTotal', align:'center' },
+  {
+    title: 'Payment Type',
+    dataIndex: 'paymentType',
+    key: 'paymentType',
+    align:'center',
+    render: (type) => (type === 1 ? 'ONLINE' : type === 2 ? 'COD' : 'Other'),
+  },
+  {
+    title: 'Payment Status',
+    dataIndex: 'paymentStatus',
+    key: 'paymentStatus',
+    render: (status) => status || 'Pending',
+    align:'center'
+  },
+  {
+    title: 'Status',
+    dataIndex: 'orderStatus',
+    key: 'orderStatus',
+    align:'center',
+    render: (status) => {
+      const statusMap = {
+        '0': 'Incomplete',
+        '1': 'Order Placed',
+        '2': 'Order Accepetd',
+        '3': 'Order Picked',
+        '4': 'Order Delivered',
+        '5': 'Order Rejected',
+        '6': 'Order Canceled',
+      };
+      return statusMap[status] || 'Pending';
+      
+    },
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    align:'center',
+    render: () => (
       <>
-      <AdminPanelLayout>
-      </AdminPanelLayout>
+        <Button type="link">View</Button>
+        <Button type="link">Print</Button>
       </>
-    )
-   }
-export default OrderList;
+    ),
+  },
+];
+
+const OrdersList = () => {
+  const [dateRange, setDateRange] = useState([]);
+  const [orderStatus, setOrderStatus] = useState('All');
+  const [orderData, setOrderData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleDateChange = (dates) => setDateRange(dates);
+  const handleStatusChange = (value) => setOrderStatus(value);
+
+  const fetchOrderDetails = async () => {
+    if (!accessToken) {
+      message.error('User not authenticated. Please log in.');
+      return;
+    }
+    if (!dateRange || dateRange.length !== 2) {
+      message.warning('Please select a valid date range.');
+      return;
+    }
+
+    const startDate = dateRange[0].format('YYYY-MM-DD');
+    const endDate = dateRange[1].format('YYYY-MM-DD');
+    const statusValue = orderStatus !== 'All' ? orderStatus : undefined;
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/date-range`, {
+        params: { startDate, endDate, status: statusValue },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      console.log('API Response:', response.data); // Confirm the structure of response data
+
+      if (response.status === 200) {
+        let orders = response.data;
+
+        // Filter results based on status if specified
+        if (statusValue) {
+          orders = orders.filter(order => order.orderStatus === statusValue);
+        }
+
+        setOrderData(orders);
+        message.success('Data fetched successfully');
+      } else {
+        message.error('No data found');
+      }
+    } catch (error) {
+      console.error('Error fetching order data:', error);
+      message.error('An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  return (
+    <AdminPanelLayout>
+      <div>
+        <h2>Orders List</h2>
+        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <Select
+            style={{ width: 150 }}
+            value={orderStatus}
+            onChange={handleStatusChange}
+          >
+            <Select.Option value="All">All</Select.Option>
+            <Select.Option value="0">InComplete</Select.Option>
+            <Select.Option value="1">Order Placed</Select.Option>
+            <Select.Option value="2">Order Accepetd</Select.Option>
+            <Select.Option value="3">Order Picked</Select.Option>
+            <Select.Option value="4">Order Delivered</Select.Option>
+            <Select.Option value="5">Order Rejected</Select.Option>
+            <Select.Option value="6">Order Canceled</Select.Option>
+          </Select>
+          <RangePicker onChange={handleDateChange} style={{ flex: 1 }} />
+          <Button type="primary" onClick={fetchOrderDetails} loading={loading}>
+            Get Data
+          </Button>
+          <Button type="default" disabled>
+            Export (Coming Soon)
+          </Button>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={orderData}
+          loading={loading}
+          rowKey="orderId"
+          scroll={{ x: '100%' }}
+        />
+      </div>
+    </AdminPanelLayout>
+  );
+};
+
+export default OrdersList;
