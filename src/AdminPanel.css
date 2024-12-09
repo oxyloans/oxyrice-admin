@@ -7,22 +7,87 @@
     height: 100%;
     overflow-y: auto; 
   } 
-  
-  .fixed-content {
-    margin-left: 0px; 
-    padding: 24px;
-    min-height: 100vh; 
-    overflow-y: auto; 
+
+
+
+  .fixed-sidebar {
+    background: #2f4050;
+    color: white;
   }
   
+  .custom-logo {
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .logo-link {
+    font-size: 20px;
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .logo-part-1 {
+    color: #08ec32ab;
+  }
+  
+  .logo-part-2 {
+    color: #ffba02;
+  }
+  
+  .admin-label {
+    text-align: center;
+    margin-top: 0;
+    background: #2f4050;
+    padding: 10px 0;
+  }
+  
+  .admin-link {
+    text-decoration: none;
+  }
+  
+  .admin-text {
+    font-size: 14px;
+  }
+  
+  .custom-menu {
+    color: #a7b1c2;
+  }
+  
+  .menu-icon {
+    color: #a7b1c2;
+  }
+  
+  .menu-title,
+  .menu-link {
+    color: #a7b1c2;
+    transition: color 0.3s;
+  }
+  
+  .menu-title:hover,
+  .menu-link:hover {
+    color: black;
+  }
+  
+  .custom-menu-item {
+    transition: color 0.3s;
+  }
+  
+  .custom-menu-item:hover {
+    color: black !important;
+  }
+  
+  
+  
 
-/* Custom hover styles for the sidebar menu items */
-.custom-sidebar-item:hover {
-   /* Green background on hover */
-  color: black !important; /* Black text color on hover */
+.custom-menu-item {
+  color: #A7B1C2; 
 }
 
-.custom-sidebar-submenu:hover {
-  /* Gold background for submenus on hover */
-  color: black !important;
-}
+.custom-menu-item:hover {
+  color: black !important; 
+} 

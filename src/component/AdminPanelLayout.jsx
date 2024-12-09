@@ -1,170 +1,229 @@
-
-
-
-
-
-
-import React, { useState } from 'react';
-import { Layout, Menu, Button, Dropdown, Avatar, Row, Col } from 'antd';
-import {
-  MenuUnfoldOutlined,
-  MenuFoldOutlined
-} from '@ant-design/icons';
-import { FaUser } from "react-icons/fa6";
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu,Row } from 'antd';
+import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
+import { useMediaQuery } from 'react-responsive';
 import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { MdLogout } from "react-icons/md";
-import { ConfigProvider } from 'antd';
+import { MdLogout, MdSubscriptions } from 'react-icons/md';
 import {
-  FaTachometerAlt, FaClipboardList, FaKey, FaFolder, FaBox, FaUsers,
-  FaSlideshare, FaBoxOpen, FaStore, FaShoppingCart, FaTags, FaFileAlt,
-  FaChartBar, FaExchangeAlt, FaShippingFast, FaReply
+  FaTachometerAlt, FaUsers, FaSlideshare, FaBoxOpen, FaStore,
+  FaShoppingCart, FaHandsHelping, FaShippingFast, FaReply
 } from 'react-icons/fa';
-import { useMediaQuery } from 'react-responsive'; // Import useMediaQuery
-import '../AdminPanel.css'; // Import your CSS file here
+import { BiSolidCategory, BiSolidCoupon } from 'react-icons/bi';
+import { IoSettings } from 'react-icons/io5';
+// import './AdminPanel.css';
 
 const { Header, Sider, Content, Footer } = Layout;
-
-const sidebarItems = [
-  { key: "dashboard", label: "Dashboard", icon: <FaTachometerAlt />, link: "/dashboard" },
-  { key: "settings", label: "Settings", icon: <FaClipboardList />, link: "/settings" },
-  {
-    key: "categories",
-    label: "Categories",
-    icon: <FaFolder />,
-    dropdownItems: [{ key: "categoryList", label: "Category List", icon: <FaBox />, link: '/categories' }]
-  },
-  {
-    key: "users",
-    label: "Users",
-    icon: <FaUsers />,
-    dropdownItems: [
-      { key: "customerList", label: "Customer List", icon: <FaUsers />, link: '/customerslist' },
-      { key: "deliveryBoys", label: "Delivery Boy List", icon: <FaUsers />, link: "/deliveryboys" }
-    ]
-  },
-  {
-    key: "slides",
-    label: "Slides",
-    icon: <FaSlideshare />,
-    dropdownItems: [{ key: "slidesList", label: "Slides List", icon: <FaSlideshare />, link: "/slides" }]
-  },
-  {
-    key: "items",
-    label: "Items",
-    icon: <FaBoxOpen />,
-    dropdownItems: [{ key: "listItems", label: "List Items", icon: <FaBoxOpen />, link: "/items" }]
-  },
-  {
-    key: "sellers",
-    label: "Sellers",
-    icon: <FaStore />,
-    dropdownItems: [
-      { key: "sellersList", label: "Sellers List", icon: <FaStore />, link: "/sellerslist" },
-    ]
-  },
-  {
-    key: "orders",
-    label: "Orders",
-    icon: <FaShoppingCart />,
-    dropdownItems: [
-      { key: "ordersList", label: "Orders List", icon: <FaBox />, link: "/orderslist" },
-      { key: "returnPendingList", label: "Return Pending List", icon: <FaShippingFast />, link: '/pendingorders' },
-      { key: "returnRepliedList", label: "Return Replied List", icon: <FaReply />, link: '/repliedorders' }
-    ]
-  },
-];
-
-const ProfileMenu = ({ onSignOut }) => (
-  <Menu>
-    <Menu.Item key="signout" onClick={onSignOut}>
-      Sign Out
-    </Menu.Item>
-  </Menu>
-);
 
 const AdminPanelLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' }); // Check for mobile
-  const navigate = useNavigate();
- 
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
+
+  const sidebarItems = [
+    { key: "dashboard", label: "Dashboard", icon: <FaTachometerAlt />, link: "/dashboard" },
+    { key: "settings", label: "Settings", icon: <IoSettings />, link: "/settings" },
+    {
+      key: "categories",
+      label: "Categories",
+      icon: <BiSolidCategory />,
+      dropdownItems: [{ key: "categoryList", label: "Category List", link: '/category/category_list' }]
+    },
+    {
+      key: "subscriptionPlans",
+      label: "Subscription Plans",
+      icon: <MdSubscriptions />,
+      dropdownItems: [
+        { key: "plansList", label: "Subscription Plans List", link: '/subscription_plans/plans_list' },
+        { key: "subscribersList", label: "Subscribers List", link: '/subscription_plans/user_subscriptions_list' }
+      ]
+    },
+    {
+      key: "users",
+      label: "Users",
+      icon: <FaUsers />,
+      dropdownItems: [
+        { key: "customerList", label: "Customer List", link: '/customer/customers_list' },
+        { key: "deliveryBoys", label: "Delivery Boy List", link: "/deliveryboy/deliveryboys_list" }
+      ]
+    },
+    {
+      key: "slides",
+      label: "Slides",
+      icon: <FaSlideshare />,
+      dropdownItems: [{ key: "slidesList", label: "Slides List", link: "/slides/slides_list" }]
+    },
+    {
+      key: "items",
+      label: "Items",
+      icon: <FaBoxOpen />,
+      dropdownItems: [{ key: "listItems", label: "List Items", link: "/item/items_list" }]
+    },
+    {
+      key: "sellers",
+      label: "Sellers",
+      icon: <FaStore />,
+      dropdownItems: [
+        { key: "sellersList", label: "Sellers List", link: "/seller/seller_list" }
+      ]
+    },
+    {
+      key: "coupons",
+      label: "Coupons",
+      icon: <BiSolidCoupon />,
+      dropdownItems: [
+        { key: "couponsList", label: "Coupons List", link: "/coupons/coupons_list" }
+      ]
+    },
+    {
+      key: "orders",
+      label: "Orders",
+      icon: <FaShoppingCart />,
+      dropdownItems: [
+        { key: "ordersList", label: "Orders List", link: "/orders/orders_list" },
+        { key: "returnPendingList", label: "Return Pending List", link: '/orders/return_pending_list' },
+        { key: "returnRepliedList", label: "Return Replied List", link: '/orders/return_replied_list' }
+      ]
+    },
+    {
+      key: "allqueries",
+      label: "All Queries",
+      icon: <FaHandsHelping />,
+      link: "/allqueriesfromadmin"
+    }
+  ];
+
+  useEffect(() => {
+    if (isMobile) setCollapsed(true); // Auto collapse on mobile
+  }, [isMobile]);
+
   const toggleCollapse = () => setCollapsed(!collapsed);
   const handleOpenChange = (keys) => setOpenKeys(keys.length ? [keys.pop()] : []);
-  
-  
-  // Sign-out functionality
   const handleSignOut = () => {
-    // Clear user authentication tokens or session data
-    localStorage.removeItem('authToken'); // Example of clearing a token
-    sessionStorage.removeItem('userSession'); // Clear session data if used
-
-    // Redirect to login page
-    navigate('/');
+    localStorage.removeItem('authToken');
+    sessionStorage.removeItem('userSession');
+    window.location.href = '/';
   };
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible 
-        collapsed={collapsed} 
-        onCollapse={setCollapsed} 
-        width={240} 
-        className="fixed-sidebar"
-      >
-        <div className="logo" style={{ padding: '10px 0' }}>
+     
+     <Sider
+  collapsed={collapsed}
+  onCollapse={setCollapsed}
+  breakpoint="md"
+  width={220} 
+  collapsedWidth={80}
+  style={{
+    backgroundColor: "#1A202C", // Sidebar background color
+  }}
+>
+
+<div   className="demo-logo-vertical" style={{ padding: '10px 0' }}>
           <Row justify="center" align="middle">
-            <div className="text-white text-center font-bold my-4" style={{ fontSize: 24 }}>
-              <span style={{ color: '#32CD32' }}>{collapsed ? 'O' : 'OXY'}</span>
-              <span style={{ color: '#FFD700' }}>{collapsed ? '' : 'RICE'}</span>
+            <div className=" text-center font-bold my-0" style={{ fontSize: 24 }}>
+
+<a 
+  href="#" 
+  style={{
+    fontSize: "20px",
+    color: "#fff",
+    textAlign: "center",
+    textDecoration: "none", // Add this if you want to remove underline
+  }}
+>
+<span style={{ color: '#08EC32AB' }}>{collapsed ? 'O' : 'OXY'}</span>
+<span style={{ color: '#FFBA02' }}>{collapsed ? '' : 'RICE'}</span>
+</a>
+
             </div>
+          
+
           </Row>
         </div>
-       
-  <Menu theme='dark' mode="inline" openKeys={openKeys} onOpenChange={handleOpenChange}>
-  {sidebarItems.map(item => (
-    item.dropdownItems ? (
-      <Menu.SubMenu 
-        key={item.key} 
-        icon={item.icon} 
-        title={item.label} 
-        className="custom-sidebar-submenu"
-      >
-        {item.dropdownItems.map(dropdownItem => (
-          <Menu.Item key={dropdownItem.key} className="custom-sidebar-item">
-            <Link to={dropdownItem.link}>{dropdownItem.label}</Link>
-          </Menu.Item>
-        ))}
-      </Menu.SubMenu>
-    ) : (
-      <Menu.Item key={item.key} icon={item.icon} className="custom-sidebar-item">
-        <Link to={item.link}>{item.label}</Link>
-      </Menu.Item>
-    )
-  ))}
-</Menu>
+        <div  style={{ textAlign: "center" ,marginTop:'0px'} } className='bg-gray-800 text-white my-5 h-6'>
+  <a 
+    href="#" 
+   
+    style={{ textDecoration: "none" }}
+  >
+    <strong className='my-6 ' style={{fontSize:'14px'}}>{collapsed ? 'A':'Admin'}</strong>
+  </a>
+</div>
+  <Menu
+    theme="" // or "" if you prefer default dark mode styles
+    mode="inline"
+    openKeys={openKeys}
+    onOpenChange={handleOpenChange}
+    style={{
+      color: "#A7B1C2",
+    }}
+  >
+    {sidebarItems.map((item) =>
+      item.dropdownItems ? (
+        <Menu.SubMenu
+  key={item.key}
+  icon={item.icon}
+  title={
+    <span className={` ${collapsed ? 'hidden' : 'inline'}`}>
+      {item.label}
+    </span>
+  }
+  className="text-white hover:bg-black hover:text-black"
+>
+{item.dropdownItems.map((dropdownItem) => (
+  <Menu.Item
+  key={dropdownItem.key}
+  className="bg-gray-800 text-white hover:bg-black hover:text-white" // Unified background and hover behavior
+>
+    <Link
+      to={dropdownItem.link}
+      className="flex items-center text-white hover:text-black no-underline"
+    >
+      {/* Ensure icon is rendered correctly */}
+      <span className="mr-1 text-white hover:text-black">
+        {dropdownItem.icon} {/* icon should be a valid JSX element */}
+      </span>
+      <span className="hover:text-black">
+        {dropdownItem.label}
+      </span>
+    </Link>
+  </Menu.Item>
+))}
+
+        </Menu.SubMenu>
+      ) : (
+        <Menu.Item
+          key={item.key}
+          className="text-white" // Remove background on hover
+        >
+          <Link
+            to={item.link}
+            className="flex items-center text-white hover:text-black no-underline"
+          >
+            <span className=" hover:text-black">{item.icon}</span>
+            <span className={`ml-2 ${collapsed ? 'hidden' : 'inline'} hover:text-black`}>
+              {item.label}
+            </span>
+          </Link>
+        </Menu.Item>
+      )
+    )}
+  </Menu>
+</Sider>
 
 
-
-
-
-
-
-
-
-
-      </Sider>
-
-      <Layout style={{ marginLeft: collapsed ? 80 : 240 }}>
-        <Header style={{
-          padding: '0 16px',
-          background: '#fff',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
-        }}>
-          {/* Sidebar Toggle Button */}
+        
+      <Layout>
+        <Header
+          style={{
+            padding: '0 16px',
+            background: '#fff',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
+          }}
+        >
           <button
             onClick={toggleCollapse}
             style={{
@@ -172,33 +231,26 @@ const AdminPanelLayout = ({ children }) => {
               border: 'none',
               cursor: 'pointer',
               fontSize: '18px',
-              marginRight: '16px',
+              color: "#1AB394",
             }}
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
-
-          {/* Profile Dropdown */}
           <div onClick={handleSignOut} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-             <MdLogout style={{ marginRight: 8 }} />  
-             <span>Logout</span>
+            <MdLogout style={{ marginRight: '8px', color: '#999C9E', fontSize: '14px' }} />
+            <span style={{ color: '#999C9E', fontSize: '14px' }}>Log out</span>
           </div>
-
-
         </Header>
-
-        <Content style={{ margin: '16px' }}>
+        <Content style={{ margin: '16px', padding: 24, background: '#fff' }}>
           {children}
         </Content>
-
-        <Footer style={{ textAlign: 'center', background: '#fff', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)' }}>
-          OxyRice Admin ©2024 Created by Oxyrice Company
+        <Footer style={{ textAlign: 'center', background: '#fff' }}>
+          OxyRice Admin ©2024 Created by OxyRice Company
         </Footer>
       </Layout>
     </Layout>
   );
 };
-
 
 export default AdminPanelLayout;
 

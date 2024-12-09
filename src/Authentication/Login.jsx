@@ -53,7 +53,7 @@ const payload={
       setError(
         error.response && error.response.data && error.response.data.message
           ? error.response.data.message
-          : 'Invalid username or password.'
+          : 'Failed to Login'
       );
     } finally {
       setLoading(false);
@@ -63,7 +63,7 @@ const payload={
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 space-y-2">
       <div className="text-center mb-2">
-        <h1 className="logo-name text-5xl font-bold text-gray-300 pb-4" style={{ fontSize: 75 }}>OxyRice</h1>
+        <h1 className="logo-name text-5xl font-bold text-gray-300 pb-4" style={{ fontSize: 75 }}> <span style={{color:"#03843b"}}>Oxy</span><span style={{color:"#fd7e14"}}>Rice</span></h1>
       </div>
 
       <div className="max-w-sm w-full rounded-lg p-8 bg-white shadow-lg">

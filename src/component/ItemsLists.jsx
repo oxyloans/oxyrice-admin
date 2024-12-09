@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, Button, Modal, Form, Input, message,Row,Col } from 'antd';
+import { Table, Button, Modal, Select,Form, Input, message,Row,Col } from 'antd';
 import AdminPanelLayout from './AdminPanelLayout';
 import '../ItemList.css'; // Import custom CSS for responsive styling
-
+const { Option } = Select;
 const ItemList = () => {
   const [items, setItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 5;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredItems, setFilteredItems] = useState([]);
+
 
   const accessToken = localStorage.getItem('accessToken');
 
@@ -28,6 +31,7 @@ const ItemList = () => {
       });
    message.success('Data Fetched Successfully')
       setItems(response.data);
+      setFilteredItems(response.data)
     } catch (error) {
       message.error("Error fetching items data: " + error.message);
     } finally {
@@ -71,6 +75,23 @@ const ItemList = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedItem(null);
+  };
+
+  // Pagination logic
+  const paginatedCustomers = items.slice(
+    (currentPage - 1) * entriesPerPage,
+    currentPage * entriesPerPage
+  );
+
+  // Handle change in the number of entries per page
+  const handleEntriesPerPageChange = (value) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const columns = [
@@ -131,15 +152,72 @@ const ItemList = () => {
       key: 'action',
       align: 'center',
       render: (text, item) => (
-        <Button onClick={() => showUpdateModal(item)} type="primary">Update</Button>
+        <Button onClick={() => showUpdateModal(item)}  style={{
+          backgroundColor: "#1AB394",
+          color: 'white',
+          marginBottom: '16px',
+        }}>Edit</Button>
       ),
     },
-  ];
-
+  ];const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    setSearchTerm(value);
+  
+    if (value) {
+      // Filter items based on the search term
+      const filtered = items.filter(item =>
+        (item.itemName?.toLowerCase().includes(value)) || // Safe access with optional chaining
+        (item.categoryName?.toLowerCase().includes(value)) || 
+        (item.quantity?.toString().toLowerCase().includes(value)) || 
+        (item.Units?.toLowerCase().includes(value))
+      );
+  
+      setFilteredItems(filtered); // Update the filtered items
+    } else {
+      setFilteredItems(items); // Reset to all items when search term is empty
+    }
+  };
+  
+  
   return (
     <AdminPanelLayout>
+
+<Row justify="space-between" align="middle" className="mb-4">
+<Col>
+<h2 className="text-xl font-bold mb-2 sm:mb-0">Items List</h2>
+          </Col>
+         
+        </Row>
+
+        <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          Show{' '}
+          <Select
+            value={entriesPerPage}
+            onChange={handleEntriesPerPageChange}
+            style={{ width: 70 }}
+          >
+            <Option value={5}>5</Option>
+            <Option value={10}>10</Option>
+            <Option value={20}>20</Option>
+          </Select>
+          {' '}entries 
+        </Col>
+
+        <Col>
+        Search: {' '}
+
+          <Input
+            
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ width: 150 }}
+            
+          />
+        </Col>
+      </Row>
       <Table
-        dataSource={items}
+        dataSource={filteredItems}
         columns={columns}
         rowKey="itemId"
         loading={loading}

@@ -16,8 +16,8 @@ import OrdersReport from './component/OrdersReport';
 import ChangePassword from './component/ChangePassword';
 import SettingsForm from './component/SettingsForm';
 import CategoryList from './component/CategoryList';
-import SubscriptionPlanList from './component/SubscriptionPlanList';
-import SubscriberDetails from './component/SubscriberDetails';
+import SubscriptionPlans from './component/SubscriptionPlanList';
+import SubscribersList from './component/SubscribersList';
 import CustomerList from './component/CustomerList';
 import LoginOrRegister from './Authentication/LoginOrRegister';
 import Dashboard from './component/Dashboard';
@@ -26,6 +26,9 @@ import LoginOrRegister1 from './Authentication/RegisterorLogin';
 import Login from './Authentication/Login';
 import Register from './Authentication/Register';
 import MainLayout from './component/Layout';
+import AllQueriesForAdmin from './component/AllQueriesForAdmin';
+import SubscriberDetails from './component/SubscriberDetails';
+import OrdersListDetailsCustomerId from './component/OrdersListbyCustomerId';
 
 function App() {
   return (
@@ -36,29 +39,32 @@ function App() {
             {/* Redirect from the root URL to the desired default path */}
             {/* <Route path="/" element={<LoginOrRegister1/>} /> */}
             <Route path="/" element={<Login />} />
+            <Route path="/SubscriberDetails" element={<SubscriberDetails />} />
+            <Route path='/allqueriesfromadmin' element={<AllQueriesForAdmin/>}/>
            <Route path="/register" element={<Register />} /> 
             <Route path='/loginwithotp' element={<LoginOrRegister/>}/>
             <Route path='/dashboard' element={<Dashboard/>}/>
-            <Route path="/deliveryboys" element={<DeliveryBoyList />} />
-            <Route path="/sellerslist" element={<SellersList />} />
+            <Route path="/deliveryboy/deliveryboys_list" element={<DeliveryBoyList />} />
+            <Route path="/seller/seller_list" element={<SellersList />} />
             <Route path="/selleradd" element={<SellerAdd />} />
             <Route path="/selleritems/:sellerId" Component={SellerItemsList} />
-            <Route path="/items" element={<ItemsList />} />
+            <Route path="/item/items_list" element={<ItemsList />} />
             
-            <Route path="/subscriptionplans" element={<SubscriptionPlanList />} />
-            <Route path="/subscribers" element={<SubscriberDetails />} />
-            <Route path="/coupons" element={<CouponList />} />
-            <Route path="/orderslist" element={<OrdersList />} />
-            <Route path="/pendingorders" element={<PendingOrders />} />
-            <Route path="/repliedorders" element={<RepliedList />} />
-            <Route path="/slides" element={<SlidesList />} />
+            <Route path="/subscription_plans/plans_list" element={<SubscriptionPlans />} />
+            <Route path="/subscription_plans/user_subscriptions_list" element={<SubscribersList />} />
+            <Route path="/coupons/coupons_list" element={<CouponList />} />
+            <Route path="/orders/orders_list" element={<OrdersList />} />
+            <Route path="/orders/orders_list/:id" Component={ OrdersListDetailsCustomerId} />
+            <Route path="/orders/return_pending_list" element={<PendingOrders />} />
+            <Route path="/orders/return_replied_list" element={<RepliedList />} />
+            <Route path="/slides/slides_list" element={<SlidesList />} />
             <Route path="/itemrequirements" element={<ItemRequirements />} />
             <Route path="/refunds" element={<RefundOrders />} />
             <Route path="/orders/report" element={<OrdersReport />} />
-            <Route path="/customerslist" element={<CustomerList />} />
-            <Route path="/changepassword" element={<ChangePassword />} />
+            <Route path="/customer/customers_list" element={<CustomerList />} />
+            <Route path="/change_password" element={<ChangePassword />} />
             <Route path="/settings" element={<SettingsForm />} />
-            <Route path="/categories" element={<CategoryList />} />
+            <Route path="/category/category_list" element={<CategoryList />} />
           </Routes>
     </Router>
   );

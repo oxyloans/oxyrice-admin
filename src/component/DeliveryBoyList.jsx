@@ -1,139 +1,181 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
-import { Row, Col, Button, Table, Modal, message } from "antd";
+import { Form, Input, Button, Table, Select,message, Switch, Upload, Modal, Row, Col } from 'antd';
+
+const { Option } = Select;
+
+
+// **Request Body Model for Add Delivery Boy**
+const createAddDeliveryBoyRequest = (formValues) => {
+  return {
+    deliveryBoyName: formValues.deliveryBoyName,
+    deliveryBoyMobile: formValues.deliveryBoyMobile,
+    deliveryBoyEmail: formValues.deliveryBoyEmail,
+    deliveryBoyAltContact: formValues.deliveryBoyAltContact,
+    deliveryBoyAddress: formValues.deliveryBoyAddress,
+    isActive: formValues.isActive,
+    deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+  };
+};
+
+// **Request Body Model for Update Delivery Boy**
+const createUpdateDeliveryBoyRequest = (formValues, userId) => {
+  return {
+    id: userId,
+    deliveryBoyName: formValues.deliveryBoyName,
+    deliveryBoyMobile: formValues.deliveryBoyMobile,
+    deliveryBoyEmail: formValues.deliveryBoyEmail,
+    deliveryBoyAltContact: formValues.deliveryBoyAltContact,
+    deliveryBoyAddress: formValues.deliveryBoyAddress,
+    isActive: formValues.isActive,
+    deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+  };
+};
+
+// API function to save a new delivery boy
+const saveDeliveryBoy = async (requestBody, accessToken) => {
+  try {
+    await axios.post(
+      'https://meta.oxyloans.com/api/erice-service/deliveryboy/save',
+      requestBody,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    message.success('Delivery boy details saved successfully!');
+  } catch (error) {
+    throw new Error('Failed to save delivery boy details');
+  }
+};
+
+// API function to update an existing delivery boy
+const updateDeliveryBoy = async (requestBody, accessToken) => {
+  try {
+    await axios.patch(
+      'https://meta.oxyloans.com/api/erice-service/deliveryboy/update',
+      requestBody,
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    message.success('Delivery boy details updated successfully!');
+  } catch (error) {
+    throw new Error('Failed to update delivery boy details');
+  }
+};
 
 const DeliveryBoyList = () => {
   const [deliveryBoys, setDeliveryBoys] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addForm, setAddForm] = useState(initialFormState());
-  const [editForm, setEditForm] = useState(initialFormState());
-  const [selectedDeliveryBoy, setSelectedDeliveryBoy] = useState(null); // New state for selected delivery boy
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentRecord, setCurrentRecord] = useState(null);
+  const [form] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredDeliveryBoys, setFilteredDeliveryBoys] = useState([]);
 
-  // Initial form state for delivery boys
-  function initialFormState() {
-    return {
-      deliveryBoyName: "",
-      deliveryBoyMobile: "",
-      deliveryBoyEmail: "",
-      deliveryBoyAltContact: "",
-      deliveryBoyAddress: "",
-      isActive: true,
-    };
+  // API function to fetch delivery boys
+const fetchDeliveryBoys = async (accessToken) => {
+  try {
+    const response = await axios.get(
+      "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    return response.data;
+  
+
+   
+  } catch (error) {
+    throw new Error("Failed to fetch delivery boys");
   }
+};
 
-  // Fetch delivery boys on component mount
+  // Fetch delivery boys data on component mount
   useEffect(() => {
-    const fetchDeliveryBoys = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        message.success('Data fetched successfully')
-        setDeliveryBoys(response.data);
+        const data = await fetchDeliveryBoys(accessToken);
+        setDeliveryBoys(data);
+        message.success('Data fetched successfully');
+        setFilteredDeliveryBoys(data)
       } catch (error) {
-        console.error("Error fetching delivery boys:", error);
-        setError("Failed to fetch delivery boys");
+        message.error('Error fetching delivery boys');
       } finally {
         setLoading(false);
       }
     };
-
-    fetchDeliveryBoys();
+    fetchData();
   }, [accessToken]);
 
-  // Handle input changes for adding/editing a delivery boy
-  const handleFormChange = (e, formType) => {
-    const { name, value } = e.target;
-    if (formType === "add") {
-      setAddForm((prevForm) => ({ ...prevForm, [name]: value }));
-    } else if (formType === "edit") {
-      setEditForm((prevForm) => ({ ...prevForm, [name]: value }));
-    }
-  };
-
-  // Handle adding a new delivery boy
-  const handleAddDeliveryBoy = async () => {
-    try {
-      const response = await axios.post(
-        "https://meta.oxyloans.com/api/erice-service/deliveryboy/save",
-        addForm,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      message.success('Delivery Boy Added Successfully');
-      setDeliveryBoys((prevBoys) => [...prevBoys, response.data]);
-      closeAddModal();
-    } catch (error) {
-      console.error("Failed to add delivery boy", error);
-    }
-  };
-
-  // Handle editing a delivery boy's details
-  const handleEditDeliveryBoy = async () => {
-    if (selectedDeliveryBoy) {
-      try {
-        const response = await axios.patch(
-          `https://meta.oxyloans.com/api/erice-service/deliveryboy/update`, // No need to include userId in the URL
-          {
-           id: selectedDeliveryBoy.userId, // Pass userId in the request body
-            ...editForm, // Spread the existing form data to include other fields
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`, // Correct token format
-            },
-          }
-        );
-        message.success('Delivery Boy Updated Successfully');
-        setDeliveryBoys((prevBoys) =>
-          prevBoys.map((boy) =>
-            boy.userId === selectedDeliveryBoy.userId ? response.data : boy
-          )
-        );
-        closeAddModal();
-      } catch (error) {
-        console.error("Failed to edit delivery boy", error);
-        message.error("Failed to edit delivery boy");
-      }
-    }
-  };
-  
-  // Open Edit Modal and populate the selected delivery boy data
-  const openEditModal = (deliveryBoy) => {
-    setSelectedDeliveryBoy(deliveryBoy);
-    setEditForm({
-      deliveryBoyName: deliveryBoy.deliveryBoyName,
-      deliveryBoyMobile: deliveryBoy.deliveryBoyMobile,
-      deliveryBoyEmail: deliveryBoy.deliveryBoyEmail,
-      deliveryBoyAltContact: deliveryBoy.deliveryBoyAltContact,
-      deliveryBoyAddress: deliveryBoy.deliveryBoyAddress,
-      isActive: deliveryBoy.isActive,
-    });
+  // Show Add Modal
+  const showAddModal = () => {
+    form.resetFields();
     setIsAddModalOpen(true);
   };
 
-  // Close the Add/Update Modal
-  const closeAddModal = () => {
-    setIsAddModalOpen(false);
-    setSelectedDeliveryBoy(null); // Reset selected delivery boy
+  // Show Edit Modal with the selected record data
+  const showEditModal = (record) => {
+    setCurrentRecord(record);
+    form.setFieldsValue(record);
+    setIsEditModalOpen(true);
   };
 
-  // Table columns definition
+  // Handle Modal Cancel (close)
+  const handleCancel = () => {
+    setIsAddModalOpen(false);
+    setIsEditModalOpen(false);
+    form.resetFields();
+  };
+  const handleEntriesPerPageChange = (value) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
+  };
+  // Handle form submit for adding or updating delivery boy
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      let requestBody;
+
+      if (currentRecord) {
+        // Update request body with userId for updating existing delivery boy
+        requestBody = createUpdateDeliveryBoyRequest(values, currentRecord.userId);
+        await updateDeliveryBoy(requestBody, accessToken);
+      } else {
+        // Save new delivery boy request
+        requestBody = createAddDeliveryBoyRequest(values);
+        await saveDeliveryBoy(requestBody, accessToken);
+      }
+
+      handleCancel();
+      // Refresh the delivery boys list after adding/updating
+      const data = await fetchDeliveryBoys(accessToken);
+      setDeliveryBoys(data);
+    } catch (error) {
+      message.error(error.message || 'Failed to save or update delivery boy details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Table columns for displaying delivery boys
   const columns = [
+    
     {
+      title: 'S.NO',
+      key: 'serialNo',
+      render: (text, record, index) => (
+        index + 1 + (currentPage - 1) * entriesPerPage
+      ),
+      align: 'center',
+   
+    },{
       title: "Name",
       dataIndex: "deliveryBoyName",
       key: "deliveryBoyName",
@@ -145,12 +187,6 @@ const DeliveryBoyList = () => {
       key: "deliveryBoyMobile",
       align: "center",
     },
-    // {
-    //   title: "Id",
-    //   dataIndex: 'userId',
-    //   key: "userId",
-    //   align: 'center',
-    // },
     {
       title: "Email",
       dataIndex: "deliveryBoyEmail",
@@ -173,14 +209,32 @@ const DeliveryBoyList = () => {
       title: "Status",
       dataIndex: "isActive",
       key: "isActive",
-      render: (isActive) => (isActive ? "Active" : "Inactive"),
+      render: (isActive) => (
+        <p
+          type="default"
+          style={{
+            backgroundColor: isActive ? '#1C84C6' : '#ec4758',
+            color: 'white',
+            marginBottom: '16px',
+          }}
+        >
+          {isActive ? 'Active' : 'Inactive'}
+        </p>
+      ),
       align: "center",
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Button type="primary" onClick={() => openEditModal(record)}>
+        <Button
+          style={{
+            backgroundColor: "#1AB394",
+            color: "white",
+            marginBottom: "16px",
+          }}
+          onClick={() => showEditModal(record)}
+        >
           Edit
         </Button>
       ),
@@ -188,112 +242,176 @@ const DeliveryBoyList = () => {
     },
   ];
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input for clean matching
+    setSearchTerm(value);
+  
+    if (value) {
+      // Filter deliveryBoys based on the search term
+      const filtered = deliveryBoys.filter(deliveryBoy =>
+        (deliveryBoy.deliveryBoyName?.toLowerCase().includes(value)) || // Safe access with optional chaining
+        (deliveryBoy.deliveryBoyEmail?.toLowerCase().includes(value)) || 
+        (deliveryBoy.deliveryBoyMobile?.toLowerCase().includes(value)) || 
+        (deliveryBoy.deliveryBoyAddress?.toLowerCase().includes(value))
+      );
+  
+      setFilteredDeliveryBoys(filtered); // Update the filtered results
+    } else {
+      setFilteredDeliveryBoys(deliveryBoys); // Reset to all delivery boys when search term is empty
+    }
+  };
+  
+  
   return (
     <AdminPanelLayout>
-      <div className="flex flex-col h-screen">
-        <div className="flex-1 p-6 bg-gray-100">
+      <div className="flex flex-col">
+        <div className="flex-1">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold">Delivery Boys List</h2>
-            <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
+          <h2 className="text-xl font-bold mb-2 sm:mb-0">Delivery Boys List</h2>
+            {/* <Button
+              onClick={showAddModal}
+              disabled
+              style={{
+                backgroundColor: '#1C84C6',
+                color: 'white',
+                marginBottom: '16px',
+              }}
+            >
               Add Delivery Boy
-            </Button>
+            </Button> */}
           </div>
+
+          <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          Show{' '}
+          <Select
+            value={entriesPerPage}
+            onChange={handleEntriesPerPageChange}
+            style={{ width: 70 }}
+          >
+            <Option value={5}>5</Option>
+            <Option value={10}>10</Option>
+            <Option value={20}>20</Option>
+          </Select>
+          {' '}entries 
+        </Col>
+
+        <Col>
+        Search: {' '}
+
+          <Input
+            
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ width: 150 }}
+            
+          />
+        </Col>
+      </Row>
 
           {/* Ant Design Table */}
           <Table
-            columns={columns}
-            dataSource={deliveryBoys}
-            rowKey="userId"
-            loading={loading}
-            pagination={{ pageSize: 5 }}
-            scroll={{ x: true }}
-          />
+  columns={columns}
+  dataSource={filteredDeliveryBoys
+  //   .slice(
+  //   (currentPage - 1) * entriesPerPage,
+  //   currentPage * entriesPerPage
+  // )
+}
+  rowKey="id"
+  loading={loading}
+  pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }} // Change the page size to 5
+  scroll={{ x: true }}
+/>
 
-          {/* Add/Update Delivery Boy Modal */}
+          {/* Add/Edit Modal */}
           <Modal
-            title={selectedDeliveryBoy ? "Edit Delivery Boy" : "Add Delivery Boy"}
-            visible={isAddModalOpen}
-            onCancel={closeAddModal}
-            onOk={selectedDeliveryBoy ? handleEditDeliveryBoy : handleAddDeliveryBoy}
+            title={currentRecord ? "Edit Delivery Boy" : "Add Delivery Boy"}
+            visible={isAddModalOpen || isEditModalOpen}
+            onCancel={handleCancel}
+            footer={null}
           >
-            <form>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Name:</label>
-                    <input
-                      type="text"
-                      name="deliveryBoyName"
-                      value={selectedDeliveryBoy ? editForm.deliveryBoyName : addForm.deliveryBoyName}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    />
-                  </div>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              initialValues={{ isActive: false }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Name"
+                    name="deliveryBoyName"
+                    rules={[{ required: true, message: "Please enter name" }]}
+                  >
+                    <Input />
+                  </Form.Item>
                 </Col>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Mobile:</label>
-                    <input
-                      type="text"
-                      name="deliveryBoyMobile"
-                      value={selectedDeliveryBoy ? editForm.deliveryBoyMobile : addForm.deliveryBoyMobile}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    />
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Email:</label>
-                    <input
-                      type="email"
-                      name="deliveryBoyEmail"
-                      value={selectedDeliveryBoy ? editForm.deliveryBoyEmail : addForm.deliveryBoyEmail}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    />
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Alt Contact:</label>
-                    <input
-                      type="text"
-                      name="deliveryBoyAltContact"
-                      value={selectedDeliveryBoy ? editForm.deliveryBoyAltContact : addForm.deliveryBoyAltContact}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    />
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Address:</label>
-                    <input
-                      type="text"
-                      name="deliveryBoyAddress"
-                      value={selectedDeliveryBoy ? editForm.deliveryBoyAddress : addForm.deliveryBoyAddress}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    />
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div className="mb-4">
-                    <label className="block mb-1">Status:</label>
-                    <select
-                      name="isActive"
-                      value={selectedDeliveryBoy ? editForm.isActive : addForm.isActive}
-                      onChange={(e) => handleFormChange(e, selectedDeliveryBoy ? "edit" : "add")}
-                      className="border p-2 w-full"
-                    >
-                      <option value={true}>Active</option>
-                      <option value={false}>Inactive</option>
-                    </select>
-                  </div>
+                <Col xs={24} sm={12}> 
+                  <Form.Item
+                    label="Mobile"
+                    name="deliveryBoyMobile"
+                    rules={[{ required: true, message: "Please enter mobile number" }]}
+                  >
+                    <Input />
+                  </Form.Item>
                 </Col>
               </Row>
-            </form>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Email"
+                    name="deliveryBoyEmail"
+                    rules={[{ required: true, message: "Please enter email" }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Alt Contact"
+                    name="deliveryBoyAltContact"
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Form.Item
+                label="Address"
+                name="deliveryBoyAddress"
+              >
+                <Input.TextArea />
+              </Form.Item>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    label="Status"
+                    name="isActive"
+                    valuePropName="checked"
+                  >
+                    <Switch />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <Form.Item label="Upload Photo" name="deliveryBoyPhoto">
+                    <Upload listType="picture">
+                      <Button>Click to Upload</Button>
+                    </Upload>
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                style={{
+                  backgroundColor: "#1C84C6",
+                  color: "white",
+                }}
+              >
+                {currentRecord ? "Update" : "Add"} Delivery Boy
+              </Button>
+            </Form>
           </Modal>
         </div>
       </div>
@@ -302,3 +420,369 @@ const DeliveryBoyList = () => {
 };
 
 export default DeliveryBoyList;
+
+
+
+
+// import React, { useEffect, useState } from "react";
+// import axios from "axios";
+// import AdminPanelLayout from "./AdminPanelLayout";
+// import { Form, Input, Button, Table, message, Switch, Upload, Modal, Row, Col } from 'antd';
+
+// // API function to fetch delivery boys
+// const fetchDeliveryBoys = async (accessToken) => {
+//   try {
+//     const response = await axios.get(
+//       "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
+//       {
+//         headers: { Authorization: `Bearer ${accessToken}` },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     throw new Error("Failed to fetch delivery boys");
+//   }
+// };
+
+// // **Request Body Model for Add Delivery Boy**
+// const createAddDeliveryBoyRequest = (formValues) => {
+//   return {
+//     deliveryBoyName: formValues.deliveryBoyName,
+//     deliveryBoyMobile: formValues.deliveryBoyMobile,
+//     deliveryBoyEmail: formValues.deliveryBoyEmail,
+//     deliveryBoyAltContact: formValues.deliveryBoyAltContact,
+//     deliveryBoyAddress: formValues.deliveryBoyAddress,
+//     isActive: formValues.isActive,
+//     deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+//   };
+// };
+
+// // **Request Body Model for Update Delivery Boy**
+// const createUpdateDeliveryBoyRequest = (formValues, userId) => {
+//   return {
+//     id: userId,
+//     deliveryBoyName: formValues.deliveryBoyName,
+//     deliveryBoyMobile: formValues.deliveryBoyMobile,
+//     deliveryBoyEmail: formValues.deliveryBoyEmail,
+//     deliveryBoyAltContact: formValues.deliveryBoyAltContact,
+//     deliveryBoyAddress: formValues.deliveryBoyAddress,
+//     isActive: formValues.isActive,
+//     deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+//   };
+// };
+
+// // API function to save a new delivery boy
+// const saveDeliveryBoy = async (requestBody, accessToken) => {
+//   try {
+//     await axios.post(
+//       'https://meta.oxyloans.com/api/erice-service/deliveryboy/save',
+//       requestBody,
+//       {
+//         headers: { Authorization: `Bearer ${accessToken}` },
+//       }
+//     );
+//     message.success('Delivery boy details saved successfully!');
+//   } catch (error) {
+//     throw new Error('Failed to save delivery boy details');
+//   }
+// };
+
+// // API function to update an existing delivery boy
+// const updateDeliveryBoy = async (requestBody, accessToken) => {
+//   try {
+//     await axios.patch(
+//       'https://meta.oxyloans.com/api/erice-service/deliveryboy/update',
+//       requestBody,
+//       {
+//         headers: { Authorization: `Bearer ${accessToken}` },
+//       }
+//     );
+//     message.success('Delivery boy details updated successfully!');
+//   } catch (error) {
+//     throw new Error('Failed to update delivery boy details');
+//   }
+// };
+
+// const DeliveryBoyList = () => {
+//   const [deliveryBoys, setDeliveryBoys] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+//   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+//   const [currentRecord, setCurrentRecord] = useState(null);
+//   const [form] = Form.useForm();
+//   const accessToken = localStorage.getItem("accessToken");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const entriesPerPage = 5;
+
+//   // Fetch delivery boys data on component mount
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       setLoading(true);
+//       try {
+//         const data = await fetchDeliveryBoys(accessToken);
+//         setDeliveryBoys(data);
+//         message.success('Data fetched successfully');
+//       } catch (error) {
+//         message.error('Error fetching delivery boys');
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchData();
+//   }, [accessToken]);
+
+//   // Show Add Modal
+//   const showAddModal = () => {
+//     form.resetFields();
+//     setIsAddModalOpen(true);
+//   };
+
+//   // Show Edit Modal with the selected record data
+//   const showEditModal = (record) => {
+//     setCurrentRecord(record);
+//     form.setFieldsValue(record);
+//     setIsEditModalOpen(true);
+//   };
+//     // Sort data by deliveryBoyName or another key to maintain a consistent order
+//     const sortedDeliveryBoys = [...deliveryBoys].sort((a, b) => {
+//       return a.deliveryBoyName.localeCompare(b.deliveryBoyName);
+//     });
+
+//   // Handle Modal Cancel (close)
+//   const handleCancel = () => {
+//     setIsAddModalOpen(false);
+//     setIsEditModalOpen(false);
+//     form.resetFields();
+//   };
+//  // Handle pagination change
+//  const handlePaginationChange = (page) => {
+//   setCurrentPage(page);
+// };
+
+
+//   // Handle form submit for adding or updating delivery boy
+//   const onFinish = async (values) => {
+//     setLoading(true);
+//     try {
+//       let requestBody;
+
+//       if (currentRecord) {
+//         // Update request body with userId for updating existing delivery boy
+//         requestBody = createUpdateDeliveryBoyRequest(values, currentRecord.userId);
+//         await updateDeliveryBoy(requestBody, accessToken);
+//       } else {
+//         // Save new delivery boy request
+//         requestBody = createAddDeliveryBoyRequest(values);
+//         await saveDeliveryBoy(requestBody, accessToken);
+//       }
+
+//       handleCancel();
+//       // Refresh the delivery boys list after adding/updating
+//       const data = await fetchDeliveryBoys(accessToken);
+//       setDeliveryBoys(data);
+//     } catch (error) {
+//       message.error(error.message || 'Failed to save or update delivery boy details.');
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Table columns for displaying delivery boys
+//   const columns = [
+//     {
+//       title: "Name",
+//       dataIndex: "deliveryBoyName",
+//       key: "deliveryBoyName",
+//       align: "center",
+//     },
+//     {
+//       title: "Mobile",
+//       dataIndex: "deliveryBoyMobile",
+//       key: "deliveryBoyMobile",
+//       align: "center",
+//     },
+//     {
+//       title: "Email",
+//       dataIndex: "deliveryBoyEmail",
+//       key: "deliveryBoyEmail",
+//       align: "center",
+//     },
+//     {
+//       title: "Alt Contact",
+//       dataIndex: "deliveryBoyAltContact",
+//       key: "deliveryBoyAltContact",
+//       align: "center",
+//     },
+//     {
+//       title: "Address",
+//       dataIndex: "deliveryBoyAddress",
+//       key: "deliveryBoyAddress",
+//       align: "center",
+//     },
+//     {
+//       title: "Status",
+//       dataIndex: "isActive",
+//       key: "isActive",
+//       render: (isActive) => (
+//         <Button
+//           type="default"
+//           style={{
+//             backgroundColor: isActive ? '#1C84C6' : '#ec4758',
+//             color: 'white',
+//             marginBottom: '16px',
+//           }}
+//         >
+//           {isActive ? 'Active' : 'Inactive'}
+//         </Button>
+//       ),
+//       align: "center",
+//     },
+//     {
+//       title: "Action",
+//       key: "action",
+//       render: (_, record) => (
+//         <Button
+//           style={{
+//             backgroundColor: "#1AB394",
+//             color: "white",
+//             marginBottom: "16px",
+//           }}
+//           onClick={() => showEditModal(record)}
+//         >
+//           Edit
+//         </Button>
+//       ),
+//       align: "center",
+//     },
+//   ];
+
+//   return (
+//     <AdminPanelLayout>
+//       <div className="flex flex-col h-screen">
+//         <div className="flex-1 p-6 bg-gray-100">
+//           <div className="flex justify-between items-center mb-4">
+//             <h2 className="text-1xl">Delivery Boys List</h2>
+//             <Button
+//               onClick={showAddModal}
+//               style={{
+//                 backgroundColor: '#1C84C6',
+//                 color: 'white',
+//                 marginBottom: '16px',
+//               }}
+//             >
+//               Add Delivery Boy
+//             </Button>
+//           </div>
+
+//           {/* Ant Design Table */}
+//           <Table
+//             columns={columns}
+//             dataSource={sortedDeliveryBoys.slice(
+//               (currentPage - 1) * entriesPerPage,
+//               currentPage * entriesPerPage
+//             )}
+//             rowKey="id"
+//             loading={loading}
+//             pagination={{
+//               pageSize: entriesPerPage,
+//               current: currentPage,
+//               total: sortedDeliveryBoys.length,
+//               onChange: handlePaginationChange,
+//             }}
+//             scroll={{ x: true }}
+//           />
+
+
+//           {/* Add/Edit Modal */}
+//           <Modal
+//             title={currentRecord ? "Edit Delivery Boy" : "Add Delivery Boy"}
+//             visible={isAddModalOpen || isEditModalOpen}
+//             onCancel={handleCancel}
+//             footer={null}
+//           >
+//             <Form
+//               form={form}
+//               layout="vertical"
+//               onFinish={onFinish}
+//               initialValues={{ isActive: false }}
+//             >
+//               <Row gutter={[16, 16]}>
+//                 <Col xs={24} sm={12}>
+//                   <Form.Item
+//                     label="Name"
+//                     name="deliveryBoyName"
+//                     rules={[{ required: true, message: "Please enter name" }]}
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 </Col>
+//                 <Col xs={24} sm={12}>
+//                   <Form.Item
+//                     label="Mobile"
+//                     name="deliveryBoyMobile"
+//                     rules={[{ required: true, message: "Please enter mobile number" }]}
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 </Col>
+//               </Row>
+//               <Row gutter={[16, 16]}>
+//                 <Col xs={24} sm={12}>
+//                   <Form.Item
+//                     label="Email"
+//                     name="deliveryBoyEmail"
+//                     rules={[{ required: true, message: "Please enter email" }]}
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 </Col>
+//                 <Col xs={24} sm={12}>
+//                   <Form.Item
+//                     label="Alt Contact"
+//                     name="deliveryBoyAltContact"
+//                     rules={[{ required: true, message: "Please enter alternate contact" }]}
+//                   >
+//                     <Input />
+//                   </Form.Item>
+//                 </Col>
+//               </Row>
+//               <Form.Item
+//                 label="Address"
+//                 name="deliveryBoyAddress"
+//                 rules={[{ required: true, message: "Please enter address" }]}
+//               >
+//                 <Input.TextArea rows={4} />
+//               </Form.Item>
+//               <Form.Item label="Status" name="isActive" valuePropName="checked">
+//                 <Switch />
+//               </Form.Item>
+//               <Form.Item
+//                 label="Photo"
+//                 name="deliveryBoyPhoto"
+//                 valuePropName="fileList"
+//               >
+//                 <Upload beforeUpload={() => false}>
+//                   <Button>Select File</Button>
+//                 </Upload>
+//               </Form.Item>
+//               <Form.Item>
+//                 <Button
+//                   type="primary"
+//                   htmlType="submit"
+//                   style={{
+//                     backgroundColor: "#1C84C6",
+//                     color: "white",
+//                   }}
+//                 >
+//                   Submit
+//                 </Button>
+//               </Form.Item>
+//             </Form>
+//           </Modal>
+//         </div>
+//       </div>
+//     </AdminPanelLayout>
+//   );
+// };
+
+// export default DeliveryBoyList;

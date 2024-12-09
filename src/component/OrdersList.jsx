@@ -1,10 +1,38 @@
 import AdminPanelLayout from "./AdminPanelLayout";
-import React, { useState } from 'react';
-import { Table, DatePicker, Select, Button, message } from 'antd';
+import React, { useState,useRef } from 'react';
+import { Table, DatePicker, Select,Row, Col,Button, message } from 'antd';
 import axios from 'axios';
+import moment from 'moment'; 
+
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const { RangePicker } = DatePicker;
 const accessToken = localStorage.getItem('accessToken');
+const {Option }= Select;
+
+
+const OrdersList = () => {
+  const [dateRange, setDateRange] = useState([]);
+  const [orderStatus, setOrderStatus] = useState('All');
+  const [orderData, setOrderData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [toDate, setToDate] = useState(moment()); 
+  const [fromDate, setFromDate] = useState(moment()); 
+
+  const handleDateChange = (dates) => setDateRange(dates);
+  const handleStatusChange = (value) => setOrderStatus(value);
+  // Handle date change for From Date
+  const handleFromDateChange = (date) => {
+    setFromDate(date);
+  };
+
+  // Handle date change for To Date
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
 
 // Define table columns
 const columns = [
@@ -17,16 +45,16 @@ const columns = [
   //   render: (text) => text || 'N/A',align:'center'
   // },
 
-  { title: 'Grand Total', dataIndex: 'grandTotal', key: 'grandTotal', align:'center' },
+  { title: 'G T', dataIndex: 'grandTotal', key: 'grandTotal', align:'center' },
   {
-    title: 'Payment Type',
+    title: 'P T',
     dataIndex: 'paymentType',
     key: 'paymentType',
     align:'center',
     render: (type) => (type === 1 ? 'ONLINE' : type === 2 ? 'COD' : 'Other'),
   },
   {
-    title: 'Payment Status',
+    title: 'P S',
     dataIndex: 'paymentStatus',
     key: 'paymentStatus',
     render: (status) => status || 'Pending',
@@ -57,100 +85,211 @@ const columns = [
     align:'center',
     render: () => (
       <>
-        <Button type="link">View</Button>
-        <Button type="link">Print</Button>
+        <Button type="link"  style={{
+              backgroundColor: "#23C6C8",
+              color: 'white',
+              padding:"2",
+              margin:"2"
+             
+            }}>View</Button>
+        <Button    onClick={handleDownloadPDF} type="link"  style={{
+              backgroundColor: "#23C6C8",
+              color: 'white',
+          
+            }}>Print</Button>
       </>
     ),
   },
 ];
 
-const OrdersList = () => {
-  const [dateRange, setDateRange] = useState([]);
-  const [orderStatus, setOrderStatus] = useState('All');
-  const [orderData, setOrderData] = useState([]);
-  const [loading, setLoading] = useState(false);
+const tableRef = useRef();
 
-  const handleDateChange = (dates) => setDateRange(dates);
-  const handleStatusChange = (value) => setOrderStatus(value);
+const handleDownloadPDF = () => {
+  const doc = new jsPDF();
+  const tableColumn = ["Order ID", "Name", "Email", "Phone"];
+  const tableRows = [];
 
-  const fetchOrderDetails = async () => {
-    if (!accessToken) {
-      message.error('User not authenticated. Please log in.');
-      return;
-    }
-    if (!dateRange || dateRange.length !== 2) {
-      message.warning('Please select a valid date range.');
-      return;
-    }
+  // Convert data source to rows
+  orderData.forEach((item) => {
+    const row = [item.orderId, item.name, item.email, item.phone];
+    tableRows.push(row);
+  });
 
-    const startDate = dateRange[0].format('YYYY-MM-DD');
-    const endDate = dateRange[1].format('YYYY-MM-DD');
-    const statusValue = orderStatus !== 'All' ? orderStatus : undefined;
+  // Add the table to PDF
+  doc.autoTable({
+    head: [tableColumn],
+    body: tableRows,
+  });
 
-    try {
-      setLoading(true);
-      const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/date-range`, {
-        params: { startDate, endDate, status: statusValue },
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+  // Save the PDF
+  doc.save("OrderData.pdf");
+};
 
-      console.log('API Response:', response.data); // Confirm the structure of response data
 
-      if (response.status === 200) {
-        let orders = response.data;
+const fetchOrderDetails = async () => {
+  if (!accessToken) {
+    message.error('User not authenticated. Please log in.');
+    return;
+  }
 
-        // Filter results based on status if specified
-        if (statusValue) {
-          orders = orders.filter(order => order.orderStatus === statusValue);
-        }
+  // Ensure both dates are selected
+  if (!fromDate || !toDate) {
+    message.error('Please select a valid date range.');
+    return;
+  }
 
-        setOrderData(orders);
-        message.success('Data fetched successfully');
-      } else {
-        message.error('No data found');
+  // Ensure the fromDate is before the toDate
+  if (fromDate.isAfter(toDate)) {
+    message.error('From date cannot be later than To date.');
+    return;
+  }
+
+  const startDate = fromDate.format('YYYY-MM-DD');
+  const endDate = toDate.format('YYYY-MM-DD');
+  const statusValue = orderStatus !== 'All' ? orderStatus : undefined;
+
+  try {
+    setLoading(true);
+    const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/date-range`, {
+      params: { startDate, endDate, status: statusValue },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    console.log('API Response:', response.data); // Confirm the structure of response data
+
+    if (response.status === 200) {
+      let orders = response.data;
+
+      // Filter results based on status if specified
+      if (statusValue) {
+        orders = orders.filter(order => order.orderStatus === statusValue);
       }
-    } catch (error) {
-      console.error('Error fetching order data:', error);
-      message.error('An error occurred while fetching data');
-    } finally {
-      setLoading(false);
+
+      setOrderData(orders);
+      message.success('Data fetched successfully');
+    } else {
+      message.error('No data found');
     }
+  } catch (error) {
+    console.error('Error fetching order data:', error);
+    message.error('An error occurred while fetching data');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Handle change in the number of entries per page
+  const handleEntriesPerPageChange = (value) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
   };
-
-
   return (
     <AdminPanelLayout>
       <div>
-        <h2>Orders List</h2>
-        <div style={{ marginBottom: 16, display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+       
+      <div className="">
+      <Row gutter={16}>
+        <Col span={6}>
+        <label>Order Status</label>
           <Select
-            style={{ width: 150 }}
+            style={{ width: '100%' }}
             value={orderStatus}
             onChange={handleStatusChange}
           >
-            <Select.Option value="All">All</Select.Option>
-            <Select.Option value="0">InComplete</Select.Option>
-            <Select.Option value="1">Order Placed</Select.Option>
-            <Select.Option value="2">Order Accepetd</Select.Option>
-            <Select.Option value="3">Order Picked</Select.Option>
-            <Select.Option value="4">Order Delivered</Select.Option>
-            <Select.Option value="5">Order Rejected</Select.Option>
-            <Select.Option value="6">Order Canceled</Select.Option>
+            <Option value="All">All</Option>
+            <Option value="0">InComplete</Option>
+            <Option value="1">Order Placed</Option>
+            <Option value="2">Order Accepted</Option>
+            <Option value="3">Order Picked</Option>
+            <Option value="4">Order Delivered</Option>
+            <Option value="5">Order Rejected</Option>
+            <Option value="6">Order Canceled</Option>
           </Select>
-          <RangePicker onChange={handleDateChange} style={{ flex: 1 }} />
-          <Button type="primary" onClick={fetchOrderDetails} loading={loading}>
+        </Col>
+
+        <Col span={6}>
+          <label
+            htmlFor="from_date"
+            style={{ textAlign: 'center' }}
+            className="control-label"
+          >
+            From&nbsp;Date
+          </label>
+          <DatePicker
+            value={fromDate}
+            onChange={handleFromDateChange}
+           format="YYYY-MM-DD"
+            style={{ width: '100%' }}
+          />
+        </Col>
+
+        <Col span={6}>
+          <label
+            htmlFor="to_date"
+            style={{ textAlign: 'center' }}
+            className="control-label"
+          >
+            To&nbsp;Date
+          </label>
+          <DatePicker
+            value={toDate}
+            onChange={handleToDateChange}
+            format="YYYY-MM-DD"
+            style={{ width: '100%' }}
+          />
+        </Col>
+
+        <Col span={6} style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+          <Button
+            style={{
+              backgroundColor: '#1AB394',
+              color: 'white',
+            }}
+            onClick={fetchOrderDetails}
+            loading={loading}
+          >
             Get Data
           </Button>
-          <Button type="default" disabled>
+
+          <Button
+            style={{
+              backgroundColor: '#1AB394',
+              color: 'white',
+            }}
+            disabled
+          >
             Export (Coming Soon)
           </Button>
-        </div>
+        </Col>
+      </Row>
+    </div>
+        <Row justify="space-between" align="middle" className="mb-4">
+<Col>
+<h2 className="text-xl font-bold mb-2 sm:mb-0">Orders List</h2>
+          </Col>
+          <Col >
+          Show{' '}
+          <Select
+            value={entriesPerPage}
+            onChange={handleEntriesPerPageChange}
+            style={{ width: 70 }}
+          >
+            <Option value={5}>5</Option>
+            <Option value={10}>10</Option>
+            <Option value={20}>20</Option>
+          </Select>
+          {' '}entries 
+        </Col>
+        </Row>
         <Table
+       
           columns={columns}
           dataSource={orderData}
           loading={loading}
           rowKey="orderId"
           scroll={{ x: '100%' }}
+          pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
+          // pagination={false}
         />
       </div>
     </AdminPanelLayout>
@@ -158,3 +297,5 @@ const OrdersList = () => {
 };
 
 export default OrdersList;
+
+
