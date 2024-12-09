@@ -135,6 +135,7 @@ const handleSearchChange = (e) => {
         dataSource={filterSubscriberDetails}
         loading={loading}
         rowKey="paymentId"
+        bordered
         scroll={{ x: '100%' }}
         pagination={{
           pageSize: entriesPerPage,

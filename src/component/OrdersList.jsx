@@ -3,10 +3,10 @@ import React, { useState,useRef } from 'react';
 import { Table, DatePicker, Select,Row, Col,Button, message } from 'antd';
 import axios from 'axios';
 import moment from 'moment'; 
-
+import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-
+import { AiOutlineDownload } from "react-icons/ai";
 const { RangePicker } = DatePicker;
 const accessToken = localStorage.getItem('accessToken');
 const {Option }= Select;
@@ -33,7 +33,90 @@ const OrdersList = () => {
   const handleToDateChange = (date) => {
     setToDate(date);
   };
-
+  const handleDownloadPDF = (orderId, orderData) => {
+    // Find the specific order by orderId
+    const specificOrder = orderData.find((order) => order.orderId === orderId);
+  
+    if (!specificOrder) {
+      message.error("Order not found.");
+      return;
+    }
+  
+    const pdf = new jsPDF();
+  
+    // Add title with better formatting
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor("#4CAF50"); // Green color for the title
+    pdf.text(`Order Details`, 14, 20);
+    pdf.setFontSize(16);
+    pdf.setTextColor("#000000");
+    pdf.text(`Order ID: ${specificOrder.orderId}`, 14, 30);
+  
+    // Add a separator line for better structure
+    pdf.setDrawColor(150);
+    pdf.line(14, 35, 200, 35);
+  
+    // Define row-wise data
+    const rows = [
+      ["Field", "Value"],
+      ["Order ID", specificOrder.orderId || "N/A"],
+      ["Order Date", specificOrder.orderDate || "N/A"],
+      ["Grand Total", `$${specificOrder.grandTotal?.toFixed(2) || "N/A"}`],
+      [
+        "Payment Type",
+        specificOrder.paymentType === 1
+          ? "ONLINE"
+          : specificOrder.paymentType === 2
+          ? "COD"
+          : "Other",
+      ],
+      [
+        "Order Status",
+        (() => {
+          const statusMap = {
+            "0": "Incomplete",
+            "1": "Order Placed",
+            "2": "Order Accepted",
+            "3": "Order Picked",
+            "4": "Order Delivered",
+            "5": "Order Rejected",
+            "6": "Order Canceled",
+          };
+          return statusMap[specificOrder.orderStatus] || "Pending";
+        })(),
+      ],
+    ];
+  
+    // Add table with enhanced styles
+    pdf.autoTable({
+      body: rows,
+      startY: 40,
+      theme: "striped",
+      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+      bodyStyles: { fontSize: 10, textColor: "#333333" },
+      alternateRowStyles: { fillColor: "#f9f9f9" },
+      columnStyles: {
+        0: { cellWidth: 70, fontStyle: "bold" }, // First column for field names
+        1: { cellWidth: 110 }, // Second column for values
+      },
+    });
+  
+    // Add footer
+    const pageHeight = pdf.internal.pageSize.height;
+    pdf.setFontSize(10);
+    pdf.setTextColor("#555555");
+    pdf.text(
+      `Generated on: ${new Date().toLocaleDateString()}`,
+      14,
+      pageHeight - 10
+    );
+  
+    // Save the PDF
+    pdf.save(`Order_${specificOrder.orderId}.pdf`);
+  };
+  
+  
 // Define table columns
 const columns = [
   { title: 'Order Id', dataIndex: 'orderId', key: 'orderId',align:'center' },
@@ -83,7 +166,7 @@ const columns = [
     title: 'Action',
     key: 'action',
     align:'center',
-    render: () => (
+    render: (order) => (
       <>
         <Button type="link"  style={{
               backgroundColor: "#23C6C8",
@@ -92,11 +175,17 @@ const columns = [
               margin:"2"
              
             }}>View</Button>
-        <Button    onClick={handleDownloadPDF} type="link"  style={{
-              backgroundColor: "#23C6C8",
-              color: 'white',
-          
-            }}>Print</Button>
+
+<Button
+  onClick={() => handleDownloadPDF(order.orderId, orderData)} // Pass orderId and data
+  type="link"
+  style={{
+    backgroundColor: "#23C6C8",
+    color: "white",
+  }}
+>
+  Print
+</Button>
       </>
     ),
   },
@@ -104,27 +193,74 @@ const columns = [
 
 const tableRef = useRef();
 
-const handleDownloadPDF = () => {
-  const doc = new jsPDF();
-  const tableColumn = ["Order ID", "Name", "Email", "Phone"];
-  const tableRows = [];
+// const handleDownloadPDF = () => {
+//   const doc = new jsPDF();
+//   const tableColumn = ["Order ID", "Order Date","Grand Total","Payment Type", "Order Status"];
+//   const tableRows = [];
 
-  // Convert data source to rows
-  orderData.forEach((item) => {
-    const row = [item.orderId, item.name, item.email, item.phone];
-    tableRows.push(row);
-  });
+//   // Convert data source to rows
+//   orderData.forEach((item) => {
+//     const row = [item.orderId, item.orderDate, item.grandTotal,item.paymentType, item.orderStatus];
+//     tableRows.push(row);
+//   });
 
-  // Add the table to PDF
-  doc.autoTable({
-    head: [tableColumn],
-    body: tableRows,
-  });
+//   // Add the table to PDF
+//   doc.autoTable({
+//     head: [tableColumn],
+//     body: tableRows,
+//   });
 
-  // Save the PDF
-  doc.save("OrderData.pdf");
+//   // Save the PDF
+//   doc.save("OrderData.pdf");
+// };
+const handleDownloadExcel = (orderData) => {
+  // Ensure orderData is an array
+  const data = Array.isArray(orderData) ? orderData : [];
+
+  // Check if data is empty
+  if (data.length === 0) {
+    console.error("No order data available for download.");
+    return; // Exit the function
+  }
+
+  // Prepare data for Excel sheet
+  const rows = data.map((item) => ({
+    "Order ID": item.orderId || "N/A",
+    "Order Date": item.orderDate || "N/A",
+    "Grand Total": item.grandTotal || "N/A",
+    "Payment Type": item.paymentType
+      ? item.paymentType === 1
+        ? "ONLINE"
+        : item.paymentType === 2
+        ? "COD"
+        : "Other"
+      : "Other",
+    "Order Status": item.orderStatus
+      ? (() => {
+          const statusMap = {
+            "0": "Incomplete",
+            "1": "Order Placed",
+            "2": "Order Accepted",
+            "3": "Order Picked",
+            "4": "Order Delivered",
+            "5": "Order Rejected",
+            "6": "Order Canceled",
+          };
+          return statusMap[item.orderStatus] || "Pending";
+        })()
+      : "N/A",
+  }));
+
+  // Create a new workbook and add data to a worksheet
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(rows);
+
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Order Data");
+
+  // Generate and download the Excel file
+  XLSX.writeFile(workbook, "OrderData.xlsx");
 };
-
 
 const fetchOrderDetails = async () => {
   if (!accessToken) {
@@ -251,15 +387,23 @@ const fetchOrderDetails = async () => {
             Get Data
           </Button>
 
-          <Button
-            style={{
-              backgroundColor: '#1AB394',
-              color: 'white',
-            }}
-            disabled
-          >
-            Export (Coming Soon)
-          </Button>
+         
+
+<Button
+  onClick={() => handleDownloadExcel(orderData)}
+  style={{
+    backgroundColor: "#1c84c6",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px", // Space between icon and text
+  }}
+>
+  <AiOutlineDownload style={{ fontSize: "1.2rem" }} />
+  Download XLSX
+</Button>
+
         </Col>
       </Row>
     </div>
@@ -287,6 +431,7 @@ const fetchOrderDetails = async () => {
           dataSource={orderData}
           loading={loading}
           rowKey="orderId"
+          bordered
           scroll={{ x: '100%' }}
           pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
           // pagination={false}

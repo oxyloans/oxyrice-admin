@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Button, Form, Select, Row, Col, Input, notification } from "antd";
+import { Table, Modal, Button, Form, Input, notification, message, Select, Row, Col } from "antd";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
+
 const { Option } = Select;
 
 const SubscriptionPlans = () => {
@@ -10,22 +11,21 @@ const SubscriptionPlans = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [form] = Form.useForm();
-  const accessToken  = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem('accessToken');
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredPlans, setFilteredPlans] = useState([]);
+  const [selectedSubscription, setSelectedSubscription] = useState(null); // Track selected plan for update
 
   // Fetch all plans
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "https://meta.oxyloans.com/api/erice-service/wallet/getAllPlans",{
-          headers:{
-            Authorization:`Bearer ${accessToken}`
-          }
-        }
-      );
+      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/wallet/getAllPlans", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       setPlans(response.data || []);
       setFilteredPlans(response.data || []); // Initially set filtered plans
     } catch (error) {
@@ -44,7 +44,7 @@ const SubscriptionPlans = () => {
       const payload = {
         active: true,
         getAmount: values.getAmount,
-        limitAmount: values.limitAmount ,
+        limitAmount: values.limitAmount,
         payAmount: values.payAmount,
       };
       await axios.post(
@@ -70,46 +70,83 @@ const SubscriptionPlans = () => {
     }
   };
 
+  // Update plan
+  const updatePlan = async (values) => {
+    if (selectedSubscription) {
+      try {
+        await axios.patch(
+          "https://meta.oxyloans.com/api/erice-service/subscription-plans/updatePlans",
+          {
+            planId: selectedSubscription.planId,
+            getAmount: values.getAmount,
+            limitAmount: values.limitAmount,
+            payAmount: values.payAmount,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        message.success("Subscription Plan data updated successfully");
+        fetchPlans();
+        setIsModalVisible(false);
+        form.resetFields();
+      } catch (error) {
+        message.error("Error updating item: " + error.message);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchPlans();
   }, []);
 
-  // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
 
-// Handle search change
-const handleSearchChange = (e) => {
-  const value = e.target.value.toLowerCase().trim(); // Normalize input
-  setSearchTerm(value);
+  // Handle search change
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // Normalize input
+    setSearchTerm(value);
 
-  if (value) {
-    // Filter plans where the search term matches specific fields
-    const filtered = plans.filter(plan =>
-      ['planId', 'getAmount', 'limitAmount', 'amount'].some(key =>
-        plan[key]?.toString().toLowerCase() === value // Exact match for each field
-      )
-    );
+    if (value) {
+      // Filter plans where the search term matches specific fields
+      const filtered = plans.filter(plan =>
+        ['planId', 'getAmount', 'limitAmount', 'amount'].some(key =>
+          plan[key]?.toString().toLowerCase().includes(value) // Exact match for each field
+        )
+      );
 
-    setFilteredPlans(filtered); // Update with filtered plans
-  } else {
-    setFilteredPlans(plans); // Show all plans when search term is empty
-  }
-};
+      setFilteredPlans(filtered); // Update with filtered plans
+    } else {
+      setFilteredPlans(plans); // Show all plans when search term is empty
+    }
+  };
 
+  const showUpdateModal = (item) => {
+    setSelectedSubscription(item);
+    form.setFieldsValue({
+      getAmount: item.getAmount,
+      limitAmount: item.limitAmount,
+      payAmount: item.amount,
+    });
+    setIsModalVisible(true);
+  };
 
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setSelectedSubscription(null); // Clear selected subscription on modal close
+    form.resetFields(); // Reset form fields on cancel
+  };
 
-  
-  // Table columns
   const columns = [
     {
       title: 'S.NO',
       key: 'serialNo',
-      render: (text, record, index) => (
-        index + 1 + (currentPage - 1) * entriesPerPage
-      ),
+      render: (text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage,
       align: 'center',
     },
     {
@@ -141,7 +178,7 @@ const handleSearchChange = (e) => {
       dataIndex: "active",
       key: "active",
       align: 'center',
-      render: (isActive, record) => (
+      render: (isActive) => (
         <p
           style={{
             backgroundColor: isActive ? '#EC4758' : '#1C84C6',
@@ -154,46 +191,34 @@ const handleSearchChange = (e) => {
             lineHeight: '1.5',
             cursor: 'pointer',
           }}
-          // onClick={() => updatePlanStatus(record.planId, isActive)}
         >
           {isActive ? 'Inactive' : 'Active'}
         </p>
       ),
     },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (text, item) => (
+        <Button
+          onClick={() => showUpdateModal(item)}
+          style={{
+            backgroundColor: "#1AB394",
+            color: 'white',
+          }}
+        >
+          Edit
+        </Button>
+      ),
+    },
   ];
-
-  // Toggle plan status (Active/Inactive)
-  const updatePlanStatus = async (planId, isActive) => {
-    try {
-      const payload = { active: !isActive };
-      await axios.patch(
-        `https://meta.oxyloans.com/api/erice-service/wallet/subscriptionPlans/${planId}`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      notification.success({
-        message: `Plan ${isActive ? 'deactivated' : 'activated'} successfully!`,
-      });
-      fetchPlans(); // Refresh the table
-    } catch (error) {
-      notification.error({
-        message: "Failed to update plan status",
-        description: error.message,
-      });
-    }
-  };
 
   return (
     <AdminPanelLayout>
       <div className="container">
         <div className="flex justify-between items-center mb-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-        <h2 className="text-xl font-bold mb-2 sm:mb-0">Subscription Plans</h2>
-      </div>
+          <h2 className="text-xl font-bold mb-2">Subscription Plans</h2>
           <Button
             type="primary"
             onClick={() => setIsModalVisible(true)}
@@ -225,7 +250,6 @@ const handleSearchChange = (e) => {
           <Col>
             Search:{' '}
             <Input
-             
               value={searchTerm}
               onChange={handleSearchChange}
               style={{ width: 150 }}
@@ -246,13 +270,13 @@ const handleSearchChange = (e) => {
         />
 
         <Modal
-          title="Add New Plan"
+          title={selectedSubscription ? "Update Plan" : "Add New Plan"}
           visible={isModalVisible}
-          onCancel={() => setIsModalVisible(false)}
+          onCancel={handleCancel}
           onOk={() => form.submit()}
-          okText="Add Plan"
+          okText={selectedSubscription ? "Update Plan" : "Add Plan"}
         >
-          <Form form={form} onFinish={addPlan} layout="vertical">
+          <Form form={form} onFinish={selectedSubscription ? updatePlan : addPlan} layout="vertical">
             <Form.Item
               label="Get Amount"
               name="getAmount"

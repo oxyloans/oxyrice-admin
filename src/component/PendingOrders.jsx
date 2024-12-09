@@ -2,6 +2,8 @@ import AdminPanelLayout from "./AdminPanelLayout";
 import React, { useState,useRef, useEffect } from 'react';
 import { Table, Button, message,Row,Col, Select } from 'antd';
 import axios from 'axios';
+import * as XLSX from "xlsx";
+import { AiOutlineDownload } from "react-icons/ai";
 const{Option }=Select;
 
 const accessToken = localStorage.getItem('accessToken');
@@ -105,8 +107,6 @@ const columns = [
       if (response.status === 200) {
         setOrderData(response.data);
         message.success('Data fetched successfully');
-      } else {
-        message.error('No data found');
       }
     } catch (error) {
       console.error('Error fetching order data:', error);
@@ -119,14 +119,73 @@ const columns = [
   useEffect(() => {
     fetchOrderDetails();
   }, []);
+
+
+  const handleDownloadExcel = (orderData) => {
+    // Ensure orderData is an array
+    const data = Array.isArray(orderData) ? orderData : [];
+  
+    // Check if data is empty
+    if (data.length === 0) {
+      console.error("No order data available for download.");
+      return; // Exit the function
+    }
+  
+    // Prepare data for Excel sheet
+    const rows = data.map((item) => ({
+      "Order ID": item.orderId || "N/A",
+      "Order Date": item.orderDate || "N/A",
+      "Grand Total": item.grandTotal || "N/A",
+      "Payment Type": item.paymentType
+        ? item.paymentType === 1
+          ? "ONLINE"
+          : item.paymentType === 2
+          ? "COD"
+          : "Other"
+        : "Other",
+      "Order Status": item.orderStatus
+        ? (() => {
+            const statusMap = {
+              "0": "Incomplete",
+              "1": "Order Placed",
+              "2": "Order Accepted",
+              "3": "Order Picked",
+              "4": "Order Delivered",
+              "5": "Order Rejected",
+              "6": "Order Canceled",
+            };
+            return statusMap[item.orderStatus] || "Pending";
+          })()
+        : "N/A",
+    }));
+  
+    // Create a new workbook and add data to a worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+  
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Order Data");
+  
+    // Generate and download the Excel file
+    XLSX.writeFile(workbook, "OrderData.xlsx");
+  };
+  
   return (
     <AdminPanelLayout>
       <div  ref={printRef}>
-       
-        <Row justify="space-between" align="middle" className="mb-4">
+
+              
+
+
+<Row justify="space-between" align="middle" className="mb-4">
 <Col>
 <h2 className="text-xl font-bold mb-2 sm:mb-0">Return Pending List</h2>
           </Col>
+         
+          </Row>
+       
+        <Row justify="space-between" align="middle" className="mb-4">
+
           <Col>
           Show{' '}
           <Select
@@ -140,6 +199,22 @@ const columns = [
           </Select>
           {' '}entries 
         </Col>
+        <Col>
+        <Button
+  onClick={() => handleDownloadExcel(orderData)}
+  style={{
+    backgroundColor: "#1c84c6",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px", // Space between icon and text
+  }}
+>
+  <AiOutlineDownload style={{ fontSize: "1.2rem" }} />
+  Generate Excel
+</Button>
+        </Col>
         </Row>
         <Table
           columns={columns}
@@ -147,6 +222,7 @@ const columns = [
           loading={loading}
           rowKey="orderId"
           scroll={{ x: '100%' }}
+          bordered
           className="border"
           pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
         />

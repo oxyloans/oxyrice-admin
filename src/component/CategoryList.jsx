@@ -309,12 +309,13 @@ const CategoryList = () => {
             pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
             scroll={{ x: 1000 }}
             size="middle" // Use a middle size for better responsiveness
+            bordered
           >
             <Table.Column title="S.No" render={(text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage}
               align="center"/>
             {/* <Table.Column title="Category Id" dataIndex="id" align="center"/> */}
             <Table.Column title="Category Type" dataIndex="categoriesType" align="center" />
-            <Table.Column title="Category Name" dataIndex="categoryName" />
+            <Table.Column title="Category Name"  align="center" dataIndex="categoryName" />
        
             <Table.Column
             title="Category Logo"
@@ -362,6 +363,7 @@ const CategoryList = () => {
             />
             <Table.Column
           title="Action"
+           align="center"
           render={(text, record) => (
             <span>
             
@@ -476,8 +478,7 @@ const CategoryList = () => {
       title="Add New Item"
       visible={isAddItemModalVisible}
       onCancel={closeAddItemModal}
-      onOk={() => form.submit()}
-      okText="Save"
+      footer={null} 
       destroyOnClose
     >
       <Form onFinish={handleAddItem} layout="vertical">
@@ -489,16 +490,25 @@ const CategoryList = () => {
           <Input placeholder="Enter the item name" />
         </Form.Item>
 
-        <Form.Item label="Logo">
-          <Upload
-            beforeUpload={() => false} // Prevent automatic upload
-            listType="picture"
-            maxCount={1}
-            onChange={({ fileList }) => handleFileChange(fileList)} // Handle file change
-          >
-            <Button icon={<UploadOutlined />}>Upload Logo</Button>
-          </Upload>
-        </Form.Item>
+        <Form.Item
+  label="Item Logo"
+  name="itemLogo"
+  rules={[
+    { 
+      required: true, 
+      message: "Please upload the item logo." 
+    }
+  ]}
+>
+  <Upload
+    beforeUpload={() => false} // Prevent automatic upload
+    listType="picture"
+    maxCount={1}
+    onChange={({ fileList }) => handleFileChange(fileList)} // Handle file change
+  >
+    <Button icon={<UploadOutlined />}>Upload Logo</Button>
+  </Upload>
+</Form.Item>
 
         <Form.Item
           name="itemQty"
@@ -514,15 +524,15 @@ const CategoryList = () => {
           rules={[{ required: true, message: "Please select an item unit." }]}
         >
           <Select placeholder="Select Unit">
-            <Select.Option value="kg">kgs</Select.Option>
+            <Select.Option value="kgs">kgs</Select.Option>
             <Select.Option value="ltr">ltr</Select.Option>
             <Select.Option value="pcs">pcs</Select.Option>
           </Select>
         </Form.Item>
 
-        <Form.Item name="tag" label="Tag">
+        {/* <Form.Item name="tag" label="Tag">
           <Input />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>

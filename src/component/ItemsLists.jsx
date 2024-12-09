@@ -223,6 +223,7 @@ const ItemList = () => {
         loading={loading}
         pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
         scroll={{ x: '100%' }} // Enables horizontal scroll on smaller screens
+        bordered
       />
       <Modal
         title="Update Item"

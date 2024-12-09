@@ -223,6 +223,7 @@ const SellerList = () => {
               rowKey="sellerId"
               pagination={false}
               scroll={{ x: 'max-content' }}
+              bordered
             />
             <Row justify="end" className="mt-4">
               <Pagination

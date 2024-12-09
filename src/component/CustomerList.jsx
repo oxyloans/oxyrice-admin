@@ -142,6 +142,7 @@ const CustomerList = () => {
           pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
           rowKey="id"
           scroll={{ x: '100%' }}
+          bordered
           
         >
          <Table.Column title="S.No" render={(text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage}

@@ -345,7 +345,7 @@ function AllQueriesforAdmin() {
   {/* Display Image or PDF Link */}
   {imageUrl && (
     <>
-      <p>Review Image</p>
+      <p>Review Image:</p>
       {imageUrl.endsWith(".pdf") ? (
         <p>
           <strong>File:</strong> {imageUrl.split("/").pop()}{" "}
@@ -374,7 +374,7 @@ function AllQueriesforAdmin() {
     <>
       <div className="mb-4">
         <label htmlFor="fileUpload" style={{ fontWeight: "bold" }}>
-          Upload Document
+          Upload Document:
         </label>
         <input
           type="file"
@@ -389,7 +389,7 @@ function AllQueriesforAdmin() {
 
       <Col xs={24} sm={24}>
         <textarea
-          className={`form-control ml-3 mb-4 ${comments_error ? "border-danger" : ""}`}
+          className={`form-control ml-0 mb-4 ${comments_error ? "border-danger" : ""}`}
           placeholder="Admin Comments"
           style={{ width: "100%", height: "120px", borderRadius: "4px", border: "1px solid #dcdcdc" }}
           rows={4}

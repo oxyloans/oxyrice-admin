@@ -176,6 +176,7 @@ const SlidesList = () => {
             columns={columns}
             pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
             rowKey="id"
+            bordered
             scroll={{ x: isMobile ? '100%' : false }} // Horizontal scroll on smaller screens
           />
      

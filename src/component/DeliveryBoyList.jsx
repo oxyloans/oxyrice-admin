@@ -313,6 +313,7 @@ const fetchDeliveryBoys = async (accessToken) => {
           <Table
   columns={columns}
   dataSource={filteredDeliveryBoys
+  
   //   .slice(
   //   (currentPage - 1) * entriesPerPage,
   //   currentPage * entriesPerPage
@@ -322,6 +323,7 @@ const fetchDeliveryBoys = async (accessToken) => {
   loading={loading}
   pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }} // Change the page size to 5
   scroll={{ x: true }}
+  bordered
 />
 
           {/* Add/Edit Modal */}

@@ -346,7 +346,7 @@ const CouponList = () => {
           
           {fetching ? (
             <div className="flex justify-center items-center h-64">
-              <Spin size="large" />
+              <Spin size="medium" />
             </div>
           ) : (
             <Table
@@ -354,6 +354,8 @@ const CouponList = () => {
               columns={columns}
               rowKey="couponId"
               pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }}
+              scroll={{ x: '100%' }}
+              bordered
             />
           )}
         </div>
@@ -363,6 +365,7 @@ const CouponList = () => {
   visible={isModalVisible}
   onCancel={handleCancel}
   onOk={handleAddCoupon}
+  
   destroyOnClose
   bodyStyle={{
     display: 'grid',

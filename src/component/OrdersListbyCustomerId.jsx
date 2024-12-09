@@ -3,7 +3,10 @@ import { useParams } from 'react-router-dom'; // For capturing params from the U
 import axios from 'axios';
 import { Button, Table, message, Row, Col, Spin,Select } from 'antd';
 import AdminPanelLayout from './AdminPanelLayout'; // Your Admin Panel Layout
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 const {Option} = Select;
+
 const OrdersListDetailsCustomerId = () => {
   const { id } = useParams(); // Capture the customer ID from the URL
   const [orderData, setOrderData] = useState(null); // Store order details
@@ -37,9 +40,9 @@ const OrdersListDetailsCustomerId = () => {
         title: 'Action',
         key: 'action',
         align:'center',
-        render: () => (
+        render: (order) => (
           <>
-            <Button    onClick={''} type="link"  style={{
+            <Button    onClick={()=>handleDownloadPDF(order.orderId,  orderData ) } type="link"  style={{
                   backgroundColor: "#23C6C8",
                   color: 'white',
               
@@ -93,6 +96,90 @@ const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
+
+  const handleDownloadPDF = (orderId, orderData) => {
+    // Find the specific order by orderId
+    const specificOrder = orderData.find((order) => order.orderId === orderId);
+  
+    if (!specificOrder) {
+      message.error("Order not found.");
+      return;
+    }
+  
+    const pdf = new jsPDF();
+  
+    // Add title with better formatting
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor("#4CAF50"); // Green color for the title
+    pdf.text(`Order Details`, 14, 20);
+    pdf.setFontSize(16);
+    pdf.setTextColor("#000000");
+    pdf.text(`Order ID: ${specificOrder.orderId}`, 14, 30);
+  
+    // Add a separator line for better structure
+    pdf.setDrawColor(150);
+    pdf.line(14, 35, 200, 35);
+  
+    // Define row-wise data
+    const rows = [
+      ["Field", "Value"],
+      ["Order ID", specificOrder.orderId || "N/A"],
+      ["Order Date", specificOrder.orderDate || "N/A"],
+      ["Grand Total", `$${specificOrder.grandTotal?.toFixed(2) || "N/A"}`],
+      [
+        "Payment Type",
+        specificOrder.paymentType === 1
+          ? "ONLINE"
+          : specificOrder.paymentType === 2
+          ? "COD"
+          : "Other",
+      ],
+      [
+        "Order Status",
+        (() => {
+          const statusMap = {
+            "0": "Incomplete",
+            "1": "Order Placed",
+            "2": "Order Accepted",
+            "3": "Order Picked",
+            "4": "Order Delivered",
+            "5": "Order Rejected",
+            "6": "Order Canceled",
+          };
+          return statusMap[specificOrder.orderStatus] || "Pending";
+        })(),
+      ],
+    ];
+  
+    // Add table with enhanced styles
+    pdf.autoTable({
+      body: rows,
+      startY: 40,
+      theme: "striped",
+      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+      bodyStyles: { fontSize: 10, textColor: "#333333" },
+      alternateRowStyles: { fillColor: "#f9f9f9" },
+      columnStyles: {
+        0: { cellWidth: 70, fontStyle: "bold" }, // First column for field names
+        1: { cellWidth: 110 }, // Second column for values
+      },
+    });
+  
+    // Add footer
+    const pageHeight = pdf.internal.pageSize.height;
+    pdf.setFontSize(10);
+    pdf.setTextColor("#555555");
+    pdf.text(
+      `Generated on: ${new Date().toLocaleDateString()}`,
+      14,
+      pageHeight - 10
+    );
+  
+    // Save the PDF
+    pdf.save(`Order_${specificOrder.orderId}.pdf`);
+  };
+  
   return (
     <AdminPanelLayout>
       <div>
@@ -101,7 +188,7 @@ const handleEntriesPerPageChange = (value) => {
             <p 
               type="primary" 
               onClick={fetchOrderData} 
-              loading={loading}
+            
             >
               Orders List
 
@@ -122,15 +209,7 @@ const handleEntriesPerPageChange = (value) => {
         </Col>
         </Row>
         
-        {loading ? (
-          <Spin size="medium"/>
-        ) : error ? (
-          <Row justify="center">
-            <Col>
-              <h3>{error}</h3>
-            </Col>
-          </Row>
-        ) : (
+        
           <Table
             columns={columns}
             dataSource={orderData}
@@ -141,7 +220,7 @@ const handleEntriesPerPageChange = (value) => {
             scroll={{ x: 'max-content' }} // Ensure table is scrollable in small screens
             responsive
           />
-        )}
+        
       </div>
     </AdminPanelLayout>
   );
