@@ -8,6 +8,7 @@ import {
   FaTachometerAlt, FaUsers, FaSlideshare, FaBoxOpen, FaStore,
   FaShoppingCart, FaHandsHelping, FaShippingFast, FaReply
 } from 'react-icons/fa';
+import { IoBarChart } from "react-icons/io5";
 import { BiSolidCategory, BiSolidCoupon } from 'react-icons/bi';
 import { IoSettings } from 'react-icons/io5';
 // import './AdminPanel.css';
@@ -82,6 +83,15 @@ const AdminPanelLayout = ({ children }) => {
         { key: "ordersList", label: "Orders List", link: "/orders/orders_list" },
         { key: "returnPendingList", label: "Return Pending List", link: '/orders/return_pending_list' },
         { key: "returnRepliedList", label: "Return Replied List", link: '/orders/return_replied_list' }
+      ]
+    },
+    {
+      key: "reports",
+      label: "Reports",
+      icon: <IoBarChart /> ,
+      dropdownItems: [
+        { key: "item requirements", label: "Item Requiremnts", link: "/reports/item_requirements" },
+       
       ]
     },
     {

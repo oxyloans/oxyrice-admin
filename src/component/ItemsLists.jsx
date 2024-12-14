@@ -159,7 +159,9 @@ const ItemList = () => {
         }}>Edit</Button>
       ),
     },
-  ];const handleSearchChange = (e) => {
+  ];
+  
+  const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
     setSearchTerm(value);
   

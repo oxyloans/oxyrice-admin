@@ -58,7 +58,7 @@ function App() {
             <Route path="/orders/return_pending_list" element={<PendingOrders />} />
             <Route path="/orders/return_replied_list" element={<RepliedList />} />
             <Route path="/slides/slides_list" element={<SlidesList />} />
-            <Route path="/itemrequirements" element={<ItemRequirements />} />
+            <Route path="/reports/item_requirements" element={<ItemRequirements />} />
             <Route path="/refunds" element={<RefundOrders />} />
             <Route path="/orders/report" element={<OrdersReport />} />
             <Route path="/customer/customers_list" element={<CustomerList />} />

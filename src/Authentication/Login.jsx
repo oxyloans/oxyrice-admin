@@ -14,9 +14,8 @@ function Login() {
   const handleLogin = async () => {
     setLoading(true);
     setError(null);
-const payload={
-  email,password
-}
+  
+    // Validation
     if (!email) {
       setError('Please enter your Email');
       setLoading(false);
@@ -27,8 +26,15 @@ const payload={
       setLoading(false);
       return;
     }
-
+  
+    // Prepare the payload
+    const payload = {
+      email,
+      password,
+    };
+  
     try {
+      // Make the API request
       const response = await axios.post(
         'https://meta.oxyloans.com/api/erice-service/user/userEmailPassword',
         payload,
@@ -38,28 +44,33 @@ const payload={
           },
         }
       );
-
+  
+      // Handle successful login
       if (response.data.status === 'Login Successful') {
-        localStorage.setItem('accessToken', response.data.token);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-        localStorage.setItem('userId', response.data.id);
-
+        const { token, refreshToken, id } = response.data;
+  
+        // Store tokens and user details in local storage
+        localStorage.setItem('accessToken', token);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('userId', id);
+  
+        // Notify the user and navigate to the dashboard
         message.success('Login successful!');
         navigate('/dashboard');
       } else {
+        // Handle server error messages
         setError(response.data.errorMessage || 'Invalid Email or Password');
       }
     } catch (error) {
+      // Handle network or server errors
       setError(
-        error.response && error.response.data && error.response.data.message
-          ? error.response.data.message
-          : 'Failed to Login'
+        error.response?.data?.message || 'Failed to Login'
       );
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop the loading indicator
     }
   };
-
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 space-y-2">
       <div className="text-center mb-2">

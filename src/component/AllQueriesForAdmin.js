@@ -251,6 +251,7 @@ function AllQueriesforAdmin() {
                 rowKey="id"
                 pagination={false}
                 bordered
+                scroll={{ x: '100%' }}
               >
                 <Table.Column title="S.no" dataIndex="id" render={(text, record, index) => index + 1} />
                 <Table.Column

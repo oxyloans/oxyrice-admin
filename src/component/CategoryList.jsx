@@ -214,7 +214,9 @@ const CategoryList = () => {
     formData.append("itemName", values.itemName || ""); // Ensure no undefined value
     formData.append("itemQty", values.itemQty || 0); // Default to 0 if quantity is not provided
     formData.append("itemUnit", values.itemUnit || ""); // Default to empty string if unit is not selected
-    formData.append("tag", values.tag || ""); // Default to empty string if tag is undefined
+    formData.append("tag", values.tag || ""); 
+    // Default to empty string if tag is undefined
+    formData.append("itemDescription", values.itemDescription || "")
 
     try {
       // API call to add the item
@@ -530,9 +532,12 @@ const CategoryList = () => {
           </Select>
         </Form.Item>
 
-        {/* <Form.Item name="tag" label="Tag">
+        <Form.Item name="tag" label="Tag"  rules={[{ required: true, message: "Enter the tags" }]}>
           <Input />
-        </Form.Item> */}
+        </Form.Item> 
+      <Form.Item name="itemDescription" label="ItemDescription" rules={[{ required: true, message: "Enter the item description" }]}>
+          <Input />
+        </Form.Item>
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading}>
