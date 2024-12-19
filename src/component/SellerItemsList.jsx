@@ -233,6 +233,7 @@ const SellerItemsList = () => {
           active: true,
           itemId: editingItem.itemId,
           itemMrp: values.itemMrp,
+          itemPrice:values.itemPrice,
           sellerId: sellerId, // Use the sellerId from the URL
         },
         {
@@ -284,9 +285,15 @@ const SellerItemsList = () => {
       align: "center",
     },
     {
-      title: "Current MRP",
+      title: "Item MRP",
       dataIndex: "itemMrp",
       key: "itemMrp",
+      align: "center",
+    },
+     {
+      title: "Item Price",
+      dataIndex: "itemPrice",
+      key: "itemPrice",
       align: "center",
     },
     {
@@ -434,6 +441,13 @@ const SellerItemsList = () => {
                   label="Item MRP"
                   name="itemMrp"
                   rules={[{ required: true, message: "Please enter item MRP" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Item Price"
+                  name="itemPrice"
+                  rules={[{ required: true, message: "Please enter item Price" }]}
                 >
                   <Input />
                 </Form.Item>

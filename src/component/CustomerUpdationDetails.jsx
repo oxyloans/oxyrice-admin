@@ -153,6 +153,16 @@ const CustomerUpdationDetails = () => {
       align: "center",
     },
     {
+      title: "Customer Name",
+      dataIndex: "customerName",
+      align: "center",
+    },
+    {
+      title: "Customer Email",
+      dataIndex: "email",
+      align: "center",
+    },
+    {
       title: "Mobile Number",
       dataIndex: "mobileNumber",
       align: "center",
