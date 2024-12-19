@@ -1,47 +1,57 @@
 import AdminPanelLayout from "./AdminPanelLayout";
-import React, { useState, useEffect } from 'react';
-import { Table, Button, message } from 'antd';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { Table, Button, message } from "antd";
+import axios from "axios";
 
-const accessToken = localStorage.getItem('accessToken');
+const accessToken = localStorage.getItem("accessToken");
 
 // Define table columns
 const columns = [
-  { title: 'Order Id', dataIndex: 'orderId', key: 'orderId', align: 'center' },
-  { title: 'Order Date', dataIndex: 'orderDate', key: 'orderDate', align: 'center' },
-  { title: 'Grand Total', dataIndex: 'grandTotal', key: 'grandTotal', align: 'center' },
+  { title: "Order Id", dataIndex: "orderId", key: "orderId", align: "center" },
   {
-    title: 'Payment Type',
-    dataIndex: 'paymentType',
-    key: 'paymentType',
-    align: 'center',
-    render: (type) => (type === 1 ? 'ONLINE' : type === 2 ? 'COD' : 'NA'),
+    title: "Order Date",
+    dataIndex: "orderDate",
+    key: "orderDate",
+    align: "center",
   },
   {
-    title: 'Payment Status',
-    dataIndex: 'paymentStatus',
-    key: 'paymentStatus',
-    render: (status) => status || 'Pending',
-    align: 'center'
+    title: "Grand Total",
+    dataIndex: "grandTotal",
+    key: "grandTotal",
+    align: "center",
   },
   {
-    title: 'Status',
-    dataIndex: 'orderStatus',
-    key: 'orderStatus',
-    align: 'center',
+    title: "Payment Type",
+    dataIndex: "paymentType",
+    key: "paymentType",
+    align: "center",
+    render: (type) => (type === 1 ? "ONLINE" : type === 2 ? "COD" : "NA"),
+  },
+  {
+    title: "Payment Status",
+    dataIndex: "paymentStatus",
+    key: "paymentStatus",
+    render: (status) => status || "Pending",
+    align: "center",
+  },
+  {
+    title: "Status",
+    dataIndex: "orderStatus",
+    key: "orderStatus",
+    align: "center",
     render: (status) => {
       const statusMap = {
-        '0': 'Incomplete',
-        '4': 'Order Delivered',
-        '6': 'Order Canceled',
+        0: "Incomplete",
+        4: "Order Delivered",
+        6: "Order Canceled",
       };
-      return statusMap[status] || 'Pending';
+      return statusMap[status] || "Pending";
     },
   },
   {
-    title: 'Action',
-    key: 'action',
-    align: 'center',
+    title: "Action",
+    key: "action",
+    align: "center",
     render: () => (
       <>
         <Button type="link">View</Button>
@@ -85,13 +95,13 @@ const ReturnList = () => {
     <AdminPanelLayout>
       <div className="p-4">
         <h2 className="text-1xl mb-6">Return Replied List</h2>
-        
+
         <Table
           columns={columns}
           dataSource={orderData}
           loading={loading}
           rowKey="orderId"
-          scroll={{ x: '100%' }}
+          scroll={{ x: "100%" }}
           className="border rounded-md shadow-sm"
         />
       </div>

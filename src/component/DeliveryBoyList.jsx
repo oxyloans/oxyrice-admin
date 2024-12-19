@@ -1,10 +1,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
-import { Form, Input, Button, Table, Select,message, Switch, Upload, Modal, Row, Col } from 'antd';
+import {
+  Form,
+  Input,
+  Button,
+  Table,
+  Select,
+  message,
+  Switch,
+  Upload,
+  Modal,
+  Row,
+  Col,
+} from "antd";
 
 const { Option } = Select;
-
 
 // **Request Body Model for Add Delivery Boy**
 const createAddDeliveryBoyRequest = (formValues) => {
@@ -15,7 +26,9 @@ const createAddDeliveryBoyRequest = (formValues) => {
     deliveryBoyAltContact: formValues.deliveryBoyAltContact,
     deliveryBoyAddress: formValues.deliveryBoyAddress,
     isActive: formValues.isActive,
-    deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+    deliveryBoyPhoto: formValues.deliveryBoyPhoto
+      ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj
+      : null,
   };
 };
 
@@ -29,7 +42,9 @@ const createUpdateDeliveryBoyRequest = (formValues, userId) => {
     deliveryBoyAltContact: formValues.deliveryBoyAltContact,
     deliveryBoyAddress: formValues.deliveryBoyAddress,
     isActive: formValues.isActive,
-    deliveryBoyPhoto: formValues.deliveryBoyPhoto ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj : null,
+    deliveryBoyPhoto: formValues.deliveryBoyPhoto
+      ? formValues.deliveryBoyPhoto.fileList[0]?.originFileObj
+      : null,
   };
 };
 
@@ -37,15 +52,15 @@ const createUpdateDeliveryBoyRequest = (formValues, userId) => {
 const saveDeliveryBoy = async (requestBody, accessToken) => {
   try {
     await axios.post(
-      'https://meta.oxyloans.com/api/erice-service/deliveryboy/save',
+      "https://meta.oxyloans.com/api/erice-service/deliveryboy/save",
       requestBody,
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
-    message.success('Delivery boy details saved successfully!');
+    message.success("Delivery boy details saved successfully!");
   } catch (error) {
-    throw new Error('Failed to save delivery boy details');
+    throw new Error("Failed to save delivery boy details");
   }
 };
 
@@ -53,15 +68,15 @@ const saveDeliveryBoy = async (requestBody, accessToken) => {
 const updateDeliveryBoy = async (requestBody, accessToken) => {
   try {
     await axios.patch(
-      'https://meta.oxyloans.com/api/erice-service/deliveryboy/update',
+      "https://meta.oxyloans.com/api/erice-service/deliveryboy/update",
       requestBody,
       {
         headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
-    message.success('Delivery boy details updated successfully!');
+    message.success("Delivery boy details updated successfully!");
   } catch (error) {
-    throw new Error('Failed to update delivery boy details');
+    throw new Error("Failed to update delivery boy details");
   }
 };
 
@@ -75,26 +90,23 @@ const DeliveryBoyList = () => {
   const accessToken = localStorage.getItem("accessToken");
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredDeliveryBoys, setFilteredDeliveryBoys] = useState([]);
 
   // API function to fetch delivery boys
-const fetchDeliveryBoys = async (accessToken) => {
-  try {
-    const response = await axios.get(
-      "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
-    );
-    return response.data;
-  
-
-   
-  } catch (error) {
-    throw new Error("Failed to fetch delivery boys");
-  }
-};
+  const fetchDeliveryBoys = async (accessToken) => {
+    try {
+      const response = await axios.get(
+        "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error("Failed to fetch delivery boys");
+    }
+  };
 
   // Fetch delivery boys data on component mount
   useEffect(() => {
@@ -103,10 +115,10 @@ const fetchDeliveryBoys = async (accessToken) => {
       try {
         const data = await fetchDeliveryBoys(accessToken);
         setDeliveryBoys(data);
-        message.success('Data fetched successfully');
-        setFilteredDeliveryBoys(data)
+        message.success("Data fetched successfully");
+        setFilteredDeliveryBoys(data);
       } catch (error) {
-        message.error('Error fetching delivery boys');
+        message.error("Error fetching delivery boys");
       } finally {
         setLoading(false);
       }
@@ -145,7 +157,10 @@ const fetchDeliveryBoys = async (accessToken) => {
 
       if (currentRecord) {
         // Update request body with userId for updating existing delivery boy
-        requestBody = createUpdateDeliveryBoyRequest(values, currentRecord.userId);
+        requestBody = createUpdateDeliveryBoyRequest(
+          values,
+          currentRecord.userId
+        );
         await updateDeliveryBoy(requestBody, accessToken);
       } else {
         // Save new delivery boy request
@@ -158,7 +173,9 @@ const fetchDeliveryBoys = async (accessToken) => {
       const data = await fetchDeliveryBoys(accessToken);
       setDeliveryBoys(data);
     } catch (error) {
-      message.error(error.message || 'Failed to save or update delivery boy details.');
+      message.error(
+        error.message || "Failed to save or update delivery boy details."
+      );
     } finally {
       setLoading(false);
     }
@@ -166,16 +183,14 @@ const fetchDeliveryBoys = async (accessToken) => {
 
   // Table columns for displaying delivery boys
   const columns = [
-    
     {
-      title: 'S.NO',
-      key: 'serialNo',
-      render: (text, record, index) => (
-        index + 1 + (currentPage - 1) * entriesPerPage
-      ),
-      align: 'center',
-   
-    },{
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+    },
+    {
       title: "Name",
       dataIndex: "deliveryBoyName",
       key: "deliveryBoyName",
@@ -213,12 +228,12 @@ const fetchDeliveryBoys = async (accessToken) => {
         <p
           type="default"
           style={{
-            backgroundColor: isActive ? '#1C84C6' : '#ec4758',
-            color: 'white',
-            marginBottom: '16px',
+            backgroundColor: isActive ? "#1C84C6" : "#ec4758",
+            color: "white",
+            marginBottom: "16px",
           }}
         >
-          {isActive ? 'Active' : 'Inactive'}
+          {isActive ? "Active" : "Inactive"}
         </p>
       ),
       align: "center",
@@ -245,29 +260,31 @@ const fetchDeliveryBoys = async (accessToken) => {
   const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase().trim(); // Normalize and trim input for clean matching
     setSearchTerm(value);
-  
+
     if (value) {
       // Filter deliveryBoys based on the search term
-      const filtered = deliveryBoys.filter(deliveryBoy =>
-        (deliveryBoy.deliveryBoyName?.toLowerCase().includes(value)) || // Safe access with optional chaining
-        (deliveryBoy.deliveryBoyEmail?.toLowerCase().includes(value)) || 
-        (deliveryBoy.deliveryBoyMobile?.toLowerCase().includes(value)) || 
-        (deliveryBoy.deliveryBoyAddress?.toLowerCase().includes(value))
+      const filtered = deliveryBoys.filter(
+        (deliveryBoy) =>
+          deliveryBoy.deliveryBoyName?.toLowerCase().includes(value) || // Safe access with optional chaining
+          deliveryBoy.deliveryBoyEmail?.toLowerCase().includes(value) ||
+          deliveryBoy.deliveryBoyMobile?.toLowerCase().includes(value) ||
+          deliveryBoy.deliveryBoyAddress?.toLowerCase().includes(value)
       );
-  
+
       setFilteredDeliveryBoys(filtered); // Update the filtered results
     } else {
       setFilteredDeliveryBoys(deliveryBoys); // Reset to all delivery boys when search term is empty
     }
   };
-  
-  
+
   return (
     <AdminPanelLayout>
       <div className="flex flex-col">
         <div className="flex-1">
           <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold mb-2 sm:mb-0">Delivery Boys List</h2>
+            <h2 className="text-xl font-bold mb-2 sm:mb-0">
+              Delivery Boys List
+            </h2>
             {/* <Button
               onClick={showAddModal}
               disabled
@@ -282,49 +299,50 @@ const fetchDeliveryBoys = async (accessToken) => {
           </div>
 
           <Row justify="space-between" align="middle" className="mb-4">
-        <Col>
-          Show{' '}
-          <Select
-            value={entriesPerPage}
-            onChange={handleEntriesPerPageChange}
-            style={{ width: 70 }}
-          >
-            <Option value={5}>5</Option>
-            <Option value={10}>10</Option>
-            <Option value={20}>20</Option>
-          </Select>
-          {' '}entries 
-        </Col>
+            <Col>
+              Show{" "}
+              <Select
+                value={entriesPerPage}
+                onChange={handleEntriesPerPageChange}
+                style={{ width: 70 }}
+              >
+                <Option value={5}>5</Option>
+                <Option value={10}>10</Option>
+                <Option value={20}>20</Option>
+              </Select>{" "}
+              entries
+            </Col>
 
-        <Col>
-        Search: {' '}
-
-          <Input
-            
-            value={searchTerm}
-            onChange={handleSearchChange}
-            style={{ width: 150 }}
-            
-          />
-        </Col>
-      </Row>
+            <Col>
+              Search:{" "}
+              <Input
+                value={searchTerm}
+                onChange={handleSearchChange}
+                style={{ width: 150 }}
+              />
+            </Col>
+          </Row>
 
           {/* Ant Design Table */}
           <Table
-  columns={columns}
-  dataSource={filteredDeliveryBoys
-  
-  //   .slice(
-  //   (currentPage - 1) * entriesPerPage,
-  //   currentPage * entriesPerPage
-  // )
-}
-  rowKey="id"
-  loading={loading}
-  pagination={{ pageSize: entriesPerPage, onChange: (page) => setCurrentPage(page) }} // Change the page size to 5
-  scroll={{ x: true }}
-  bordered
-/>
+            columns={columns}
+            dataSource={
+              filteredDeliveryBoys
+
+              //   .slice(
+              //   (currentPage - 1) * entriesPerPage,
+              //   currentPage * entriesPerPage
+              // )
+            }
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: entriesPerPage,
+              onChange: (page) => setCurrentPage(page),
+            }} // Change the page size to 5
+            scroll={{ x: true }}
+            bordered
+          />
 
           {/* Add/Edit Modal */}
           <Modal
@@ -349,11 +367,13 @@ const fetchDeliveryBoys = async (accessToken) => {
                     <Input />
                   </Form.Item>
                 </Col>
-                <Col xs={24} sm={12}> 
+                <Col xs={24} sm={12}>
                   <Form.Item
                     label="Mobile"
                     name="deliveryBoyMobile"
-                    rules={[{ required: true, message: "Please enter mobile number" }]}
+                    rules={[
+                      { required: true, message: "Please enter mobile number" },
+                    ]}
                   >
                     <Input />
                   </Form.Item>
@@ -370,18 +390,12 @@ const fetchDeliveryBoys = async (accessToken) => {
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12}>
-                  <Form.Item
-                    label="Alt Contact"
-                    name="deliveryBoyAltContact"
-                  >
+                  <Form.Item label="Alt Contact" name="deliveryBoyAltContact">
                     <Input />
                   </Form.Item>
                 </Col>
               </Row>
-              <Form.Item
-                label="Address"
-                name="deliveryBoyAddress"
-              >
+              <Form.Item label="Address" name="deliveryBoyAddress">
                 <Input.TextArea />
               </Form.Item>
               <Row gutter={[16, 16]}>
@@ -422,9 +436,6 @@ const fetchDeliveryBoys = async (accessToken) => {
 };
 
 export default DeliveryBoyList;
-
-
-
 
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
@@ -561,7 +572,6 @@ export default DeliveryBoyList;
 //   setCurrentPage(page);
 // };
 
-
 //   // Handle form submit for adding or updating delivery boy
 //   const onFinish = async (values) => {
 //     setLoading(true);
@@ -693,7 +703,6 @@ export default DeliveryBoyList;
 //             }}
 //             scroll={{ x: true }}
 //           />
-
 
 //           {/* Add/Edit Modal */}
 //           <Modal

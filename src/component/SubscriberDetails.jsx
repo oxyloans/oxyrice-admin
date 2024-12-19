@@ -3,7 +3,7 @@ import { Button, Form, Input, Upload, notification } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
-const accessToken = localStorage.getItem('accessToken');
+const accessToken = localStorage.getItem("accessToken");
 
 const SubscriberDetails = () => {
   const [uploading, setUploading] = useState(false);
@@ -49,7 +49,8 @@ const SubscriberDetails = () => {
         notification.error({
           message: "Error",
           description:
-            error.response?.data?.error || "An error occurred while saving the category.",
+            error.response?.data?.error ||
+            "An error occurred while saving the category.",
         });
       })
       .finally(() => setUploading(false));
@@ -87,12 +88,7 @@ const SubscriberDetails = () => {
       </Form.Item>
 
       <Form.Item>
-        <Button
-          type="primary"
-          htmlType="submit"
-          loading={uploading}
-         
-        >
+        <Button type="primary" htmlType="submit" loading={uploading}>
           {uploading ? "Saving..." : "Save Category"}
         </Button>
       </Form.Item>

@@ -14,7 +14,7 @@ import {
   FaBoxOpen,
   FaFolder,
   FaBox,
-  FaShippingFast,   // New FontAwesome icons
+  FaShippingFast, // New FontAwesome icons
   FaReply,
   FaExchangeAlt,
   FaChartBar,
@@ -39,7 +39,8 @@ const SidebarItem = ({
         className="flex items-center p-2 rounded-lg hover:bg-gray-700 group text-gray-300"
         onClick={() => toggleDropdown(dropdownName)}
       >
-        <span className="w-5 h-5 text-gray-300">{icon}</span> {/* Icon styling */}
+        <span className="w-5 h-5 text-gray-300">{icon}</span>{" "}
+        {/* Icon styling */}
         <span className="ml-3">{label}</span> {/* Label styling */}
         <span
           className={`ml-auto transform transition-transform duration-200 ${
@@ -54,7 +55,8 @@ const SidebarItem = ({
         to={link} // Use Link instead of a tag
         className="flex items-center p-2 rounded-lg hover:bg-gray-700 group text-gray-300"
       >
-        <span className="w-5 h-5 text-gray-300">{icon}</span> {/* Icon styling */}
+        <span className="w-5 h-5 text-gray-300">{icon}</span>{" "}
+        {/* Icon styling */}
         <span className="ml-3">{label}</span> {/* Label styling */}
       </Link>
     )}
@@ -76,7 +78,6 @@ const SidebarItem = ({
   </li>
 );
 
-
 const Sidebar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
 
@@ -94,7 +95,11 @@ const Sidebar = () => {
       icon: <FaFolder className="inline mr-2" />,
       dropdownName: "categories",
       dropdownItems: [
-        { label: "Category List", icon: <FaBox className="inline mr-2" />, link: '/categorylist' },
+        {
+          label: "Category List",
+          icon: <FaBox className="inline mr-2" />,
+          link: "/categorylist",
+        },
       ],
     },
     {
@@ -102,8 +107,16 @@ const Sidebar = () => {
       icon: <FaUsers />,
       dropdownName: "subscription",
       dropdownItems: [
-        { label: "Subscription Plan List", icon: <FaUser />, link:'/subscriptionplanlist' },
-        { label: "Subscribers List", icon: <FaUser />, link:'/subscriberdetails' },
+        {
+          label: "Subscription Plan List",
+          icon: <FaUser />,
+          link: "/subscriptionplanlist",
+        },
+        {
+          label: "Subscribers List",
+          icon: <FaUser />,
+          link: "/subscriberdetails",
+        },
       ],
     },
     {
@@ -111,8 +124,12 @@ const Sidebar = () => {
       icon: <FaUsers />,
       dropdownName: "users",
       dropdownItems: [
-        { label: "Customer List", icon: <FaUser />,link:'/' },
-        { label: "Delivery Boy List", link: "/delivery-boys", icon: <FaUsers /> },
+        { label: "Customer List", icon: <FaUser />, link: "/" },
+        {
+          label: "Delivery Boy List",
+          link: "/delivery-boys",
+          icon: <FaUsers />,
+        },
       ],
     },
     {
@@ -137,7 +154,7 @@ const Sidebar = () => {
       dropdownName: "sellers",
       dropdownItems: [
         { label: "Sellers List", icon: <FaStore />, link: "/sellerlist" },
-        { label: "Seller Add", icon: <FaShoppingCart />, link: '/selleradd' },
+        { label: "Seller Add", icon: <FaShoppingCart />, link: "/selleradd" },
       ],
     },
     {
@@ -145,7 +162,7 @@ const Sidebar = () => {
       icon: <FaTags />,
       dropdownName: "coupons",
       dropdownItems: [
-        { label: "List Coupons", icon: <FaTags />, link: '/couponlist' },
+        { label: "List Coupons", icon: <FaTags />, link: "/couponlist" },
       ],
     },
     {
@@ -154,8 +171,16 @@ const Sidebar = () => {
       dropdownName: "orders",
       dropdownItems: [
         { label: "Orders List", icon: <FaBox />, link: "/orderslist" },
-        { label: "Return Pending List", icon: <FaShippingFast />, link: '/pendingorders' },
-        { label: "Return Replied List", icon: <FaReply />, link: '/repliedorders' },
+        {
+          label: "Return Pending List",
+          icon: <FaShippingFast />,
+          link: "/pendingorders",
+        },
+        {
+          label: "Return Replied List",
+          icon: <FaReply />,
+          link: "/repliedorders",
+        },
       ],
     },
     {
@@ -163,9 +188,17 @@ const Sidebar = () => {
       icon: <FaFileAlt />,
       dropdownName: "reports",
       dropdownItems: [
-        { label: "Item Requirement", icon: <FaChartBar />, link: '/itemrequirement' },
-        { label: "Refund Orders", icon: <FaExchangeAlt />, link: '/refundorders' },
-        { label: "Orders Report", icon: <FaChartBar />, link: '/ordersreport' },
+        {
+          label: "Item Requirement",
+          icon: <FaChartBar />,
+          link: "/itemrequirement",
+        },
+        {
+          label: "Refund Orders",
+          icon: <FaExchangeAlt />,
+          link: "/refundorders",
+        },
+        { label: "Orders Report", icon: <FaChartBar />, link: "/ordersreport" },
       ],
     },
   ];
@@ -175,7 +208,9 @@ const Sidebar = () => {
       <Header /> {/* Adding the Header component */}
       <aside className="fixed top-14 left-0 z-40 w-64 h-screen p-1 bg-gray-800 text-white ">
         <div className="h-full px-2 py-1 overflow-y-auto">
-          <h2 className="text-md font-bold text-center text-gray-200">E-Commerce Admin</h2>
+          <h2 className="text-md font-bold text-center text-gray-200">
+            E-Commerce Admin
+          </h2>
           <h3 className="text-center text-gray-400">Admin Panel</h3>
           <ul className="space-y-1 font-medium">
             {sidebarItems.map((item, index) => (

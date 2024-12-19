@@ -1,29 +1,11 @@
+import React from "react";
 
-
-
-
-
-
-
-
-
-
-
-import React from 'react';
-
-
-import AdminPanelLayout from './AdminPanelLayout';
+import AdminPanelLayout from "./AdminPanelLayout";
 
 const SellerAdd = () => {
-
- 
-  
-
   return (
     <div>
-    
-<AdminPanelLayout/>
-     
+      <AdminPanelLayout />
     </div>
   );
 };

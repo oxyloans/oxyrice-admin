@@ -13,13 +13,20 @@ const ChangePassword = () => {
     setLoading(true);
 
     try {
-      const response = await axios.patch("http://182.18.139.138:8181/api/change-password", {
-        oldPassword,
-        newPassword,
-      });
-      message.success(response.data.message || "Password changed successfully!");
+      const response = await axios.patch(
+        "http://182.18.139.138:8181/api/change-password",
+        {
+          oldPassword,
+          newPassword,
+        }
+      );
+      message.success(
+        response.data.message || "Password changed successfully!"
+      );
     } catch (error) {
-      message.error(error.response?.data?.message || "Failed to change password");
+      message.error(
+        error.response?.data?.message || "Failed to change password"
+      );
     } finally {
       setLoading(false);
     }
@@ -27,19 +34,20 @@ const ChangePassword = () => {
 
   return (
     <AdminPanelLayout>
-      <Layout style={{ padding: '24px' }}>
+      <Layout style={{ padding: "24px" }}>
         <Content>
           <Row justify="center">
             <Col span={8}>
-              <Form
-                name="changePassword"
-                onFinish={onFinish}
-                layout="vertical"
-              >
+              <Form name="changePassword" onFinish={onFinish} layout="vertical">
                 <Form.Item
                   label="Old Password"
                   name="oldPassword"
-                  rules={[{ required: true, message: "Please input your old password!" }]}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your old password!",
+                    },
+                  ]}
                 >
                   <Input.Password placeholder="Enter old password" />
                 </Form.Item>
@@ -47,7 +55,12 @@ const ChangePassword = () => {
                 <Form.Item
                   label="New Password"
                   name="newPassword"
-                  rules={[{ required: true, message: "Please input your new password!" }]}
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your new password!",
+                    },
+                  ]}
                 >
                   <Input.Password placeholder="Enter new password" />
                 </Form.Item>
@@ -56,13 +69,18 @@ const ChangePassword = () => {
                   label="Confirm New Password"
                   name="confirmPassword"
                   rules={[
-                    { required: true, message: "Please confirm your new password!" },
+                    {
+                      required: true,
+                      message: "Please confirm your new password!",
+                    },
                     ({ getFieldValue }) => ({
                       validator(_, value) {
                         if (!value || getFieldValue("newPassword") === value) {
                           return Promise.resolve();
                         }
-                        return Promise.reject(new Error("The two passwords do not match!"));
+                        return Promise.reject(
+                          new Error("The two passwords do not match!")
+                        );
                       },
                     }),
                   ]}
@@ -71,7 +89,12 @@ const ChangePassword = () => {
                 </Form.Item>
 
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" loading={loading} style={{ width: '100%' }}>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    style={{ width: "100%" }}
+                  >
                     Change Password
                   </Button>
                 </Form.Item>

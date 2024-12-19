@@ -1,8 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Form, Input, Button, message, Pagination, Table, Modal, Row, Col, Spin, Select } from 'antd';
-import axios from 'axios';
-import AdminPanelLayout from './AdminPanelLayout';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import {
+  Form,
+  Input,
+  Button,
+  message,
+  Pagination,
+  Table,
+  Modal,
+  Row,
+  Col,
+  Spin,
+  Select,
+} from "antd";
+import axios from "axios";
+import AdminPanelLayout from "./AdminPanelLayout";
+import { Link } from "react-router-dom";
 
 const SellerList = () => {
   const [sellerDetails, setSellerDetails] = useState([]);
@@ -11,10 +23,10 @@ const SellerList = () => {
   const [form] = Form.useForm();
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredSellers, setFilteredSellers] = useState([]);
 
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem("accessToken");
   const { Option } = Select;
 
   // Fetch seller details on mount
@@ -25,16 +37,19 @@ const SellerList = () => {
   const fetchSellerDetails = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://meta.oxyloans.com/api/erice-service/user/sellerDetails', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      message.success('Data fetched successfully');
+      const response = await axios.get(
+        "https://meta.oxyloans.com/api/erice-service/user/sellerDetails",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      message.success("Data fetched successfully");
       setSellerDetails(response.data);
-      setFilteredSellers(response.data)
+      setFilteredSellers(response.data);
     } catch (error) {
-      message.error('Failed to fetch seller details');
+      message.error("Failed to fetch seller details");
     } finally {
       setLoading(false);
     }
@@ -43,7 +58,7 @@ const SellerList = () => {
   const onFinish = async (values) => {
     try {
       await axios.patch(
-        'https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails',
+        "https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails",
         {
           id: editingSeller.sellerId,
           ...values,
@@ -54,12 +69,12 @@ const SellerList = () => {
           },
         }
       );
-      message.success('Seller details updated successfully');
+      message.success("Seller details updated successfully");
       setEditingSeller(null);
       form.resetFields();
       fetchSellerDetails();
     } catch (error) {
-      message.error('Failed to update seller details');
+      message.error("Failed to update seller details");
     }
   };
 
@@ -88,64 +103,69 @@ const SellerList = () => {
 
   const columns = [
     {
-      title: 'S.No',
+      title: "S.No",
       render: (_, __, index) => (currentPage - 1) * entriesPerPage + index + 1,
-      align: 'center',
+      align: "center",
     },
     {
-      title: 'Store Name',
-      dataIndex: 'sellerStoreName',
-      key: 'sellerStoreName',
-      align: 'center',
+      title: "Store Name",
+      dataIndex: "sellerStoreName",
+      key: "sellerStoreName",
+      align: "center",
     },
     {
-      title: 'Seller Name',
-      dataIndex: 'sellerName',
-      key: 'sellerName',
-      align: 'center',
+      title: "Seller Name",
+      dataIndex: "sellerName",
+      key: "sellerName",
+      align: "center",
     },
     {
-      title: 'Email',
-      dataIndex: 'sellerEmail',
-      key: 'sellerEmail',
-      align: 'center',
+      title: "Email",
+      dataIndex: "sellerEmail",
+      key: "sellerEmail",
+      align: "center",
     },
     {
-      title: 'Mobile',
-      dataIndex: 'sellerMobile',
-      key: 'sellerMobile',
-      align: 'center',
+      title: "Mobile",
+      dataIndex: "sellerMobile",
+      key: "sellerMobile",
+      align: "center",
     },
     {
-      title: 'Address',
-      dataIndex: 'sellerAddress',
-      key: 'sellerAddress',
-      align: 'center',
+      title: "Address",
+      dataIndex: "sellerAddress",
+      key: "sellerAddress",
+      align: "center",
     },
     {
-      title: 'Actions',
-      key: 'actions',
-      align: 'center',
+      title: "Actions",
+      key: "actions",
+      align: "center",
       render: (_, record) => (
         <Row gutter={16} justify="center">
           <Col>
-            <Button onClick={() => handleEdit(record)} style={{
-          backgroundColor: "#1AB394",
-          color: 'white',
-          marginBottom: '16px',
-        }}>
+            <Button
+              onClick={() => handleEdit(record)}
+              style={{
+                backgroundColor: "#1AB394",
+                color: "white",
+                marginBottom: "16px",
+              }}
+            >
               Edit
             </Button>
           </Col>
           <Col>
-            <Link to={`/selleritems/${record.sellerId}`} 
-           >
-              <Button   
-            style={{
-              backgroundColor: "#1AB394",
-              color: 'white',
-              marginBottom: '16px',
-            }}>Items</Button>
+            <Link to={`/selleritems/${record.sellerId}`}>
+              <Button
+                style={{
+                  backgroundColor: "#1AB394",
+                  color: "white",
+                  marginBottom: "16px",
+                }}
+              >
+                Items
+              </Button>
             </Link>
           </Col>
         </Row>
@@ -155,17 +175,18 @@ const SellerList = () => {
   const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
     setSearchTerm(value);
-  
+
     if (value) {
       // Filter sellers based on the search term
-      const filtered = sellerDetails.filter(seller =>
-        (seller.sellerStoreName?.toLowerCase().includes(value)) || // Safe access with optional chaining
-        (seller.sellerName?.toLowerCase().includes(value)) || 
-        (seller.sellerEmail?.toLowerCase().includes(value)) || 
-        (seller.sellerMobile?.toLowerCase().includes(value)) || 
-        (seller.sellerAddress?.toLowerCase().includes(value))
+      const filtered = sellerDetails.filter(
+        (seller) =>
+          seller.sellerStoreName?.toLowerCase().includes(value) || // Safe access with optional chaining
+          seller.sellerName?.toLowerCase().includes(value) ||
+          seller.sellerEmail?.toLowerCase().includes(value) ||
+          seller.sellerMobile?.toLowerCase().includes(value) ||
+          seller.sellerAddress?.toLowerCase().includes(value)
       );
-  
+
       setFilteredSellers(filtered); // Update the filtered sellers
     } else {
       setFilteredSellers(sellerDetails); // Reset to all sellers when the search term is empty
@@ -174,16 +195,15 @@ const SellerList = () => {
 
   return (
     <AdminPanelLayout>
-      <Row  justify="space-between" align="middle" className="mb-4">
-      <Col>
-      <h2 className="text-xl font-bold mb-2 sm:mb-0">Sellers List</h2>
-          </Col>
-        
+      <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          <h2 className="text-xl font-bold mb-2 sm:mb-0">Sellers List</h2>
+        </Col>
       </Row>
 
       <Row justify="space-between" align="middle" className="mb-4">
         <Col>
-          Show{' '}
+          Show{" "}
           <Select
             value={entriesPerPage}
             onChange={handleEntriesPerPageChange}
@@ -192,26 +212,26 @@ const SellerList = () => {
             <Option value={5}>5</Option>
             <Option value={10}>10</Option>
             <Option value={20}>20</Option>
-          </Select>
-          {' '}entries 
+          </Select>{" "}
+          entries
         </Col>
 
         <Col>
-        Search: {' '}
-
+          Search:{" "}
           <Input
-            
             value={searchTerm}
             onChange={handleSearchChange}
             style={{ width: 150 }}
-            
           />
         </Col>
       </Row>
 
-      <div style={{ padding: '20px', marginTop: '20px' }}>
+      <div style={{ padding: "20px", marginTop: "20px" }}>
         {loading ? (
-          <Spin tip="Loading seller details..." style={{ display: 'block', margin: 'auto', marginTop: '50px' }} />
+          <Spin
+            tip="Loading seller details..."
+            style={{ display: "block", margin: "auto", marginTop: "50px" }}
+          />
         ) : (
           <>
             <Table
@@ -222,7 +242,7 @@ const SellerList = () => {
               columns={columns}
               rowKey="sellerId"
               pagination={false}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: "max-content" }}
               bordered
             />
             <Row justify="end" className="mt-4">
@@ -250,7 +270,9 @@ const SellerList = () => {
                     <Form.Item
                       label="Store Name"
                       name="sellerStoreName"
-                      rules={[{ required: true, message: 'Please enter store name' }]}
+                      rules={[
+                        { required: true, message: "Please enter store name" },
+                      ]}
                     >
                       <Input />
                     </Form.Item>
@@ -259,7 +281,9 @@ const SellerList = () => {
                     <Form.Item
                       label="Seller Name"
                       name="sellerName"
-                      rules={[{ required: true, message: 'Please enter seller name' }]}
+                      rules={[
+                        { required: true, message: "Please enter seller name" },
+                      ]}
                     >
                       <Input />
                     </Form.Item>
@@ -270,7 +294,9 @@ const SellerList = () => {
                     <Form.Item
                       label="Email"
                       name="sellerEmail"
-                      rules={[{ required: true, message: 'Please enter email' }]}
+                      rules={[
+                        { required: true, message: "Please enter email" },
+                      ]}
                     >
                       <Input />
                     </Form.Item>
@@ -279,7 +305,12 @@ const SellerList = () => {
                     <Form.Item
                       label="Mobile"
                       name="sellerMobile"
-                      rules={[{ required: true, message: 'Please enter mobile number' }]}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter mobile number",
+                        },
+                      ]}
                     >
                       <Input />
                     </Form.Item>
@@ -290,7 +321,9 @@ const SellerList = () => {
                     <Form.Item
                       label="Address"
                       name="sellerAddress"
-                      rules={[{ required: true, message: 'Please enter address' }]}
+                      rules={[
+                        { required: true, message: "Please enter address" },
+                      ]}
                     >
                       <Input />
                     </Form.Item>

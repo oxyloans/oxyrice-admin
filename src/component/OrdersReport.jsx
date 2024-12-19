@@ -1,27 +1,11 @@
+import React from "react";
 
-
-
-
-
-
-
-
-
-import React from 'react';
-
-
-import AdminPanelLayout from './AdminPanelLayout';
+import AdminPanelLayout from "./AdminPanelLayout";
 
 const OrdersReport = () => {
-
- 
-  
-
   return (
     <div>
-    
-<AdminPanelLayout/>
-     
+      <AdminPanelLayout />
     </div>
   );
 };

@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Table, Modal, Button, Form, Input, notification, message, Select, Row, Col } from "antd";
+import {
+  Table,
+  Modal,
+  Button,
+  Form,
+  Input,
+  notification,
+  message,
+  Select,
+  Row,
+  Col,
+} from "antd";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
 
@@ -9,9 +20,9 @@ const SubscriptionPlans = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = localStorage.getItem("accessToken");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredPlans, setFilteredPlans] = useState([]);
@@ -21,11 +32,14 @@ const SubscriptionPlans = () => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("https://meta.oxyloans.com/api/erice-service/wallet/getAllPlans", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await axios.get(
+        "https://meta.oxyloans.com/api/erice-service/wallet/getAllPlans",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       setPlans(response.data || []);
       setFilteredPlans(response.data || []); // Initially set filtered plans
     } catch (error) {
@@ -114,9 +128,9 @@ const SubscriptionPlans = () => {
 
     if (value) {
       // Filter plans where the search term matches specific fields
-      const filtered = plans.filter(plan =>
-        ['planId', 'getAmount', 'limitAmount', 'amount'].some(key =>
-          plan[key]?.toString().toLowerCase().includes(value) // Exact match for each field
+      const filtered = plans.filter((plan) =>
+        ["planId", "getAmount", "limitAmount", "amount"].some(
+          (key) => plan[key]?.toString().toLowerCase().includes(value) // Exact match for each field
         )
       );
 
@@ -144,68 +158,69 @@ const SubscriptionPlans = () => {
 
   const columns = [
     {
-      title: 'S.NO',
-      key: 'serialNo',
-      render: (text, record, index) => index + 1 + (currentPage - 1) * entriesPerPage,
-      align: 'center',
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
     },
     {
       title: "Plan ID",
       dataIndex: "planId",
       key: "planId",
-      align: 'center',
+      align: "center",
     },
     {
       title: "Pay Amount",
       dataIndex: "amount",
       key: "amount",
-      align: 'center',
+      align: "center",
     },
     {
       title: "Get Amount",
       dataIndex: "getAmount",
       key: "getAmount",
-      align: 'center',
+      align: "center",
     },
     {
       title: "Limit Amount",
       dataIndex: "limitAmount",
       key: "limitAmount",
-      align: 'center',
+      align: "center",
     },
     {
       title: "Active",
       dataIndex: "active",
       key: "active",
-      align: 'center',
+      align: "center",
       render: (isActive) => (
         <p
           style={{
-            backgroundColor: isActive ? '#EC4758' : '#1C84C6',
-            color: 'white',
-            width: '75px',
-            textAlign: 'center',
-            padding: '1px 0',
-            margin: '0 auto',
-            borderRadius: '1px',
-            lineHeight: '1.5',
-            cursor: 'pointer',
+            backgroundColor: isActive ? "#EC4758" : "#1C84C6",
+            color: "white",
+            width: "75px",
+            textAlign: "center",
+            padding: "1px 0",
+            margin: "0 auto",
+            borderRadius: "1px",
+            lineHeight: "1.5",
+            cursor: "pointer",
           }}
         >
-          {isActive ? 'Inactive' : 'Active'}
+          {isActive ? "Inactive" : "Active"}
         </p>
       ),
     },
     {
-      title: 'Action',
-      key: 'action',
-      align: 'center',
+      title: "Action",
+      key: "action",
+      align: "center",
       render: (text, item) => (
         <Button
           onClick={() => showUpdateModal(item)}
           style={{
             backgroundColor: "#1AB394",
-            color: 'white',
+            color: "white",
           }}
         >
           Edit
@@ -223,9 +238,9 @@ const SubscriptionPlans = () => {
             type="primary"
             onClick={() => setIsModalVisible(true)}
             style={{
-              backgroundColor: '#1C84C6',
-              color: 'white',
-              marginBottom: '16px',
+              backgroundColor: "#1C84C6",
+              color: "white",
+              marginBottom: "16px",
             }}
           >
             Add New Plan
@@ -234,7 +249,7 @@ const SubscriptionPlans = () => {
 
         <Row justify="space-between" align="middle" className="mb-4">
           <Col>
-            Show{' '}
+            Show{" "}
             <Select
               value={entriesPerPage}
               onChange={handleEntriesPerPageChange}
@@ -243,12 +258,12 @@ const SubscriptionPlans = () => {
               <Option value={5}>5</Option>
               <Option value={10}>10</Option>
               <Option value={20}>20</Option>
-            </Select>
-            {' '}entries
+            </Select>{" "}
+            entries
           </Col>
 
           <Col>
-            Search:{' '}
+            Search:{" "}
             <Input
               value={searchTerm}
               onChange={handleSearchChange}
@@ -276,7 +291,11 @@ const SubscriptionPlans = () => {
           onOk={() => form.submit()}
           okText={selectedSubscription ? "Update Plan" : "Add Plan"}
         >
-          <Form form={form} onFinish={selectedSubscription ? updatePlan : addPlan} layout="vertical">
+          <Form
+            form={form}
+            onFinish={selectedSubscription ? updatePlan : addPlan}
+            layout="vertical"
+          >
             <Form.Item
               label="Get Amount"
               name="getAmount"

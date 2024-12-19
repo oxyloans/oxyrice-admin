@@ -1,28 +1,21 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Modal, Button, Form, Input,Row,Col,Select, Image,notification, Spin ,Table} from "antd";
+import {
+  Modal,
+  Button,
+  Form,
+  Input,
+  Row,
+  Col,
+  Select,
+  Image,
+  notification,
+  Spin,
+  Table,
+} from "antd";
 import AdminPanelLayout from "./AdminPanelLayout";
 import { UserSwitchOutlined } from "@ant-design/icons";
-const {Option} = Select;
+const { Option } = Select;
 function AllQueriesforAdmin() {
   const [data, setData] = useState([]);
   const [errormsg, setErrormsg] = useState("");
@@ -40,15 +33,12 @@ function AllQueriesforAdmin() {
   const [fileName, setFileName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
 
- 
   const handleSelectedOption = (event) => {
     setData([]);
     setStatusValue(event.target.value);
   };
-  const accesToken = localStorage.getItem('accessToken');
-  const userId = localStorage.getItem('userId');
-
-
+  const accesToken = localStorage.getItem("accessToken");
+  const userId = localStorage.getItem("userId");
 
   function queriesdisplaygetcall() {
     let data = {
@@ -56,11 +46,15 @@ function AllQueriesforAdmin() {
     };
     setLoader(true);
     axios
-      .post(`https://meta.oxyloans.com/api/erice-service/writetous/getQueries`, data, {
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      })
+      .post(
+        `https://meta.oxyloans.com/api/erice-service/writetous/getQueries`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${accesToken}`,
+          },
+        }
+      )
       .then((response) => {
         setLoader(false);
         setData(response.data);
@@ -102,11 +96,15 @@ function AllQueriesforAdmin() {
 
     setApproveLoader(true);
     axios
-      .post(`https://meta.oxyloans.com/api/erice-service/writetous/saveData`, data, {
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      })
+      .post(
+        `https://meta.oxyloans.com/api/erice-service/writetous/saveData`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${accesToken}`,
+          },
+        }
+      )
       .then(() => {
         setApproveLoader(false);
         setShowModal1(false);
@@ -133,17 +131,16 @@ function AllQueriesforAdmin() {
     setImageUrl(item.userQueryDocumentStatus?.filePath || null);
     setShowModal1(true);
   };
-  
+
   const handlePdfOpen = (url) => {
     const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
     window.open(viewerUrl, "_blank");
   };
   const handleCloseModal = () => {
     setShowModal1(false);
-   
   };
   const handleFileChange = (e, userId) => {
-    console.log(userId)
+    console.log(userId);
     const file = e.target.files[0];
     if (!file) {
       notification.warning({
@@ -210,238 +207,259 @@ function AllQueriesforAdmin() {
   return (
     <div>
       <AdminPanelLayout>
-      <div className="page-header">
-        <Row>
-          <Col span={24}>
-            <h3 className="page-title">Queries raised by users</h3>
-            {/* <ul className="breadcrumb">
+        <div className="page-header">
+          <Row>
+            <Col span={24}>
+              <h3 className="page-title">Queries raised by users</h3>
+              {/* <ul className="breadcrumb">
               <li className="breadcrumb-item">
                 <a href="/dashboard">Dashboard</a>
               </li>
               <li className="breadcrumb-item active">AllUserQueries</li>
             </ul> */}
-            <br />
-          </Col>
-        </Row>
-      </div>
+              <br />
+            </Col>
+          </Row>
+        </div>
 
-      <div className="row">
-        <div className="col-xl-12">
-          <div className="card">
-            <div className="card-body">
-              <Row gutter={[16, 16]} align="middle">
-                <Col xs={24} sm={6}>
-                  <Select
-                    className="form-control"
-                    value={statusValue}
-                    onChange={(value) => setStatusValue(value)}
-                    style={{ width: "100%" }}
-                  >
-                    <Select.Option value="CANCELLED">User Cancelled</Select.Option>
-                    <Select.Option value="COMPLETED">Completed</Select.Option>
-                    <Select.Option value="PENDING">Pending</Select.Option>
-                  </Select>
-                </Col>
-              </Row>
+        <div className="row">
+          <div className="col-xl-12">
+            <div className="card">
+              <div className="card-body">
+                <Row gutter={[16, 16]} align="middle">
+                  <Col xs={24} sm={6}>
+                    <Select
+                      className="form-control"
+                      value={statusValue}
+                      onChange={(value) => setStatusValue(value)}
+                      style={{ width: "100%" }}
+                    >
+                      <Select.Option value="CANCELLED">
+                        User Cancelled
+                      </Select.Option>
+                      <Select.Option value="COMPLETED">Completed</Select.Option>
+                      <Select.Option value="PENDING">Pending</Select.Option>
+                    </Select>
+                  </Col>
+                </Row>
 
-              <Table
-                className="mt-4"
-                loading={loader}
-                dataSource={data}
-                rowKey="id"
-                pagination={false}
-                bordered
-                scroll={{ x: '100%' }}
-              >
-                <Table.Column title="S.no" dataIndex="id" render={(text, record, index) => index + 1} />
-                <Table.Column
-                  title="User Info"
-                  render={(item) => (
-                    <div>
-                      <strong>Name :</strong> {item.name} <br />
-                      <strong>Mobile Number :</strong> {item.mobileNumber} <br />
-                      <strong>Ticket Id :</strong> {item.randomTicketId} <br />
-                      <strong>Created on :</strong> {item.createdAt?.substring(0, 10)}
-                    </div>
-                  )}
-                />
-                <Table.Column title="User Query" dataIndex="query" />
-                {statusValue === "CANCELLED" && (
-                  <Table.Column title="User Cancelled Reason" dataIndex="comments" />
-                )}
-                {statusValue === "COMPLETED" && (
+                <Table
+                  className="mt-4"
+                  loading={loader}
+                  dataSource={data}
+                  rowKey="id"
+                  pagination={false}
+                  bordered
+                  scroll={{ x: "100%" }}
+                >
                   <Table.Column
-                    title="Admin Comments"
+                    title="S.no"
+                    dataIndex="id"
+                    render={(text, record, index) => index + 1}
+                  />
+                  <Table.Column
+                    title="User Info"
                     render={(item) => (
                       <div>
-                        {item.comments}
+                        <strong>Name :</strong> {item.name} <br />
+                        <strong>Mobile Number :</strong> {item.mobileNumber}{" "}
                         <br />
-                        <strong>Resolved On:</strong> {item?.resolvedOn?.substring(0, 10)}
+                        <strong>Ticket Id :</strong> {item.randomTicketId}{" "}
+                        <br />
+                        <strong>Created on :</strong>{" "}
+                        {item.createdAt?.substring(0, 10)}
                       </div>
                     )}
                   />
-                )}
-                <Table.Column
-                  title="Admin & User Replies"
-                  render={(item) =>
-                    item.userPendingQueries.length > 0
-                      ? item.userPendingQueries.map((pendingData, index) => (
-                          <div key={index}>
-                           <strong style={{ color: pendingData.resolvedBy === "admin" ? "green" : "red" }}>
-  {pendingData.resolvedBy}:
-</strong>
-
-                            <br />
-                            <strong>Comments:</strong> {pendingData.pendingComments}
-                            <br />
-                            <strong>Resolved On:</strong>{" "}
-                            {pendingData.resolvedOn?.substring(0, 10)}
-                            <br />
-                            {pendingData.adminFileName && (
-                              <a
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleImageOrPdf(pendingData.adminFilePath);
+                  <Table.Column title="User Query" dataIndex="query" />
+                  {statusValue === "CANCELLED" && (
+                    <Table.Column
+                      title="User Cancelled Reason"
+                      dataIndex="comments"
+                    />
+                  )}
+                  {statusValue === "COMPLETED" && (
+                    <Table.Column
+                      title="Admin Comments"
+                      render={(item) => (
+                        <div>
+                          {item.comments}
+                          <br />
+                          <strong>Resolved On:</strong>{" "}
+                          {item?.resolvedOn?.substring(0, 10)}
+                        </div>
+                      )}
+                    />
+                  )}
+                  <Table.Column
+                    title="Admin & User Replies"
+                    render={(item) =>
+                      item.userPendingQueries.length > 0
+                        ? item.userPendingQueries.map((pendingData, index) => (
+                            <div key={index}>
+                              <strong
+                                style={{
+                                  color:
+                                    pendingData.resolvedBy === "admin"
+                                      ? "green"
+                                      : "red",
                                 }}
                               >
-                                {pendingData.adminFileName}
-                              </a>
-                            )}
-                          </div>
-                        ))
-                      : null
-                  }
-                />
-               {statusValue === "PENDING" && (
-  <Table.Column
-    title="Uploaded File"
-    align="center"
-   // Set a fixed width for the column
-    render={(item) => (
-      <Button
-        type="primary"
-        onClick={() => handleOpenModal(item)} // item can be passed if needed
-      >
-        {"Pending"}
-      </Button>
-    )}
-  />
-)}
-
-
-
-              </Table>
+                                {pendingData.resolvedBy}:
+                              </strong>
+                              <br />
+                              <strong>Comments:</strong>{" "}
+                              {pendingData.pendingComments}
+                              <br />
+                              <strong>Resolved On:</strong>{" "}
+                              {pendingData.resolvedOn?.substring(0, 10)}
+                              <br />
+                              {pendingData.adminFileName && (
+                                <a
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleImageOrPdf(pendingData.adminFilePath);
+                                  }}
+                                >
+                                  {pendingData.adminFileName}
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        : null
+                    }
+                  />
+                  {statusValue === "PENDING" && (
+                    <Table.Column
+                      title="Uploaded File"
+                      align="center"
+                      // Set a fixed width for the column
+                      render={(item) => (
+                        <Button
+                          type="primary"
+                          onClick={() => handleOpenModal(item)} // item can be passed if needed
+                        >
+                          {"Pending"}
+                        </Button>
+                      )}
+                    />
+                  )}
+                </Table>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <Modal
-  visible={showModal1}
-  onCancel={handleCloseModal}
-  footer={null}
-  centered
-  title="Review Documents"
->
-  {/* Display Image or PDF Link */}
-  {imageUrl && (
-    <>
-      <p>Review Image:</p>
-      {imageUrl.endsWith(".pdf") ? (
-        <p>
-          <strong>File:</strong> {imageUrl.split("/").pop()}{" "}
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              handlePdfOpen(imageUrl);
-            }}
-          >
-            (Click here to view)
-          </a>
-        </p>
-      ) : (
-        <Image
-          src={imageUrl}
-          style={{ height: 300, width: 300 }}
-          preview={false}
-        />
-      )}
-    </>
-  )}
+        <Modal
+          visible={showModal1}
+          onCancel={handleCloseModal}
+          footer={null}
+          centered
+          title="Review Documents"
+        >
+          {/* Display Image or PDF Link */}
+          {imageUrl && (
+            <>
+              <p>Review Image:</p>
+              {imageUrl.endsWith(".pdf") ? (
+                <p>
+                  <strong>File:</strong> {imageUrl.split("/").pop()}{" "}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePdfOpen(imageUrl);
+                    }}
+                  >
+                    (Click here to view)
+                  </a>
+                </p>
+              ) : (
+                <Image
+                  src={imageUrl}
+                  style={{ height: 300, width: 300 }}
+                  preview={false}
+                />
+              )}
+            </>
+          )}
 
-  {/* File Upload and Comments for PENDING Status */}
-  {details.queryStatus === "PENDING" && (
-    <>
-      <div className="mb-4">
-        <label htmlFor="fileUpload" style={{ fontWeight: "bold" }}>
-          Upload Document:
-        </label>
-        <input
-          type="file"
-          className="form-control"
-          onChange={(e) => handleFileChange(e, details.userId)}
-          style={{ marginBottom: "16px" }}
-        />
-        {uploadStatus !== "loading" && fileName && (
-          <p>Selected file: {fileName}</p>
-        )}
-      </div>
+          {/* File Upload and Comments for PENDING Status */}
+          {details.queryStatus === "PENDING" && (
+            <>
+              <div className="mb-4">
+                <label htmlFor="fileUpload" style={{ fontWeight: "bold" }}>
+                  Upload Document:
+                </label>
+                <input
+                  type="file"
+                  className="form-control"
+                  onChange={(e) => handleFileChange(e, details.userId)}
+                  style={{ marginBottom: "16px" }}
+                />
+                {uploadStatus !== "loading" && fileName && (
+                  <p>Selected file: {fileName}</p>
+                )}
+              </div>
 
-      <Col xs={24} sm={24}>
-        <textarea
-          className={`form-control ml-0 mb-4 ${comments_error ? "border-danger" : ""}`}
-          placeholder="Admin Comments"
-          style={{ width: "100%", height: "120px", borderRadius: "4px", border: "1px solid #dcdcdc" }}
-          rows={4}
-          onChange={(e) => {
-            setComments(e.target.value);
-            setComments_error(false);
-          }}
-        />
-        {comments_error && (
-          <p style={{ color: "red", fontSize: "12px" }}>Please enter Comments</p>
-        )}
-      </Col>
-    </>
-  )}
+              <Col xs={24} sm={24}>
+                <textarea
+                  className={`form-control ml-0 mb-4 ${comments_error ? "border-danger" : ""}`}
+                  placeholder="Admin Comments"
+                  style={{
+                    width: "100%",
+                    height: "120px",
+                    borderRadius: "4px",
+                    border: "1px solid #dcdcdc",
+                  }}
+                  rows={4}
+                  onChange={(e) => {
+                    setComments(e.target.value);
+                    setComments_error(false);
+                  }}
+                />
+                {comments_error && (
+                  <p style={{ color: "red", fontSize: "12px" }}>
+                    Please enter Comments
+                  </p>
+                )}
+              </Col>
+            </>
+          )}
 
-  {/* Footer Buttons */}
-  <div style={{ textAlign: "right" }}>
-    {details.queryStatus === "PENDING" && (
-      <>
-        {approveLoader ? (
-          <Spin />
-        ) : (
-          <>
-            <Button
-              type="default"
-              onClick={() => approvefunc("PENDING")}
-              style={{ marginRight: "8px" }}
-            >
-              Mark as Pending
+          {/* Footer Buttons */}
+          <div style={{ textAlign: "right" }}>
+            {details.queryStatus === "PENDING" && (
+              <>
+                {approveLoader ? (
+                  <Spin />
+                ) : (
+                  <>
+                    <Button
+                      type="default"
+                      onClick={() => approvefunc("PENDING")}
+                      style={{ marginRight: "8px" }}
+                    >
+                      Mark as Pending
+                    </Button>
+                    <Button
+                      type="primary"
+                      onClick={() => approvefunc("COMPLETED")}
+                    >
+                      Approve
+                    </Button>
+                  </>
+                )}
+              </>
+            )}
+            <Button type="default" onClick={handleCloseModal}>
+              Close
             </Button>
-            <Button
-              type="primary"
-              onClick={() => approvefunc("COMPLETED")}
-            >
-              Approve
-            </Button>
-          </>
-        )}
-      </>
-    )}
-    <Button type="default" onClick={handleCloseModal}>
-      Close
-    </Button>
-  </div>
-</Modal>
-
-
-
+          </div>
+        </Modal>
       </AdminPanelLayout>
     </div>
   );
 }
 
-export default AllQueriesforAdmin
+export default AllQueriesforAdmin;
