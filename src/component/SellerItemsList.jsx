@@ -233,7 +233,7 @@ const SellerItemsList = () => {
           active: true,
           itemId: editingItem.itemId,
           itemMrp: values.itemMrp,
-          itemPrice:values.itemPrice,
+          itemPrice: values.itemPrice,
           sellerId: sellerId, // Use the sellerId from the URL
         },
         {
@@ -290,7 +290,7 @@ const SellerItemsList = () => {
       key: "itemMrp",
       align: "center",
     },
-     {
+    {
       title: "Item Price",
       dataIndex: "itemPrice",
       key: "itemPrice",
@@ -326,6 +326,7 @@ const SellerItemsList = () => {
           onClick={() => {
             setEditingItem(record);
             form.setFieldsValue({ itemMrp: record.itemMrp });
+            form.setFieldsValue({ itemPrice: record.itemPrice });
           }}
           style={{
             backgroundColor: "#1AB394",
@@ -447,7 +448,9 @@ const SellerItemsList = () => {
                 <Form.Item
                   label="Item Price"
                   name="itemPrice"
-                  rules={[{ required: true, message: "Please enter item Price" }]}
+                  rules={[
+                    { required: true, message: "Please enter item Price" },
+                  ]}
                 >
                   <Input />
                 </Form.Item>

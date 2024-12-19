@@ -34,11 +34,18 @@ const SellerList = () => {
     fetchSellerDetails();
   }, []);
 
+
+
+   const staticData = [
+     { storeName: "Oxyrice Store", sellerName: "Radhakrishna Rao" },
+
+   ];
+
   const fetchSellerDetails = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyloans.com/api/erice-service/user/sellerDetails",
+        "https://meta.oxyloans.com/api/erice-service/user/sellerData",
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -101,6 +108,8 @@ const SellerList = () => {
     setCurrentPage(page);
   };
 
+  
+
   const columns = [
     {
       title: "S.No",
@@ -112,38 +121,41 @@ const SellerList = () => {
       dataIndex: "sellerStoreName",
       key: "sellerStoreName",
       align: "center",
+      render: (text) => text || "Oxyrice", // Default to "Oxyrice" if no value is provided
     },
     {
       title: "Seller Name",
       dataIndex: "sellerName",
       key: "sellerName",
       align: "center",
+      render: (text) => text || "Radhakrishna", // Default to "Radhakrishna" if no value is provided
     },
+    
     {
       title: "Email",
       dataIndex: "sellerEmail",
       key: "sellerEmail",
       align: "center",
     },
-    {
-      title: "Mobile",
-      dataIndex: "sellerMobile",
-      key: "sellerMobile",
-      align: "center",
-    },
-    {
-      title: "Address",
-      dataIndex: "sellerAddress",
-      key: "sellerAddress",
-      align: "center",
-    },
+    // {
+    //   title: "Mobile",
+    //   dataIndex: "sellerMobile",
+    //   key: "sellerMobile",
+    //   align: "center",
+    // },
+    // {
+    //   title: "Address",
+    //   dataIndex: "sellerAddress",
+    //   key: "sellerAddress",
+    //   align: "center",
+    // },
     {
       title: "Actions",
       key: "actions",
       align: "center",
       render: (_, record) => (
         <Row gutter={16} justify="center">
-          <Col>
+          {/* <Col>
             <Button
               onClick={() => handleEdit(record)}
               style={{
@@ -154,7 +166,7 @@ const SellerList = () => {
             >
               Edit
             </Button>
-          </Col>
+          </Col> */}
           <Col>
             <Link to={`/selleritems/${record.sellerId}`}>
               <Button
