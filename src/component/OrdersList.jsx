@@ -30,13 +30,17 @@ const OrdersList = () => {
   const [loading, setLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const [toDate, setToDate] = useState(moment());
-  const [fromDate, setFromDate] = useState(moment());
+  const [toDate, setToDate] = useState(null); // Initialize with null
+  const [fromDate, setFromDate] = useState(null); // Initialize with null
   const [orderDetails, setOrderDetails] = useState(null);
 
   const handleStatusChange = (value) => setOrderStatus(value);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  // Handle date change for From Date
+  
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
+
   const handleFromDateChange = (date) => {
     setFromDate(date);
   };
@@ -197,10 +201,7 @@ const OrdersList = () => {
     setOrderDetails(null);
   };
 
-  // Handle date change for To Date
-  const handleToDateChange = (date) => {
-    setToDate(date);
-  };
+
 
   // Define table columns
   const columns = [
@@ -309,26 +310,6 @@ const OrdersList = () => {
     },
   ];
 
-  // const handleDownloadPDF = () => {
-  //   const doc = new jsPDF();
-  //   const tableColumn = ["Order ID", "Order Date","Grand Total","Payment Type", "Order Status"];
-  //   const tableRows = [];
-
-  //   // Convert data source to rows
-  //   orderData.forEach((item) => {
-  //     const row = [item.orderId, item.orderDate, item.grandTotal,item.paymentType, item.orderStatus];
-  //     tableRows.push(row);
-  //   });
-
-  //   // Add the table to PDF
-  //   doc.autoTable({
-  //     head: [tableColumn],
-  //     body: tableRows,
-  //   });
-
-  //   // Save the PDF
-  //   doc.save("OrderData.pdf");
-  // };
   const handleDownloadExcel = (orderData) => {
     // Ensure orderData is an array
     const data = Array.isArray(orderData) ? orderData : [];
@@ -495,6 +476,7 @@ const OrdersList = () => {
                 onChange={handleFromDateChange}
                 format="YYYY-MM-DD"
                 className="w-full"
+                placeholder="Select From Date" // Placeholder for guidance
               />
             </Col>
 
@@ -511,9 +493,9 @@ const OrdersList = () => {
                 onChange={handleToDateChange}
                 format="YYYY-MM-DD"
                 className="w-full"
+                placeholder="Select To Date" // Placeholder for guidance
               />
             </Col>
-
             {/* Action Buttons */}
             <Col
               xs={24}

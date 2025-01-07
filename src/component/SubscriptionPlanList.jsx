@@ -20,6 +20,7 @@ const SubscriptionPlans = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModal, setIsModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
@@ -56,7 +57,7 @@ const SubscriptionPlans = () => {
   const addPlan = async (values) => {
     try {
       const payload = {
-        active: true,
+        active: values.active,
         getAmount: values.getAmount,
         limitAmount: values.limitAmount,
         payAmount: values.payAmount,
@@ -150,11 +151,44 @@ const SubscriptionPlans = () => {
     setIsModalVisible(true);
   };
 
+
   const handleCancel = () => {
     setIsModalVisible(false);
+   
+
     setSelectedSubscription(null); // Clear selected subscription on modal close
     form.resetFields(); // Reset form fields on cancel
   };
+
+  const updateSubscriptionStatus = async (planId, isActive) => {
+    setLoading(true);
+    try {
+      const url = "https://meta.oxyloans.com/api/erice-service/wallet/activeOrInactive";
+      const response = await axios.patch(
+        url,
+        {
+          id: planId,
+          active: !isActive, // Toggle the status (active -> inactive, inactive -> active)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      message.success("Subscription status updated successfully.");
+      fetchPlans(); // Fetch updated categories
+    } catch (error) {
+      console.error("Error updating category status:", error);
+      message.error("Failed to update category status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
 
   const columns = [
     {
@@ -190,25 +224,21 @@ const SubscriptionPlans = () => {
     },
     {
       title: "Active",
-      dataIndex: "active",
-      key: "active",
+      dataIndex: "status",
+      key: "status",
       align: "center",
-      render: (isActive) => (
-        <p
+      render: (isActive, record) => (
+        <Button
+          type="default"
+          onClick={() => updateSubscriptionStatus(record.planId, isActive)}
+          loading={loading}
           style={{
-            backgroundColor: isActive ? "#EC4758" : "#1C84C6",
+            backgroundColor: isActive ? "#1C84C6" : "#EC4758",
             color: "white",
-            width: "75px",
-            textAlign: "center",
-            padding: "1px 0",
-            margin: "0 auto",
-            borderRadius: "1px",
-            lineHeight: "1.5",
-            cursor: "pointer",
           }}
         >
-          {isActive ? "Inactive" : "Active"}
-        </p>
+          {isActive ? "Active" : "Inactive"}
+        </Button>
       ),
     },
     {
@@ -216,15 +246,17 @@ const SubscriptionPlans = () => {
       key: "action",
       align: "center",
       render: (text, item) => (
-        <Button
-          onClick={() => showUpdateModal(item)}
-          style={{
-            backgroundColor: "#1AB394",
-            color: "white",
-          }}
-        >
-          Edit
-        </Button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+          <Button
+            onClick={() => showUpdateModal(item)}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+            }}
+          >
+            Edit
+          </Button>
+        </div>
       ),
     },
   ];
@@ -319,6 +351,8 @@ const SubscriptionPlans = () => {
             </Form.Item>
           </Form>
         </Modal>
+
+        
       </div>
     </AdminPanelLayout>
   );

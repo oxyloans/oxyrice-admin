@@ -257,6 +257,33 @@ const CategoryList = () => {
     );
     setFilteredCategories(filtered);
   };
+  const updateCategoryStatus = async (categoryId, isActive) => {
+    setLoading(true);
+    try {
+      const url =
+        "https://meta.oxyloans.com/api/erice-service/categories/activeOrInactive";
+      const response = await axios.patch(
+        url,
+        {
+          id: categoryId,
+          isActive: !isActive, // Toggle the status (active -> inactive, inactive -> active)
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      message.success("Category status updated successfully.");
+      fetchCategories(); // Fetch updated categories
+    } catch (error) {
+      console.error("Error updating category status:", error);
+      message.error("Failed to update category status.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AdminPanelLayout>
@@ -371,21 +398,18 @@ const CategoryList = () => {
             title="Category Status"
             dataIndex="isActive"
             align="center"
-            render={(isActive) => (
-              <p
+            render={(isActive, record) => (
+              <Button
+                type="default"
+                onClick={() => updateCategoryStatus(record.id, isActive)}
+                loading={loading}
                 style={{
-                  backgroundColor: isActive ? "#1C84C6" : "#1C84C6",
+                  backgroundColor: isActive ? "#1C84C6" : "#EC4758",
                   color: "white",
-                  width: "75px", // Adjust the width as needed
-                  textAlign: "center", // Center text horizontally
-                  padding: "1px 0", // Add vertical spacing for better alignment
-                  margin: "0 auto", // Center the element horizontally within its cell
-                  borderRadius: "2px", // Add rounded corners
-                  lineHeight: "1.5", // Adjust line height for better text vertical alignment
                 }}
               >
                 {isActive ? "Active" : "Inactive"}
-              </p>
+              </Button>
             )}
           />
           <Table.Column

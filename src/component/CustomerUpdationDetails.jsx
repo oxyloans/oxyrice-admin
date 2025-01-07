@@ -12,7 +12,7 @@ import {
   Col,
 } from "antd";
 import AdminPanelLayout from "./AdminPanelLayout";
-import { ExperimentOutlined, ExperimentFilled } from "@ant-design/icons";
+
 
 const { Option } = Select;
 
@@ -118,26 +118,35 @@ const CustomerUpdationDetails = () => {
     setSelectedItem(null);
   };
 
+  // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
+    const searchValue = e.target.value.trim().toLowerCase(); // Trim and convert to lowercase
+    setSearchTerm(searchValue);
 
-    if (value) {
-      const filtered = customerData.filter(
-        (item) =>
-          item.userId.toString().toLowerCase().includes(value) ||
-          item.mobileNumber?.toLowerCase().includes(value) ||
-          item.primaryType?.toLowerCase().includes(value) ||
-          item.status?.toString().toLowerCase().includes(value)
-      );
+    if (searchValue) {
+      const filtered = customerData.filter((item) => {
+        const email = item.email?.toLowerCase() || "";
+        const mobileNumber = item.mobileNumber?.toLowerCase() || "";
+        const primaryType = item.primaryType?.toLowerCase() || "";
+        const customerName = item.customerName?.toLowerCase() || "";
+        const status = item.status?.toString().toLowerCase() || "";
+
+        return (
+          email.includes(searchValue) ||
+          mobileNumber.includes(searchValue) ||
+          primaryType.includes(searchValue) ||
+          customerName.includes(searchValue) ||
+          status.includes(searchValue)
+        );
+      });
       setFilteredItems(filtered);
     } else {
-      setFilteredItems(customerData);
+      setFilteredItems(customerData); // Reset to original data
     }
   };
 
@@ -147,11 +156,11 @@ const CustomerUpdationDetails = () => {
       render: (_, __, index) => index + 1 + (currentPage - 1) * entriesPerPage,
       align: "center",
     },
-    {
-      title: "UserID",
-      dataIndex: "userId",
-      align: "center",
-    },
+    // {
+    //   title: "User ID",
+    //   dataIndex: "userId",
+    //   align: "center",
+    // },
     {
       title: "Customer Name",
       dataIndex: "customerName",
@@ -176,7 +185,7 @@ const CustomerUpdationDetails = () => {
       title: "Test User",
       dataIndex: "testUser",
       align: "center",
-      render: (testUser) => (testUser ? "True" : "False"),
+      render: (testUser) => (testUser ? "Test User" : "Live User"),
     },
     {
       title: "Actions",
@@ -191,7 +200,7 @@ const CustomerUpdationDetails = () => {
               marginRight: "8px",
             }}
           >
-            Edit
+            Update
           </Button>
           <Button
             onClick={() => handleUpdateTestUser(item)}
@@ -211,7 +220,7 @@ const CustomerUpdationDetails = () => {
     <AdminPanelLayout>
       <Row justify="space-between" align="middle" className="mb-4">
         <Col>
-          <h2 className="text-xl font-bold">Customer Details Updation List</h2>
+          <h2 className="text-xl font-bold">User Mobile Number Update</h2>
         </Col>
       </Row>
       <Row justify="space-between" align="middle" className="mb-4">
@@ -238,18 +247,13 @@ const CustomerUpdationDetails = () => {
         </Col>
       </Row>
       <Table
-        dataSource={filteredItems.slice(
-          (currentPage - 1) * entriesPerPage,
-          currentPage * entriesPerPage
-        )}
+        dataSource={filteredItems}
         columns={columns}
         rowKey="userId"
         loading={loading}
         pagination={{
-          current: currentPage,
           pageSize: entriesPerPage,
-          total: filteredItems.length,
-          onChange: setCurrentPage,
+          onChange: (page) => setCurrentPage(page),
         }}
         scroll={{ x: "100%" }}
         bordered
@@ -268,10 +272,14 @@ const CustomerUpdationDetails = () => {
               label="Mobile Number"
               name="mobileNumber"
               rules={[
-                { required: true, message: "Please input mobile number!" },
+                { required: true, message: "Please update the mobile number!" },
+                {
+                  pattern: /^[0-9]{10}$/,
+                  message: "Mobile number must be exactly 10 digits!",
+                },
               ]}
             >
-              <Input />
+              <Input maxLength={10} />
             </Form.Item>
 
             <Form.Item

@@ -60,50 +60,6 @@ const CouponList = () => {
     }
   }, [accessToken]);
 
-  const checkCouponAvailability = useCallback(async () => {
-    if (!searchCouponCode) {
-      message.warning("Please enter a coupon code to search.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        "https://meta.oxyloans.com/api/erice-service/coupons/check_coupon_available",
-        {
-          couponCode: searchCouponCode,
-          couponId:
-            coupons.find((coupon) => coupon.couponCode === searchCouponCode)
-              ?.couponId || 0,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.data) {
-        const matchedCoupon = coupons.find(
-          (coupon) => coupon.couponCode === searchCouponCode
-        );
-        if (matchedCoupon) {
-          setFilteredCoupons([matchedCoupon]);
-          setSearchResult(`Coupon "${searchCouponCode}" is available!`);
-          message.success(`Coupon "${searchCouponCode}" is available!`);
-        }
-      } else {
-        setFilteredCoupons([]);
-        setSearchResult(`Coupon "${searchCouponCode}" is not available.`);
-        message.warning(`Coupon "${searchCouponCode}" is not available.`);
-      }
-    } catch (error) {
-      console.error("Error checking coupon availability:", error);
-      message.error("Failed to check coupon availability.");
-    } finally {
-      setLoading(false);
-    }
-  }, [searchCouponCode, coupons, accessToken]);
 
   const updateCouponStatus = async (couponId, isActive) => {
     setLoading(true);

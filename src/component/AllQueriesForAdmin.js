@@ -61,10 +61,10 @@ function AllQueriesforAdmin() {
       })
       .catch((error) => {
         setLoader(false);
-        notification.error({
-          message: "Error",
-          description: error.response?.data || "An error occurred",
-        });
+         notification.error({
+           message: "Error",
+           description: error.response?.data?.error || "An error occurred", // Correctly accessing error properties
+         });
       });
   }
 
@@ -210,7 +210,7 @@ function AllQueriesforAdmin() {
         <div className="page-header">
           <Row>
             <Col span={24}>
-              <h3 className="page-title">Queries raised by users</h3>
+              <h2 className="text-xl font-bold">Queries Rised by Users</h2>
               {/* <ul className="breadcrumb">
               <li className="breadcrumb-item">
                 <a href="/dashboard">Dashboard</a>
@@ -234,11 +234,9 @@ function AllQueriesforAdmin() {
                       onChange={(value) => setStatusValue(value)}
                       style={{ width: "100%" }}
                     >
-                      <Select.Option value="CANCELLED">
-                        User Cancelled
-                      </Select.Option>
-                      <Select.Option value="COMPLETED">Completed</Select.Option>
-                      <Select.Option value="PENDING">Pending</Select.Option>
+                      <Select.Option value="CANCELLED">CANCELLED</Select.Option>
+                      <Select.Option value="COMPLETED">COMPLETED</Select.Option>
+                      <Select.Option value="PENDING">PENDING</Select.Option>
                     </Select>
                   </Col>
                 </Row>

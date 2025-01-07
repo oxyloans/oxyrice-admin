@@ -41,16 +41,23 @@ const AdminPanelLayout = ({ children }) => {
       link: "/settings",
     },
     {
-      key: "CustomerDetailsUpdate",
-      label: "CustomerDetailsUpdate",
-      icon: <FaUserEdit />,
-      link: "/customer/customer_update",
+      key: "alluserqueries",
+      label: "All Queries",
+      icon: <FaHandsHelping />,
+      link: "/user_queries",
     },
     {
       key: "ExchangeOrderList",
-      label: "ExchangeOrderList",
+      label: "Exchange Orders List",
       icon: <FaExchangeAlt />,
-      link: "/exchangeorderlist",
+      link: "/exchange_orderslist",
+    },
+
+    {
+      key: "Update User Mobile Number",
+      label: "User Details Updation",
+      icon: <FaUserEdit />,
+      link: "/user/mobilenumber_updated",
     },
 
     {
@@ -176,12 +183,6 @@ const AdminPanelLayout = ({ children }) => {
           link: "/reports/item_requirements",
         },
       ],
-    },
-    {
-      key: "allqueries",
-      label: "All Queries",
-      icon: <FaHandsHelping />,
-      link: "/allqueriesfromadmin",
     },
   ];
 

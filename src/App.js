@@ -36,7 +36,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/SubscriberDetails" element={<SubscriberDetails />} />
-        <Route path="/allqueriesfromadmin" element={<AllQueriesForAdmin />} />
+        <Route path="user_queries" element={<AllQueriesForAdmin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/loginwithotp" element={<LoginOrRegister />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -48,7 +48,7 @@ function App() {
         <Route path="/selleradd" element={<SellerAdd />} />
         <Route path="/selleritems/:sellerId" element={<SellerItemsList />} />
         <Route path="/item/items_list" element={<ItemsList />} />
-        <Route path="/exchangeorderlist" element={<ExchangeOrderList />} />
+        <Route path="/exchange_orderslist" element={<ExchangeOrderList />} />
         <Route
           path="/subscription_plans/plans_list"
           element={<SubscriptionPlans />}
@@ -77,7 +77,7 @@ function App() {
         <Route path="/settings" element={<SettingsForm />} />
         <Route path="/category/category_list" element={<CategoryList />} />
         <Route
-          path="/customer/customer_update"
+          path="/user/mobilenumber_updated"
           element={<CustomerUpdationDetails />}
         />
       </Routes>
