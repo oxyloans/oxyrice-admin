@@ -203,7 +203,7 @@ const CustomerList = () => {
             align="center"
             render={(text, record) => (
               <Link
-                to="/subscription_plans/user_subscriptions_list"
+                to={`/subscription_plans/user_subscriptions_list/${record.id}`}
                 size="small"
                 style={{
                   backgroundColor: "#1C84C6",

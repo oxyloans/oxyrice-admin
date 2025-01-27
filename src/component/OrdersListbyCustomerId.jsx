@@ -18,6 +18,13 @@ const OrdersListDetailsCustomerId = () => {
   // Table columns
   const columns = [
     {
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+    },
+    {
       title: "Order ID",
       dataIndex: "orderId",
       key: "orderId",
@@ -181,7 +188,7 @@ const OrdersListDetailsCustomerId = () => {
             3: "Order Picked",
             4: "Order Delivered",
             5: "Order Rejected",
-            6: "Order Canceled",
+            6: "Order Cancelled",
           };
           return statusMap[specificOrder.orderStatus] || "Pending";
         })(),
@@ -221,9 +228,13 @@ const OrdersListDetailsCustomerId = () => {
       <div>
         <Row justify="space-between" align="middle" className="mb-4">
           <Col>
-            <p type="primary" onClick={fetchOrderData}>
+            <h2
+              className="text-xl font-bold mb-2 sm:mb-0"
+              type="primary"
+              onClick={fetchOrderData}
+            >
               Orders List
-            </p>
+            </h2>
           </Col>
           <Col>
             Show{" "}

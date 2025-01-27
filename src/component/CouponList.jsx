@@ -14,6 +14,7 @@ import {
   Col,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import { FaPlus } from "react-icons/fa";
 import moment from "moment";
 import AdminPanelLayout from "./AdminPanelLayout";
 
@@ -307,7 +308,7 @@ const CouponList = () => {
               style={{ backgroundColor: "#1C84C6", color: "white" }}
               onClick={showModal}
             >
-              Add New Coupon
+              <FaPlus /> Add New Coupon
             </Button>
           </div>
 

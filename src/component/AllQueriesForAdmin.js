@@ -61,10 +61,10 @@ function AllQueriesforAdmin() {
       })
       .catch((error) => {
         setLoader(false);
-         notification.error({
-           message: "Error",
-           description: error.response?.data?.error || "An error occurred", // Correctly accessing error properties
-         });
+        notification.error({
+          message: "Error",
+          description: error.response?.data?.error || "An error occurred", // Correctly accessing error properties
+        });
       });
   }
 
@@ -336,7 +336,12 @@ function AllQueriesforAdmin() {
                       render={(item) => (
                         <Button
                           type="primary"
-                          onClick={() => handleOpenModal(item)} // item can be passed if needed
+                          onClick={() => handleOpenModal(item)}
+                          style={{
+                            marginRight: "8px",
+                            backgroundColor: "#1C84C6",
+                            color: "white",
+                          }} // item can be passed if needed
                         >
                           {"Pending"}
                         </Button>
@@ -434,23 +439,39 @@ function AllQueriesforAdmin() {
                 ) : (
                   <>
                     <Button
-                      type="default"
                       onClick={() => approvefunc("PENDING")}
-                      style={{ marginRight: "8px" }}
+                      style={{
+                        marginRight: "8px",
+                        backgroundColor: "#1C84C6",
+                        color: "white",
+                      }}
                     >
-                      Mark as Pending
+                      Pending
                     </Button>
                     <Button
                       type="primary"
                       onClick={() => approvefunc("COMPLETED")}
+                      style={{
+                        marginRight: "8px",
+                        backgroundColor: "#04AA6D",
+                        color: "white",
+                      }}
                     >
-                      Approve
+                      Approved
                     </Button>
                   </>
                 )}
               </>
             )}
-            <Button type="default" onClick={handleCloseModal}>
+            <Button
+              type="default"
+              onClick={handleCloseModal}
+              style={{
+                marginRight: "8px",
+               
+              
+              }}
+            >
               Close
             </Button>
           </div>

@@ -14,6 +14,7 @@ import {
   Row,
   Col,
 } from "antd";
+import { MdModeEditOutline } from "react-icons/md";
 
 const { Option } = Select;
 
@@ -250,6 +251,7 @@ const DeliveryBoyList = () => {
           }}
           onClick={() => showEditModal(record)}
         >
+          <MdModeEditOutline />
           Edit
         </Button>
       ),

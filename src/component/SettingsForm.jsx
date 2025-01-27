@@ -127,7 +127,16 @@ const SettingsForm = () => {
           </Row>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              style={{
+                marginRight: "8px",
+                backgroundColor: "#1C84C6",
+                color: "white",
+              }}
+            >
               Save Settings
             </Button>
           </Form.Item>

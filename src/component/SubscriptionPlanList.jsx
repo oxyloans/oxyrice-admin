@@ -13,6 +13,7 @@ import {
 } from "antd";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
+import { MdModeEditOutline } from "react-icons/md";
 
 const { Option } = Select;
 
@@ -254,6 +255,7 @@ const SubscriptionPlans = () => {
               color: "white",
             }}
           >
+            <MdModeEditOutline />
             Edit
           </Button>
         </div>

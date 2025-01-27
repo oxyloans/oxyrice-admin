@@ -12,6 +12,7 @@ import {
   Col,
 } from "antd";
 import AdminPanelLayout from "./AdminPanelLayout";
+import { MdModeEditOutline } from "react-icons/md";
 import "../ItemList.css"; // Import custom CSS for responsive styling
 const { Option } = Select;
 const ItemList = () => {
@@ -26,30 +27,40 @@ const ItemList = () => {
 
   const accessToken = localStorage.getItem("accessToken");
 
-  useEffect(() => {
-    fetchItemsData();
-  }, []);
+useEffect(() => {
+  fetchItemsData();
+}, []);
 
-  const fetchItemsData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "https://meta.oxyloans.com/api/erice-service/items/getItemsData",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      message.success("Data Fetched Successfully");
-      setItems(response.data);
-      setFilteredItems(response.data);
-    } catch (error) {
-      message.error("Error fetching items data: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchItemsData = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      "https://meta.oxyloans.com/api/erice-service/items/getItemsData",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    message.success("Data Fetched Successfully");
+
+    // Filter data where quantity is 1 or 26
+    const filteredData = response.data.filter(
+      (item) => item.quantity === 1 || item.quantity === 26
+    );
+
+    // Sort to display items with quantity 26 first
+    const sortedData = filteredData.sort((a, b) => b.quantity - a.quantity);
+
+    setItems(sortedData);
+    setFilteredItems(sortedData);
+  } catch (error) {
+    message.error("Error fetching items data: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleUpdateItem = async (values) => {
     if (selectedItem) {
@@ -175,7 +186,7 @@ const ItemList = () => {
             marginBottom: "16px",
           }}
         >
-          Edit
+          <MdModeEditOutline /> Edit
         </Button>
       ),
     },
@@ -308,18 +319,36 @@ const ItemList = () => {
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
-                <Form.Item label="Item Unit" name="itemUnit">
+                <Form.Item
+                  label="Item Unit"
+                  name="itemUnit"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input the item units!",
+                    },
+                  ]}
+                >
                   <Input />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12}>
                 <Form.Item label="Tags" name="tags">
-                  <Input placeholder="Comma-separated tags" />
+                  <Input placeholder="tags" />
                 </Form.Item>
               </Col>
             </Row>
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                style={{
+                  marginRight: "8px",
+                  backgroundColor: "#1C84C6",
+                  color: "white",
+                }}
+              >
                 Update
               </Button>
             </Form.Item>

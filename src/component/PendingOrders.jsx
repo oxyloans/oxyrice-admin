@@ -1,6 +1,6 @@
 import AdminPanelLayout from "./AdminPanelLayout";
 import React, { useState, useRef, useEffect } from "react";
-import { Table, Button, message, Row, Col, Select } from "antd";
+import { Table, Button, message, Row, Col,Spin,Modal, Select } from "antd";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { AiOutlineDownload } from "react-icons/ai";
@@ -13,11 +13,20 @@ const PendingOrders = () => {
   const [loading, setLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setOrderDetails(null);
+  };
+
   const printRef = useRef();
 
   const handlePrint = () => {
@@ -29,6 +38,33 @@ const PendingOrders = () => {
     window.location.reload(); // Reload the page to restore functionality
   };
 
+  const fetchOrderDetailsModal = async (orderId) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `https://meta.oxyloans.com/api/erice-service/order/getOrdersByOrderId/${orderId}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (response?.data) {
+        console.log("Fetched Order Details:", response.data);
+        setOrderDetails(response.data[0]); // Assuming it's an array and you need the first item
+      } else {
+        console.error("Empty response:", response);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching order details:",
+        error.response || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Handle "View" button click
+  const handleViewClick = (orderId) => {
+    fetchOrderDetailsModal(orderId); // Fetch order details
+    setIsModalVisible(true); // Show modal
+  };
   // Define table columns
   const columns = [
     {
@@ -79,7 +115,7 @@ const PendingOrders = () => {
         const statusMap = {
           0: "Incomplete",
           4: "Order Delivered",
-          6: "Order Canceled",
+          6: "Order Cancelled",
         };
         return statusMap[status] || "Pending";
       },
@@ -88,16 +124,17 @@ const PendingOrders = () => {
       title: "Action",
       key: "action",
       align: "center",
-      render: () => (
+      render: (order) => (
         <>
           <Button
             type="link"
             style={{
               backgroundColor: "#23C6C8",
               color: "white",
-              padding: "2",
-              margin: "2",
+              padding: "2px",
+              margin: "4px",
             }}
+            onClick={() => handleViewClick(order.orderId)}
           >
             View
           </Button>
@@ -107,10 +144,10 @@ const PendingOrders = () => {
             style={{
               backgroundColor: "#23C6C8",
               color: "white",
-              padding: "2",
-              margin: "2",
+             
+             
             }}
-            a
+          
           >
             Print
           </Button>
@@ -177,7 +214,7 @@ const PendingOrders = () => {
               3: "Order Picked",
               4: "Order Delivered",
               5: "Order Rejected",
-              6: "Order Canceled",
+              6: "Order Cancelled",
             };
             return statusMap[item.orderStatus] || "Pending";
           })()
@@ -194,7 +231,20 @@ const PendingOrders = () => {
     // Generate and download the Excel file
     XLSX.writeFile(workbook, "OrderData.xlsx");
   };
+  const orderStatusMap = {
+    0: "Incomplete",
+    1: "Order Placed",
+    2: "Order Accepted",
+    3: "Order Picked",
+    4: "Order Delivered",
+    5: "Order Rejected",
+    6: "Order Cancelled",
+  };
 
+  const paymentTypeMap = {
+    1: "COD",
+    2: "ONLINE",
+  };
   return (
     <AdminPanelLayout>
       <div ref={printRef}>
@@ -251,6 +301,163 @@ const PendingOrders = () => {
           }}
         />
       </div>
+      <Modal
+        title="Order Details"
+        visible={isModalVisible}
+        onCancel={handleModalClose}
+        footer={null}
+        width={650}
+      >
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <Spin />
+          </div>
+        ) : orderDetails ? (
+          <div>
+            <table className="w-full border-collapse border border-gray-300 mb-4">
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Order ID</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    {orderDetails?.orderId || "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Customer Mobile</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    {orderDetails?.customermobilenumber || "N/A"} -{" "}
+                    {orderDetails?.customerName || "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Customer Address</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1">
+                    <strong>Flat No:</strong> {orderDetails?.flatNo || "N/A"},{" "}
+                    <br />
+                    <strong>Land Mark:</strong>{" "}
+                    {orderDetails?.landMark || "N/A"}, <br />
+                    <strong>Location:</strong> {orderDetails?.address || "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Order Status</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    {orderDetails?.orderstatus
+                      ? orderStatusMap[orderDetails.orderstatus]
+                      : "N/A"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Payment Type</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    {orderDetails?.payment
+                      ? paymentTypeMap[orderDetails.payment] || "Other"
+                      : "N/A"}
+                  </td>
+                </tr>
+                <tr></tr>
+              </tbody>
+            </table>
+
+            <h2 className="font-semibold mb-2 text-center">
+              Menu Item Details
+            </h2>
+            <Table
+              columns={[
+                {
+                  title: "Menu Item",
+                  dataIndex: "itemName",
+                  key: "itemName",
+                  align: "center",
+                },
+                {
+                  title: "Quantity",
+                  dataIndex: "quantity",
+                  key: "quantity",
+                  align: "center",
+                },
+                {
+                  title: "Price",
+                  dataIndex: "price",
+                  key: "price",
+                  align: "center",
+                  render: (text) => `₹${text || "0.00"}`,
+                },
+                {
+                  title: "Total Price",
+                  dataIndex: "price",
+                  key: "price",
+                  align: "center",
+                  render: (text) => `₹${text || "0.00"}`,
+                },
+              ]}
+              dataSource={orderDetails?.orderItems || []}
+              rowKey={(record, index) => index}
+              pagination={false}
+            />
+
+            <h2 className="font-semibold mt-4 ">
+              <strong>Order Totals</strong>
+            </h2>
+            <table className="w-full border-collapse border border-gray-300 mb-4">
+              <tbody>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Sub Total</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    ₹{orderDetails?.subtotal || "0.00"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Delivery Fee</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    ₹{orderDetails?.deliveryfee || "0.00"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Grand Total</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    ₹{orderDetails?.granttotal || "0.00"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Subscription Amount Used</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    ₹{orderDetails?.subscriptionAmountUsed || "0.00"}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    <strong>Referral Amount Used</strong>
+                  </td>
+                  <td className="border border-gray-300 px-2 py-1 text-center">
+                    ₹{orderDetails?.referralAmountUsed || "0.00"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No order details available.</p>
+        )}
+      </Modal>
     </AdminPanelLayout>
   );
 };

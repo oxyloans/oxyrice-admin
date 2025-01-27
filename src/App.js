@@ -29,7 +29,7 @@ import AllQueriesForAdmin from "./component/AllQueriesForAdmin";
 import SubscriberDetails from "./component/SubscriberDetails";
 import OrdersListDetailsCustomerId from "./component/OrdersListbyCustomerId";
 import CustomerUpdationDetails from "./component/CustomerUpdationDetails";
-
+import SubscriptionPlanListDetailsCustomerId from "./component/SubscriptionListByCustomerId"; 
 function App() {
   return (
     <Router>
@@ -62,6 +62,10 @@ function App() {
         <Route
           path="/orders/orders_list/:id"
           element={<OrdersListDetailsCustomerId />}
+        />
+        <Route
+          path="/subscription_plans/user_subscriptions_list/:id"
+          element={<SubscriptionPlanListDetailsCustomerId />}
         />
         <Route path="/orders/return_pending_list" element={<PendingOrders />} />
         <Route path="/orders/return_replied_list" element={<RepliedList />} />

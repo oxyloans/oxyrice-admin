@@ -14,6 +14,7 @@ import {
 import { EditOutlined, UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelLayout";
+ import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;
 
 const CategoryList = () => {
@@ -33,6 +34,7 @@ const CategoryList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [previousFile, setPreviousFile] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
+ 
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -366,8 +368,8 @@ const CategoryList = () => {
           />
 
           <Table.Column
-            title="Category Logo"
-            dataIndex="categoryLogo"
+            title="Category Image"
+            dataIndex="categoryImage"
             align="center"
             render={(image) => (
               <div style={{ display: "flex", justifyContent: "center" }}>
@@ -420,11 +422,11 @@ const CategoryList = () => {
                 <Button
                   onClick={() => openEditCategoryModal(record)}
                   style={{
-                    backgroundColor: "#1C84C6",
+                    backgroundColor: "#1AB394",
                     color: "white",
                   }}
                 >
-                  Edit
+                  <MdModeEditOutline /> Edit
                 </Button>
 
                 <Button
@@ -623,7 +625,15 @@ const CategoryList = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                style={{
+                  backgroundColor: "#1C84C6",
+                  color: "white",
+                }}
+              >
                 Add Item
               </Button>
             </Form.Item>

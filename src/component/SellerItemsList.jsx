@@ -168,6 +168,7 @@ import {
 } from "antd";
 import AdminPanelLayout from "./AdminPanelLayout";
 import { useParams } from "react-router-dom";
+import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;
 
 const accessToken = localStorage.getItem("accessToken");
@@ -212,8 +213,19 @@ const SellerItemsList = () => {
         }
       );
       message.success("Data fetched successfully");
-      setItems(response.data);
-      setFilteredSellerItems(response.data);
+      // setItems(response.data);
+      // setFilteredSellerItems(response.data);
+
+      // Filter data where quantity is 1 or 26
+      const filteredData = response.data.filter(
+        (item) => item.quantity === 1 || item.quantity === 26
+      );
+
+      // Sort to display items with quantity 26 first
+      const sortedData = filteredData.sort((a, b) => a.quantity - b.quantity);
+
+      setItems(sortedData);
+       setFilteredSellerItems(sortedData);
     } catch (error) {
       console.error("Error fetching item details:", error);
       message.error("Failed to fetch item details.");
@@ -285,7 +297,7 @@ const SellerItemsList = () => {
       align: "center",
     },
     {
-      title: "Item MRP",
+      title: "Item Mrp",
       dataIndex: "itemMrp",
       key: "itemMrp",
       align: "center",
@@ -334,7 +346,7 @@ const SellerItemsList = () => {
             marginBottom: "16px",
           }}
         >
-          Edit Price
+          <MdModeEditOutline /> Edit Price
         </Button>
       ),
     },
@@ -439,9 +451,9 @@ const SellerItemsList = () => {
             >
               <Form form={form} layout="vertical" onFinish={updateItemPrice}>
                 <Form.Item
-                  label="Item MRP"
+                  label="Item Mrp"
                   name="itemMrp"
-                  rules={[{ required: true, message: "Please enter item MRP" }]}
+                  rules={[{ required: true, message: "Please enter item Mrp" }]}
                 >
                   <Input />
                 </Form.Item>
