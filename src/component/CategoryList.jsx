@@ -369,13 +369,13 @@ const CategoryList = () => {
 
           <Table.Column
             title="Category Image"
-            dataIndex="categoryImage"
+            dataIndex="categoryLogo"
             align="center"
             render={(image) => (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <img
                   src={image}
-                  alt="Logo"
+                  alt="Category Logo"
                   style={{ width: 50, height: 50, objectFit: "cover" }}
                 />
               </div>
