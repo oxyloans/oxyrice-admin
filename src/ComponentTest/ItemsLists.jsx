@@ -1,0 +1,417 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Table,
+  Button,
+  Modal,
+  Select,
+  Form,
+  Input,
+  message,
+  Row,
+  Col,
+} from "antd";
+import AdminPanelLayoutTest from "./AdminPanelTest";
+import { MdModeEditOutline } from "react-icons/md";
+import "../ItemList.css"; // Import custom CSS for responsive styling
+
+const { Option } = Select;
+const ItemList = () => {
+  const [items, setItems] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredItems, setFilteredItems] = useState([]);
+
+  const accessToken = localStorage.getItem("accessToken");
+
+  useEffect(() => {
+    fetchItemsData();
+  }, []);
+
+  const fetchItemsData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        "https://meta.oxyglobal.tech/api/product-service/getItemsData",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      message.success("Data Fetched Successfully");
+
+      // Filter data where quantity is 1 or 26
+      const filteredData = response.data.filter(
+        (item) => item.quantity === 1 || item.quantity === 26
+      );
+
+      // Sort to display items with quantity 26 first
+      const sortedData = filteredData.sort((a, b) => b.quantity - a.quantity);
+      setItems(sortedData);
+      console.log(sortedData);
+      setFilteredItems(response.data);
+    } catch (error) {
+      message.error("Error fetching items data: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateItem = async (values) => {
+    if (selectedItem) {
+      try {
+        await axios.patch(
+          // "https://meta.oxyloans.com/api/erice-service/items/updateData",
+          "https://meta.oxyglobal.tech/api/product-service/updateData",
+          {
+            itemId: selectedItem.itemId,
+            itemName: values.itemName,
+            itemPrice: values.itemPrice,
+            itemQty: values.itemQty,
+            itemUnit: values.itemUnit,
+            tags: values.tags,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        message.success("Item data updated successfully");
+        fetchItemsData();
+        handleCancel();
+      } catch (error) {
+        message.error("Error updating item: " + error.message);
+      }
+    }
+  };
+
+  const handleToGenerateBarCodes = async (item) => {
+    try {
+      const response = await fetch(
+        "https://meta.oxyglobal.tech/api/product-service/generateBarCodes",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+          body: JSON.stringify({
+            catId: item.categoryId,
+            itemId: item.itemId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch the file");
+      }
+
+      const blob = await response.blob(); // Convert response to a blob
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${item.itemName}.pdf`; // Set the filename
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url); // Clean up URL object
+    } catch (error) {
+      console.error("Error downloading the file:", error);
+    }
+  };
+
+  const showUpdateModal = (item) => {
+    setSelectedItem(item);
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setSelectedItem(null);
+  };
+
+  // Pagination logic
+  const paginatedCustomers = items.slice(
+    (currentPage - 1) * entriesPerPage,
+    currentPage * entriesPerPage
+  );
+
+  // Handle change in the number of entries per page
+  const handleEntriesPerPageChange = (value) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const columns = [
+    {
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+      responsive: ["md"],
+    },
+    {
+      title: "Item Name",
+      dataIndex: "itemName",
+      key: "itemName",
+      align: "center",
+    },
+    {
+      title: "Category Name",
+      dataIndex: "categoryName",
+      key: "categoryName",
+      align: "center",
+      responsive: ["md"],
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      align: "center",
+    },
+    {
+      title: "Weight",
+      dataIndex: "weight",
+      key: "weight",
+      align: "center",
+    },
+    {
+      title: "Units",
+      dataIndex: "units",
+      key: "units",
+      align: "center",
+      responsive: ["md"],
+    },
+    {
+      title: "Item Logo",
+      dataIndex: "itemImage",
+      key: "itemImage",
+      align: "center",
+      render: (text) => (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={text}
+            alt="Item Logo"
+            style={{ width: 50, height: 50, objectFit: "cover" }}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (text, item) => (
+        <div>
+          <Button
+            onClick={() => showUpdateModal(item)}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+              marginBottom: "16px",
+            }}
+          >
+            <MdModeEditOutline /> Edit
+          </Button>
+          <br />
+          <Button
+            onClick={() => handleToGenerateBarCodes(item)}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+              marginBottom: "16px",
+            }}
+          >
+            <MdModeEditOutline /> Generate Bar Codes
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    setSearchTerm(value);
+
+    if (value) {
+      // Filter items based on the search term
+      const filtered = items.filter(
+        (item) =>
+          item.itemName?.toLowerCase().includes(value) || // Safe access with optional chaining
+          item.categoryName?.toLowerCase().includes(value) ||
+          item.quantity?.toString().toLowerCase().includes(value) ||
+          item.Units?.toLowerCase().includes(value)
+      );
+
+      setFilteredItems(filtered); // Update the filtered items
+    } else {
+      setFilteredItems(items); // Reset to all items when search term is empty
+    }
+  };
+
+  return (
+    <AdminPanelLayoutTest>
+      <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          <h2 className="text-xl font-bold mb-2 sm:mb-0">Items List</h2>
+        </Col>
+      </Row>
+
+      <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          Show{" "}
+          <Select
+            value={entriesPerPage}
+            onChange={handleEntriesPerPageChange}
+            style={{ width: 70 }}
+          >
+            <Option value={5}>5</Option>
+            <Option value={10}>10</Option>
+            <Option value={20}>20</Option>
+          </Select>{" "}
+          entries
+        </Col>
+
+        <Col>
+          Search:{" "}
+          <Input
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ width: 150 }}
+          />
+        </Col>
+      </Row>
+      <Table
+        dataSource={filteredItems}
+        columns={columns}
+        rowKey="itemId"
+        loading={loading}
+        pagination={{
+          pageSize: entriesPerPage,
+          onChange: (page) => setCurrentPage(page),
+        }}
+        scroll={{ x: "100%" }} // Enables horizontal scroll on smaller screens
+        bordered
+      />
+      <Modal
+        title="Update Item"
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        className="responsive-modal"
+      >
+        {selectedItem && (
+          <Form
+            initialValues={{
+              itemName: selectedItem.itemName,
+              itemImage: selectedItem.itemImage || "",
+              itemPrice: selectedItem.itemPrice || 0,
+              itemQty: selectedItem.quantity || 0,
+              itemUnit: selectedItem.units || "",
+              tags: selectedItem.tags || "",
+            }}
+            onFinish={handleUpdateItem}
+            layout="vertical"
+          >
+            <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Name"
+                  name="itemName"
+                  rules={[
+                    { required: true, message: "Please input the item name!" },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Item Image URL" name="itemImage">
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Price"
+                  name="itemPrice"
+                  rules={[
+                    { required: true, message: "Please input the item price!" },
+                  ]}
+                >
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Quantity"
+                  name="itemQty"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input the item quantity!",
+                    },
+                  ]}
+                >
+                  <Input type="number" />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Unit"
+                  name="itemUnit"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input the item units!",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Tags" name="tags">
+                  <Input placeholder="tags" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                style={{
+                  marginRight: "8px",
+                  backgroundColor: "#1C84C6",
+                  color: "white",
+                }}
+              >
+                Update
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
+    </AdminPanelLayoutTest>
+  );
+};
+
+export default ItemList;
