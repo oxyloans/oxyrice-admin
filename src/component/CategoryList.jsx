@@ -585,12 +585,12 @@ const CategoryList = () => {
 
             <Form.Item
               name="itemQty"
-              label="Item Quantity"
+              label="Item Weight"
               rules={[
-                { required: true, message: "Please enter the item quantity." },
+                { required: true, message: "Please enter the item weight." },
               ]}
             >
-              <Input placeholder="Enter item quantity" />
+              <Input placeholder="Enter item weight" />
             </Form.Item>
 
             <Form.Item
