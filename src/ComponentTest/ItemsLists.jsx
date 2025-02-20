@@ -11,11 +11,13 @@ import {
   Row,
   Col,
 } from "antd";
+import { Link } from "react-router-dom";
 import AdminPanelLayoutTest from "./AdminPanelTest";
 import { MdModeEditOutline } from "react-icons/md";
 import "../ItemList.css"; // Import custom CSS for responsive styling
-
+import CategoryList from "./CategoryList";
 const { Option } = Select;
+
 const ItemList = () => {
   const [items, setItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -25,8 +27,10 @@ const ItemList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
-
+  const [form] = Form.useForm(); // Create a form instance
   const accessToken = localStorage.getItem("accessToken");
+  const [selectedFile, setSelectedFile] = useState(null);
+
 
   useEffect(() => {
     fetchItemsData();
@@ -61,37 +65,115 @@ const ItemList = () => {
       setLoading(false);
     }
   };
+const handleFileChange = (e) => {
+  if (e.target.files.length > 0) {
+    setSelectedFile(e.target.files[0]);
+  }
+};
 
-  const handleUpdateItem = async (values) => {
-    if (selectedItem) {
-      try {
-        await axios.patch(
-          // "https://meta.oxyloans.com/api/erice-service/items/updateData",
-          "https://meta.oxyglobal.tech/api/product-service/updateData",
-          {
-            itemId: selectedItem.itemId,
-            itemName: values.itemName,
-            itemPrice: values.itemPrice,
-            itemQty: values.itemQty,
-            itemUnit: values.itemUnit,
-            tags: values.tags,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        message.success("Item data updated successfully");
-        fetchItemsData();
-        handleCancel();
-      } catch (error) {
-        message.error("Error updating item: " + error.message);
+const handleUpdateItem = async (values) => {
+  setLoading(true);
+  if (selectedItem) {
+    try {
+      const formData = new FormData();
+
+      // Append file if selected
+      if (selectedFile) {
+        formData.append("File", selectedFile);
       }
+
+      formData.append("itemName", values.itemName);
+      formData.append("quantity", values.quantity || 0);
+      formData.append("weight", values.weight || 0);
+      formData.append("itemUnit", values.itemUnit);
+      formData.append("itemDescription", values.itemDescription);
+      formData.append("tag", values.tag);
+
+      await axios.patch(
+       `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}&fileType=kyc`,
+
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      message.success("Item updated successfully");
+      fetchItemsData();
+      handleCancel();
+    } catch (error) {
+      message.error(
+        "Error updating item: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+};
+
+
+useEffect(() => {
+  if (selectedItem) {
+    form.setFieldsValue({
+      itemName: selectedItem.itemName,
+      quantity: selectedItem.quantity || "",
+      weight: selectedItem.weight || "",
+      itemUnit: selectedItem.units,
+      tag: selectedItem.tag || "",
+      itemDescription: selectedItem.itemDescription || "",
+     
+    });
+  }
+}, [selectedItem]);
+
+  const handleViewGeneratedBarCodes = async (item) => {
+    setLoading(true);
+    try {
+      const url =
+        "https://meta.oxyglobal.tech/api/product-service/viewGeneratedBarCodes";
+
+      const response = await axios.post(
+        url,
+        {
+          catId: item.categoryId,
+          itemId: item.itemId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200 && response.data) {
+        const downloadUrl = response.data; // The URL returned by the API
+
+        // Create a link and trigger the download
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${item.itemName}.pdf`; // Set filename
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        message.success("Barcode file downloaded successfully!");
+      } else {
+        message.error("Failed to retrieve barcode download URL.");
+      }
+    } catch (error) {
+      console.error("Error fetching barcodes:", error);
+      message.error("Failed to retrieve barcodes.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleToGenerateBarCodes = async (item) => {
+    setLoading(true);
     try {
       const response = await fetch(
         "https://meta.oxyglobal.tech/api/product-service/generateBarCodes",
@@ -107,6 +189,10 @@ const ItemList = () => {
           }),
         }
       );
+      if (response.status === 500) {
+        alert("All barcodes have already been generated up to 40");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error("Failed to fetch the file");
@@ -123,6 +209,8 @@ const ItemList = () => {
       window.URL.revokeObjectURL(url); // Clean up URL object
     } catch (error) {
       console.error("Error downloading the file:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,100 +240,149 @@ const ItemList = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-
-  const columns = [
-    {
-      title: "S.NO",
-      key: "serialNo",
-      render: (text, record, index) =>
-        index + 1 + (currentPage - 1) * entriesPerPage,
-      align: "center",
-      responsive: ["md"],
-    },
-    {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-      align: "center",
-    },
-    {
-      title: "Category Name",
-      dataIndex: "categoryName",
-      key: "categoryName",
-      align: "center",
-      responsive: ["md"],
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-      align: "center",
-    },
-    {
-      title: "Weight",
-      dataIndex: "weight",
-      key: "weight",
-      align: "center",
-    },
-    {
-      title: "Units",
-      dataIndex: "units",
-      key: "units",
-      align: "center",
-      responsive: ["md"],
-    },
-    {
-      title: "Item Logo",
-      dataIndex: "itemImage",
-      key: "itemImage",
-      align: "center",
-      render: (text) => (
-        <div
+const columns = [
+  {
+    title: "S.NO",
+    key: "serialNo",
+    render: (text, record, index) =>
+      index + 1 + (currentPage - 1) * entriesPerPage,
+    align: "center",
+    responsive: ["md"],
+  },
+  {
+    title: "Item Name",
+    dataIndex: "itemName",
+    key: "itemName",
+    align: "center",
+  },
+  {
+    title: "Category Name",
+    dataIndex: "categoryName",
+    key: "categoryName",
+    align: "center",
+    responsive: ["md"],
+  },
+  {
+    title: "Quantity",
+    dataIndex: "quantity",
+    key: "quantity",
+    align: "center",
+  },
+  {
+    title: "Weight",
+    dataIndex: "weight",
+    key: "weight",
+    align: "center",
+  },
+  {
+    title: "Units",
+    dataIndex: "units",
+    key: "units",
+    align: "center",
+    responsive: ["md"],
+  },
+  {
+    title: "Item Logo",
+    dataIndex: "itemImage",
+    key: "itemImage",
+    align: "center",
+    render: (text) => (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <img
+          src={text}
+          alt="Item Logo"
+          style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 5 }}
+        />
+      </div>
+    ),
+  },
+  {
+    title: "Action",
+    key: "action",
+    align: "center",
+    render: (text, item) => (
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "8px",
+          justifyContent: "center",
+        }}
+      >
+        {/* Edit Button */}
+        <Button
+          onClick={() => showUpdateModal(item)}
           style={{
+            backgroundColor: "#008CBA",
+            color: "white",
+            border: "none",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
           }}
+          disabled={loading}
         >
-          <img
-            src={text}
-            alt="Item Logo"
-            style={{ width: 50, height: 50, objectFit: "cover" }}
-          />
-        </div>
-      ),
-    },
-    {
-      title: "Action",
-      key: "action",
-      align: "center",
-      render: (text, item) => (
-        <div>
-          <Button
-            onClick={() => showUpdateModal(item)}
-            style={{
-              backgroundColor: "#1AB394",
-              color: "white",
-              marginBottom: "16px",
-            }}
+          Edit
+        </Button>
+
+        {/* Barcode Information Button */}
+        <Button
+          style={{
+            backgroundColor: "#1AB394",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+          }}
+          disabled={loading}
+        >
+          <Link
+            to={`/admin/allinformationofbarcode/${item.itemId}`}
+            style={{ color: "white", textDecoration: "none" }}
           >
-            <MdModeEditOutline /> Edit
-          </Button>
-          <br />
-          <Button
-            onClick={() => handleToGenerateBarCodes(item)}
-            style={{
-              backgroundColor: "#1AB394",
-              color: "white",
-              marginBottom: "16px",
-            }}
-          >
-            <MdModeEditOutline /> Generate Bar Codes
-          </Button>
-        </div>
-      ),
-    },
-  ];
+            Barcode Info
+          </Link>
+        </Button>
+
+        {/* View Bar Codes Button */}
+        <Button
+          type="primary"
+          onClick={() => handleViewGeneratedBarCodes(item)}
+          style={{
+            backgroundColor: "#008CBA",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+          }}
+          disabled={loading}
+        >
+          View Bar Codes
+        </Button>
+
+        {/* Generate Bar Codes Button */}
+        <Button
+          type="primary"
+          onClick={() => handleToGenerateBarCodes(item)}
+          style={{
+            backgroundColor: "#1AB394",
+            color: "white",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+          }}
+          disabled={loading}
+        >
+          Generate Bar Codes
+        </Button>
+      </div>
+    ),
+  },
+];
+
 
   const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
@@ -274,7 +411,6 @@ const ItemList = () => {
           <h2 className="text-xl font-bold mb-2 sm:mb-0">Items List</h2>
         </Col>
       </Row>
-
       <Row justify="space-between" align="middle" className="mb-4">
         <Col>
           Show{" "}
@@ -319,80 +455,97 @@ const ItemList = () => {
         className="responsive-modal"
       >
         {selectedItem && (
-          <Form
-            initialValues={{
-              itemName: selectedItem.itemName,
-              itemImage: selectedItem.itemImage || "",
-              itemPrice: selectedItem.itemPrice || 0,
-              itemQty: selectedItem.quantity || 0,
-              itemUnit: selectedItem.units || "",
-              tags: selectedItem.tags || "",
-            }}
-            onFinish={handleUpdateItem}
-            layout="vertical"
-          >
+          <Form form={form} onFinish={handleUpdateItem} layout="vertical">
             <Row gutter={16}>
               <Col xs={24} sm={12}>
                 <Form.Item
                   label="Item Name"
                   name="itemName"
-                  rules={[
-                    { required: true, message: "Please input the item name!" },
-                  ]}
+                  // rules={[
+                  //   { required: true, message: "Please input the item name!" },
+                  // ]}
                 >
                   <Input />
                 </Form.Item>
               </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Item Image URL" name="itemImage">
-                  <Input />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Price"
-                  name="itemPrice"
-                  rules={[
-                    { required: true, message: "Please input the item price!" },
-                  ]}
-                >
-                  <Input type="number" />
-                </Form.Item>
-              </Col>
+
               <Col xs={24} sm={12}>
                 <Form.Item
                   label="Item Quantity"
-                  name="itemQty"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input the item quantity!",
-                    },
-                  ]}
+                  name="quantity"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please input the item quantity!",
+                  //   },
+                  // ]}
                 >
-                  <Input type="number" />
+                  <Input />
                 </Form.Item>
               </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Item Weight"
+                  name="weight"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please input the item weight!",
+                  //   },
+                  // ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+
               <Col xs={24} sm={12}>
                 <Form.Item
                   label="Item Unit"
                   name="itemUnit"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please input the item units!",
-                    },
-                  ]}
+                  // rules={[
+                  //   { required: true, message: "Please input the item unit!" },
+                  // ]}
                 >
                   <Input />
                 </Form.Item>
               </Col>
+
               <Col xs={24} sm={12}>
-                <Form.Item label="Tags" name="tags">
-                  <Input placeholder="tags" />
+                <Form.Item
+                  label="Item Description"
+                  name="itemDescription"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please input the item description!",
+                  //   },
+                  // ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Tags"
+                  name="tag"
+                  // rules={[
+                  //   { required: true, message: "Please input the item tags!" },
+                  // ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+
+              {/* File Upload */}
+              <Col xs={24} sm={12}>
+                <Form.Item label="Upload File" name="file">
+                  <Input type="file" onChange={handleFileChange} />
                 </Form.Item>
               </Col>
             </Row>
+
             <Form.Item>
               <Button
                 type="primary"
@@ -403,6 +556,7 @@ const ItemList = () => {
                   backgroundColor: "#1C84C6",
                   color: "white",
                 }}
+                disabled={loading}
               >
                 Update
               </Button>
@@ -410,6 +564,7 @@ const ItemList = () => {
           </Form>
         )}
       </Modal>
+      
     </AdminPanelLayoutTest>
   );
 };

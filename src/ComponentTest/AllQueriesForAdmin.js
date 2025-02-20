@@ -51,7 +51,7 @@ function AllQueries() {
     setLoader(true);
     axios
       .post(
-        `https://meta.oxyglobal.tech/api/writetous-service/getAllQueries`,
+        `https://meta.oxyglobal.tech/api/user-service/write/getAllQueries`,
         data,
         {
           headers: {
@@ -101,7 +101,7 @@ function AllQueries() {
     setApproveLoader(true);
     axios
       .post(
-        `https://meta.oxyglobal.tech/api/writetous-service/saveData`,
+        `https://meta.oxyglobal.tech/api/user-service/write/saveData`,
         data,
         {
           headers: {
@@ -165,7 +165,7 @@ function AllQueries() {
     // API call
     axios
       .post(
-        `https://meta.oxyglobal.tech/api/writetous-service/uploadQueryScreenShot?userId=${userId}`,
+        `https://meta.oxyglobal.tech/api/user-service/write/uploadQueryScreenShot?userId=${userId}`,
         formData,
         {
           headers: {

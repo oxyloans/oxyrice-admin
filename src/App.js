@@ -54,8 +54,9 @@ import SubscriptionPlanListustomerId from "./ComponentTest/SubscriptionListByCus
 import SubscriberDetailslist from "./ComponentTest/SubscriberDetails";
 import Subscribers from "./ComponentTest/SubscribersList";
 import SubscriptionPlansList from "./ComponentTest/SubscriptionPlanList";
-
+import AllInforMationOfBarCode from "./ComponentTest/AllInformationOfBarcode";
 import LoginTest from "./ComponentTest/LoginTest";
+import CategoryInventory from "./ComponentTest/CategoryInventary";
 function App() {
   return (
     <Router>
@@ -112,6 +113,10 @@ function App() {
         />
         {/* -----------------------------------Oxy Rice test Admin --------------------------------------- */}
         <Route path="/login" element={<LoginTest />} />
+        <Route
+          path="/admin/allinformationofbarcode/:itemId"
+          element={<AllInforMationOfBarCode />}
+        />
         <Route path="/admintest" element={<DashboardTest />} />
         <Route path="/admintest/categories" element={<Categories />} />
         <Route path="/admintest/coupons" element={<Coupons />} />
@@ -119,6 +124,10 @@ function App() {
         <Route
           path="/admintest/customer-updation"
           element={<CustomerUpdation />}
+        />
+        <Route
+          path="/admintest/category-inventory"
+          element={<CategoryInventory />}
         />
         <Route path="/admintest/delivery-boys" element={<DeliveryBoys />} />
         <Route path="/admintest/exchange-orders" element={<ExchangeOrders />} />

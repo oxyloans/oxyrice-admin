@@ -28,12 +28,12 @@ const AdminPanelLayoutTest = ({ children }) => {
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   const sidebarItems = [
-    {
-      key: "dashboard",
-      label: "Dashboard",
-      icon: <FaTachometerAlt />,
-      link: "/admintest",
-    },
+    // {
+    //   key: "dashboard",
+    //   label: "Dashboard",
+    //   icon: <FaTachometerAlt />,
+    //   link: "/admintest",
+    // },
     // {
     //   key: "settings",
     //   label: "Settings",
@@ -59,7 +59,12 @@ const AdminPanelLayoutTest = ({ children }) => {
     //   icon: <FaUserEdit />,
     //   link: "/admintest/customer-updation",
     // },
-
+    {
+      key: "CategoryInventary",
+      label: "CategoryInventary",
+      icon: <FaTachometerAlt />,
+      link: "/admintest/category-inventory",
+    },
     {
       key: "categories",
       label: "Categories",
@@ -89,24 +94,24 @@ const AdminPanelLayoutTest = ({ children }) => {
         // },
       ],
     },
-    {
-      key: "users",
-      label: "Users",
-      icon: <FaUsers />,
-      dropdownItems: [
-        {
-          key: "customerList",
-          label: "Customer List",
-          link: "/admintest/customers",
-        },
-        {
-          key: "deliveryBoys",
-          label: "Delivery Boy List",
-          link: "/admintest/delivery-boys",
-        },
-      ],
-    },
-   
+    // {
+    //   key: "users",
+    //   label: "Users",
+    //   icon: <FaUsers />,
+    //   dropdownItems: [
+    //     {
+    //       key: "customerList",
+    //       label: "Customer List",
+    //       link: "/admintest/customers",
+    //     },
+    //     {
+    //       key: "deliveryBoys",
+    //       label: "Delivery Boy List",
+    //       link: "/admintest/delivery-boys",
+    //     },
+    //   ],
+    // },
+
     {
       key: "items",
       label: "Items",

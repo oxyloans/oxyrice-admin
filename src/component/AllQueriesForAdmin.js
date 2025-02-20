@@ -361,11 +361,15 @@ function AllQueriesforAdmin() {
           title="Review Documents"
         >
           {/* Display Image or PDF Link */}
+
           {imageUrl && (
             <>
-              <p>Review Image:</p>
+              <p style={{ fontWeight: "bold", marginBottom: "10px" }}>
+                Review Image:{" "}
+              </p>
+
               {imageUrl.endsWith(".pdf") ? (
-                <p>
+                <p style={{ marginBottom: "15px" }}>
                   <strong>File:</strong> {imageUrl.split("/").pop()}{" "}
                   <a
                     href="#"
@@ -373,16 +377,24 @@ function AllQueriesforAdmin() {
                       e.preventDefault();
                       handlePdfOpen(imageUrl);
                     }}
+                    style={{ color: "#007bff", textDecoration: "none" }}
                   >
                     (Click here to view)
                   </a>
                 </p>
               ) : (
-                <Image
-                  src={imageUrl}
-                  style={{ height: 300, width: 300 }}
-                  preview={false}
-                />
+                <div style={{ marginBottom: "15px" }}>
+                  <Image
+                    src={imageUrl}
+                    style={{
+                      height: 300,
+                      width: 300,
+                      borderRadius: "4px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                    }}
+                    preview={false}
+                  />
+                </div>
               )}
             </>
           )}
@@ -392,7 +404,7 @@ function AllQueriesforAdmin() {
             <>
               <div className="mb-4">
                 <label htmlFor="fileUpload" style={{ fontWeight: "bold" }}>
-                  Upload Document:
+                  Upload Document:{" "}
                 </label>
                 <input
                   type="file"
@@ -414,6 +426,7 @@ function AllQueriesforAdmin() {
                     height: "120px",
                     borderRadius: "4px",
                     border: "1px solid #dcdcdc",
+                    paddingLeft: "10px", // Add left padding
                   }}
                   rows={4}
                   onChange={(e) => {
@@ -468,8 +481,6 @@ function AllQueriesforAdmin() {
               onClick={handleCloseModal}
               style={{
                 marginRight: "8px",
-               
-              
               }}
             >
               Close

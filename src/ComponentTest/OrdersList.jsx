@@ -204,6 +204,14 @@ const Ordersdetails = () => {
   // Define table columns
   const columns = [
     {
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+      responsive: ["md"],
+    },
+    {
       title: "Order Id",
       dataIndex: "orderId",
       key: "orderId",

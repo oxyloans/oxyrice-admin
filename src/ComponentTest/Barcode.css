@@ -1,0 +1,27 @@
+/* Add this to your global CSS or a style tag in your component */
+
+.card {
+  background: #333; /* Dark background color */
+  color: #fff; /* White text color */
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); /* Slight shadow for depth */
+  text-align: center;
+  transition: all 0.3s ease-in-out; /* Smooth transition on hover */
+}
+
+.card:hover {
+  background: #444; /* Darker background on hover */
+  transform: translateY(-5px); /* Slight lift effect on hover */
+}
+
+.card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.card p {
+  font-size: 24px;
+  font-weight: 500;
+}

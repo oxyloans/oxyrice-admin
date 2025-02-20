@@ -423,7 +423,7 @@ const Categories = () => {
             align="center"
             render={(text, record) => (
               <span>
-                <Button
+                {/*<Button
                   onClick={() => openEditCategoryModal(record)}
                   style={{
                     backgroundColor: "#1AB394",
@@ -432,6 +432,7 @@ const Categories = () => {
                 >
                   <MdModeEditOutline /> Edit
                 </Button>
+                */}
 
                 <Button
                   onClick={() => openAddItemModal(record.id)}
@@ -592,6 +593,16 @@ const Categories = () => {
               label="Item Weight"
               rules={[
                 { required: true, message: "Please enter the item weight." },
+                {
+                  validator: (_, value) => {
+                    if (value <= 0) {
+                      return Promise.reject(
+                        new Error("Weight must be greater than 0.")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input placeholder="Enter item weight" />
@@ -602,6 +613,16 @@ const Categories = () => {
               label="Item Quantity"
               rules={[
                 { required: true, message: "Please enter the item quantity." },
+                {
+                  validator: (_, value) => {
+                    if (value <= 0) {
+                      return Promise.reject(
+                        new Error("Quantity must be greater than 0.")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input placeholder="Enter item quantity" />
