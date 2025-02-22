@@ -34,7 +34,7 @@ const Categories = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [previousFile, setPreviousFile] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
-
+  const [selectedFile, setSelectedFile] = useState(null);
   const fetchCategories = async () => {
     setLoading(true);
     try {
@@ -139,37 +139,58 @@ const Categories = () => {
       setLoading(false);
     }
   };
+const handleEditCategory = async (values) => {
+  const { categoryName, multiPart } = values;
 
-  const handleEditCategory = async (values) => {
-    const { categoryName, categoriesType, isActive } = values;
-    const payload = {
-      id: editingCategory.id,
-      categoryName,
-      categoriesType,
-      isActive,
-    };
+  // Ensure file is selected
+  if (!multiPart?.fileList?.length) {
+    message.error("Please upload a category image!");
+    return;
+  }
 
-    try {
-      setLoading(true);
-      await axios.patch(
-        // "https://meta.oxyloans.com/api/erice-service/categories/category_update",
-        "https://meta.oxyglobal.tech/api/product-service/save_or_update_Category",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+  const formData = new FormData();
+  formData.append("categoryName", categoryName);
+  formData.append("fileType", "document"); // Specify file type
+
+  // Extract the uploaded file
+  const uploadedFile = multiPart.fileList[0].originFileObj;
+
+  if (!uploadedFile) {
+    message.error("Uploaded file is not valid.");
+    return;
+  }
+
+  formData.append("multiPart", uploadedFile); // Append actual file object
+
+  try {
+    setLoading(true);
+
+    const response = await axios.patch(
+      `https://meta.oxyglobal.tech/api/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.status === 200) {
       message.success("Category updated successfully!");
-      fetchCategories();
-      closeModal();
-    } catch (error) {
+      form.resetFields();
+    } else {
       message.error("Failed to update category.");
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error:", error);
+    message.error("Error updating category. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
@@ -423,7 +444,7 @@ const Categories = () => {
             align="center"
             render={(text, record) => (
               <span>
-                {/*<Button
+                <Button
                   onClick={() => openEditCategoryModal(record)}
                   style={{
                     backgroundColor: "#1AB394",
@@ -432,7 +453,6 @@ const Categories = () => {
                 >
                   <MdModeEditOutline /> Edit
                 </Button>
-                */}
 
                 <Button
                   onClick={() => openAddItemModal(record.id)}
@@ -470,39 +490,23 @@ const Categories = () => {
                   label="Category Name"
                   name="categoryName"
                   rules={[
-                    {
-                      required: true,
-                      message: "Please enter the category name",
-                    },
+                    { required: true, message: "Please enter category name" },
                   ]}
                 >
                   <Input placeholder="Enter category name" />
                 </Form.Item>
+
+             
+
                 <Form.Item
-                  name="categoryLogo"
-                  label="Category Logo"
-                  rules={[
-                    {
-                      required: true,
-                      message:
-                        "Please enter a valid URL for the Category Logo.",
-                    },
-                  ]}
+                  label="Upload File"
+                  name="multiPart"
+                  valuePropName="file"
+                  rules={[{ required: true, message: "Please upload a file" }]}
                 >
-                  <Input placeholder="Enter a valid URL for the logo (e.g., https://example.com/logo.png)" />
-                </Form.Item>
-                <Form.Item
-                  name="categoryBanner"
-                  label="Category Banner"
-                  rules={[
-                    {
-                      required: true,
-                      message:
-                        "Please enter a valid URL for the Category Banner.",
-                    },
-                  ]}
-                >
-                  <Input placeholder="Enter a valid URL for the banner (e.g., https://example.com/banner.png)" />
+                  <Upload beforeUpload={() => false} maxCount={1}>
+                    <Button icon={<UploadOutlined />}>Click to Upload</Button>
+                  </Upload>
                 </Form.Item>
               </>
             ) : (
