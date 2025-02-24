@@ -79,9 +79,9 @@ const handleUpdateItem = async (values) => {
 
       // Append file if selected
       if (selectedFile) {
-        formData.append("File", selectedFile);
+        formData.append("multiPart", selectedFile);
       }
-
+      formData.append("fileType", "document");
       formData.append("itemName", values.itemName);
       formData.append("quantity", values.quantity || 0);
       formData.append("weight", values.weight || 0);
@@ -90,7 +90,7 @@ const handleUpdateItem = async (values) => {
       formData.append("tag", values.tag);
 
       await axios.patch(
-       `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}&fileType=kyc`,
+       `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
 
         formData,
         {
@@ -103,6 +103,10 @@ const handleUpdateItem = async (values) => {
 
       message.success("Item updated successfully");
       fetchItemsData();
+      form.resetFields();
+      setSelectedFile(null);
+      document.getElementById("fileInput").value = ""; // Clear file input
+
       handleCancel();
     } catch (error) {
       message.error(
@@ -540,7 +544,7 @@ const columns = [
 
               {/* File Upload */}
               <Col xs={24} sm={12}>
-                <Form.Item label="Upload File" name="file">
+                <Form.Item label="Upload File" name="multiPart">
                   <Input type="file" onChange={handleFileChange} />
                 </Form.Item>
               </Col>
@@ -564,7 +568,6 @@ const columns = [
           </Form>
         )}
       </Modal>
-      
     </AdminPanelLayoutTest>
   );
 };
