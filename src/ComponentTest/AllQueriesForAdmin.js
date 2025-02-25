@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { UploadOutlined } from "@ant-design/icons";
 import {
   Modal,
   Button,
@@ -8,10 +9,12 @@ import {
   Row,
   Col,
   Select,
+  Upload,
   Image,
-  notification,
+  
   Spin,
   Table,
+  message,
 } from "antd";
 
 import { UserSwitchOutlined } from "@ant-design/icons";
@@ -34,6 +37,7 @@ function AllQueries() {
   const [uploadStatus, setUploadStatus] = useState();
   const [fileName, setFileName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const[loading, setLoading] = useState(false)
 
   const handleSelectedOption = (event) => {
     setData([]);
@@ -65,10 +69,10 @@ function AllQueries() {
       })
       .catch((error) => {
         setLoader(false);
-        notification.error({
-          message: "Error",
-          description: error.response?.data?.error || "An error occurred", // Correctly accessing error properties
-        });
+       message.error({
+         content: error.response?.data?.error || "An error occurred",
+       });
+
       });
   }
 
@@ -77,6 +81,7 @@ function AllQueries() {
   }, [statusValue]);
 
   const approvefunc = (value) => {
+    setLoading(true);
     if (comments === "" || comments === null) {
       setComments_error("Please enter your Comments");
       return;
@@ -115,19 +120,24 @@ function AllQueries() {
         queriesdisplaygetcall();
         setComments("");
         setDocumentId("");
-        notification.success({
-          message: "Success",
-          description: "You have successfully approved the query!",
-        });
+        message.success(
+         "You have successfully approved the query!"
+        );
       })
       .catch((error) => {
         setApproveLoader(false);
         setShowModal1(false);
-        notification.error({
-          message: "Error",
-          description: error.response?.data.error || "An error occurred",
+        message.error({
+          content: error.response?.data?.error || "An error occurred",
         });
-      });
+
+      })
+      .finally(
+        () =>
+        {
+           setLoading(false);
+        }
+      );
   };
 
   const handleOpenModal = (item) => {
@@ -143,70 +153,79 @@ function AllQueries() {
   const handleCloseModal = () => {
     setShowModal1(false);
   };
-  const handleFileChange = (e, userId) => {
-    console.log(userId);
-    const file = e.target.files[0];
-    if (!file) {
-      notification.warning({
-        message: "No File Selected",
-        description: "Please select a file to upload.",
-      });
-      return;
-    }
+const handleFileChange = async (e, userId) => {
+  console.log("User ID:", userId);
+  const file = e.target.files[0];
 
-    setUploadStatus("loading");
-    setFileName(file.name);
+  if (!file) {
+    message.warning( "Please select a file to upload.",
+    );
+    return;
+  }
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append("multiPart", file);
-    formData.append("fileType", "kyc");
+  setUploadStatus("loading");
+  setFileName(file.name);
 
-    // API call
-    axios
-      .post(
-        `https://meta.oxyglobal.tech/api/user-service/write/uploadQueryScreenShot?userId=${userId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accesToken}`, // Fix: Use correct header name for token
-          },
-        }
-      )
-      .then((response) => {
-        setDocumentId(response.data.id);
-        notification.success({
-          message: "Success",
-          description: "You have successfully uploaded the document.",
-        });
-        setUploadStatus("uploaded");
-      })
-      .catch((error) => {
-        notification.error({
-          message: "Error",
-          description:
-            error.response?.data?.error || "An error occurred during upload.",
-        });
-        setUploadStatus("failed");
-      });
-  };
+  // Prepare form data
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("fileType", "kyc");
+  formData.append("projectType", "ASKOXY");
 
-  const handleImageOrPdf = (url) => {
-    if (url.endsWith(".pdf")) {
-      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-      window.open(viewerUrl, "_blank");
-    } else if (
-      [".png", ".jpg", ".jpeg"].some((ext) => url.toLowerCase().endsWith(ext))
-    ) {
-      const imgWindow = window.open(url, "_blank");
-      if (imgWindow) {
-        imgWindow.document.write(
-          '<img src="' + url + '" style="width:100%; height:auto;" />'
-        );
+  try {
+    const response = await axios.post(
+      `https://meta.oxyglobal.tech/api/user-service/write/uploadQueryScreenShot?userId=${userId}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+           // Ensure accessToken is defined
+        },
       }
-    }
-  };
+    );
+
+    setDocumentId(response.data.id);
+    message.success( "You have successfully uploaded the document.",
+    );
+    setUploadStatus("uploaded");
+  } catch (error) {
+    console.error("Upload Error:", error);
+   message.error({
+     content: error.response?.data?.error || "An error occurred",
+   });
+
+    setUploadStatus("failed");
+  }
+};
+
+
+  // const handleImageOrPdf = (url) => {
+  //   if (url.endsWith(".pdf")) {
+  //     const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+  //     window.open(viewerUrl, "_blank");
+  //   } else if (
+  //     [".png", ".jpg", ".jpeg"].some((ext) => url.toLowerCase().endsWith(ext))
+  //   ) {
+  //     const imgWindow = window.open(url, "_blank");
+  //     if (imgWindow) {
+  //       imgWindow.document.write(
+  //         '<img src="' + url + '" style="width:80%; height:auto;" />'
+  //       );
+  //     }
+  //   }
+  // };
+const handleImageOrPdf = (url) => {
+  if (url.endsWith(".pdf")) {
+    // Open PDF in Google Docs Viewer for better compatibility
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    window.open(viewerUrl, "_blank");
+  } else if (/\.(png|jpe?g|gif|webp|bmp)$/i.test(url)) {
+    // Open image in a new tab directly
+    window.open(url, "_blank");
+  } else {
+    message.error("Unsupported file format");
+  }
+};
 
   return (
     <div>
@@ -323,6 +342,11 @@ function AllQueries() {
                                     e.preventDefault();
                                     handleImageOrPdf(pendingData.adminFilePath);
                                   }}
+                                  style={{
+                                    color: "#007bff",
+
+                                    fontWeight: "bold",
+                                  }}
                                 >
                                   {pendingData.adminFileName}
                                 </a>
@@ -341,6 +365,7 @@ function AllQueries() {
                         <Button
                           type="primary"
                           onClick={() => handleOpenModal(item)}
+                          loading={loader}
                           style={{
                             marginRight: "8px",
                             backgroundColor: "#1C84C6",
@@ -358,97 +383,94 @@ function AllQueries() {
           </div>
         </div>
         <Modal
-          visible={showModal1}
+          open={showModal1}
           onCancel={handleCloseModal}
           footer={null}
           centered
-          title="Review Documents"
+          title={
+            <h2 className="text-lg font-semibold text-gray-800">
+              Review Documents
+            </h2>
+          }
         >
-          {/* Display Image or PDF Link */}
-        
           {imageUrl && (
-            <>
-              <p style={{ fontWeight: "bold", marginBottom: "10px" }}>
-                Review Image:{" "}
-              </p>
-
+            <div className="mb-6">
+              <p className="font-semibold text-gray-700 mb-3">Review Image:</p>
               {imageUrl.endsWith(".pdf") ? (
-                <p style={{ marginBottom: "15px" }}>
+                <p className="mb-4 text-gray-700">
                   <strong>File:</strong> {imageUrl.split("/").pop()}{" "}
                   <a
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      handlePdfOpen(imageUrl);
+                      window.open(imageUrl, "_blank");
                     }}
-                    style={{ color: "#007bff", textDecoration: "none" }}
+                    className="text-blue-600 hover:underline"
                   >
                     (Click here to view)
                   </a>
                 </p>
               ) : (
-                <div style={{ marginBottom: "15px" }}>
-                  <Image
+                <div className="flex flex-col items-center">
+                  <img
                     src={imageUrl}
-                    style={{
-                      height: 300,
-                      width: 300,
-                      borderRadius: "4px",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                    }}
-                    preview={false}
+                    alt="Review Document"
+                    className="w-72 h-48 rounded-lg shadow-md border border-gray-300 cursor-pointer transition-all hover:scale-105"
+                    onClick={() => window.open(imageUrl, "_blank")}
                   />
+                  <p
+                    className="text-sm text-blue-600 cursor-pointer mt-2 hover:underline"
+                    onClick={() => window.open(imageUrl, "_blank")}
+                  >
+                    (Click to view in full size)
+                  </p>
                 </div>
               )}
-            </>
+            </div>
           )}
 
-          {/* File Upload and Comments for PENDING Status */}
+          {/* File Upload & Comments Section */}
           {details.queryStatus === "PENDING" && (
-            <>
-              <div className="mb-4">
-                <label htmlFor="fileUpload" style={{ fontWeight: "bold" }}>
-                  Upload Document:{" "}
-                </label>
-                <input
-                  type="file"
-                  className="form-control"
-                  onChange={(e) => handleFileChange(e, details.userId)}
-                  style={{ marginBottom: "16px" }}
-                />
-                {uploadStatus !== "loading" && fileName && (
-                  <p>Selected file: {fileName}</p>
-                )}
-              </div>
+            <div className="mb-6">
+              <label
+                className="font-semibold text-gray-700"
+                htmlFor="fileUpload"
+              >
+                Upload Document:{" "}
+              </label>
+              <input
+                type="file"
+                className="form-control"
+                onChange={(e) => handleFileChange(e, details.userId)}
+                style={{ marginBottom: "16px" }}
+              />
+              {uploadStatus !== "loading" && fileName && (
+                <p className="text-sm text-gray-600 mt-2">
+                  <strong>Selected file:</strong> {fileName}
+                </p>
+              )}
 
-              <Col xs={24} sm={24}>
-                <textarea
-                  className={`form-control ml-0 mb-4 ${comments_error ? "border-danger" : ""}`}
-                  placeholder="Admin Comments"
-                  style={{
-                    width: "100%",
-                    height: "120px",
-                    borderRadius: "4px",
-                    border: "1px solid #dcdcdc",
-                    paddingLeft: "10px", // Add left padding
-                  }}
-                  rows={4}
-                  onChange={(e) => {
-                    setComments(e.target.value);
-                    setComments_error(false);
-                  }}
-                />
-                {comments_error && (
-                  <p style={{ color: "red", fontSize: "12px" }}>
-                    Please enter Comments
-                  </p>
-                )}
-              </Col>
-            </>
+              <textarea
+                className={`w-full p-3 mt-3 rounded-lg border ${
+                  comments_error ? "border-red-500" : "border-gray-300"
+                } focus:outline-none focus:ring-2 focus:ring-blue-400`}
+                placeholder="Enter Admin Comments"
+                rows="3"
+                value={comments}
+                onChange={(e) => {
+                  setComments(e.target.value);
+                }}
+              />
+              {comments_error && (
+                <p className="text-red-500 text-sm mt-1">
+                  Please enter comments
+                </p>
+              )}
+            </div>
           )}
 
           {/* Footer Buttons */}
-          <div style={{ textAlign: "right" }}>
+          <div className="flex justify-end space-x-3">
             {details.queryStatus === "PENDING" && (
               <>
                 {approveLoader ? (
@@ -456,39 +478,31 @@ function AllQueries() {
                 ) : (
                   <>
                     <Button
+                      
                       onClick={() => approvefunc("PENDING")}
-                      style={{
-                        marginRight: "8px",
-                        backgroundColor: "#1C84C6",
-                        color: "white",
-                      }}
+                      
+                      className="bg-[#04AA6D] text-white hover:bg-[#04AA6F] transition-all"
                     >
                       Pending
                     </Button>
                     <Button
-                      type="primary"
+                     
                       onClick={() => approvefunc("COMPLETED")}
-                      style={{
-                        marginRight: "8px",
-                        backgroundColor: "#04AA6D",
-                        color: "white",
-                      }}
+                     
+                      className="bg-[#008CBA] text-white hover:bg-green-700 transition-all"
                     >
                       Approved
+                    </Button>
+                    <Button
+                      onClick={handleCloseModal}
+                      className="bg-gray-500 text-white hover:bg-gray-600 transition-all"
+                    >
+                      Close
                     </Button>
                   </>
                 )}
               </>
             )}
-            <Button
-              type="default"
-              onClick={handleCloseModal}
-              style={{
-                marginRight: "8px",
-              }}
-            >
-              Close
-            </Button>
           </div>
         </Modal>
       </AdminPanelLayoutTest>

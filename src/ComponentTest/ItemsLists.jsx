@@ -71,53 +71,50 @@ const handleFileChange = (e) => {
   }
 };
 
-const handleUpdateItem = async (values) => {
-  setLoading(true);
-  if (selectedItem) {
-    try {
-      const formData = new FormData();
+ const handleUpdateItem = async (values) => {
+   setLoading(true);
+   if (selectedItem) {
+     try {
+       const formData = new FormData();
 
-      // Append file if selected
-      if (selectedFile) {
-        formData.append("multiPart", selectedFile);
-      }
-      formData.append("fileType", "document");
-      formData.append("itemName", values.itemName);
-      formData.append("quantity", values.quantity || 0);
-      formData.append("weight", values.weight || 0);
-      formData.append("itemUnit", values.itemUnit);
-      formData.append("itemDescription", values.itemDescription);
-      formData.append("tag", values.tag);
+       // Append file if selected
+       if (selectedFile) {
+         formData.append("multiPart", selectedFile);
+       }
+       formData.append("fileType", "document");
+       formData.append("itemName", values.itemName);
+       formData.append("quantity", values.quantity || 0);
+       formData.append("weight", values.weight || 0);
+       formData.append("itemUnit", values.itemUnit);
+       formData.append("itemDescription", values.itemDescription);
+       formData.append("tag", values.tag);
 
-      await axios.patch(
-       `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
+       await axios.patch(
+         `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
+         formData,
+         {
+           headers: {
+             Authorization: `Bearer ${accessToken}`,
+             "Content-Type": "multipart/form-data",
+           },
+         }
+       );
 
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      message.success("Item updated successfully");
-      fetchItemsData();
-      form.resetFields();
-      setSelectedFile(null);
-      document.getElementById("fileInput").value = ""; // Clear file input
-
-      handleCancel();
-    } catch (error) {
-      message.error(
-        "Error updating item: " +
-          (error.response?.data?.message || error.message)
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-};
+       message.success("Item updated successfully");
+       fetchItemsData();
+       handleCancel();
+      
+     
+     } catch (error) {
+       message.error(
+         "Error updating item: " +
+           (error.response?.data?.message || error.message)
+       );
+     } finally {
+       setLoading(false);
+     }
+   }
+ };
 
 
 useEffect(() => {
@@ -451,93 +448,48 @@ const columns = [
         scroll={{ x: "100%" }} // Enables horizontal scroll on smaller screens
         bordered
       />
+      {/* Update Modal */}
       <Modal
         title="Update Item"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleCancel}
         footer={null}
-        className="responsive-modal"
       >
         {selectedItem && (
           <Form form={form} onFinish={handleUpdateItem} layout="vertical">
             <Row gutter={16}>
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Name"
-                  name="itemName"
-                  // rules={[
-                  //   { required: true, message: "Please input the item name!" },
-                  // ]}
-                >
+                <Form.Item label="Item Name" name="itemName">
                   <Input />
                 </Form.Item>
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Quantity"
-                  name="quantity"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: "Please input the item quantity!",
-                  //   },
-                  // ]}
-                >
+                <Form.Item label="Item Quantity" name="quantity">
                   <Input />
                 </Form.Item>
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Weight"
-                  name="weight"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: "Please input the item weight!",
-                  //   },
-                  // ]}
-                >
+                <Form.Item label="Item Weight" name="weight">
                   <Input />
                 </Form.Item>
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Unit"
-                  name="itemUnit"
-                  // rules={[
-                  //   { required: true, message: "Please input the item unit!" },
-                  // ]}
-                >
+                <Form.Item label="Item Unit" name="itemUnit">
                   <Input />
                 </Form.Item>
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Item Description"
-                  name="itemDescription"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //     message: "Please input the item description!",
-                  //   },
-                  // ]}
-                >
+                <Form.Item label="Item Description" name="itemDescription">
                   <Input />
                 </Form.Item>
               </Col>
 
               <Col xs={24} sm={12}>
-                <Form.Item
-                  label="Tags"
-                  name="tag"
-                  // rules={[
-                  //   { required: true, message: "Please input the item tags!" },
-                  // ]}
-                >
+                <Form.Item label="Tags" name="tag">
                   <Input />
                 </Form.Item>
               </Col>
@@ -555,12 +507,8 @@ const columns = [
                 type="primary"
                 htmlType="submit"
                 block
-                style={{
-                  marginRight: "8px",
-                  backgroundColor: "#1C84C6",
-                  color: "white",
-                }}
-                disabled={loading}
+                loading={loading}
+                style={{ backgroundColor: "#1C84C6", color: "white" }}
               >
                 Update
               </Button>

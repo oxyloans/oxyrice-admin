@@ -59,10 +59,7 @@ const Categories = () => {
     fetchCategories();
   }, []);
 
-  // Log categories to confirm data is loaded
-  useEffect(() => {
-    console.log(categories);
-  }, [categories]);
+ 
 
   const openAddCategoryModal = () => {
     setIsModalVisible(true);
@@ -83,62 +80,65 @@ const Categories = () => {
     });
   };
 
-  const closeModal = () => {
-    setIsModalVisible(false);
-    setEditingCategory(null);
-    form.resetFields();
-  };
+const closeModal = () => {
+  setIsModalVisible(false);
+  setEditingCategory(null);
+  form.resetFields(); // Reset form fields after closing
+};
 
-  const handleAddCategory = async (values) => {
-    const { categoryName, file } = values;
+const handleAddCategory = async (values) => {
+  const { categoryName, file } = values;
 
-    // Check if a file is selected in the fileList
-    if (!file || file.length === 0) {
-      message.error("Please upload a category image!");
-      return;
-    }
+  // Check if a file is selected
+  if (!file || file.length === 0) {
+    message.error("Please upload a category image!");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("categoryName", categoryName);
-    formData.append("fileType", "document"); // Specify file type (e.g., document)
+  const formData = new FormData();
+  formData.append("categoryName", categoryName);
+  formData.append("fileType", "document"); // Specify file type
 
-    // Ensure you're accessing the file correctly (first file in the file list)
-    const uploadedFile = file[0]?.originFileObj;
-    console.log({ uploadedFile });
-    if (!uploadedFile) {
-      message.error("Uploaded file is not valid.");
-      return;
-    }
+  // Ensure valid file selection
+  const uploadedFile = file[0]?.originFileObj;
+  if (!uploadedFile) {
+    message.error("Uploaded file is not valid.");
+    return;
+  }
 
-    formData.append("multiPart", uploadedFile); // Append the actual file object
+  formData.append("multiPart", uploadedFile); // Append file
 
-    // Log FormData to ensure the file is appended correctly
-    console.log("FormData:", formData);
+  try {
+    setLoading(true);
+    const response = await axios.post(
+      "https://meta.oxyglobal.tech/api/product-service/saveCategoryWithImage",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-    try {
-      setLoading(true);
-      const response = await axios.post(
-        // "https://meta.oxyloans.com/api/erice-service/categories/saveCategoryWithImage",(production api endpoint)
-        "https://meta.oxyglobal.tech/api/product-service/saveCategoryWithImage",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      // Handle successful response
-      message.success("Category added successfully!");
-      fetchCategories();
-      closeModal();
-    } catch (error) {
+    // Success Message & Modal Close
+    message.success("Category added successfully!");
+    fetchCategories();
+    closeModal(); // **Directly close the modal after success**
+  } catch (error) {
+    if (error.response?.status === 500) {
+      message.error("Category already exists. Please choose a different name.");
+      closeModal(); // **Directly close the modal after success**
+    } else {
       message.error("Failed to add category.");
-    } finally {
-      setLoading(false);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 const handleEditCategory = async (values) => {
   const { categoryName, multiPart } = values;
 
@@ -178,6 +178,8 @@ const handleEditCategory = async (values) => {
 
     if (response.status === 200) {
       message.success("Category updated successfully!");
+       fetchCategories();
+       closeModal();
       form.resetFields();
     } else {
       message.error("Failed to update category.");
@@ -315,18 +317,11 @@ const handleEditCategory = async (values) => {
   return (
     <AdminPanelLayoutTest>
       <div className="p-4">
-        <div className="mb-2 flex justify-between flex-wrap">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-4">
-            <h2 className="text-xl font-bold mb-2 sm:mb-0">Category List</h2>
-          </div>
+        <div className="mb-4 flex justify-between flex-wrap">
+          <h2 className="text-xl font-bold">Category List</h2>
           <Button
-            style={{
-              backgroundColor: "#1C84C6",
-              color: "white",
-              marginBottom: "16px",
-            }}
+            style={{ backgroundColor: "#1C84C6", color: "white" }}
             onClick={openAddCategoryModal}
-            className="mb-4"
           >
             Add New Category
           </Button>
@@ -356,21 +351,15 @@ const handleEditCategory = async (values) => {
           </Col>
         </Row>
         <Table
-          dataSource={
-            filteredCategories
-            //   .slice(
-            //   (currentPage - 1) * entriesPerPage,
-            //   currentPage * entriesPerPage
-            // )
-          }
+          dataSource={categories}
           loading={loading}
           rowKey="id"
           pagination={{
             pageSize: entriesPerPage,
             onChange: (page) => setCurrentPage(page),
           }}
-          scroll={{ x: 1000 }}
-          size="middle" // Use a middle size for better responsiveness
+          scroll={{ x: true }}
+          size="middle"
           bordered
         >
           <Table.Column
@@ -380,7 +369,6 @@ const handleEditCategory = async (values) => {
             }
             align="center"
           />
-          {/* <Table.Column title="Category Id" dataIndex="id" align="center"/> */}
           <Table.Column
             title="Category Type"
             dataIndex="categoriesType"
@@ -388,8 +376,8 @@ const handleEditCategory = async (values) => {
           />
           <Table.Column
             title="Category Name"
-            align="center"
             dataIndex="categoryName"
+            align="center"
           />
 
           <Table.Column
@@ -422,7 +410,7 @@ const handleEditCategory = async (values) => {
           />
 
           <Table.Column
-            title="Category Status"
+            title="Status"
             dataIndex="isActive"
             align="center"
             render={(isActive, record) => (
@@ -439,31 +427,32 @@ const handleEditCategory = async (values) => {
               </Button>
             )}
           />
+
           <Table.Column
             title="Action"
             align="center"
             render={(text, record) => (
-              <span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
+              >
                 <Button
                   onClick={() => openEditCategoryModal(record)}
-                  style={{
-                    backgroundColor: "#1AB394",
-                    color: "white",
-                  }}
+                  style={{ backgroundColor: "#1AB394", color: "white" }}
                 >
                   <MdModeEditOutline /> Edit
                 </Button>
 
                 <Button
                   onClick={() => openAddItemModal(record.id)}
-                  style={{
-                    backgroundColor: "#1C84C6",
-                    color: "white",
-                  }}
+                  style={{ backgroundColor: "#1C84C6", color: "white" }}
                 >
                   Add Item
                 </Button>
-              </span>
+              </div>
             )}
           />
         </Table>
@@ -475,6 +464,11 @@ const handleEditCategory = async (values) => {
           onCancel={closeModal}
           onOk={() => form.submit()}
           okText={isEditMode ? "Update" : "Save"}
+          okButtonProps={{
+            type: "primary",
+            htmlType: "submit",
+            loading: loading,
+          }}
           destroyOnClose
         >
           <Form
@@ -496,8 +490,7 @@ const handleEditCategory = async (values) => {
                   <Input placeholder="Enter category name" />
                 </Form.Item>
 
-             
-
+                {/* File Upload */}
                 <Form.Item
                   label="Upload File"
                   name="multiPart"
