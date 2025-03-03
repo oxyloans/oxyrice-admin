@@ -126,7 +126,6 @@ useEffect(() => {
       itemUnit: selectedItem.units,
       tag: selectedItem.tag || "",
       itemDescription: selectedItem.itemDescription || "",
-     
     });
   }
 }, [selectedItem]);
@@ -395,6 +394,7 @@ const columns = [
         (item) =>
           item.itemName?.toLowerCase().includes(value) || // Safe access with optional chaining
           item.categoryName?.toLowerCase().includes(value) ||
+          item.weight?.toString().toLowerCase().includes(value) ||
           item.quantity?.toString().toLowerCase().includes(value) ||
           item.Units?.toLowerCase().includes(value)
       );
@@ -407,18 +407,29 @@ const columns = [
 
   return (
     <AdminPanelLayoutTest>
-      <Row justify="space-between" align="middle" className="mb-4">
+      <Row
+        justify="space-between"
+        align="middle"
+        className="mb-4 flex flex-col sm:flex-row items-start sm:items-center"
+      >
         <Col>
           <h2 className="text-xl font-bold mb-2 sm:mb-0">Items List</h2>
         </Col>
       </Row>
-      <Row justify="space-between" align="middle" className="mb-4">
-        <Col>
+
+      <Row
+        justify="space-between"
+        align="middle"
+        className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0 w-full"
+      >
+        {/* Entries Per Page Dropdown */}
+        <Col className="w-full sm:w-auto">
           Show{" "}
           <Select
             value={entriesPerPage}
             onChange={handleEntriesPerPageChange}
-            style={{ width: 70 }}
+            style={{ width: 80 }}
+            className="w-full sm:w-[80px]"
           >
             <Option value={5}>5</Option>
             <Option value={10}>10</Option>
@@ -427,15 +438,17 @@ const columns = [
           entries
         </Col>
 
-        <Col>
-          Search:{" "}
+        {/* Search Input */}
+        <Col className="w-full sm:w-auto flex items-center gap-2">
+          <span>Search:</span>
           <Input
             value={searchTerm}
             onChange={handleSearchChange}
-            style={{ width: 150 }}
+            className="w-full sm:w-[150px]"
           />
         </Col>
       </Row>
+
       <Table
         dataSource={filteredItems}
         columns={columns}

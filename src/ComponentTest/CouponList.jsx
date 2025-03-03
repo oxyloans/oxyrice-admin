@@ -173,22 +173,22 @@ const Coupons = () => {
     },
     {
       title: "Start Date",
-      dataIndex: "startDate",
-      key: "startDate",
+      dataIndex: "startDateTime",
+      key: "startDateTime",
       align: "center",
       className: "text-1xl",
     },
     {
       title: "End Date",
-      dataIndex: "endDate",
-      key: "endDate",
+      dataIndex: "endDateTime",
+      key: "endDateTime",
       align: "center",
       className: "text-1xl",
     },
     {
       title: "Status",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "isActive",
+      key: "isActive",
       align: "center",
       className: "text-1xl",
       render: (isActive, record) => (
@@ -301,37 +301,47 @@ const Coupons = () => {
     <AdminPanelLayout>
       <div>
         <div>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold mb-2 sm:mb-0">Coupon List</h2>
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-4">
+            <h2 className="text-xl font-bold">Coupon List</h2>
             <Button
               style={{ backgroundColor: "#1C84C6", color: "white" }}
               onClick={showModal}
+              className="flex items-center gap-2"
             >
-              <FaPlus /> Add New Coupon
+              <FaPlus />
+              Add New Coupon
             </Button>
           </div>
 
-          <Row justify="space-between" align="middle" className="mb-4">
-            <Col>
-              Show{" "}
+          {/* Filter & Search Section */}
+          <Row
+            justify="space-between"
+            align="middle"
+            className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-4 w-full flex-wrap"
+          >
+            {/* Entries Per Page Dropdown */}
+            <Col className="w-full sm:w-auto flex items-center gap-2">
+              <span>Show</span>
               <Select
                 value={entriesPerPage}
                 onChange={handleEntriesPerPageChange}
-                style={{ width: 70 }}
+                className="w-full sm:w-[80px]"
               >
                 <Option value={5}>5</Option>
                 <Option value={10}>10</Option>
                 <Option value={20}>20</Option>
-              </Select>{" "}
-              entries
+              </Select>
+              <span>entries</span>
             </Col>
 
-            <Col>
-              Search:{" "}
+            {/* Search Input */}
+            <Col className="w-full sm:w-auto flex items-center gap-2">
+              <span>Search:</span>
               <Input
                 value={searchTerm}
                 onChange={handleSearchChange}
-                style={{ width: 150 }}
+                className="w-full sm:w-[150px]"
               />
             </Col>
           </Row>

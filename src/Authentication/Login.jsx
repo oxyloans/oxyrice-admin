@@ -78,7 +78,7 @@ function Login() {
       </div>
 
       <div className="max-w-sm w-full rounded-lg p-8 bg-white shadow-lg">
-        <p className="text-gray-500 text-lg font-bold text-center mb-4">Login to OxyRice</p>
+        <p className="text-gray-500 text-lg font-bold text-center mb-4">Login to ASKOXY.AI</p>
         <Form layout="vertical" onFinish={handleLogin}>
           <Form.Item
             name="email"

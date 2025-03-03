@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu, Row } from "antd";
+import { Layout, Menu, Row,Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
-import { MdLogout, MdSubscriptions } from "react-icons/md";
+import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
+
 import { FaUserEdit } from "react-icons/fa";
 import {
   FaTachometerAlt,
@@ -15,54 +16,57 @@ import {
   FaShoppingCart,
   FaHandsHelping,
 } from "react-icons/fa";
-import { IoBarChart } from "react-icons/io5";
+
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
-import { IoSettings } from "react-icons/io5";
-// import './AdminPanel.css';
+
 
 const { Header, Sider, Content, Footer } = Layout;
+const { useBreakpoint } = Grid;
+
 
 const AdminPanelLayoutTest = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
-  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+  const screens = useBreakpoint();
+  const [isMobile, setIsMobile] = useState(false);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+
+
+    useEffect(() => {
+      if (screens.xs) {
+        setCollapsed(true); // Always collapse on small screens
+      } else if (screens.md) {
+        setCollapsed(false); // Expand on larger screens
+      }
+    }, [screens]);
   const sidebarItems = [
-    // {
-    //   key: "dashboard",
-    //   label: "Dashboard",
-    //   icon: <FaTachometerAlt />,
-    //   link: "/admintest",
-    // },
-    // {
-    //   key: "settings",
-    //   label: "Settings",
-    //   icon: <IoSettings />,
-    //   link: "/admintest/settings",
-    // },
+   {
+        key: "dashboard",
+        label: "Dashboard",
+        icon: <FaTachometerAlt />,
+        link: "/admintest",
+      },
+    
     {
       key: "alluserqueries",
       label: "All Queries",
       icon: <FaHandsHelping />,
       link: "/admin/user_queries",
     },
-    // {
-    //   key: "ExchangeOrderList",
-    //   label: "Exchange Orders List",
-    //   icon: <FaExchangeAlt />,
-    //   link: "/admintest/exchange-orders",
-    // },
 
-    // {
-    //   key: "Update User Mobile Number",
-    //   label: "User Details Updation",
-    //   icon: <FaUserEdit />,
-    //   link: "/admintest/customer-updation",
-    // },
     {
-      key: "CategoryInventary",
-      label: "CategoryInventary",
-      icon: <FaTachometerAlt />,
+      key: "Category inventory",
+      label: "Category Inventory",
+      icon: <MdInventory />,
       link: "/admintest/category-inventory",
     },
     {
@@ -87,31 +91,10 @@ const AdminPanelLayoutTest = ({ children }) => {
           label: "Subscription Plans List",
           link: "/admintest/subscription-plans-list",
         },
-        // {
-        //   key: "subscribersList",
-        //   label: "Subscribers List",
-        //   link: "/admintest/subscribers",
-        // },
+        
       ],
     },
-    // {
-    //   key: "users",
-    //   label: "Users",
-    //   icon: <FaUsers />,
-    //   dropdownItems: [
-    //     {
-    //       key: "customerList",
-    //       label: "Customer List",
-    //       link: "/admintest/customers",
-    //     },
-    //     {
-    //       key: "deliveryBoys",
-    //       label: "Delivery Boy List",
-    //       link: "/admintest/delivery-boys",
-    //     },
-    //   ],
-    // },
-
+    
     {
       key: "items",
       label: "Items",
@@ -120,18 +103,7 @@ const AdminPanelLayoutTest = ({ children }) => {
         { key: "listItems", label: "List Items", link: "/admintest/items" },
       ],
     },
-    // {
-    //   key: "sellers",
-    //   label: "Sellers",
-    //   icon: <FaStore />,
-    //   dropdownItems: [
-    //     {
-    //       key: "sellersList",
-    //       label: "Sellers List",
-    //       link: "/admintest/sellers",
-    //     },
-    //   ],
-    // },
+  
     {
       key: "coupons",
       label: "Coupons",
@@ -159,38 +131,31 @@ const AdminPanelLayoutTest = ({ children }) => {
           label: "Return Pending List",
           link: "/admintest/orders-pending",
         },
-        // {
-        //   key: "returnRepliedList",
-        //   label: "Return Replied List",
-        //   link: "/orders/return_replied_list",
-        // },
+        
       ],
     },
-    // {
-    //   key: "reports",
-    //   label: "Reports",
-    //   icon: <IoBarChart />,
-    //   dropdownItems: [
-    //     {
-    //       key: "item requirements",
-    //       label: "Item Requiremnts",
-    //       link: "/admintest/items-lists",
-    //     },
-    //   ],
-    // },
+   
   ];
 
-  useEffect(() => {
-    if (isMobile) setCollapsed(true); // Auto collapse on mobile
-  }, [isMobile]);
 
-  const toggleCollapse = () => setCollapsed(!collapsed);
+
+  const toggleCollapse = () => {
+    setCollapsed((prev) => !prev);
+  };
   const handleOpenChange = (keys) =>
     setOpenKeys(keys.length ? [keys.pop()] : []);
+
   const handleSignOut = () => {
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("userSession");
     window.location.href = "/login";
+  };
+
+
+  const handleMenuClick = () => {
+    if (isMobile) {
+      setCollapsed(true);
+    }
   };
 
   return (
@@ -199,10 +164,15 @@ const AdminPanelLayoutTest = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={220}
-        collapsedWidth={80}
+        width={screens.xs ? 200 : 220}
+        collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
+          zIndex: 1000,
+          left: collapsed ? (isMobile ? "-200px" : "-80px") : 0,
+          transition: "left 0.3s ease-in-out", // Smoother transition
+          position: "fixed",
+          height: "100vh",
         }}
       >
         <div className="demo-logo-vertical" style={{ padding: "10px 0" }}>
@@ -211,8 +181,8 @@ const AdminPanelLayoutTest = ({ children }) => {
               className=" text-center font-bold my-0"
               style={{ fontSize: 24 }}
             >
-              <a
-                href="/dashboard"
+              <Link
+                to="/admintest"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -221,12 +191,12 @@ const AdminPanelLayoutTest = ({ children }) => {
                 }}
               >
                 <span style={{ color: "#08EC32AB" }}>
-                  {collapsed ? "O" : "OXY"}
+                  {collapsed ? "A" : "ASKOXY"}
                 </span>
                 <span style={{ color: "#FFBA02" }}>
-                  {collapsed ? "" : "RICE"}
+                  {collapsed ? "" : ".AI"}
                 </span>
-              </a>
+              </Link>
             </div>
           </Row>
         </div>
@@ -234,11 +204,11 @@ const AdminPanelLayoutTest = ({ children }) => {
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <a href="/dashboard" style={{ textDecoration: "none" }}>
+          <Link to="/admintest" style={{ textDecoration: "none" }}>
             <strong className="my-6 " style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Admin"}
             </strong>
-          </a>
+          </Link>
         </div>
         <Menu
           theme="" // or "" if you prefer default dark mode styles
@@ -307,12 +277,17 @@ const AdminPanelLayoutTest = ({ children }) => {
       <Layout>
         <Header
           style={{
-            padding: "0 16px",
+            padding: screens.xs ? "0 12px" : "0 18px",
             background: "#fff",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
+            width: screens.xs
+              ? "100%"
+              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+            position: "relative", // Ensure it's positioned correctly
           }}
         >
           <button
@@ -327,6 +302,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
+
           <div
             onClick={handleSignOut}
             style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
@@ -337,11 +313,33 @@ const AdminPanelLayoutTest = ({ children }) => {
             <span style={{ color: "#999C9E", fontSize: "14px" }}>Log out</span>
           </div>
         </Header>
-        <Content style={{ margin: "16px", padding: 24, background: "#fff" }}>
+        <Content
+          style={{
+            margin: "16px",
+            padding: screens.xs ? 12 : 24,
+            background: "#fff",
+            width: screens.xs
+              ? "100%"
+              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+            position: "relative", // Ensure it's positioned correctly
+          }}
+        >
           {children}
         </Content>
-        <Footer style={{ textAlign: "center", background: "#fff" }}>
-          OxyRice Admin ©2024 Created by OxyRice Company
+        <Footer
+          style={{
+            textAlign: "center",
+            background: "#fff",
+            width: screens.xs
+              ? "100%"
+              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+            position: "relative", // Ensure it's positioned correctly
+            bottom: 0,
+          }}
+        >
+          Askoxy.AI Admin ©2025 Created by Askoxy.AI Company
         </Footer>
       </Layout>
     </Layout>

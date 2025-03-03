@@ -72,18 +72,18 @@ function LoginTest() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 space-y-2">
       <div className="text-center mb-2">
         <h1
-          className="logo-name text-5xl font-bold text-gray-300 pb-4"
+          className="logo-name text-3xl  text-gray-300 pb-4"
           style={{ fontSize: 75 }}
         >
           {" "}
-          <span style={{ color: "#03843b" }}>Oxy</span>
-          <span style={{ color: "#fd7e14" }}>Rice</span>
+          <span style={{ color: "#03843b" }}>Askoxy</span>
+          <span style={{ color: "#fd7e14" }}>.Ai</span>
         </h1>
       </div>
 
       <div className="max-w-sm w-full rounded-lg p-8 bg-white shadow-lg">
         <p className="text-gray-500 text-lg font-bold text-center mb-4">
-          Login to OxyRice
+          Login to ASKOXY.AI
         </p>
         <Form layout="vertical" onFinish={handleLogin}>
           <Form.Item

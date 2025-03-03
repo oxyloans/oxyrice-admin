@@ -12,46 +12,46 @@ const DashboardTest = () => {
   const [error, setError] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "https://meta.oxyglobal.tech/api/erice-service/order/totalordersDeliveredCount",
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        setData(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch data");
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "https://meta.oxyglobal.tech/api/erice-service/order/totalordersDeliveredCount",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${accessToken}`,
+  //           },
+  //         }
+  //       );
+  //       setData(response.data);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError("Failed to fetch data");
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
-  if (loading) {
-    return (
-      <AdminPanelLayout>
-        <Layout style={{ padding: "24px" }}>
-          <Content className="flex justify-center items-center h-screen">
-            <Spin size="medium" />
-          </Content>
-        </Layout>
-      </AdminPanelLayout>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <AdminPanelLayout>
+  //       <Layout style={{ padding: "24px" }}>
+  //         <Content className="flex justify-center items-center h-screen">
+  //           <Spin size="medium" />
+  //         </Content>
+  //       </Layout>
+  //     </AdminPanelLayout>
+  //   );
+  // }
 
   if (error) {
     return (
       <AdminPanelLayout>
         <Layout style={{ padding: "24px" }}>
           <Content className="flex justify-center items-center h-screen">
-            <div className="text-red-500 text-lg font-bold">{error}</div>
+            {/* <div className="text-red-500 text-lg font-bold">{error}</div> */}
           </Content>
         </Layout>
       </AdminPanelLayout>
@@ -62,15 +62,15 @@ const DashboardTest = () => {
     <AdminPanelLayout>
       <Content>
         <Title level={2} className="text-gray-800">
-          OxyRice Dashboard
+          Aksoxy.Ai Dashboard
         </Title>
         <p className="text-gray-600 mb-6">
-          Welcome to the OxyRice admin panel. Here you can manage the
+          Welcome to the Askoxy.Ai admin panel. Here you can manage the
           application settings and view analytics.
         </p>
 
-        {/* First Row */}
-        <Row gutter={16} className="mt-6">
+      
+        {/* <Row gutter={16} className="mt-6">
           <Col xs={24} sm={12} md={8}>
             <Card title="Total Orders Placed" className="shadow-md rounded-md">
               <p className="text-2xl font-bold text-blue-600">
@@ -100,7 +100,7 @@ const DashboardTest = () => {
           </Col>
         </Row>
 
-        {/* Second Row */}
+        
         <Row gutter={16} className="mt-6">
           <Col xs={24} sm={12} md={8}>
             <Card title="Total Deliveries" className="shadow-md rounded-md">
@@ -123,7 +123,7 @@ const DashboardTest = () => {
               </p>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
       </Content>
     </AdminPanelLayout>
   );

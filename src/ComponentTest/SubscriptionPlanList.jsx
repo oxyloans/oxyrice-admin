@@ -214,13 +214,13 @@ const SubscriptionPlansList = () => {
       align: "center",
     },
     {
-      title: "Limit Amount",
+      title: "Limit Amount Per Month",
       dataIndex: "limitAmount",
       key: "limitAmount",
       align: "center",
     },
     {
-      title: "Active",
+      title: "Status",
       dataIndex: "status",
       key: "status",
       align: "center",
@@ -262,19 +262,24 @@ const SubscriptionPlansList = () => {
  return (
    <AdminPanelLayout>
      <div className="container">
-       <div className="flex justify-between items-center mb-4">
-         <h2 className="text-xl font-bold">Subscription Plans</h2>
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+         <h2 className="text-xl font-bold mb-2 md:mb-0">Subscription Plans</h2>
          <Button
            type="primary"
            onClick={() => setIsModalVisible(true)}
            style={{ backgroundColor: "#1C84C6", color: "white" }}
+           className="w-full sm:w-auto"
          >
            Add New Plan
          </Button>
        </div>
 
-       <Row justify="space-between" align="middle" className="mb-4">
-         <Col>
+       <Row
+         justify="space-between"
+         align="middle"
+         className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
+       >
+         <Col className="w-full sm:w-auto">
            Show{" "}
            <Select
              value={entriesPerPage}
@@ -287,8 +292,9 @@ const SubscriptionPlansList = () => {
            </Select>{" "}
            entries
          </Col>
-         <Col>
-           Search:{" "}
+
+         <Col className="w-full sm:w-auto flex items-center gap-2">
+           <span>Search:</span>
            <Input
              value={searchTerm}
              onChange={handleSearchChange}

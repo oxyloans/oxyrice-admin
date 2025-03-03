@@ -128,6 +128,7 @@ const CategoryInventory = () => {
                 ]}
                 pagination={false}
                 showHeader={false}
+                scroll={{ x: true }}
                 rowKey="catId"
                 bordered
                 className="mb-4"
@@ -139,6 +140,7 @@ const CategoryInventory = () => {
                 rowKey="itemId"
                 pagination={{ pageSize: 5 }}
                 bordered
+                scroll={{ x: true }}
               />
             </div>
           ))

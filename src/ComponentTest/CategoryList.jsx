@@ -317,17 +317,23 @@ const handleEditCategory = async (values) => {
   return (
     <AdminPanelLayoutTest>
       <div className="p-4">
-        <div className="mb-4 flex justify-between flex-wrap">
-          <h2 className="text-xl font-bold">Category List</h2>
+        <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <h2 className="text-xl font-bold mb-2 md:mb-0">Category List</h2>
           <Button
             style={{ backgroundColor: "#1C84C6", color: "white" }}
             onClick={openAddCategoryModal}
+            className="w-full sm:w-auto"
           >
             Add New Category
           </Button>
         </div>
-        <Row justify="space-between" align="middle" className="mb-4">
-          <Col>
+
+        <Row
+          justify="space-between"
+          align="middle"
+          className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
+        >
+          <Col className="w-full sm:w-auto">
             Show{" "}
             <Select
               value={entriesPerPage}
@@ -341,8 +347,8 @@ const handleEditCategory = async (values) => {
             entries
           </Col>
 
-          <Col>
-            Search:{" "}
+          <Col className="w-full sm:w-auto flex items-center gap-2">
+            <span>Search:</span>
             <Input
               value={searchTerm}
               onChange={handleSearchChange}
@@ -350,8 +356,9 @@ const handleEditCategory = async (values) => {
             />
           </Col>
         </Row>
+
         <Table
-          dataSource={categories}
+          dataSource={filteredCategories}
           loading={loading}
           rowKey="id"
           pagination={{

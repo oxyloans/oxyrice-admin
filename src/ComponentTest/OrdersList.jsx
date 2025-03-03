@@ -447,8 +447,8 @@ const Ordersdetails = () => {
       <div>
         <div>
           {/* Filters Row */}
-          <Row justify="space-between" align="middle" className="mb-4">
-            {/* Order Status */}
+          <Row gutter={[16, 16]} align="middle" className="mb-4">
+            {/* Order Status Dropdown */}
             <Col xs={24} sm={12} md={6}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Order Status
@@ -471,10 +471,7 @@ const Ordersdetails = () => {
 
             {/* From Date */}
             <Col xs={24} sm={12} md={4}>
-              <label
-                htmlFor="from_date"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 From Date
               </label>
               <DatePicker
@@ -482,16 +479,13 @@ const Ordersdetails = () => {
                 onChange={handleFromDateChange}
                 format="YYYY-MM-DD"
                 className="w-full"
-                placeholder="Select From Date" // Placeholder for guidance
+                placeholder="Select From Date"
               />
             </Col>
 
             {/* To Date */}
             <Col xs={24} sm={12} md={4}>
-              <label
-                htmlFor="to_date"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 To Date
               </label>
               <DatePicker
@@ -499,21 +493,21 @@ const Ordersdetails = () => {
                 onChange={handleToDateChange}
                 format="YYYY-MM-DD"
                 className="w-full"
-                placeholder="Select To Date" // Placeholder for guidance
+                placeholder="Select To Date"
               />
             </Col>
+
             {/* Action Buttons */}
+            
             <Col
               xs={24}
               sm={24}
               md={6}
-              className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-center sm:items-end"
+              className="flex flex-col sm:flex-row gap-3 mt-6 sm:gap-4 items-center sm:items-end"
             >
               <Button
                 className="text-white w-full sm:w-auto"
-                style={{
-                  backgroundColor: "#1AB394",
-                }}
+                style={{ backgroundColor: "#1AB394" }}
                 onClick={fetchOrderDetails}
                 loading={loading}
               >
@@ -521,9 +515,7 @@ const Ordersdetails = () => {
               </Button>
               <Button
                 className="text-white w-full sm:w-auto flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: "#1c84c6",
-                }}
+                style={{ backgroundColor: "#1c84c6" }}
                 onClick={() => handleDownloadExcel(orderData)}
               >
                 <AiOutlineDownload className="text-lg" />
