@@ -14,17 +14,7 @@ function LoginTest() {
   const [switchingMode, setSwitchingMode] = useState(false);
   const navigate = useNavigate();
 
-  // Default credentials for each environment
-  const environmentCredentials = {
-    live: {
-      email: "saikumargadi16@gmail.com",
-      password: "Seller@123",
-    },
-    Test: {
-      email: "sreeja1425@gmail.com",
-      password: "Seller@123",
-    },
-  };
+  
 
   // Set userType in localStorage and refresh the page when Live button is clicked
   const handleLiveClick = () => {
@@ -59,15 +49,10 @@ function LoginTest() {
     const savedUserType = localStorage.getItem("userType") || "live";
     setActiveMode(savedUserType);
 
-    // Set initial credentials based on the active mode
-    const initialCredentials = environmentCredentials[savedUserType];
-    form.setFieldsValue(initialCredentials);
-    setEmail(initialCredentials.email);
-    setPassword(initialCredentials.password);
-
-    // Show success message after page reload
+   
     if (savedUserType === "live") {
       message.success("Live environment loaded", 2);
+      
     } else {
       message.success("Test environment loaded", 2);
     }
@@ -170,7 +155,7 @@ function LoginTest() {
               form={form}
               layout="vertical"
               onFinish={handleLogin}
-              initialValues={environmentCredentials[activeMode || "live"]}
+              // initialValues={environmentCredentials[activeMode || "live"]}
             >
               <Form.Item
                 name="email"

@@ -139,7 +139,7 @@ const AdminPanelLayoutTest = ({ children }) => {
   const handleSignOut = () => {
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("userSession");
-    window.location.href = "/login";
+    window.location.href = "/";
   };
 
   const handleMenuClick = () => {
