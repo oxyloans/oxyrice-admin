@@ -18,7 +18,7 @@ import jsPDF from "jspdf";
 import { v4 as uuidv4 } from "uuid";
 import "jspdf-autotable";
 import { AiOutlineDownload } from "react-icons/ai";
-
+import BASE_URL from "./Config.jsx";
 const accessToken = localStorage.getItem("accessToken");
 const { Option } = Select;
 // Generate a unique order ID using UUID v4
@@ -49,7 +49,7 @@ const Ordersdetails = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://meta.oxyglobal.tech/api/order-service/getOrdersByOrderId/${orderId}`,
+        `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       if (response?.data) {

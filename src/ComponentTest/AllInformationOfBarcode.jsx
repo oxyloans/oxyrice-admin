@@ -4,6 +4,7 @@ import AdminPanelLayoutTest from "./AdminPanelTest";
 // import "./Barcode.css";
 import { Table, Col, Row, Select, Button } from "antd";
 import { useParams } from "react-router-dom";
+import BASE_URL from "./Config";
 const { Option } = Select;
 
 const AllInforMationOfBarCode = () => {
@@ -26,7 +27,7 @@ const AllInforMationOfBarCode = () => {
 
     try {
       const response = await axios.get(
-        `https://meta.oxyglobal.tech/api/product-service/getBarCodeInfo/${itemId}`, // Corrected string interpolation
+        `${BASE_URL}/product-service/getBarCodeInfo/${itemId}`, // Corrected string interpolation
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

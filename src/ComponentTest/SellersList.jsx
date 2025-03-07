@@ -163,7 +163,7 @@ const Sellers = () => {
             </Button>
           </Col> */}
           <Col>
-            <Link to={`/admintest/sellers-items/${record.sellerId}`}>
+            <Link to={`/admin/sellers-items/${record.sellerId}`}>
               <Button
                 style={{
                   backgroundColor: "#1AB394",

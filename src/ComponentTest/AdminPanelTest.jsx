@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Menu, Row,Grid } from "antd";
+import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
@@ -19,10 +19,8 @@ import {
 
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 
-
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
-
 
 const AdminPanelLayoutTest = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -39,23 +37,21 @@ const AdminPanelLayoutTest = ({ children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
-
-    useEffect(() => {
-      if (screens.xs) {
-        setCollapsed(true); // Always collapse on small screens
-      } else if (screens.md) {
-        setCollapsed(false); // Expand on larger screens
-      }
-    }, [screens]);
+  useEffect(() => {
+    if (screens.xs) {
+      setCollapsed(true); // Always collapse on small screens
+    } else if (screens.md) {
+      setCollapsed(false); // Expand on larger screens
+    }
+  }, [screens]);
   const sidebarItems = [
-   {
-        key: "dashboard",
-        label: "Dashboard",
-        icon: <FaTachometerAlt />,
-        link: "/admintest",
-      },
-    
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: <FaTachometerAlt />,
+      link: "/admin",
+    },
+
     {
       key: "alluserqueries",
       label: "All Queries",
@@ -67,7 +63,7 @@ const AdminPanelLayoutTest = ({ children }) => {
       key: "Category inventory",
       label: "Category Inventory",
       icon: <MdInventory />,
-      link: "/admintest/category-inventory",
+      link: "/admin/category-inventory",
     },
     {
       key: "categories",
@@ -77,7 +73,7 @@ const AdminPanelLayoutTest = ({ children }) => {
         {
           key: "categoryList",
           label: "Category List",
-          link: "/admintest/categories",
+          link: "/admin/categories",
         },
       ],
     },
@@ -89,21 +85,20 @@ const AdminPanelLayoutTest = ({ children }) => {
         {
           key: "plansList",
           label: "Subscription Plans List",
-          link: "/admintest/subscription-plans-list",
+          link: "/admin/subscription-plans-list",
         },
-        
       ],
     },
-    
+
     {
       key: "items",
       label: "Items",
       icon: <FaBoxOpen />,
       dropdownItems: [
-        { key: "listItems", label: "List Items", link: "/admintest/items" },
+        { key: "listItems", label: "List Items", link: "/admin/items" },
       ],
     },
-  
+
     {
       key: "coupons",
       label: "Coupons",
@@ -112,7 +107,7 @@ const AdminPanelLayoutTest = ({ children }) => {
         {
           key: "couponsList",
           label: "Coupons List",
-          link: "/admintest/coupons",
+          link: "/admin/coupons",
         },
       ],
     },
@@ -124,20 +119,16 @@ const AdminPanelLayoutTest = ({ children }) => {
         {
           key: "ordersList",
           label: "Orders List",
-          link: "/admintest/orders-details",
+          link: "/admin/orders-details",
         },
         {
           key: "returnPendingList",
           label: "Return Pending List",
-          link: "/admintest/orders-pending",
+          link: "/admin/orders-pending",
         },
-        
       ],
     },
-   
   ];
-
-
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
@@ -150,7 +141,6 @@ const AdminPanelLayoutTest = ({ children }) => {
     sessionStorage.removeItem("userSession");
     window.location.href = "/login";
   };
-
 
   const handleMenuClick = () => {
     if (isMobile) {
@@ -182,7 +172,7 @@ const AdminPanelLayoutTest = ({ children }) => {
               style={{ fontSize: 24 }}
             >
               <Link
-                to="/admintest"
+                to="/admin"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -204,7 +194,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <Link to="/admintest" style={{ textDecoration: "none" }}>
+          <Link to="/admin" style={{ textDecoration: "none" }}>
             <strong className="my-6 " style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Admin"}
             </strong>

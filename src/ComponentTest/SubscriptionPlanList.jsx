@@ -14,7 +14,7 @@ import {
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanelTest.jsx";
 import { MdModeEditOutline } from "react-icons/md";
-
+import BASE_URL from "./Config.jsx";
 const { Option } = Select;
 
 const SubscriptionPlansList = () => {
@@ -35,7 +35,7 @@ const SubscriptionPlansList = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyglobal.tech/api/order-service/getAllPlans",
+        `${BASE_URL}/order-service/getAllPlans`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -63,15 +63,11 @@ const SubscriptionPlansList = () => {
         limitAmount: values.limitAmount,
         payAmount: values.payAmount,
       };
-      await axios.post(
-        "https://meta.oxyglobal.tech/api/order-service/subscriptionPlans",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      await axios.post(`${BASE_URL}/order-service/subscriptionPlans`, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
       notification.success({
         message: "Plan added successfully!",
       });
@@ -91,7 +87,7 @@ const SubscriptionPlansList = () => {
     if (selectedSubscription) {
       try {
         await axios.patch(
-          "https://meta.oxyglobal.tech/api/order-service/updatePlansBasedOnId",
+          `${BASE_URL}/order-service/updatePlansBasedOnId`,
           {
             planId: selectedSubscription.planId,
             getAmount: values.getAmount,
@@ -163,7 +159,7 @@ const SubscriptionPlansList = () => {
     setLoading(true);
     try {
       const url =
-        "https://meta.oxyglobal.tech/api/order-service/activeOrInactive";
+        `${BASE_URL}/order-service/activeOrInactive`;
       const response = await axios.patch(
         url,
         {

@@ -29,8 +29,7 @@ import AllQueriesForAdmin from "./component/AllQueriesForAdmin";
 import SubscriberDetails from "./component/SubscriberDetails";
 import OrdersListDetailsCustomerId from "./component/OrdersListbyCustomerId";
 import CustomerUpdationDetails from "./component/CustomerUpdationDetails";
-import SubscriptionPlanListDetailsCustomerId from "./component/SubscriptionListByCustomerId"; 
-
+import SubscriptionPlanListDetailsCustomerId from "./component/SubscriptionListByCustomerId";
 
 //---------------------------------------------------Oxy Rice test Admin ---------------------------------------//
 import AllQueries from "./ComponentTest/AllQueriesForAdmin";
@@ -39,15 +38,14 @@ import Coupons from "./ComponentTest/CouponList";
 import Customers from "./ComponentTest/CustomerList";
 import CustomerUpdation from "./ComponentTest/CustomerUpdationDetails";
 import DashboardTest from "./ComponentTest/Dashboard";
-import DeliveryBoys from "./ComponentTest/DeliveryBoyList"; 
+import DeliveryBoys from "./ComponentTest/DeliveryBoyList";
 import ExchangeOrders from "./ComponentTest/ExchangeOrderList";
-import ItemList
-  from "./ComponentTest/ItemsLists";
+import ItemList from "./ComponentTest/ItemsLists";
 import ItemsLists from "./ComponentTest/ItemRequiremnet";
 import Ordersdetails from "./ComponentTest/OrdersList";
 import OrdersDetailsCustomerId from "./ComponentTest/OrdersListbyCustomerId";
 import OrdersPending from "./ComponentTest/PendingOrders";
-  import SellerItems from "./ComponentTest/SellerItemsList";
+import SellerItems from "./ComponentTest/SellerItemsList";
 import Sellers from "./ComponentTest/SellersList";
 import Settings from "./ComponentTest/SettingsForm";
 import SubscriptionPlanListustomerId from "./ComponentTest/SubscriptionListByCustomerId";
@@ -61,7 +59,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* <Route path="/" element={<Login />} />
         <Route path="/SubscriberDetails" element={<SubscriberDetails />} />
         <Route path="user_queries" element={<AllQueriesForAdmin />} />
         <Route path="/register" element={<Register />} />
@@ -110,54 +108,51 @@ function App() {
         <Route
           path="/user/mobilenumber_updated"
           element={<CustomerUpdationDetails />}
-        />
+        /> */}
         {/* -----------------------------------Oxy Rice test Admin --------------------------------------- */}
-        <Route path="/login" element={<LoginTest />} />
+        <Route path="/" element={<LoginTest />} />
         <Route
           path="/admin/allinformationofbarcode/:itemId"
           element={<AllInforMationOfBarCode />}
         />
-        <Route path="/admintest" element={<DashboardTest />} />
-        <Route path="/admintest/categories" element={<Categories />} />
-        <Route path="/admintest/coupons" element={<Coupons />} />
-        <Route path="/admintest/customers" element={<Customers />} />
+        <Route path="/admin" element={<DashboardTest />} />
+        <Route path="/admin/categories" element={<Categories />} />
+        <Route path="/admin/coupons" element={<Coupons />} />
+        <Route path="/admin/customers" element={<Customers />} />
+        <Route path="/admin/customer-updation" element={<CustomerUpdation />} />
         <Route
-          path="/admintest/customer-updation"
-          element={<CustomerUpdation />}
-        />
-        <Route
-          path="/admintest/category-inventory"
+          path="/admin/category-inventory"
           element={<CategoryInventory />}
         />
-        <Route path="/admintest/delivery-boys" element={<DeliveryBoys />} />
-        <Route path="/admintest/exchange-orders" element={<ExchangeOrders />} />
-        <Route path="/admintest/items" element={<ItemList />} />
-        <Route path="/admintest/items-lists" element={<ItemsLists />} />
-        <Route path="/admintest/orders-details" element={<Ordersdetails />} />
+        <Route path="/admin/delivery-boys" element={<DeliveryBoys />} />
+        <Route path="/admin/exchange-orders" element={<ExchangeOrders />} />
+        <Route path="/admin/items" element={<ItemList />} />
+        <Route path="/admin/items-lists" element={<ItemsLists />} />
+        <Route path="/admin/orders-details" element={<Ordersdetails />} />
         <Route
-          path="/admintest/orders-details/:id"
+          path="/admin/orders-details/:id"
           element={<OrdersDetailsCustomerId />}
         />
-        <Route path="/admintest/orders-pending" element={<OrdersPending />} />
+        <Route path="/admin/orders-pending" element={<OrdersPending />} />
         <Route
-          path="/admintest/sellers-items/:sellerId"
+          path="/admin/sellers-items/:sellerId"
           element={<SellerItems />}
         />
-        <Route path="/admintest/sellers" element={<Sellers />} />
-        <Route path="/admintest/settings" element={<Settings />} />
+        <Route path="/admin/sellers" element={<Sellers />} />
+        <Route path="/admin/settings" element={<Settings />} />
         <Route
-          path="/admintest/subscription-plans-list"
+          path="/admin/subscription-plans-list"
           element={<SubscriptionPlansList />}
         />
         <Route
-          path="/admintest/subscription-plans-list/:id"
+          path="/admin/subscription-plans-list/:id"
           element={<SubscriptionPlanListustomerId />}
         />
         <Route
-          path="/admintest/subscriber-details"
+          path="/admin/subscriber-details"
           element={<SubscriberDetailslist />}
         />
-        <Route path="/admintest/subscribers" element={<Subscribers />} />
+        <Route path="/admin/subscribers" element={<Subscribers />} />
         <Route path="/admin/user_queries" element={<AllQueries />} />
       </Routes>
     </Router>

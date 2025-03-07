@@ -203,7 +203,7 @@ const Customers = () => {
             align="center"
             render={(text, record) => (
               <Link
-                to={`/admintest/subscription-plans-list/${record.id}`}
+                to={`/admin/subscription-plans-list/${record.id}`}
                 size="small"
                 style={{
                   backgroundColor: "#1C84C6",
@@ -219,7 +219,7 @@ const Customers = () => {
             align="center"
             render={(text, record) => (
               <Link
-                to={`/admintest/orders-details/${record.id}  `}
+                to={`/admin/orders-details/${record.id}  `}
                 size="small"
                 style={{
                   backgroundColor: "#1C84C6",

@@ -4,6 +4,7 @@ import { Table, Button, message, Row, Col, Spin, Modal, Select } from "antd";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { AiOutlineDownload } from "react-icons/ai";
+import BASE_URL from "./Config.jsx";
 const { Option } = Select;
 
 const accessToken = localStorage.getItem("accessToken");
@@ -42,7 +43,7 @@ const OrdersPending = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://meta.oxyglobal.tech/api/order-service/getOrdersByOrderId/${orderId}`,
+        `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       if (response?.data) {
@@ -156,7 +157,7 @@ const OrdersPending = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://meta.oxyglobal.tech/api/order-service/cancelled-incomplete`,
+        `${BASE_URL}/order-service/cancelled-incomplete`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }

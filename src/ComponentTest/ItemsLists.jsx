@@ -12,6 +12,7 @@ import {
   Col,
 } from "antd";
 import { Link } from "react-router-dom";
+import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanelTest";
 import { MdModeEditOutline } from "react-icons/md";
 import "../ItemList.css"; // Import custom CSS for responsive styling
@@ -40,7 +41,7 @@ const ItemList = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyglobal.tech/api/product-service/getItemsData",
+        `${BASE_URL}/product-service/getItemsData`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -90,7 +91,7 @@ const handleFileChange = (e) => {
        formData.append("tag", values.tag);
 
        await axios.patch(
-         `https://meta.oxyglobal.tech/api/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
+         `${BASE_URL}/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
          formData,
          {
            headers: {
@@ -134,7 +135,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const url =
-        "https://meta.oxyglobal.tech/api/product-service/viewGeneratedBarCodes";
+        `${BASE_URL}/product-service/viewGeneratedBarCodes`;
 
       const response = await axios.post(
         url,
@@ -176,7 +177,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://meta.oxyglobal.tech/api/product-service/generateBarCodes",
+        `${BASE_URL}/product-service/generateBarCodes`,
         {
           method: "POST",
           headers: {

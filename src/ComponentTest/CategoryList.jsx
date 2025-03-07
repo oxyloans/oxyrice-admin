@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import BASE_URL from "./Config";
 import {
   Table,
   Button,
@@ -39,7 +40,7 @@ const Categories = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyglobal.tech/api/product-service/getAllcategories",
+        `${BASE_URL}/product-service/getAllcategories`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -111,7 +112,7 @@ const handleAddCategory = async (values) => {
   try {
     setLoading(true);
     const response = await axios.post(
-      "https://meta.oxyglobal.tech/api/product-service/saveCategoryWithImage",
+      `${BASE_URL}/product-service/saveCategoryWithImage`,
       formData,
       {
         headers: {
@@ -166,7 +167,7 @@ const handleEditCategory = async (values) => {
     setLoading(true);
 
     const response = await axios.patch(
-      `https://meta.oxyglobal.tech/api/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
+      `${BASE_URL}/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
       formData,
       {
         headers: {
@@ -247,7 +248,7 @@ const handleEditCategory = async (values) => {
       // API call to add the item
       const response = await axios.post(
         // "https://meta.oxyloans.com/api/erice-service/items/ItemAddAndImageUpload",
-        "https://meta.oxyglobal.tech/api/product-service/ItemAddAndImageUpload",
+        `${BASE_URL}/product-service/ItemAddAndImageUpload`,
         formData,
         {
           headers: {
@@ -290,7 +291,7 @@ const handleEditCategory = async (values) => {
     try {
       const url =
         // "https://meta.oxyloans.com/api/erice-service/categories/activeOrInactive";
-        "https://meta.oxyglobal.tech/api/product-service/activeOrInactive";
+        `${BASE_URL}/product-service/activeOrInactive`;
       const response = await axios.patch(
         url,
         {

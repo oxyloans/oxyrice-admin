@@ -17,7 +17,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
 import moment from "moment";
 import AdminPanelLayout from "./AdminPanelTest.jsx";
-
+import BASE_URL from "./Config.jsx";
 const { Option } = Select;
 
 const Coupons = () => {
@@ -44,7 +44,7 @@ const Coupons = () => {
     setFetching(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyglobal.tech/api/order-service/getAllCoupons",
+        `${BASE_URL}/order-service/getAllCoupons`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -65,8 +65,8 @@ const Coupons = () => {
     setLoading(true);
     try {
       const url = isActive
-        ? "https://meta.oxyglobal.tech/api/order-service/deactivateCoupon"
-        : "https://meta.oxyglobal.tech/api/order-service/activateCoupon";
+        ? `${BASE_URL}/order-service/deactivateCoupon`
+        : `${BASE_URL}/order-service/activateCoupon`;
 
       await axios.post(
         url,

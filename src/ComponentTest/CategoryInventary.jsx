@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spin, Alert } from "antd";
 import AdminPanelLayoutTest from "./AdminPanelTest";
-
+import BASE_URL from "./Config";
 const CategoryInventory = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,7 @@ const CategoryInventory = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://meta.oxyglobal.tech/api/product-service/getActiveCategoryInventory",
+          `${BASE_URL}/product-service/getActiveCategoryInventory`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { UploadOutlined } from "@ant-design/icons";
+import BASE_URL from "./Config.jsx";
 import {
   Modal,
   Button,
@@ -55,7 +56,7 @@ function AllQueries() {
     setLoader(true);
     axios
       .post(
-        `https://meta.oxyglobal.tech/api/user-service/write/getAllQueries`,
+        `${BASE_URL}/user-service/write/getAllQueries`,
         data,
         {
           headers: {
@@ -105,24 +106,18 @@ function AllQueries() {
 
     setApproveLoader(true);
     axios
-      .post(
-        `https://meta.oxyglobal.tech/api/user-service/write/saveData`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${accesToken}`,
-          },
-        }
-      )
+      .post(`${BASE_URL}/user-service/write/saveData`, data, {
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      })
       .then(() => {
         setApproveLoader(false);
         setShowModal1(false);
         queriesdisplaygetcall();
         setComments("");
         setDocumentId("");
-        message.success(
-         "You have successfully approved the query!"
-        );
+        message.success("You have successfully approved the query!");
       })
       .catch((error) => {
         setApproveLoader(false);
@@ -130,14 +125,10 @@ function AllQueries() {
         message.error({
           content: error.response?.data?.error || "An error occurred",
         });
-
       })
-      .finally(
-        () =>
-        {
-           setLoading(false);
-        }
-      );
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const handleOpenModal = (item) => {
@@ -174,12 +165,12 @@ const handleFileChange = async (e, userId) => {
 
   try {
     const response = await axios.post(
-      `https://meta.oxyglobal.tech/api/user-service/write/uploadQueryScreenShot?userId=${userId}`,
+      `${BASE_URL}/user-service/write/uploadQueryScreenShot?userId=${userId}`,
       formData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
-           // Ensure accessToken is defined
+          // Ensure accessToken is defined
         },
       }
     );
