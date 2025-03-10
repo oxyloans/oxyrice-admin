@@ -329,7 +329,7 @@ const AdminPanelLayoutTest = ({ children }) => {
             bottom: 0,
           }}
         >
-          Askoxy.AI Admin ©2025 Created by Askoxy.AI Company
+          ASKOXY.AI Admin ©2025 Created by ASKOXY.AI Company
         </Footer>
       </Layout>
     </Layout>

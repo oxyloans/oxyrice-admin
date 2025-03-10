@@ -62,14 +62,13 @@ const DashboardTest = () => {
     <AdminPanelLayout>
       <Content>
         <Title level={2} className="text-gray-800">
-          Aksoxy.Ai Dashboard
+          ASKOXY.AI Dashboard
         </Title>
         <p className="text-gray-600 mb-6">
-          Welcome to the Askoxy.Ai admin panel. Here you can manage the
+          Welcome to the ASKOXY.AI admin panel. Here you can manage the
           application settings and view analytics.
         </p>
 
-      
         {/* <Row gutter={16} className="mt-6">
           <Col xs={24} sm={12} md={8}>
             <Card title="Total Orders Placed" className="shadow-md rounded-md">

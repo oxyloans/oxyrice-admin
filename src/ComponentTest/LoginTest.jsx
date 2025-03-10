@@ -109,7 +109,7 @@ function LoginTest() {
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold tracking-tight">
             <span className="text-emerald-600">ASKOXY</span>
-            <span className="text-orange-500">.Ai</span>
+            <span className="text-orange-500">.AI</span>
           </h1>
         </div>
 
