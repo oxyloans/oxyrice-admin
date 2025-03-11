@@ -59,7 +59,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* <Route path="/" element={<Login />} />
+        <Route path="/" element={<Login />} />
         <Route path="/SubscriberDetails" element={<SubscriberDetails />} />
         <Route path="user_queries" element={<AllQueriesForAdmin />} />
         <Route path="/register" element={<Register />} />
@@ -108,9 +108,9 @@ function App() {
         <Route
           path="/user/mobilenumber_updated"
           element={<CustomerUpdationDetails />}
-        /> */}
+        />
         {/* -----------------------------------Oxy Rice test Admin --------------------------------------- */}
-        <Route path="/" element={<LoginTest />} />
+        <Route path="/login" element={<LoginTest />} />
         <Route
           path="/admin/allinformationofbarcode/:itemId"
           element={<AllInforMationOfBarCode />}

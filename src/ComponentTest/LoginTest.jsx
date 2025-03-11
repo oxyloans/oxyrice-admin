@@ -14,8 +14,6 @@ function LoginTest() {
   const [switchingMode, setSwitchingMode] = useState(false);
   const navigate = useNavigate();
 
-  
-
   // Set userType in localStorage and refresh the page when Live button is clicked
   const handleLiveClick = () => {
     if (activeMode === "live") return;
@@ -49,14 +47,17 @@ function LoginTest() {
     const savedUserType = localStorage.getItem("userType") || "live";
     setActiveMode(savedUserType);
 
-   
     if (savedUserType === "live") {
       message.success("Live environment loaded", 2);
-      
     } else {
       message.success("Test environment loaded", 2);
     }
   }, [form]);
+
+  // Generate a random salt
+  const generateSalt = () => {
+    return `${Math.random().toString(36).substring(2, 15)}-${Math.random().toString(36).substring(2, 15)}`;
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -73,7 +74,21 @@ function LoginTest() {
       return;
     }
 
-    const payload = { email, password };
+    // Create the request payload as per the required format
+    const payload = {
+      email,
+      password,
+      timeInMilliSeconds: Date.now().toString(),
+      emailOtpSession: "", // This would typically be received after requesting an OTP
+      whatsappOtpSession: null,
+      salt: generateSalt(),
+      status: null,
+      token: null,
+      accessToken: null,
+      userId: null,
+      refreshToke: null,
+      id: null,
+    };
 
     try {
       const response = await axios.post(
@@ -86,18 +101,31 @@ function LoginTest() {
         }
       );
 
+      // Handle the response based on the updated response format
       if (response.data.status === "Login Successful") {
-        const { token, refreshToken, id } = response.data;
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("userId", id);
+        // Store authentication data in localStorage
+        localStorage.setItem(
+          "accessToken",
+          response.data.accessToken || response.data.token
+        );
+        localStorage.setItem("refreshToken", response.data.refreshToke); // Note: There seems to be a typo in the field name
+        localStorage.setItem(
+          "userId",
+          response.data.id || response.data.userId
+        );
+
         message.success("Login successful!");
         navigate("/admin");
       } else {
-        setError(response.data.errorMessage || "Invalid Email or Password");
+        setError(response.data.status || "Invalid Email or Password");
       }
     } catch (error) {
-      setError(error.response?.data?.message || "Failed to Login");
+      console.error("Login error:", error);
+      setError(
+        error.response?.data?.status ||
+          error.response?.data?.message ||
+          "Failed to Login. Please check your credentials."
+      );
     } finally {
       setLoading(false);
     }
@@ -151,12 +179,7 @@ function LoginTest() {
               Welcome Back
             </h2>
 
-            <Form
-              form={form}
-              layout="vertical"
-              onFinish={handleLogin}
-              // initialValues={environmentCredentials[activeMode || "live"]}
-            >
+            <Form form={form} layout="vertical" onFinish={handleLogin}>
               <Form.Item
                 name="email"
                 label="Email Address"
@@ -168,6 +191,7 @@ function LoginTest() {
                     pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                   },
                 ]}
+                initialValue={email}
               >
                 <Input
                   size="large"
@@ -191,6 +215,7 @@ function LoginTest() {
                       "Password must be at least 8 characters, including uppercase, lowercase, number, and special character",
                   },
                 ]}
+                initialValue={password}
               >
                 <Input.Password
                   size="large"

@@ -389,13 +389,10 @@ const Ordersdetails = () => {
 
     try {
       setLoading(true);
-      const response = await axios.get(
-        `https://meta.oxyglobal.tech/api/order-service/date-range`,
-        {
-          params: { startDate, endDate, status: statusValue },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
+      const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
+        params: { startDate, endDate, status: statusValue },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       console.log("API Response:", response.data); // Confirm the structure of response data
 

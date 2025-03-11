@@ -257,14 +257,14 @@ const Coupons = () => {
 
       if (isEditMode) {
         await axios.put(
-          "https://meta.oxyglobal.tech/api/order-service/updateCoupon",
+          `${BASE_URL}/order-service/updateCoupon`,
           { couponId: editingCouponId, ...formattedValues },
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         message.success("Coupon updated successfully.");
       } else {
         await axios.post(
-          "https://meta.oxyglobal.tech/api/order-service/addCoupon",
+          `${BASE_URL}/order-service/addCoupon`,
           formattedValues,
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
