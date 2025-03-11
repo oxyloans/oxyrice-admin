@@ -218,6 +218,20 @@ const Ordersdetails = () => {
       align: "center",
     },
     {
+      title: "Customer Name",
+      dataIndex: "username",
+      key: "username",
+      align: "center",
+    },
+
+    {
+      title: "Mobile Number",
+      dataIndex: "mobilenumber",
+      key: "mobilenumber",
+      align: "center",
+    },
+
+    {
       title: "Order Date",
       dataIndex: "orderDate",
       key: "orderDate",
@@ -265,7 +279,7 @@ const Ordersdetails = () => {
           5: "Order Rejected",
           6: "Order Canceled",
         };
-        return statusMap[status] || "Pending";
+        return statusMap[status];
       },
     },
     {
@@ -400,6 +414,14 @@ const Ordersdetails = () => {
         let orders = response.data;
         const uniqueOrderId = uuidv4();
         console.log("Generated Unique Order ID:", uniqueOrderId);
+
+        // Filter out orders where testUser is true
+        orders = orders.filter((order) => !order.testUser);
+        // Format orderId to show only last 4 digits
+        // orders = orders.map((order) => ({
+        //   ...order,
+        //   orderId: order.orderId ? order.orderId.slice(-4) : "", // Extract last 4 digits
+        // }));
         // Filter results based on status if specified
         if (statusValue) {
           orders = orders.filter((order) => order.orderStatus === statusValue);
@@ -495,7 +517,7 @@ const Ordersdetails = () => {
             </Col>
 
             {/* Action Buttons */}
-            
+
             <Col
               xs={24}
               sm={24}
@@ -577,7 +599,7 @@ const Ordersdetails = () => {
                       <strong>Order ID</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.orderId || "N/A"}
+                      {orderDetails?.orderId}
                     </td>
                   </tr>
                   <tr>
@@ -585,8 +607,8 @@ const Ordersdetails = () => {
                       <strong>Customer Mobile</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.customermobilenumber || "N/A"} -{" "}
-                      {orderDetails?.customerName || "N/A"}
+                      {orderDetails?.customerMobile} -{" "}
+                      {orderDetails?.customerName}
                     </td>
                   </tr>
                   <tr>
@@ -594,12 +616,15 @@ const Ordersdetails = () => {
                       <strong>Customer Address</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1">
-                      <strong>Flat No:</strong> {orderDetails?.flatNo || "N/A"},{" "}
-                      <br />
+                      <strong>Flat No:</strong>{" "}
+                      {orderDetails?.orderAddress?.flatNo}, <br />
                       <strong>Land Mark:</strong>{" "}
-                      {orderDetails?.landMark || "N/A"}, <br />
+                      {orderDetails?.orderAddress?.landMark}, <br />
                       <strong>Location:</strong>{" "}
-                      {orderDetails?.address || "N/A"}
+                      {orderDetails?.orderAddress?.address},
+                      <br />
+                      <strong>Pincode:</strong>{" "}
+                      {orderDetails?.orderAddress?.pincode}
                     </td>
                   </tr>
                   <tr>
@@ -607,8 +632,8 @@ const Ordersdetails = () => {
                       <strong>Order Status</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.orderstatus
-                        ? orderStatusMap[orderDetails.orderstatus]
+                      {orderDetails?.orderStatus
+                        ? orderStatusMap[orderDetails.orderStatus]
                         : "N/A"}
                     </td>
                   </tr>
@@ -617,8 +642,8 @@ const Ordersdetails = () => {
                       <strong>Payment Type</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.payment
-                        ? paymentTypeMap[orderDetails.payment] || "Other"
+                      {orderDetails?.paymentType
+                        ? paymentTypeMap[orderDetails.paymentType] || "Other"
                         : "N/A"}
                     </td>
                   </tr>
@@ -649,14 +674,13 @@ const Ordersdetails = () => {
                     align: "center",
                   },
                   {
-                    title: "Price",
-                    dataIndex: "price",
-                    key: "price",
+                    title: "Weight",
+                    dataIndex: "weight",
+                    key: "weight",
                     align: "center",
-                    render: (text) => `₹${text || "0.00"}`,
                   },
                   {
-                    title: "Total Price",
+                    title: "Price",
                     dataIndex: "price",
                     key: "price",
                     align: "center",
@@ -678,7 +702,7 @@ const Ordersdetails = () => {
                       <strong>Sub Total</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.subtotal || "0.00"}
+                      ₹{orderDetails?.subTotal || "0.00"}
                     </td>
                   </tr>
                   <tr>
@@ -686,23 +710,32 @@ const Ordersdetails = () => {
                       <strong>Delivery Fee</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.deliveryfee || "0.00"}
+                      ₹{orderDetails?.deliveryFee || "0.00"}
                     </td>
                   </tr>
                   <tr>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Grand Total</strong>
+                      <strong>Coupon Amount Used</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.granttotal || "0.00"}
+                      ₹{orderDetails?.discountAmount || "0.00"}
                     </td>
                   </tr>
+
                   <tr>
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       <strong>Subscription Amount Used</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.subscriptionAmountUsed || "0.00"}
+                      ₹{orderDetails?.subscriptionAmount || "0.00"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <strong>Wallet Amount Used</strong>
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      ₹{orderDetails?.walletAmount || "0.00"}
                     </td>
                   </tr>
                   <tr>
@@ -711,6 +744,22 @@ const Ordersdetails = () => {
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       ₹{orderDetails?.referralAmountUsed || "0.00"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <strong>Gst Amount</strong>
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      ₹{orderDetails?.gstAmount || "0.00"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      <strong>Grand Total</strong>
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1 text-center">
+                      ₹{orderDetails?.grandTotal || "0.00"}
                     </td>
                   </tr>
                 </tbody>

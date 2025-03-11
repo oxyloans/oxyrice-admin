@@ -5,6 +5,7 @@ import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 
 import { FaUserEdit } from "react-icons/fa";
 import {
@@ -65,6 +66,12 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <MdInventory />,
       link: "/admin/category-inventory",
     },
+    // {
+    //   key: "Update User Details",
+    //   label: "Update User Details",
+    //   icon: <FaUserCircle />,
+    //   link: "/admin/category-inventory",
+    // },
     {
       key: "categories",
       label: "Categories",
@@ -139,7 +146,7 @@ const AdminPanelLayoutTest = ({ children }) => {
   const handleSignOut = () => {
     localStorage.removeItem("authToken");
     sessionStorage.removeItem("userSession");
-    window.location.href = "/";
+    window.location.href = "/login";
   };
 
   const handleMenuClick = () => {

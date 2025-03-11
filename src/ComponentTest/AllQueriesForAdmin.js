@@ -66,7 +66,10 @@ function AllQueries() {
       )
       .then((response) => {
         setLoader(false);
-        setData(response.data);
+        // Filter to only include items where testUser is false
+        const filteredData = response.data.filter((item) => !item.testUser);
+
+        setData(filteredData);
       })
       .catch((error) => {
         setLoader(false);
