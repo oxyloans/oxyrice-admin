@@ -54,6 +54,12 @@ const CategoryInventory = () => {
       align: "center",
     },
     {
+      title: "Weight",
+      dataIndex: "weight",
+      key: "weight",
+      align: "center",
+    },
+    {
       title: "Total Quantity",
       dataIndex: "totalItemQty",
       key: "totalItemQty",
@@ -64,14 +70,14 @@ const CategoryInventory = () => {
       title: "Available Count",
       dataIndex: "availableCount",
       key: "availableCount",
-      render: (text) => text || "N/A",
+      render: (text) => text || "0",
       align: "center",
     },
     {
       title: "Sold Count",
       dataIndex: "soldCount",
       key: "soldCount",
-      render: (text) => text || "N/A",
+      render: (text) => text || "0",
       align: "center",
     },
   ];

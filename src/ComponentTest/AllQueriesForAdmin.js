@@ -55,28 +55,30 @@ function AllQueries() {
     };
     setLoader(true);
     axios
-      .post(
-        `${BASE_URL}/user-service/write/getAllQueries`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${accesToken}`,
-          },
-        }
-      )
+      .post(`${BASE_URL}/user-service/write/getAllQueries`, data, {
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      })
       .then((response) => {
         setLoader(false);
-        // Filter to only include items where testUser is false
-        const filteredData = response.data.filter((item) => !item.testUser);
 
-        setData(filteredData);
+        if (Array.isArray(response.data)) {
+          // Ensure response.data is an array before filtering
+          const filteredData = response.data.filter(
+            (item) => item.testUser === false
+          );
+          setData(filteredData);
+        } else {
+          setData([]); // Set empty array if response is not valid
+          message.warning("Invalid data format received");
+        }
       })
       .catch((error) => {
         setLoader(false);
-       message.error({
-         content: error.response?.data?.error || "An error occurred",
-       });
-
+        message.error({
+          content: error.response?.data?.error || "An error occurred",
+        });
       });
   }
 

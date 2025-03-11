@@ -634,7 +634,7 @@ const Ordersdetails = () => {
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       {orderDetails?.orderStatus
                         ? orderStatusMap[orderDetails.orderStatus]
-                        : "N/A"}
+                        : ""}
                     </td>
                   </tr>
                   <tr>
@@ -644,7 +644,7 @@ const Ordersdetails = () => {
                     <td className="border border-gray-300 px-2 py-1 text-center">
                       {orderDetails?.paymentType
                         ? paymentTypeMap[orderDetails.paymentType] || "Other"
-                        : "N/A"}
+                        : ""}
                     </td>
                   </tr>
                   <tr>
