@@ -45,28 +45,45 @@ const Ordersdetails = () => {
     setFromDate(date);
   };
   console.log(orderDetails);
-  const fetchOrderDetailsModal = async (orderId) => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (response?.data) {
-        console.log("Fetched Order Details:", response.data);
-        setOrderDetails(response.data[0]); // Assuming it's an array and you need the first item
-      } else {
-        console.error("Empty response:", response);
-      }
-    } catch (error) {
-      console.error(
-        "Error fetching order details:",
-        error.response || error.message
-      );
-    } finally {
-      setLoading(false);
+const fetchOrderDetailsModal = async (orderId) => {
+  if (!orderId) {
+    message.error("Invalid Order ID. Please try again.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    if (response?.status === 200 && response?.data?.length > 0) {
+      console.log("Fetched Order Details:", response.data);
+      setOrderDetails(response.data[0]); // Assuming the response is an array
+    } else {
+      message.warning("No order details found for the given Order ID.");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching order details:", error);
+
+    // Show different error messages based on the status code
+    if (error.response?.status === 500) {
+      message.error(
+        "Internal server error"
+      );
+    } else {
+      message.error(
+        error.response?.data?.message ||
+          "An error occurred while fetching order details."
+      );
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   // Handle "View" button click
   const handleViewClick = (orderId) => {
     fetchOrderDetailsModal(orderId); // Fetch order details

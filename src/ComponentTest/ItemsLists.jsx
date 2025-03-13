@@ -37,35 +37,37 @@ const ItemList = () => {
     fetchItemsData();
   }, []);
 
-  const fetchItemsData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/product-service/getItemsData`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      message.success("Data Fetched Successfully");
+const fetchItemsData = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/product-service/getItemsData`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    message.success("Data Fetched Successfully");
 
-      // Filter data where quantity is 1 or 26
-      const filteredData = response.data.filter(
-        (item) => item.quantity === 1 || item.quantity === 26
-      );
+    // Filter data where quantity is 1 or 26 and isActive is "true"
+    const filteredData = response.data.filter(
+      (item) =>
+        item.isActive === "true" && (item.weight === 1 || item.weight === 26)
+    );
 
-      // Sort to display items with quantity 26 first
-      const sortedData = filteredData.sort((a, b) => b.quantity - a.quantity);
-      setItems(sortedData);
-      console.log(sortedData);
-      setFilteredItems(response.data);
-    } catch (error) {
-      message.error("Error fetching items data: " + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Sort to display items with quantity 26 first
+    const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
+    setItems(sortedData);
+    console.log(sortedData);
+    setFilteredItems(sortedData); // Ensure only filtered data is stored
+  } catch (error) {
+    message.error("Error fetching items data: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 const handleFileChange = (e) => {
   if (e.target.files.length > 0) {
     setSelectedFile(e.target.files[0]);
