@@ -51,10 +51,14 @@ const fetchItemsData = async () => {
     message.success("Data Fetched Successfully");
 
     // Filter data where quantity is 1 or 26 and isActive is "true"
-    const filteredData = response.data.filter(
-      (item) =>
-        item.isActive === "true" && (item.weight === 1 || item.weight === 26)
-    );
+    // const filteredData = response.data.filter(
+    //   (item) =>
+    //     item.isActive === "true" && (item.weight === 1 || item.weight === 26)
+    // );
+ const filteredData = response.data.filter(
+   (item) =>
+     (item.weight === 1 || item.weight === 26 || item.weight=== 5 || item.weight=== 10)
+ );
 
     // Sort to display items with quantity 26 first
     const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
@@ -239,10 +243,7 @@ useEffect(() => {
     setCurrentPage(1);
   };
 
-  // Handle page change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+ 
 const columns = [
   {
     title: "S.NO",
@@ -304,6 +305,13 @@ const columns = [
         />
       </div>
     ),
+  },
+  {
+    title: "Status",
+    dataIndex: "isActive",
+    key: "status",
+    align: "center",
+    render: (isActive) => (isActive === "true" ? "Active" : "Inactive"),
   },
   {
     title: "Action",

@@ -161,7 +161,7 @@ const AdminPanelLayoutTest = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 200 : 220}
+        width={screens.xs ? 200 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
@@ -282,8 +282,8 @@ const AdminPanelLayoutTest = ({ children }) => {
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
             position: "relative", // Ensure it's positioned correctly
           }}
         >
@@ -317,8 +317,8 @@ const AdminPanelLayoutTest = ({ children }) => {
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
             position: "relative", // Ensure it's positioned correctly
           }}
         >
@@ -330,8 +330,8 @@ const AdminPanelLayoutTest = ({ children }) => {
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "220px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "220px",
+              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
             position: "relative", // Ensure it's positioned correctly
             bottom: 0,
           }}

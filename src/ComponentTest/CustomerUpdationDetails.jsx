@@ -11,11 +11,12 @@ import {
   Row,
   Col,
 } from "antd";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayoutTest from "./AdminPanelTest";
 
+import BASE_URL from "./Config";
 const { Option } = Select;
 
-const CustomerUpdation = () => {
+const CustomerDetails = () => {
   const [customerData, setCustomerData] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -37,7 +38,7 @@ const CustomerUpdation = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "https://meta.oxyloans.com/api/erice-service/user/getAllUsers",
+        `{BASE_URL}/erice-service/user/getAllUsers`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
@@ -58,7 +59,7 @@ const CustomerUpdation = () => {
       setModalLoading(true);
       try {
         await axios.patch(
-          "https://meta.oxyloans.com/api/erice-service/user/updateMobileNumber",
+          `{BASE_URL}/erice-service/user/updateMobileNumber`,
           {
             userId: selectedItem.userId,
             mobileNumber: values.mobileNumber,
@@ -82,7 +83,7 @@ const CustomerUpdation = () => {
   const handleUpdateTestUser = async (item) => {
     try {
       await axios.patch(
-        "https://meta.oxyloans.com/api/erice-service/user/updateTestUsers",
+        `{BASE_URL}/erice-service/user/updateTestUsers`,
         {
           userId: item.userId,
           testUser: !item.testUser,
@@ -216,7 +217,7 @@ const CustomerUpdation = () => {
   ];
 
   return (
-    <AdminPanelLayout>
+    <AdminPanelLayoutTest>
       <Row justify="space-between" align="middle" className="mb-4">
         <Col>
           <h2 className="text-xl font-bold">User Mobile Number Update</h2>
@@ -303,8 +304,8 @@ const CustomerUpdation = () => {
           </Form>
         )}
       </Modal>
-    </AdminPanelLayout>
+    </AdminPanelLayoutTest>
   );
 };
 
-export default CustomerUpdation;
+export default CustomerDetails;
