@@ -60,7 +60,8 @@ const fetchOrderDetailsModal = async (orderId) => {
 
     if (response?.status === 200 && response?.data?.length > 0) {
       console.log("Fetched Order Details:", response.data);
-      setOrderDetails(response.data[0]); // Assuming the response is an array
+      setOrderDetails(response.data[0]);
+      console.log(response.data[0]);// Assuming the response is an array
     } else {
       message.warning("No order details found for the given Order ID.");
     }

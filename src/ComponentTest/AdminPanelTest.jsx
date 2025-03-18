@@ -135,6 +135,12 @@ const AdminPanelLayoutTest = ({ children }) => {
         },
       ],
     },
+    {
+      key: "Time Slots",
+      label: "Time Slots",
+      icon: <MdInventory />,
+      link: "/admin/timeslots",
+    },
   ];
 
   const toggleCollapse = () => {

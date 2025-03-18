@@ -55,6 +55,7 @@ import SubscriptionPlansList from "./ComponentTest/SubscriptionPlanList";
 import AllInforMationOfBarCode from "./ComponentTest/AllInformationOfBarcode";
 import LoginTest from "./ComponentTest/LoginTest";
 import CategoryInventory from "./ComponentTest/CategoryInventary";
+import TimeSlots from "./ComponentTest/TimeSlots";
 function App() {
   return (
     <Router>
@@ -116,6 +117,7 @@ function App() {
           element={<AllInforMationOfBarCode />}
         />
         <Route path="/admin" element={<DashboardTest />} />
+        <Route path="/admin/timeslots" element={<TimeSlots/>}/>
         <Route path="/admin/categories" element={<Categories />} />
         <Route path="/admin/coupons" element={<Coupons />} />
         <Route path="/admin/customers" element={<Customers />} />
