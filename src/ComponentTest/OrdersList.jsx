@@ -262,25 +262,25 @@ const fetchOrderDetailsModal = async (orderId) => {
     // },
 
     {
-      title: "G T",
+      title: "Grand Total",
       dataIndex: "grandTotal",
       key: "grandTotal",
       align: "center",
     },
     {
-      title: "P T",
+      title: "Payment Type",
       dataIndex: "paymentType",
       key: "paymentType",
       align: "center",
       render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : "Other"),
     },
-    {
-      title: "P S",
-      dataIndex: "paymentStatus",
-      key: "paymentStatus",
-      // render: (type) => (type === 1 ? 'COMPLEATED' : type === 2 ? 'PENDING' : 'Other'),
-      align: "center",
-    },
+    // {
+    //   title: "P S",
+    //   dataIndex: "paymentStatus",
+    //   key: "paymentStatus",
+    //   // render: (type) => (type === 1 ? 'COMPLEATED' : type === 2 ? 'PENDING' : 'Other'),
+    //   align: "center",
+    // },
     {
       title: "Status",
       dataIndex: "orderStatus",
@@ -624,8 +624,12 @@ const fetchOrderDetailsModal = async (orderId) => {
                       <strong>Customer Mobile</strong>
                     </td>
                     <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.customerMobile} -{" "}
-                      {orderDetails?.customerName}
+                      {(orderDetails?.customerMobile &&
+                      orderDetails?.customerMobile.trim() !== ""
+                        ? orderDetails.customerMobile
+                        : orderDetails?.mobileNumber) +
+                        " - " +
+                        (orderDetails?.customerName )}
                     </td>
                   </tr>
                   <tr>

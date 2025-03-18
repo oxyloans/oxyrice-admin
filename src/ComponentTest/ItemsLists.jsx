@@ -10,13 +10,14 @@ import {
   message,
   Row,
   Col,
+  Tag,
 } from "antd";
 import { Link } from "react-router-dom";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanelTest";
-import { MdModeEditOutline } from "react-icons/md";
+
 import "../ItemList.css"; // Import custom CSS for responsive styling
-import CategoryList from "./CategoryList";
+
 const { Option } = Select;
 
 const ItemList = () => {
@@ -242,7 +243,32 @@ useEffect(() => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
+const UpdateItemStatus = async (itemId, isActive) => {
+  setLoading(true);
+  try {
+    const url = `${BASE_URL}/product-service/itemActiveAndInActive`;
+    await axios.patch(
+      url,
+      {
+        itemId: itemId, // Dynamic itemId
+        status: !isActive, // Toggle status correctly
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
+    message.success("Item status updated successfully.");
+    fetchItemsData(); // Refresh the items list
+  } catch (error) {
+    console.error("Error updating item status:", error);
+    message.error("Failed to update item status.");
+  } finally {
+    setLoading(false);
+  }
+};
  
 const columns = [
   {
@@ -309,9 +335,26 @@ const columns = [
   {
     title: "Status",
     dataIndex: "isActive",
-    key: "status",
+    key: "isActive",
     align: "center",
-    render: (isActive) => (isActive === "true" ? "Active" : "Inactive"),
+    render: (isActive, record) => {
+      // Ensure boolean conversion
+      const status = isActive === true || isActive === "true";
+
+      return (
+        <div>
+          <button
+            onClick={() => UpdateItemStatus(record.itemId, status)}
+            danger={!status} // Red button for deactivate
+            style={{ marginLeft: "10px" ,align:"center"}}
+          >
+            <Tag color={status ? "green" : "red"}>
+              {status ? "Active" : "Inactive"}
+            </Tag>
+          </button>
+        </div>
+      );
+    },
   },
   {
     title: "Action",
@@ -339,6 +382,8 @@ const columns = [
           disabled={loading}
         >
           Edit
+
+          
         </Button>
 
         {/* Barcode Information Button */}

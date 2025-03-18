@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, Spin, Alert } from "antd";
+import { Table, Spin, Alert,Tag } from "antd";
 import AdminPanelLayoutTest from "./AdminPanelTest";
 import BASE_URL from "./Config";
 const CategoryInventory = () => {
@@ -122,7 +122,11 @@ const CategoryInventory = () => {
                     dataIndex: "status",
                     key: "status",
                     align: "center",
-                    render: (status) => (status ? "Active" : "Inactive"),
+                    render: (status) => (
+                      <Tag color={status ? "green" : "red"}>
+                        {status ? "Active" : "Inactive"}
+                      </Tag>
+                    ),
                   },
                 ]}
                 dataSource={[
