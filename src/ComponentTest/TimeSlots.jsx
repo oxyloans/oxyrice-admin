@@ -230,8 +230,8 @@ const TimeSlots = () => {
       key: "isAvailable",
       align: "center",
       render: (isAvailable) => (
-        <Tag color={isAvailable ? "green" : "red"}>
-          {isAvailable ? "Available" : "Not Available"}
+        <Tag color={isAvailable ? "red" : "green"}>
+          {isAvailable ? "Not Available" : "Available"}
         </Tag>
       ),
     },
@@ -376,8 +376,8 @@ const TimeSlots = () => {
               ]}
             >
               <Select placeholder="Select availability">
-                <Option value={true}>Available</Option>
-                <Option value={false}>Not Available</Option>
+                <Option value={false}>Available</Option>
+                <Option value={true}>Not Available</Option>
               </Select>
             </Form.Item>
 
@@ -442,8 +442,8 @@ const TimeSlots = () => {
               ]}
             >
               <Select placeholder="Select availability">
-                <Option value={true}>Available</Option>
-                <Option value={false}>Not Available</Option>
+                <Option value={false}>Available</Option>
+                <Option value={true}>Not Available</Option>
               </Select>
             </Form.Item>
 
