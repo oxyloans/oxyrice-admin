@@ -42,6 +42,7 @@ const TimeSlots = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
 
+  
   useEffect(() => {
     fetchTimeSlots();
   }, []);
@@ -177,7 +178,6 @@ const TimeSlots = () => {
         {
           headers: {
             "Content-Type": "application/json",
-            accept: "*/*",
           },
         }
       );
