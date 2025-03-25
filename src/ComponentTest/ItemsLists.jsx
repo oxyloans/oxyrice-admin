@@ -58,7 +58,11 @@ const fetchItemsData = async () => {
     // );
  const filteredData = response.data.filter(
    (item) =>
-     (item.weight === 1 || item.weight === 26 || item.weight=== 5 || item.weight=== 10)
+     item.isActive === "true" &&
+     (item.weight === 1 ||
+       item.weight === 26 ||
+       item.weight === 5 ||
+       item.weight === 10)
  );
 
     // Sort to display items with quantity 26 first
