@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import AdminPanelLayoutTest from "./AdminPanelTest";
 // import "./Barcode.css";
-import { Table, Col, Row, Select, Button } from "antd";
+import { Table, Col, Row, Select, Tag } from "antd";
 import { useParams } from "react-router-dom";
 import BASE_URL from "./Config";
 const { Option } = Select;
@@ -70,10 +70,15 @@ const AllInforMationOfBarCode = () => {
       align: "center",
     },
     {
-      title: "Barcode",
+      title: "Barcode Status",
       dataIndex: "barcode",
       key: "barcode",
       align: "center",
+      render: (barcode) => (
+        <Tag color= {barcode === "active"? "green" : "red"}>
+          {barcode === "active" ? "Active" : "Inactive"}
+        </Tag>
+      ),
     },
     {
       title: "Current Status",

@@ -10,6 +10,7 @@ import {
   Col,
   Button,
   message,
+  Input,
 } from "antd";
 import axios from "axios";
 import moment from "moment";
@@ -33,7 +34,8 @@ const Ordersdetails = () => {
   const [toDate, setToDate] = useState(null); // Initialize with null
   const [fromDate, setFromDate] = useState(null); // Initialize with null
   const [orderDetails, setOrderDetails] = useState(null);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredItems, setFilteredItems] = useState([]);
   const handleStatusChange = (value) => setOrderStatus(value);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -83,8 +85,32 @@ const fetchOrderDetailsModal = async (orderId) => {
     setLoading(false);
   }
 };
+const handleSearchChange = (e) => {
+  const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+  setSearchTerm(value);
 
+  if (value) {
+    // Filter items based on multiple search criteria
+    const filtered = orderData.filter((item) => {
+      // Check last 4 digits of order ID
+      const lastFourDigits = item.orderId?.toString().slice(-4);
 
+      // Additional search conditions
+      const orderIdMatch = lastFourDigits?.includes(value);
+      const usernameMatch = item.username?.toLowerCase().includes(value);
+      const mobileNumberMatch = item.mobilenumber
+        ?.toLowerCase()
+        .includes(value);
+
+      // Return true if any of the conditions match
+      return orderIdMatch || usernameMatch || mobileNumberMatch;
+    });
+
+    setFilteredItems(filtered); // Update the filtered items
+  } else {
+    setFilteredItems(orderData); // Reset to all items when search term is empty
+  }
+};
   // Handle "View" button click
   const handleViewClick = (orderId) => {
     fetchOrderDetailsModal(orderId); // Fetch order details
@@ -95,124 +121,132 @@ const fetchOrderDetailsModal = async (orderId) => {
   const handleViewClick1 = async (orderId) => {
     await fetchOrderDetailsModal(orderId); // Fetch order details
   };
+const handleDownloadPDF = () => {
+  if (!orderDetails) {
+    console.error("Order details not found");
+    return;
+  }
 
-  const handleDownloadPDF = () => {
-    if (!orderDetails) {
-      console.error("Order details not found");
-      return;
+  const {
+    orderId,
+    customerName,
+    orderDate,
+    customermobilenumber,
+    address=[],
+    orderItems = [],
+    grandTotal,
+    deliveryfee
+  } = orderDetails;
+
+  const pdf = new jsPDF();
+
+  // Ensure safe text rendering with error handling
+  const safeText = (text, x, y, options = {}) => {
+    try {
+      // Ensure text is converted to string
+      const safeTextString = text ? text.toString() : "";
+      pdf.text(safeTextString, x, y, options);
+    } catch (error) {
+      console.error("Error rendering text:", error);
     }
-
-    const {
-      orderId,
-      customerName,
-      orderdate,
-      customermobilenumber,
-      address,
-      orderItems = [],
-      subtotal,
-      deliveryfee,
-      granttotal,
-    } = orderDetails;
-
-    const pdf = new jsPDF();
-
-    // Set font and title
-    pdf.setFontSize(22);
-    pdf.setFont("helvetica", "bold");
-    pdf.setTextColor("#4CAF50"); // Green color for the title
-    pdf.text("BILL FROM OXYRICE", 14, 20); // Custom title
-
-    // Add Order and Date Information
-    pdf.setFontSize(16);
-    pdf.setTextColor("#000000");
-    pdf.text(`Invoice No: ${orderId}`, 14, 30);
-    pdf.text(`Billing Date: ${orderdate}`, 14, 40);
-
-    // Add separator line
-    pdf.setDrawColor(150);
-    pdf.line(14, 45, 200, 45);
-
-    // Invoice From Details
-    pdf.setFontSize(14);
-    pdf.text("Invoice From:", 14, 55);
-    pdf.setFontSize(12);
-    pdf.text("OXYRICE COMPANY", 14, 65);
-    pdf.text("GSTIN: 1234567890", 14, 75);
-
-    // Invoice To Details
-    pdf.setFontSize(14);
-    pdf.text("Invoice To:", 105, 55); // Start from a different position
-    pdf.setFontSize(12);
-    pdf.text(customerName, 105, 65);
-    pdf.text(customermobilenumber, 105, 75);
-    pdf.text(address, 105, 85);
-
-    // Add Item Details (Invoice Breakup)
-    pdf.setFontSize(14);
-    pdf.text("Invoice Breakup", 14, 105);
-    pdf.setFontSize(12);
-
-    // Add table for items
-    const itemsRows = orderItems.map((item) => [
-      item.itemName,
-      item.quantity,
-      `$${item.price.toFixed(2)}`,
-      `$${(item.quantity * item.price).toFixed(2)}`,
-    ]);
-
-    pdf.autoTable({
-      startY: 115,
-      head: [["Item Description", "Quantity", "Unit Cost", "Total"]],
-      body: itemsRows,
-      theme: "striped",
-      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
-      bodyStyles: { fontSize: 10, textColor: "#333333" },
-      alternateRowStyles: { fillColor: "#f9f9f9" },
-      columnStyles: {
-        0: { cellWidth: 70, fontStyle: "bold" }, // Item Description
-        1: { cellWidth: 40 }, // Quantity
-        2: { cellWidth: 40 }, // Unit Cost
-        3: { cellWidth: 40 }, // Total
-      },
-    });
-
-    // Add the subtotal, discount, delivery fee, and grand total at the bottom
-    const summaryRows = [
-      ["SUB TOTAL", `$${subtotal?.toFixed(2) || "N/A"}`],
-      ["DELIVERY FEE", `$${deliveryfee?.toFixed(2) || "N/A"}`],
-      ["GRAND TOTAL", `$${granttotal?.toFixed(2) || "N/A"}`],
-    ];
-
-    pdf.autoTable({
-      startY: pdf.autoTable.previous.finalY + 10,
-      head: [["Field", "Amount"]],
-      body: summaryRows,
-      theme: "striped",
-      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
-      bodyStyles: { fontSize: 12, textColor: "#333333" },
-      columnStyles: {
-        0: { cellWidth: 100, fontStyle: "bold" },
-        1: { cellWidth: 80 },
-      },
-    });
-
-    // Add footer with generation date
-    const pageHeight = pdf.internal.pageSize.height;
-    pdf.setFontSize(10);
-    pdf.setTextColor("#555555");
-    pdf.text(
-      `Generated on: ${new Date().toLocaleDateString()}`,
-      14,
-      pageHeight - 10
-    );
-
-    // Add footer note
-    pdf.text("Thank you for shopping with OxyRice!", 14, pageHeight - 5);
-
-    // Save the PDF
-    pdf.save(`Order_${orderId}.pdf`);
   };
 
+  // Set font and title
+  pdf.setFontSize(22);
+  pdf.setFont("helvetica", "bold");
+  pdf.setTextColor("#4CAF50"); // Green color for the title
+  safeText("BILL FROM OXYRICE", 14, 20); // Custom title
+
+  // Add Order and Date Information
+  pdf.setFontSize(16);
+  pdf.setTextColor("#000000");
+  safeText(`Invoice No: ${orderId }`, 14, 30);
+  safeText(`Billing Date: ${orderDate }`, 14, 40);
+
+  // Add separator line
+  pdf.setDrawColor(150);
+  pdf.line(14, 45, 200, 45);
+
+  // Invoice From Details
+  pdf.setFontSize(14);
+  safeText("Invoice From:", 14, 55);
+  pdf.setFontSize(12);
+  safeText("ASKOXY COMPANY", 14, 65);
+  safeText("GSTIN: 1234567890", 14, 75);
+
+  // Invoice To Details
+  pdf.setFontSize(14);
+  safeText("Invoice To:", 105, 55); // Start from a different position
+  pdf.setFontSize(12);
+  safeText(customerName, 105, 65);
+  safeText(customermobilenumber , 105, 75);
+  safeText(address || "N/A", 105, 85);
+
+  // Add Item Details (Invoice Breakup)
+  pdf.setFontSize(14);
+  safeText("Invoice Breakup", 14, 105);
+  pdf.setFontSize(12);
+
+  // Add table for items
+  const itemsRows = orderItems.map((item) => [
+    item.itemName || "N/A",
+    item.quantity || "N/A",
+    `${item.price ? item.price.toFixed(2) : "N/A"}`,
+    `${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : "N/A"}`,
+  ]);
+
+  pdf.autoTable({
+    startY: 115,
+    head: [["Item Description", "Quantity", "Unit Cost", "Total"]],
+    body: itemsRows,
+    theme: "striped",
+    headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+    bodyStyles: { fontSize: 10, textColor: "#333333" },
+    alternateRowStyles: { fillColor: "#f9f9f9" },
+    columnStyles: {
+      0: { cellWidth: 70, fontStyle: "bold" }, // Item Description
+      1: { cellWidth: 40 }, // Quantity
+      2: { cellWidth: 40 }, // Unit Cost
+      3: { cellWidth: 40 }, // Total
+    },
+  });
+
+  // Add the subtotal, discount, delivery fee, and grand total at the bottom
+  const summaryRows = [
+    ["SUB TOTAL", `${grandTotal?.toFixed(2) }`],
+    ["DELIVERY FEE", `${deliveryfee?.toFixed(2) }`],
+    ["GRAND TOTAL", `${grandTotal?.toFixed(2)}`],
+  ];
+
+  pdf.autoTable({
+    startY: pdf.autoTable.previous.finalY + 10,
+    head: [["Field", "Amount"]],
+    body: summaryRows,
+    theme: "striped",
+    headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+    bodyStyles: { fontSize: 12, textColor: "#333333" },
+    columnStyles: {
+      0: { cellWidth: 100, fontStyle: "bold" },
+      1: { cellWidth: 80 },
+    },
+  });
+
+  // Add footer with generation date
+  const pageHeight = pdf.internal.pageSize.height;
+  pdf.setFontSize(10);
+  pdf.setTextColor("#555555");
+  safeText(
+    `Generated on: ${new Date().toLocaleDateString()}`,
+    14,
+    pageHeight - 10
+  );
+
+  // Add footer note
+  safeText("Thank you for shopping with ASKOXY.AI!", 14, pageHeight - 5);
+
+  // Save the PDF
+  pdf.save(`Order_${orderId}.pdf`);
+};
   // Handle modal close
   const handleModalClose = () => {
     setIsModalVisible(false);
@@ -273,7 +307,7 @@ const fetchOrderDetailsModal = async (orderId) => {
       dataIndex: "paymentType",
       key: "paymentType",
       align: "center",
-      render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : "Other"),
+      render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : ""),
     },
     // {
     //   title: "P S",
@@ -283,7 +317,7 @@ const fetchOrderDetailsModal = async (orderId) => {
     //   align: "center",
     // },
     {
-      title: "Status",
+      title: "Order Status",
       dataIndex: "orderStatus",
       key: "orderStatus",
       align: "center",
@@ -445,7 +479,7 @@ const fetchOrderDetailsModal = async (orderId) => {
           orders = orders.filter((order) => order.orderStatus === statusValue);
         }
 
-        setOrderData(orders);
+        setOrderData(orders);  setFilteredItems(orders);
         message.success("Data fetched successfully");
       } else {
         message.error("No data found");
@@ -559,6 +593,16 @@ const fetchOrderDetailsModal = async (orderId) => {
                 Download
               </Button>
             </Col>
+            {/* Search Input */}
+            <Col className="w-full sm:w-auto flex items-center gap-2">
+              <span>Search:</span>
+              <Input
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full sm:w-[150px]"
+                placeholder="Search Order Id"
+              />
+            </Col>
           </Row>
 
           {/* Orders List and Entries Per Page */}
@@ -584,7 +628,7 @@ const fetchOrderDetailsModal = async (orderId) => {
 
         <Table
           columns={columns}
-          dataSource={orderData}
+          dataSource={filteredItems}
           loading={loading}
           rowKey="orderId"
           bordered
@@ -630,7 +674,7 @@ const fetchOrderDetailsModal = async (orderId) => {
                         ? orderDetails.customerMobile
                         : orderDetails?.mobileNumber) +
                         " - " +
-                        (orderDetails?.customerName )}
+                        orderDetails?.customerName}
                     </td>
                   </tr>
                   <tr>
@@ -712,6 +756,7 @@ const fetchOrderDetailsModal = async (orderId) => {
                 dataSource={orderDetails?.orderItems || []}
                 rowKey={(record, index) => index}
                 pagination={false}
+                scroll={{ x: "100%" }}
               />
 
               <h2 className="font-semibold mt-4 ">
