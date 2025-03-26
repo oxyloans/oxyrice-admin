@@ -42,7 +42,7 @@ const fetchItemsData = async () => {
   setLoading(true);
   try {
     const response = await axios.get(
-      `${BASE_URL}/product-service/getItemsData`,
+      `${BASE_URL}/product-service/getItemsDataForAskOxy`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -56,20 +56,20 @@ const fetchItemsData = async () => {
     //   (item) =>
     //     item.isActive === "true" && (item.weight === 1 || item.weight === 26)
     // );
- const filteredData = response.data.filter(
-   (item) =>
-     item.isActive === "true" &&
-     (item.weight === 1 ||
-       item.weight === 26 ||
-       item.weight === 5 ||
-       item.weight === 10)
- );
+//  const filteredData = response.data.filter(
+//    (item) =>
+//      item.isActive === "true" &&
+//      (item.weight === 1 ||
+//        item.weight === 26 ||
+//        item.weight === 5 ||
+//        item.weight === 10)
+//  );
 
     // Sort to display items with quantity 26 first
-    const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
-    setItems(sortedData);
-    console.log(sortedData);
-    setFilteredItems(sortedData); // Ensure only filtered data is stored
+    // const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
+    setItems(response.data);
+    console.log(response);
+    setFilteredItems(response.data); // Ensure only filtered data is stored
   } catch (error) {
     message.error("Error fetching items data: " + error.message);
   } finally {
