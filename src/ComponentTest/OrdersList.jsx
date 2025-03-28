@@ -285,8 +285,8 @@ const handleDownloadPDF = () => {
 
     {
       title: "Order Date",
-      dataIndex: "orderDate",
-      key: "orderDate",
+      dataIndex: "createdAt",
+      key: "createdAt",
       align: "center",
     },
     // {
@@ -325,13 +325,14 @@ const handleDownloadPDF = () => {
         const statusMap = {
           0: "Incomplete",
           1: "Order Placed",
-          2: "Order Accepetd",
-          3: "Order Picked",
+          2: "Order Accepted", // Corrected typo
+          3: "Order Assigned",
+          PickedUp: "Order Picked Up", // Added space for readability
           4: "Order Delivered",
           5: "Order Rejected",
           6: "Order Canceled",
         };
-        return statusMap[status];
+        return statusMap[status] || status; // Return original status if not found in map
       },
     },
     {
@@ -533,10 +534,11 @@ const handleDownloadPDF = () => {
                 <Option value="0">Incomplete</Option>
                 <Option value="1">Order Placed</Option>
                 <Option value="2">Order Accepted</Option>
-                <Option value="3">Order Picked</Option>
+                <Option value="3">Order Assigned</Option>
+                <Option value="PickedUp">Order Picked Up</Option>
                 <Option value="4">Order Delivered</Option>
                 <Option value="5">Order Rejected</Option>
-                <Option value="6">Order Canceled</Option>
+                <Option value="6">Order Cancelled</Option>
               </Select>
             </Col>
 

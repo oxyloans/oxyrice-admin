@@ -155,11 +155,7 @@ const AdminPanelLayoutTest = ({ children }) => {
     window.location.href = "/login";
   };
 
-  const handleMenuClick = () => {
-    if (isMobile) {
-      setCollapsed(true);
-    }
-  };
+
 
   return (
     <Layout style={{ minHeight: "100vh" }}>

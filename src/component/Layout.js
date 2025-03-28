@@ -5,14 +5,11 @@ import {
   FaUsers,
   FaFolder,
   FaBox,
-  FaSlideshare,
+  
   FaBoxOpen,
-  FaStore,
+
   FaShoppingCart,
-  FaTags,
-  FaFileAlt,
-  FaChartBar,
-  FaExchangeAlt,
+  
   FaShippingFast,
   FaReply,
   FaUser,
