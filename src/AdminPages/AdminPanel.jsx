@@ -50,7 +50,7 @@ const AdminPanelLayoutTest = ({ children }) => {
       key: "dashboard",
       label: "Dashboard",
       icon: <FaTachometerAlt />,
-      link: "/admin",
+      link: "/admin/dashboard",
     },
 
     {
@@ -181,7 +181,7 @@ const AdminPanelLayoutTest = ({ children }) => {
               style={{ fontSize: 24 }}
             >
               <Link
-                to="/admin"
+                to="/admin/dashboard"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -203,7 +203,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <Link to="/admin" style={{ textDecoration: "none" }}>
+          <Link to="/admin/dashboard" style={{ textDecoration: "none" }}>
             <strong className="my-6 " style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Admin"}
             </strong>

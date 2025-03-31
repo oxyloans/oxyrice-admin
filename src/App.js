@@ -75,12 +75,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        Public Routes (No Authentication Required)
+        {/* Public Routes (No Authentication Required) */}
         {/* <Route path="/" element={<Login />} />
         <Route path="/login" element={<LoginTest />} />
         <Route path="/register" element={<Register />} />
         <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
         {/* Protected Routes (Authentication Required) */}
+        <Route path="/" element={<LoginTest />} />
         <Route
           path="/dashboard"
           element={<ProtectedRoute element={<Dashboard />} />}
@@ -189,7 +190,6 @@ function App() {
           path="/user/mobilenumber_updated"
           element={<ProtectedRoute element={<CustomerUpdationDetails />} />}
         />
-        <Route path="/" element={<LoginTest />} />
         <Route
           path="/admin/dashboard"
           element={<ProtectedRoute element={<DashboardTest />} />}
@@ -283,7 +283,9 @@ function App() {
         <Route
           path="/admin/allinformationofbarcode/:itemId"
           element={<ProtectedRoute element={<AllInforMationOfBarCode />} />}
-        />
+        />{" "}
+        {/* Catch all other routes and redirect to login */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
