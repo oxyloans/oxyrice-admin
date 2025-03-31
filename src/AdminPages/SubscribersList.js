@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import axios from "axios";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import MainLayout from "./Layout";
 
 const SubscribersListDEtails = () => {

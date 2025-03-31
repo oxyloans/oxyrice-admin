@@ -166,7 +166,7 @@ import {
   Col,
   Spin,
 } from "antd";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import { useParams } from "react-router-dom";
 import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;

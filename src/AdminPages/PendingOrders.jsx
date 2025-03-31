@@ -1,4 +1,4 @@
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import React, { useState, useRef, useEffect } from "react";
 import { Table, Button, message, Row, Col, Spin, Modal, Select } from "antd";
 import axios from "axios";

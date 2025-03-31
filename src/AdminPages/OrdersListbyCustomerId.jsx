@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; // For capturing params from the URL
 import axios from "axios";
 import { Button, Table, message, Row, Col, Spin, Select } from "antd";
-import AdminPanelLayout from "./AdminPanelTest.jsx"; // Your Admin Panel Layout
+import AdminPanelLayout from "./AdminPanel.jsx"; // Your Admin Panel Layout
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 const { Option } = Select;

@@ -13,7 +13,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import axios from "axios";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import { Link } from "react-router-dom";
 
 const { Option } = Select;

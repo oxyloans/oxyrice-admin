@@ -150,9 +150,9 @@ const AdminPanelLayoutTest = ({ children }) => {
     setOpenKeys(keys.length ? [keys.pop()] : []);
 
   const handleSignOut = () => {
-    localStorage.removeItem("authToken");
-    sessionStorage.removeItem("userSession");
-    window.location.href = "/login";
+    localStorage.clear(); // Clear all local storage items
+    sessionStorage.clear(); // Clear all session storage items
+    window.location.href = "/"; // Redirect to login
   };
 
 

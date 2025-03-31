@@ -11,7 +11,7 @@ import {
   Row,
   Col,
 } from "antd";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 
 import BASE_URL from "./Config";
 const { Option } = Select;

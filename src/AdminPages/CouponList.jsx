@@ -16,7 +16,7 @@ import {
 import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
 import moment from "moment";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import BASE_URL from "./Config.jsx";
 const { Option } = Select;
 

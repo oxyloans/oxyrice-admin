@@ -1,4 +1,4 @@
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import React, { useState } from "react";
 import {
   Table,
@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from "uuid";
 import "jspdf-autotable";
 import { AiOutlineDownload } from "react-icons/ai";
 import BASE_URL from "./Config.jsx";
-const accessToken = localStorage.getItem("accessToken");
+const token = localStorage.getItem("token");
 const { Option } = Select;
 // Generate a unique order ID using UUID v4
 
@@ -47,70 +47,68 @@ const Ordersdetails = () => {
     setFromDate(date);
   };
   console.log(orderDetails);
-const fetchOrderDetailsModal = async (orderId) => {
-  if (!orderId) {
-    message.error("Invalid Order ID. Please try again.");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const response = await axios.get(
-      `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-
-    if (response?.status === 200 && response?.data?.length > 0) {
-      console.log("Fetched Order Details:", response.data);
-      setOrderDetails(response.data[0]);
-      console.log(response.data[0]);// Assuming the response is an array
-    } else {
-      message.warning("No order details found for the given Order ID.");
+  const fetchOrderDetailsModal = async (orderId) => {
+    if (!orderId) {
+      message.error("Invalid Order ID. Please try again.");
+      return;
     }
-  } catch (error) {
-    console.error("Error fetching order details:", error);
 
-    // Show different error messages based on the status code
-    if (error.response?.status === 500) {
-      message.error(
-        "Internal server error"
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-    } else {
-      message.error(
-        error.response?.data?.message ||
-          "An error occurred while fetching order details."
-      );
+
+      if (response?.status === 200 && response?.data?.length > 0) {
+        console.log("Fetched Order Details:", response.data);
+        setOrderDetails(response.data[0]);
+        console.log(response.data[0]); // Assuming the response is an array
+      } else {
+        message.warning("No order details found for the given Order ID.");
+      }
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+
+      // Show different error messages based on the status code
+      if (error.response?.status === 500) {
+        message.error("Internal server error");
+      } else {
+        message.error(
+          error.response?.data?.message ||
+            "An error occurred while fetching order details."
+        );
+      }
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
-const handleSearchChange = (e) => {
-  const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
-  setSearchTerm(value);
+  };
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    setSearchTerm(value);
 
-  if (value) {
-    // Filter items based on multiple search criteria
-    const filtered = orderData.filter((item) => {
-      // Check last 4 digits of order ID
-      const lastFourDigits = item.orderId?.toString().slice(-4);
+    if (value) {
+      // Filter items based on multiple search criteria
+      const filtered = orderData.filter((item) => {
+        // Check last 4 digits of order ID
+        const lastFourDigits = item.orderId?.toString().slice(-4);
 
-      // Additional search conditions
-      const orderIdMatch = lastFourDigits?.includes(value);
-      const usernameMatch = item.username?.toLowerCase().includes(value);
-      const mobileNumberMatch = item.mobilenumber
-        ?.toLowerCase()
-        .includes(value);
+        // Additional search conditions
+        const orderIdMatch = lastFourDigits?.includes(value);
+        const usernameMatch = item.username?.toLowerCase().includes(value);
+        const mobileNumberMatch = item.mobilenumber
+          ?.toLowerCase()
+          .includes(value);
 
-      // Return true if any of the conditions match
-      return orderIdMatch || usernameMatch || mobileNumberMatch;
-    });
+        // Return true if any of the conditions match
+        return orderIdMatch || usernameMatch || mobileNumberMatch;
+      });
 
-    setFilteredItems(filtered); // Update the filtered items
-  } else {
-    setFilteredItems(orderData); // Reset to all items when search term is empty
-  }
-};
+      setFilteredItems(filtered); // Update the filtered items
+    } else {
+      setFilteredItems(orderData); // Reset to all items when search term is empty
+    }
+  };
   // Handle "View" button click
   const handleViewClick = (orderId) => {
     fetchOrderDetailsModal(orderId); // Fetch order details
@@ -121,132 +119,132 @@ const handleSearchChange = (e) => {
   const handleViewClick1 = async (orderId) => {
     await fetchOrderDetailsModal(orderId); // Fetch order details
   };
-const handleDownloadPDF = () => {
-  if (!orderDetails) {
-    console.error("Order details not found");
-    return;
-  }
-
-  const {
-    orderId,
-    customerName,
-    orderDate,
-    customermobilenumber,
-    address=[],
-    orderItems = [],
-    grandTotal,
-    deliveryfee
-  } = orderDetails;
-
-  const pdf = new jsPDF();
-
-  // Ensure safe text rendering with error handling
-  const safeText = (text, x, y, options = {}) => {
-    try {
-      // Ensure text is converted to string
-      const safeTextString = text ? text.toString() : "";
-      pdf.text(safeTextString, x, y, options);
-    } catch (error) {
-      console.error("Error rendering text:", error);
+  const handleDownloadPDF = () => {
+    if (!orderDetails) {
+      console.error("Order details not found");
+      return;
     }
+
+    const {
+      orderId,
+      customerName,
+      orderDate,
+      customermobilenumber,
+      address = [],
+      orderItems = [],
+      grandTotal,
+      deliveryfee,
+    } = orderDetails;
+
+    const pdf = new jsPDF();
+
+    // Ensure safe text rendering with error handling
+    const safeText = (text, x, y, options = {}) => {
+      try {
+        // Ensure text is converted to string
+        const safeTextString = text ? text.toString() : "";
+        pdf.text(safeTextString, x, y, options);
+      } catch (error) {
+        console.error("Error rendering text:", error);
+      }
+    };
+
+    // Set font and title
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+    pdf.setTextColor("#4CAF50"); // Green color for the title
+    safeText("BILL FROM OXYRICE", 14, 20); // Custom title
+
+    // Add Order and Date Information
+    pdf.setFontSize(16);
+    pdf.setTextColor("#000000");
+    safeText(`Invoice No: ${orderId}`, 14, 30);
+    safeText(`Billing Date: ${orderDate}`, 14, 40);
+
+    // Add separator line
+    pdf.setDrawColor(150);
+    pdf.line(14, 45, 200, 45);
+
+    // Invoice From Details
+    pdf.setFontSize(14);
+    safeText("Invoice From:", 14, 55);
+    pdf.setFontSize(12);
+    safeText("ASKOXY COMPANY", 14, 65);
+    safeText("GSTIN: 1234567890", 14, 75);
+
+    // Invoice To Details
+    pdf.setFontSize(14);
+    safeText("Invoice To:", 105, 55); // Start from a different position
+    pdf.setFontSize(12);
+    safeText(customerName, 105, 65);
+    safeText(customermobilenumber, 105, 75);
+    safeText(address || "N/A", 105, 85);
+
+    // Add Item Details (Invoice Breakup)
+    pdf.setFontSize(14);
+    safeText("Invoice Breakup", 14, 105);
+    pdf.setFontSize(12);
+
+    // Add table for items
+    const itemsRows = orderItems.map((item) => [
+      item.itemName || "N/A",
+      item.quantity || "N/A",
+      `${item.price ? item.price.toFixed(2) : "N/A"}`,
+      `${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : "N/A"}`,
+    ]);
+
+    pdf.autoTable({
+      startY: 115,
+      head: [["Item Description", "Quantity", "Unit Cost", "Total"]],
+      body: itemsRows,
+      theme: "striped",
+      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+      bodyStyles: { fontSize: 10, textColor: "#333333" },
+      alternateRowStyles: { fillColor: "#f9f9f9" },
+      columnStyles: {
+        0: { cellWidth: 70, fontStyle: "bold" }, // Item Description
+        1: { cellWidth: 40 }, // Quantity
+        2: { cellWidth: 40 }, // Unit Cost
+        3: { cellWidth: 40 }, // Total
+      },
+    });
+
+    // Add the subtotal, discount, delivery fee, and grand total at the bottom
+    const summaryRows = [
+      ["SUB TOTAL", `${grandTotal?.toFixed(2)}`],
+      ["DELIVERY FEE", `${deliveryfee?.toFixed(2)}`],
+      ["GRAND TOTAL", `${grandTotal?.toFixed(2)}`],
+    ];
+
+    pdf.autoTable({
+      startY: pdf.autoTable.previous.finalY + 10,
+      head: [["Field", "Amount"]],
+      body: summaryRows,
+      theme: "striped",
+      headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
+      bodyStyles: { fontSize: 12, textColor: "#333333" },
+      columnStyles: {
+        0: { cellWidth: 100, fontStyle: "bold" },
+        1: { cellWidth: 80 },
+      },
+    });
+
+    // Add footer with generation date
+    const pageHeight = pdf.internal.pageSize.height;
+    pdf.setFontSize(10);
+    pdf.setTextColor("#555555");
+    safeText(
+      `Generated on: ${new Date().toLocaleDateString()}`,
+      14,
+      pageHeight - 10
+    );
+
+    // Add footer note
+    safeText("Thank you for shopping with ASKOXY.AI!", 14, pageHeight - 5);
+
+    // Save the PDF
+    pdf.save(`Order_${orderId}.pdf`);
   };
-
-  // Set font and title
-  pdf.setFontSize(22);
-  pdf.setFont("helvetica", "bold");
-  pdf.setTextColor("#4CAF50"); // Green color for the title
-  safeText("BILL FROM OXYRICE", 14, 20); // Custom title
-
-  // Add Order and Date Information
-  pdf.setFontSize(16);
-  pdf.setTextColor("#000000");
-  safeText(`Invoice No: ${orderId }`, 14, 30);
-  safeText(`Billing Date: ${orderDate }`, 14, 40);
-
-  // Add separator line
-  pdf.setDrawColor(150);
-  pdf.line(14, 45, 200, 45);
-
-  // Invoice From Details
-  pdf.setFontSize(14);
-  safeText("Invoice From:", 14, 55);
-  pdf.setFontSize(12);
-  safeText("ASKOXY COMPANY", 14, 65);
-  safeText("GSTIN: 1234567890", 14, 75);
-
-  // Invoice To Details
-  pdf.setFontSize(14);
-  safeText("Invoice To:", 105, 55); // Start from a different position
-  pdf.setFontSize(12);
-  safeText(customerName, 105, 65);
-  safeText(customermobilenumber , 105, 75);
-  safeText(address || "N/A", 105, 85);
-
-  // Add Item Details (Invoice Breakup)
-  pdf.setFontSize(14);
-  safeText("Invoice Breakup", 14, 105);
-  pdf.setFontSize(12);
-
-  // Add table for items
-  const itemsRows = orderItems.map((item) => [
-    item.itemName || "N/A",
-    item.quantity || "N/A",
-    `${item.price ? item.price.toFixed(2) : "N/A"}`,
-    `${item.quantity && item.price ? (item.quantity * item.price).toFixed(2) : "N/A"}`,
-  ]);
-
-  pdf.autoTable({
-    startY: 115,
-    head: [["Item Description", "Quantity", "Unit Cost", "Total"]],
-    body: itemsRows,
-    theme: "striped",
-    headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
-    bodyStyles: { fontSize: 10, textColor: "#333333" },
-    alternateRowStyles: { fillColor: "#f9f9f9" },
-    columnStyles: {
-      0: { cellWidth: 70, fontStyle: "bold" }, // Item Description
-      1: { cellWidth: 40 }, // Quantity
-      2: { cellWidth: 40 }, // Unit Cost
-      3: { cellWidth: 40 }, // Total
-    },
-  });
-
-  // Add the subtotal, discount, delivery fee, and grand total at the bottom
-  const summaryRows = [
-    ["SUB TOTAL", `${grandTotal?.toFixed(2) }`],
-    ["DELIVERY FEE", `${deliveryfee?.toFixed(2) }`],
-    ["GRAND TOTAL", `${grandTotal?.toFixed(2)}`],
-  ];
-
-  pdf.autoTable({
-    startY: pdf.autoTable.previous.finalY + 10,
-    head: [["Field", "Amount"]],
-    body: summaryRows,
-    theme: "striped",
-    headStyles: { fillColor: "#4CAF50", textColor: "#ffffff", fontSize: 12 },
-    bodyStyles: { fontSize: 12, textColor: "#333333" },
-    columnStyles: {
-      0: { cellWidth: 100, fontStyle: "bold" },
-      1: { cellWidth: 80 },
-    },
-  });
-
-  // Add footer with generation date
-  const pageHeight = pdf.internal.pageSize.height;
-  pdf.setFontSize(10);
-  pdf.setTextColor("#555555");
-  safeText(
-    `Generated on: ${new Date().toLocaleDateString()}`,
-    14,
-    pageHeight - 10
-  );
-
-  // Add footer note
-  safeText("Thank you for shopping with ASKOXY.AI!", 14, pageHeight - 5);
-
-  // Save the PDF
-  pdf.save(`Order_${orderId}.pdf`);
-};
   // Handle modal close
   const handleModalClose = () => {
     setIsModalVisible(false);
@@ -433,7 +431,7 @@ const handleDownloadPDF = () => {
   };
 
   const fetchOrderDetails = async () => {
-    if (!accessToken) {
+    if (!token) {
       message.error("User not authenticated. Please log in.");
       return;
     }
@@ -458,7 +456,7 @@ const handleDownloadPDF = () => {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
         params: { startDate, endDate, status: statusValue },
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       console.log("API Response:", response.data); // Confirm the structure of response data
@@ -480,7 +478,8 @@ const handleDownloadPDF = () => {
           orders = orders.filter((order) => order.orderStatus === statusValue);
         }
 
-        setOrderData(orders);  setFilteredItems(orders);
+        setOrderData(orders);
+        setFilteredItems(orders);
         message.success("Data fetched successfully");
       } else {
         message.error("No data found");

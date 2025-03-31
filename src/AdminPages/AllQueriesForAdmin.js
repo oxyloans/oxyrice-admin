@@ -12,7 +12,6 @@ import {
   Select,
   Upload,
   Image,
-  
   Spin,
   Table,
   message,
@@ -20,7 +19,7 @@ import {
 
 import { UserSwitchOutlined } from "@ant-design/icons";
 
-import AdminPanelLayoutTest from "./AdminPanelTest.jsx";
+import AdminPanelLayoutTest from "./AdminPanel.jsx";
 const { Option } = Select;
 function AllQueries() {
   const [data, setData] = useState([]);
@@ -38,7 +37,7 @@ function AllQueries() {
   const [uploadStatus, setUploadStatus] = useState();
   const [fileName, setFileName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const[loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleSelectedOption = (event) => {
     setData([]);
@@ -149,51 +148,48 @@ function AllQueries() {
   const handleCloseModal = () => {
     setShowModal1(false);
   };
-const handleFileChange = async (e, userId) => {
-  console.log("User ID:", userId);
-  const file = e.target.files[0];
+  const handleFileChange = async (e, userId) => {
+    console.log("User ID:", userId);
+    const file = e.target.files[0];
 
-  if (!file) {
-    message.warning( "Please select a file to upload.",
-    );
-    return;
-  }
+    if (!file) {
+      message.warning("Please select a file to upload.");
+      return;
+    }
 
-  setUploadStatus("loading");
-  setFileName(file.name);
+    setUploadStatus("loading");
+    setFileName(file.name);
 
-  // Prepare form data
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("fileType", "kyc");
-  formData.append("projectType", "ASKOXY");
+    // Prepare form data
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileType", "kyc");
+    formData.append("projectType", "ASKOXY");
 
-  try {
-    const response = await axios.post(
-      `${BASE_URL}/user-service/write/uploadQueryScreenShot?userId=${userId}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          // Ensure accessToken is defined
-        },
-      }
-    );
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/user-service/write/uploadQueryScreenShot?userId=${userId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            // Ensure accessToken is defined
+          },
+        }
+      );
 
-    setDocumentId(response.data.id);
-    message.success( "You have successfully uploaded the document.",
-    );
-    setUploadStatus("uploaded");
-  } catch (error) {
-    console.error("Upload Error:", error);
-   message.error({
-     content: error.response?.data?.error || "An error occurred",
-   });
+      setDocumentId(response.data.id);
+      message.success("You have successfully uploaded the document.");
+      setUploadStatus("uploaded");
+    } catch (error) {
+      console.error("Upload Error:", error);
+      message.error({
+        content: error.response?.data?.error || "An error occurred",
+      });
 
-    setUploadStatus("failed");
-  }
-};
-
+      setUploadStatus("failed");
+    }
+  };
 
   // const handleImageOrPdf = (url) => {
   //   if (url.endsWith(".pdf")) {
@@ -210,18 +206,18 @@ const handleFileChange = async (e, userId) => {
   //     }
   //   }
   // };
-const handleImageOrPdf = (url) => {
-  if (url.endsWith(".pdf")) {
-    // Open PDF in Google Docs Viewer for better compatibility
-    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-    window.open(viewerUrl, "_blank");
-  } else if (/\.(png|jpe?g|gif|webp|bmp)$/i.test(url)) {
-    // Open image in a new tab directly
-    window.open(url, "_blank");
-  } else {
-    message.error("Unsupported file format");
-  }
-};
+  const handleImageOrPdf = (url) => {
+    if (url.endsWith(".pdf")) {
+      // Open PDF in Google Docs Viewer for better compatibility
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      window.open(viewerUrl, "_blank");
+    } else if (/\.(png|jpe?g|gif|webp|bmp)$/i.test(url)) {
+      // Open image in a new tab directly
+      window.open(url, "_blank");
+    } else {
+      message.error("Unsupported file format");
+    }
+  };
 
   return (
     <div>
@@ -474,17 +470,13 @@ const handleImageOrPdf = (url) => {
                 ) : (
                   <>
                     <Button
-                      
                       onClick={() => approvefunc("PENDING")}
-                      
                       className="bg-[#04AA6D] text-white hover:bg-[#04AA6F] transition-all"
                     >
                       Pending
                     </Button>
                     <Button
-                     
                       onClick={() => approvefunc("COMPLETED")}
-                     
                       className="bg-[#008CBA] text-white hover:bg-green-700 transition-all"
                     >
                       Approved

@@ -12,7 +12,7 @@ import {
   Col,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 import { MdModeEditOutline } from "react-icons/md";
 import BASE_URL from "./Config.jsx";
 const { Option } = Select;
@@ -158,8 +158,7 @@ const SubscriptionPlansList = () => {
   const updateSubscriptionStatus = async (planId, isActive) => {
     setLoading(true);
     try {
-      const url =
-        `${BASE_URL}/order-service/activeOrInactive`;
+      const url = `${BASE_URL}/order-service/activeOrInactive`;
       const response = await axios.patch(
         url,
         {
@@ -255,112 +254,112 @@ const SubscriptionPlansList = () => {
     },
   ];
 
- return (
-   <AdminPanelLayout>
-     <div className="container">
-       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
-         <h2 className="text-xl font-bold mb-2 md:mb-0">Subscription Plans</h2>
-         <Button
-           type="primary"
-           onClick={() => setIsModalVisible(true)}
-           style={{ backgroundColor: "#1C84C6", color: "white" }}
-           className="w-full sm:w-auto"
-         >
-           Add New Plan
-         </Button>
-       </div>
+  return (
+    <AdminPanelLayout>
+      <div className="container">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+          <h2 className="text-xl font-bold mb-2 md:mb-0">Subscription Plans</h2>
+          <Button
+            type="primary"
+            onClick={() => setIsModalVisible(true)}
+            style={{ backgroundColor: "#1C84C6", color: "white" }}
+            className="w-full sm:w-auto"
+          >
+            Add New Plan
+          </Button>
+        </div>
 
-       <Row
-         justify="space-between"
-         align="middle"
-         className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
-       >
-         <Col className="w-full sm:w-auto">
-           Show{" "}
-           <Select
-             value={entriesPerPage}
-             onChange={handleEntriesPerPageChange}
-             style={{ width: 70 }}
-           >
-             <Option value={5}>5</Option>
-             <Option value={10}>10</Option>
-             <Option value={20}>20</Option>
-           </Select>{" "}
-           entries
-         </Col>
+        <Row
+          justify="space-between"
+          align="middle"
+          className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
+        >
+          <Col className="w-full sm:w-auto">
+            Show{" "}
+            <Select
+              value={entriesPerPage}
+              onChange={handleEntriesPerPageChange}
+              style={{ width: 70 }}
+            >
+              <Option value={5}>5</Option>
+              <Option value={10}>10</Option>
+              <Option value={20}>20</Option>
+            </Select>{" "}
+            entries
+          </Col>
 
-         <Col className="w-full sm:w-auto flex items-center gap-2">
-           <span>Search:</span>
-           <Input
-             value={searchTerm}
-             onChange={handleSearchChange}
-             style={{ width: 150 }}
-           />
-         </Col>
-       </Row>
+          <Col className="w-full sm:w-auto flex items-center gap-2">
+            <span>Search:</span>
+            <Input
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{ width: 150 }}
+            />
+          </Col>
+        </Row>
 
-       <Table
-         dataSource={filteredPlans}
-         columns={columns}
-         rowKey="id"
-         loading={loading}
-         bordered
-         pagination={{
-           pageSize: entriesPerPage,
-           onChange: (page) => setCurrentPage(page),
-         }}
-       />
+        <Table
+          dataSource={filteredPlans}
+          columns={columns}
+          rowKey="id"
+          loading={loading}
+          bordered
+          pagination={{
+            pageSize: entriesPerPage,
+            onChange: (page) => setCurrentPage(page),
+          }}
+        />
 
-       <Modal
-         title={selectedSubscription ? "Update Plan" : "Add New Plan"}
-         open={isModalVisible}
-         onCancel={handleCancel}
-         footer={[
-           <Button key="cancel" onClick={handleCancel}>
-             Cancel
-           </Button>,
-           <Button
-             key="submit"
-             type="primary"
-             htmlType="submit"
-             loading={loading}
-             onClick={() => form.submit()}
-           >
-             {selectedSubscription ? "Update Plan" : "Add Plan"}
-           </Button>,
-         ]}
-       >
-         <Form
-           form={form}
-           onFinish={selectedSubscription ? updatePlan : addPlan}
-           layout="vertical"
-         >
-           <Form.Item
-             label="Get Amount"
-             name="getAmount"
-             rules={[{ required: true, message: "Please enter get amount" }]}
-           >
-             <Input type="number" placeholder="Enter get amount" />
-           </Form.Item>
-           <Form.Item
-             label="Limit Amount"
-             name="limitAmount"
-             rules={[{ required: true, message: "Please enter limit amount" }]}
-           >
-             <Input type="number" placeholder="Enter limit amount" />
-           </Form.Item>
-           <Form.Item
-             label="Pay Amount"
-             name="payAmount"
-             rules={[{ required: true, message: "Please enter pay amount" }]}
-           >
-             <Input type="number" placeholder="Enter pay amount" />
-           </Form.Item>
-         </Form>
-       </Modal>
-     </div>
-   </AdminPanelLayout>
- );
+        <Modal
+          title={selectedSubscription ? "Update Plan" : "Add New Plan"}
+          open={isModalVisible}
+          onCancel={handleCancel}
+          footer={[
+            <Button key="cancel" onClick={handleCancel}>
+              Cancel
+            </Button>,
+            <Button
+              key="submit"
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              onClick={() => form.submit()}
+            >
+              {selectedSubscription ? "Update Plan" : "Add Plan"}
+            </Button>,
+          ]}
+        >
+          <Form
+            form={form}
+            onFinish={selectedSubscription ? updatePlan : addPlan}
+            layout="vertical"
+          >
+            <Form.Item
+              label="Get Amount"
+              name="getAmount"
+              rules={[{ required: true, message: "Please enter get amount" }]}
+            >
+              <Input type="number" placeholder="Enter get amount" />
+            </Form.Item>
+            <Form.Item
+              label="Limit Amount"
+              name="limitAmount"
+              rules={[{ required: true, message: "Please enter limit amount" }]}
+            >
+              <Input type="number" placeholder="Enter limit amount" />
+            </Form.Item>
+            <Form.Item
+              label="Pay Amount"
+              name="payAmount"
+              rules={[{ required: true, message: "Please enter pay amount" }]}
+            >
+              <Input type="number" placeholder="Enter pay amount" />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
+    </AdminPanelLayout>
+  );
 };
 
 export default SubscriptionPlansList;

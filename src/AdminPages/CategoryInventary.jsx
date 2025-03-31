@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Table, Spin, Alert,Tag } from "antd";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import { Table, Spin, Alert, Tag } from "antd";
+import AdminPanelLayoutTest from "./AdminPanel";
 import BASE_URL from "./Config";
 const CategoryInventory = () => {
   const [categoryData, setCategoryData] = useState([]);

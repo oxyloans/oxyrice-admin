@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Typography, Card, Space, Row, Col } from "antd";
+import { Layout, Typography, Card, Space,Badge,Button,Tooltip, Row, Col } from "antd";
 import { Line } from "react-chartjs-2";
 import {
   UserOutlined,
@@ -7,9 +7,10 @@ import {
   CalendarOutlined,
   ClockCircleOutlined,
   RiseOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,7 +18,7 @@ import {
   PointElement,
   LineElement,
   Title as ChartTitle,
-  Tooltip,
+  Tooltip as ChartTooltip,
   Legend,
 } from "chart.js";
 import BASE_URL from "./Config";
@@ -27,7 +28,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   ChartTitle,
-  Tooltip,
+  ChartTooltip,
   Legend
 );
 
@@ -37,22 +38,48 @@ const { Title, Text } = Typography;
 const DashboardTest = () => {
   const [analyticsData, setAnalyticsData] = useState({});
   const [loading, setLoading] = useState(true);
+   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          `${BASE_URL}/user-service/counts`
-        );
-        setAnalyticsData(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${BASE_URL}/user-service/counts`
+  //       );
+  //       setAnalyticsData(response.data);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
+
+
+   const fetchData = async () => {
+     try {
+       setRefreshing(true);
+       const response = await axios.get(`${BASE_URL}/user-service/counts`);
+       setAnalyticsData(response.data);
+       setLoading(false);
+       setRefreshing(false);
+     } catch (error) {
+       console.error("Error fetching data:", error);
+       setLoading(false);
+       setRefreshing(false);
+     }
+   };
+
+   useEffect(() => {
+     fetchData();
+     // Set up auto-refresh every 5 minutes
+     const refreshInterval = setInterval(() => {
+       fetchData();
+     }, 300000);
+
+     return () => clearInterval(refreshInterval);
+   }, []);
 
   // Calculate growth percentage
   const calculateGrowth = (current, previous) => {
@@ -75,16 +102,22 @@ const DashboardTest = () => {
         fill: true,
         backgroundColor: (context) => {
           const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, "rgba(24, 144, 255, 0.2)");
-          gradient.addColorStop(1, "rgba(24, 144, 255, 0)");
+          const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+          gradient.addColorStop(0, "rgba(66, 133, 244, 0.25)");
+          gradient.addColorStop(1, "rgba(66, 133, 244, 0.02)");
           return gradient;
         },
-        borderColor: "#1890ff",
+        borderColor: "#4285F4",
+        borderWidth: 2,
         tension: 0.4,
-        pointBackgroundColor: "#1890ff",
-        pointBorderColor: "#fff",
+        pointBackgroundColor: "#ffffff",
+        pointBorderColor: "#4285F4",
+        pointBorderWidth: 2,
+        pointRadius: 5,
         pointHoverRadius: 8,
+        pointHoverBackgroundColor: "#4285F4",
+        pointHoverBorderColor: "#ffffff",
+        pointHoverBorderWidth: 2,
       },
     ],
   };
@@ -130,7 +163,7 @@ const DashboardTest = () => {
       <Space direction="vertical" size={12} className="w-full">
         <div className="flex justify-between items-center">
           <div>
-            <Text className="text-gray-500 uppercase text-xs font-medium">
+            <Text className="text-gray-500 uppercase text-xs font-medium mr-1">
               {title}
             </Text>
             <Title
@@ -168,7 +201,7 @@ const DashboardTest = () => {
 
   return (
     <AdminPanelLayoutTest>
-      <Layout style={{ background: "#f5f7fa" }}>
+      <Layout style={{ background: "#f8fafc" }}>
         <Content className="p-6 md:p-8 min-h-screen">
           <div className="max-w-7xl mx-auto">
             <Row justify="space-between" align="middle" className="mb-8">
@@ -186,6 +219,27 @@ const DashboardTest = () => {
                 {/* <Text style={{ color: "#64748b" }}>
                   Real-time analytics overview
                 </Text> */}
+              </Col>
+              <Col>
+                <Tooltip title="Refresh data">
+                  <Badge dot={refreshing}>
+                    <Button
+                      type="default"
+                      icon={<ReloadOutlined spin={refreshing} />}
+                      onClick={fetchData}
+                      disabled={refreshing}
+                      style={{
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 36,
+                        height: 36,
+                        padding: 0,
+                      }}
+                    />
+                  </Badge>
+                </Tooltip>
               </Col>
             </Row>
 

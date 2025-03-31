@@ -1,4 +1,5 @@
-const userType = localStorage.getItem("userType");
+// Config.js
+const userType = localStorage.getItem("userType") || "live"; // Default to "live" if not set
 
 const BASE_URL =
   userType === "live"

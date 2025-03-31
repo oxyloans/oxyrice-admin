@@ -17,7 +17,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "./Config";
 import dayjs from "dayjs";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 
 const { Option } = Select;
 const dayOrder = {
@@ -42,7 +42,6 @@ const TimeSlots = () => {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
 
-  
   useEffect(() => {
     fetchTimeSlots();
   }, []);

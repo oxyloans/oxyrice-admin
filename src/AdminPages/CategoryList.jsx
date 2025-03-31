@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { EditOutlined, UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;
 
@@ -60,8 +60,6 @@ const Categories = () => {
     fetchCategories();
   }, []);
 
- 
-
   const openAddCategoryModal = () => {
     setIsModalVisible(true);
     setIsEditMode(false);
@@ -81,119 +79,117 @@ const Categories = () => {
     });
   };
 
-const closeModal = () => {
-  setIsModalVisible(false);
-  setEditingCategory(null);
-  form.resetFields(); // Reset form fields after closing
-};
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setEditingCategory(null);
+    form.resetFields(); // Reset form fields after closing
+  };
 
-const handleAddCategory = async (values) => {
-  const { categoryName, file } = values;
+  const handleAddCategory = async (values) => {
+    const { categoryName, file } = values;
 
-  // Check if a file is selected
-  if (!file || file.length === 0) {
-    message.error("Please upload a category image!");
-    return;
-  }
+    // Check if a file is selected
+    if (!file || file.length === 0) {
+      message.error("Please upload a category image!");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("categoryName", categoryName);
-  formData.append("fileType", "document"); // Specify file type
+    const formData = new FormData();
+    formData.append("categoryName", categoryName);
+    formData.append("fileType", "document"); // Specify file type
 
-  // Ensure valid file selection
-  const uploadedFile = file[0]?.originFileObj;
-  if (!uploadedFile) {
-    message.error("Uploaded file is not valid.");
-    return;
-  }
+    // Ensure valid file selection
+    const uploadedFile = file[0]?.originFileObj;
+    if (!uploadedFile) {
+      message.error("Uploaded file is not valid.");
+      return;
+    }
 
-  formData.append("multiPart", uploadedFile); // Append file
+    formData.append("multiPart", uploadedFile); // Append file
 
-  try {
-    setLoading(true);
-    const response = await axios.post(
-      `${BASE_URL}/product-service/saveCategoryWithImage`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${BASE_URL}/product-service/saveCategoryWithImage`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-    // Success Message & Modal Close
-    message.success("Category added successfully!");
-    fetchCategories();
-    closeModal(); // **Directly close the modal after success**
-  } catch (error) {
-    if (error.response?.status === 500) {
-      message.error("Category already exists. Please choose a different name.");
+      // Success Message & Modal Close
+      message.success("Category added successfully!");
+      fetchCategories();
       closeModal(); // **Directly close the modal after success**
-    } else {
-      message.error("Failed to add category.");
-    }
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-const handleEditCategory = async (values) => {
-  const { categoryName, multiPart } = values;
-
-  // Ensure file is selected
-  if (!multiPart?.fileList?.length) {
-    message.error("Please upload a category image!");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("categoryName", categoryName);
-  formData.append("fileType", "document"); // Specify file type
-
-  // Extract the uploaded file
-  const uploadedFile = multiPart.fileList[0].originFileObj;
-
-  if (!uploadedFile) {
-    message.error("Uploaded file is not valid.");
-    return;
-  }
-
-  formData.append("multiPart", uploadedFile); // Append actual file object
-
-  try {
-    setLoading(true);
-
-    const response = await axios.patch(
-      `${BASE_URL}/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${accessToken}`,
-        },
+    } catch (error) {
+      if (error.response?.status === 500) {
+        message.error(
+          "Category already exists. Please choose a different name."
+        );
+        closeModal(); // **Directly close the modal after success**
+      } else {
+        message.error("Failed to add category.");
       }
-    );
-
-    if (response.status === 200) {
-      message.success("Category updated successfully!");
-       fetchCategories();
-       closeModal();
-      form.resetFields();
-    } else {
-      message.error("Failed to update category.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error:", error);
-    message.error("Error updating category. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
+  const handleEditCategory = async (values) => {
+    const { categoryName, multiPart } = values;
 
+    // Ensure file is selected
+    if (!multiPart?.fileList?.length) {
+      message.error("Please upload a category image!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("categoryName", categoryName);
+    formData.append("fileType", "document"); // Specify file type
+
+    // Extract the uploaded file
+    const uploadedFile = multiPart.fileList[0].originFileObj;
+
+    if (!uploadedFile) {
+      message.error("Uploaded file is not valid.");
+      return;
+    }
+
+    formData.append("multiPart", uploadedFile); // Append actual file object
+
+    try {
+      setLoading(true);
+
+      const response = await axios.patch(
+        `${BASE_URL}/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        message.success("Category updated successfully!");
+        fetchCategories();
+        closeModal();
+        form.resetFields();
+      } else {
+        message.error("Failed to update category.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      message.error("Error updating category. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);

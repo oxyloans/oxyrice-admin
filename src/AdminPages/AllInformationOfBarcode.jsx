@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 // import "./Barcode.css";
 import { Table, Col, Row, Select, Tag } from "antd";
 import { useParams } from "react-router-dom";
@@ -10,14 +10,14 @@ const { Option } = Select;
 const AllInforMationOfBarCode = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
- const { itemId } = useParams();
+  const { itemId } = useParams();
   const [error, setError] = useState(null);
   // const [status, setStatus] = useState("GENERATED");
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0); // Added count state
   const [currentStatus, setCurrentStatus] = useState(""); // Added currentStatus state
-  
+
   // const handleStatusChange = (value) => setStatus(value);
 
   const fetchData = async () => {
@@ -75,7 +75,7 @@ const AllInforMationOfBarCode = () => {
       key: "barcode",
       align: "center",
       render: (barcode) => (
-        <Tag color= {barcode === "active"? "green" : "red"}>
+        <Tag color={barcode === "active" ? "green" : "red"}>
           {barcode === "active" ? "Active" : "Inactive"}
         </Tag>
       ),
@@ -106,7 +106,6 @@ const AllInforMationOfBarCode = () => {
         </Col> */}
       </Row>
 
-    
       {/* <Row justify="start" align="middle" className="mb-8 gap-4">
    
         <Col xs={24} sm={12} md={6} className="flex items-center">
@@ -126,7 +125,7 @@ const AllInforMationOfBarCode = () => {
         </Col>
 
         {/* Button to Get Data */}
-        {/* <Col xs={24} sm={12} md={6} className="flex items-center">
+      {/* <Col xs={24} sm={12} md={6} className="flex items-center">
           <Button
             className="text-white w-full sm:w-auto"
             style={{
@@ -160,8 +159,6 @@ const AllInforMationOfBarCode = () => {
       {!loading && data.length === 0 && !error && <p>No data available.</p>}
     </AdminPanelLayoutTest>
   );
-
-  
 };
 
 export default AllInforMationOfBarCode;

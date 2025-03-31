@@ -12,7 +12,7 @@ import {
   notification,
   Modal,
 } from "antd";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 
 import axios from "axios";
 const { Option } = Select;

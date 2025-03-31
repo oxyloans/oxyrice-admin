@@ -10,7 +10,7 @@ import {
   Col,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayout from "./AdminPanelTest.jsx";
+import AdminPanelLayout from "./AdminPanel.jsx";
 const accessToken = localStorage.getItem("accessToken");
 const Settings = () => {
   const [loading, setLoading] = useState(false);

@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { Link } from "react-router-dom";
 import BASE_URL from "./Config";
-import AdminPanelLayoutTest from "./AdminPanelTest";
+import AdminPanelLayoutTest from "./AdminPanel";
 
 import "../ItemList.css"; // Import custom CSS for responsive styling
 
@@ -33,120 +33,115 @@ const ItemList = () => {
   const accessToken = localStorage.getItem("accessToken");
   const [selectedFile, setSelectedFile] = useState(null);
 
-
   useEffect(() => {
     fetchItemsData();
   }, []);
 
-const fetchItemsData = async () => {
-  setLoading(true);
-  try {
-    const response = await axios.get(
-      `${BASE_URL}/product-service/getItemsDataForAskOxy`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+  const fetchItemsData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/product-service/getItemsDataForAskOxy`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      message.success("Data Fetched Successfully");
+
+      // Filter data where quantity is 1 or 26 and isActive is "true"
+      // const filteredData = response.data.filter(
+      //   (item) =>
+      //     item.isActive === "true" && (item.weight === 1 || item.weight === 26)
+      // );
+      //  const filteredData = response.data.filter(
+      //    (item) =>
+      //      item.isActive === "true" &&
+      //      (item.weight === 1 ||
+      //        item.weight === 26 ||
+      //        item.weight === 5 ||
+      //        item.weight === 10)
+      //  );
+
+      // Sort to display items with quantity 26 first
+      // const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
+      setItems(response.data);
+      console.log(response);
+      setFilteredItems(response.data); // Ensure only filtered data is stored
+    } catch (error) {
+      message.error("Error fetching items data: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpdateItem = async (values) => {
+    setLoading(true);
+    if (selectedItem) {
+      try {
+        const formData = new FormData();
+
+        // Append file if selected
+        if (selectedFile) {
+          formData.append("multiPart", selectedFile);
+        }
+        formData.append("fileType", "document");
+        formData.append("itemName", values.itemName);
+        formData.append("quantity", values.quantity || 0);
+        formData.append("weight", values.weight || 0);
+        formData.append("itemUnit", values.itemUnit);
+        formData.append("itemDescription", values.itemDescription);
+        formData.append("tag", values.tag);
+
+        await axios.patch(
+          `${BASE_URL}/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        message.success("Item updated successfully");
+        fetchItemsData();
+        handleCancel();
+      } catch (error) {
+        message.error(
+          "Error updating item: " +
+            (error.response?.data?.message || error.message)
+        );
+      } finally {
+        setLoading(false);
       }
-    );
-    message.success("Data Fetched Successfully");
+    }
+  };
 
-    // Filter data where quantity is 1 or 26 and isActive is "true"
-    // const filteredData = response.data.filter(
-    //   (item) =>
-    //     item.isActive === "true" && (item.weight === 1 || item.weight === 26)
-    // );
-//  const filteredData = response.data.filter(
-//    (item) =>
-//      item.isActive === "true" &&
-//      (item.weight === 1 ||
-//        item.weight === 26 ||
-//        item.weight === 5 ||
-//        item.weight === 10)
-//  );
-
-    // Sort to display items with quantity 26 first
-    // const sortedData = filteredData.sort((a, b) => b.weight - a.weight);
-    setItems(response.data);
-    console.log(response);
-    setFilteredItems(response.data); // Ensure only filtered data is stored
-  } catch (error) {
-    message.error("Error fetching items data: " + error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleFileChange = (e) => {
-  if (e.target.files.length > 0) {
-    setSelectedFile(e.target.files[0]);
-  }
-};
-
- const handleUpdateItem = async (values) => {
-   setLoading(true);
-   if (selectedItem) {
-     try {
-       const formData = new FormData();
-
-       // Append file if selected
-       if (selectedFile) {
-         formData.append("multiPart", selectedFile);
-       }
-       formData.append("fileType", "document");
-       formData.append("itemName", values.itemName);
-       formData.append("quantity", values.quantity || 0);
-       formData.append("weight", values.weight || 0);
-       formData.append("itemUnit", values.itemUnit);
-       formData.append("itemDescription", values.itemDescription);
-       formData.append("tag", values.tag);
-
-       await axios.patch(
-         `${BASE_URL}/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
-         formData,
-         {
-           headers: {
-             Authorization: `Bearer ${accessToken}`,
-             "Content-Type": "multipart/form-data",
-           },
-         }
-       );
-
-       message.success("Item updated successfully");
-       fetchItemsData();
-       handleCancel();
-      
-     
-     } catch (error) {
-       message.error(
-         "Error updating item: " +
-           (error.response?.data?.message || error.message)
-       );
-     } finally {
-       setLoading(false);
-     }
-   }
- };
-
-
-useEffect(() => {
-  if (selectedItem) {
-    form.setFieldsValue({
-      itemName: selectedItem.itemName,
-      quantity: selectedItem.quantity || "",
-      weight: selectedItem.weight || "",
-      itemUnit: selectedItem.units,
-      tag: selectedItem.tag || "",
-      itemDescription: selectedItem.itemDescription || "",
-    });
-  }
-}, [selectedItem]);
+  useEffect(() => {
+    if (selectedItem) {
+      form.setFieldsValue({
+        itemName: selectedItem.itemName,
+        quantity: selectedItem.quantity || "",
+        weight: selectedItem.weight || "",
+        itemUnit: selectedItem.units,
+        tag: selectedItem.tag || "",
+        itemDescription: selectedItem.itemDescription || "",
+      });
+    }
+  }, [selectedItem]);
 
   const handleViewGeneratedBarCodes = async (item) => {
     setLoading(true);
     try {
-      const url =
-        `${BASE_URL}/product-service/viewGeneratedBarCodes`;
+      const url = `${BASE_URL}/product-service/viewGeneratedBarCodes`;
 
       const response = await axios.post(
         url,
@@ -247,202 +242,204 @@ useEffect(() => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
-const UpdateItemStatus = async (itemId, isActive) => {
-  setLoading(true);
-  try {
-    const url = `${BASE_URL}/product-service/itemActiveAndInActive`;
-    await axios.patch(
-      url,
-      {
-        itemId: itemId, // Dynamic itemId
-        status: !isActive, // Toggle status correctly
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
+  const UpdateItemStatus = async (itemId, isActive) => {
+    setLoading(true);
+    try {
+      const url = `${BASE_URL}/product-service/itemActiveAndInActive`;
+      await axios.patch(
+        url,
+        {
+          itemId: itemId, // Dynamic itemId
+          status: !isActive, // Toggle status correctly
         },
-      }
-    );
-
-    message.success("Item status updated successfully.");
-    fetchItemsData(); // Refresh the items list
-  } catch (error) {
-    console.error("Error updating item status:", error);
-    message.error("Failed to update item status.");
-  } finally {
-    setLoading(false);
-  }
-};
- 
-const columns = [
-  {
-    title: "S.NO",
-    key: "serialNo",
-    render: (text, record, index) =>
-      index + 1 + (currentPage - 1) * entriesPerPage,
-    align: "center",
-    responsive: ["md"],
-  },
-  {
-    title: "Item Name",
-    dataIndex: "itemName",
-    key: "itemName",
-    align: "center",
-  },
-  {
-    title: "Category Name",
-    dataIndex: "categoryName",
-    key: "categoryName",
-    align: "center",
-    responsive: ["md"],
-  },
-  {
-    title: "Quantity",
-    dataIndex: "quantity",
-    key: "quantity",
-    align: "center",
-  },
-  {
-    title: "Weight",
-    dataIndex: "weight",
-    key: "weight",
-    align: "center",
-  },
-  {
-    title: "Units",
-    dataIndex: "units",
-    key: "units",
-    align: "center",
-    responsive: ["md"],
-  },
-  {
-    title: "Item Logo",
-    dataIndex: "itemImage",
-    key: "itemImage",
-    align: "center",
-    render: (text) => (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <img
-          src={text}
-          alt="Item Logo"
-          style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 5 }}
-        />
-      </div>
-    ),
-  },
-  {
-    title: "Status",
-    dataIndex: "isActive",
-    key: "isActive",
-    align: "center",
-    render: (isActive, record) => {
-      // Ensure boolean conversion
-      const status = isActive === true || isActive === "true";
-
-      return (
-        <div>
-          <button
-            onClick={() => UpdateItemStatus(record.itemId, status)}
-            danger={!status} // Red button for deactivate
-            style={{ marginLeft: "10px" ,align:"center"}}
-          >
-            <Tag color={status ? "green" : "red"}>
-              {status ? "Active" : "Inactive"}
-            </Tag>
-          </button>
-        </div>
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
+
+      message.success("Item status updated successfully.");
+      fetchItemsData(); // Refresh the items list
+    } catch (error) {
+      console.error("Error updating item status:", error);
+      message.error("Failed to update item status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const columns = [
+    {
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+      responsive: ["md"],
     },
-  },
-  {
-    title: "Action",
-    key: "action",
-    align: "center",
-    render: (text, item) => (
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "8px",
-          justifyContent: "center",
-        }}
-      >
-        {/* Edit Button */}
-        <Button
-          onClick={() => showUpdateModal(item)}
+    {
+      title: "Item Name",
+      dataIndex: "itemName",
+      key: "itemName",
+      align: "center",
+    },
+    {
+      title: "Category Name",
+      dataIndex: "categoryName",
+      key: "categoryName",
+      align: "center",
+      responsive: ["md"],
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      align: "center",
+    },
+    {
+      title: "Weight",
+      dataIndex: "weight",
+      key: "weight",
+      align: "center",
+    },
+    {
+      title: "Units",
+      dataIndex: "units",
+      key: "units",
+      align: "center",
+      responsive: ["md"],
+    },
+    {
+      title: "Item Logo",
+      dataIndex: "itemImage",
+      key: "itemImage",
+      align: "center",
+      render: (text) => (
+        <div
           style={{
-            backgroundColor: "#008CBA",
-            color: "white",
-            border: "none",
             display: "flex",
+            justifyContent: "center",
             alignItems: "center",
           }}
-          disabled={loading}
         >
-          Edit
+          <img
+            src={text}
+            alt="Item Logo"
+            style={{
+              width: 50,
+              height: 50,
+              objectFit: "cover",
+              borderRadius: 5,
+            }}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "isActive",
+      key: "isActive",
+      align: "center",
+      render: (isActive, record) => {
+        // Ensure boolean conversion
+        const status = isActive === true || isActive === "true";
 
-          
-        </Button>
-
-        {/* Barcode Information Button */}
-        <Button
+        return (
+          <div>
+            <button
+              onClick={() => UpdateItemStatus(record.itemId, status)}
+              danger={!status} // Red button for deactivate
+              style={{ marginLeft: "10px", align: "center" }}
+            >
+              <Tag color={status ? "green" : "red"}>
+                {status ? "Active" : "Inactive"}
+              </Tag>
+            </button>
+          </div>
+        );
+      },
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (text, item) => (
+        <div
           style={{
-            backgroundColor: "#1AB394",
-            border: "none",
             display: "flex",
-            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "8px",
+            justifyContent: "center",
           }}
-          disabled={loading}
         >
-          <Link
-            to={`/admin/allinformationofbarcode/${item.itemId}`}
-            style={{ color: "white", textDecoration: "none" }}
+          {/* Edit Button */}
+          <Button
+            onClick={() => showUpdateModal(item)}
+            style={{
+              backgroundColor: "#008CBA",
+              color: "white",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+            disabled={loading}
           >
-            Barcode Info
-          </Link>
-        </Button>
+            Edit
+          </Button>
 
-        {/* View Bar Codes Button */}
-        <Button
-          type="primary"
-          onClick={() => handleViewGeneratedBarCodes(item)}
-          style={{
-            backgroundColor: "#008CBA",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-          }}
-          disabled={loading}
-        >
-          View Bar Codes
-        </Button>
+          {/* Barcode Information Button */}
+          <Button
+            style={{
+              backgroundColor: "#1AB394",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+            disabled={loading}
+          >
+            <Link
+              to={`/admin/allinformationofbarcode/${item.itemId}`}
+              style={{ color: "white", textDecoration: "none" }}
+            >
+              Barcode Info
+            </Link>
+          </Button>
 
-        {/* Generate Bar Codes Button */}
-        <Button
-          type="primary"
-          onClick={() => handleToGenerateBarCodes(item)}
-          style={{
-            backgroundColor: "#1AB394",
-            color: "white",
-            border: "none",
-            display: "flex",
-            alignItems: "center",
-          }}
-          disabled={loading}
-        >
-          Generate Bar Codes
-        </Button>
-      </div>
-    ),
-  },
-];
+          {/* View Bar Codes Button */}
+          <Button
+            type="primary"
+            onClick={() => handleViewGeneratedBarCodes(item)}
+            style={{
+              backgroundColor: "#008CBA",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+            disabled={loading}
+          >
+            View Bar Codes
+          </Button>
 
+          {/* Generate Bar Codes Button */}
+          <Button
+            type="primary"
+            onClick={() => handleToGenerateBarCodes(item)}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+              border: "none",
+              display: "flex",
+              alignItems: "center",
+            }}
+            disabled={loading}
+          >
+            Generate Bar Codes
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   const handleSearchChange = (e) => {
     const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
