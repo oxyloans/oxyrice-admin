@@ -64,7 +64,6 @@ import AllInforMationOfBarCode from "./AdminPages/AllInformationOfBarcode";
 import LoginTest from "./AdminPages/AdminLogin";
 import CategoryInventory from "./AdminPages/CategoryInventary";
 import TimeSlots from "./AdminPages/TimeSlots";
-
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; // Check for token
@@ -130,10 +129,10 @@ function App() {
           path="/coupons/coupons_list"
           element={<ProtectedRoute element={<CouponList />} />}
         />
-        <Route
+        {/* <Route
           path="/orders/orders_list"
           element={<ProtectedRoute element={<OrdersList />} />}
-        />
+        /> */}
         <Route
           path="/orders/orders_list/:id"
           element={<ProtectedRoute element={<OrdersListDetailsCustomerId />} />}

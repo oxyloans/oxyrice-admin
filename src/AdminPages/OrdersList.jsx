@@ -307,13 +307,7 @@ const Ordersdetails = () => {
       align: "center",
       render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : ""),
     },
-    // {
-    //   title: "P S",
-    //   dataIndex: "paymentStatus",
-    //   key: "paymentStatus",
-    //   // render: (type) => (type === 1 ? 'COMPLEATED' : type === 2 ? 'PENDING' : 'Other'),
-    //   align: "center",
-    // },
+  
     {
       title: "Order Status",
       dataIndex: "orderStatus",
@@ -431,10 +425,7 @@ const Ordersdetails = () => {
   };
 
   const fetchOrderDetails = async () => {
-    if (!token) {
-      message.error("User not authenticated. Please log in.");
-      return;
-    }
+   
 
     // Ensure both dates are selected
     if (!fromDate || !toDate) {
@@ -468,12 +459,7 @@ const Ordersdetails = () => {
 
         // Filter out orders where testUser is true
         orders = orders.filter((order) => !order.testUser);
-        // Format orderId to show only last 4 digits
-        // orders = orders.map((order) => ({
-        //   ...order,
-        //   orderId: order.orderId ? order.orderId.slice(-4) : "", // Extract last 4 digits
-        // }));
-        // Filter results based on status if specified
+     
         if (statusValue) {
           orders = orders.filter((order) => order.orderStatus === statusValue);
         }

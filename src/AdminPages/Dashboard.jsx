@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Typography, Card, Space,Badge,Button,Tooltip, Row, Col } from "antd";
+import {
+  Layout,
+  Typography,
+  Card,
+  Space,
+  Badge,
+  Button,
+  Tooltip,
+  Row,
+  Col,
+  DatePicker,
+  Table,
+  message,
+  Tag,
+} from "antd";
 import { Line } from "react-chartjs-2";
 import {
   UserOutlined,
@@ -8,9 +22,13 @@ import {
   ClockCircleOutlined,
   RiseOutlined,
   ReloadOutlined,
+  SearchOutlined,
+  PhoneOutlined,
+  WhatsAppOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayoutTest from "./AdminPanel";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,6 +40,7 @@ import {
   Legend,
 } from "chart.js";
 import BASE_URL from "./Config";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -38,48 +57,124 @@ const { Title, Text } = Typography;
 const DashboardTest = () => {
   const [analyticsData, setAnalyticsData] = useState({});
   const [loading, setLoading] = useState(true);
-   const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BASE_URL}/user-service/counts`
-  //       );
-  //       setAnalyticsData(response.data);
-  //       setLoading(false);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //       setLoading(false);
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
+  const [userDetails, setUserDetails] = useState([]);
+  const [userDetailsLoading, setUserDetailsLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+    total: 0,
+  });
 
+  const handleToDateChange = (date) => {
+    setToDate(date);
+  };
 
-   const fetchData = async () => {
-     try {
-       setRefreshing(true);
-       const response = await axios.get(`${BASE_URL}/user-service/counts`);
-       setAnalyticsData(response.data);
-       setLoading(false);
-       setRefreshing(false);
-     } catch (error) {
-       console.error("Error fetching data:", error);
-       setLoading(false);
-       setRefreshing(false);
-     }
-   };
+  const handleFromDateChange = (date) => {
+    setStartDate(date);
+  };
 
-   useEffect(() => {
-     fetchData();
-     // Set up auto-refresh every 5 minutes
-     const refreshInterval = setInterval(() => {
-       fetchData();
-     }, 300000);
+  const fetchCounts = async () => {
+    try {
+      setRefreshing(true);
+      const response = await axios.get(`${BASE_URL}/user-service/counts`);
+      setAnalyticsData(response.data);
+      setLoading(false);
+      setRefreshing(false);
+    } catch (error) {
+      console.error("Error fetching count data:", error);
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-     return () => clearInterval(refreshInterval);
-   }, []);
+  const fetchUserDetails = async (fromDate, endDate, page = 0, size = 100) => {
+    try {
+      setUserDetailsLoading(true);
+
+      // Ensure both dates are selected
+      if (!fromDate || !endDate) {
+        message.error("Please select a valid date range.");
+        setUserDetailsLoading(false);
+        return;
+      }
+
+      // Ensure the fromDate is before the endDate
+      if (fromDate.isAfter(endDate)) {
+        message.error("From date cannot be later than To date.");
+        setUserDetailsLoading(false);
+        return;
+      }
+
+      // Format the dates for API call
+      const formattedStartDate = fromDate.format("YYYY-MM-DD");
+      const formattedEndDate = endDate.format("YYYY-MM-DD");
+
+      const response = await axios.get(
+        `${BASE_URL}/user-service/date-rangeuserdetails?startDate=${formattedStartDate}&endDate=${formattedEndDate}&page=${page}&size=${size}`
+      );
+
+      // Process the response data
+      if (response.data) {
+        const dataWithIndex = (response.data.content || response.data).map(
+          (item, index) => ({
+            ...item,
+            serialNumber: page * size + index + 1,
+          })
+        );
+
+        setUserDetails(dataWithIndex);
+        setPagination({
+          ...pagination,
+          current: page + 1,
+          total: response.data.totalElements || response.data.length,
+        });
+      }
+      setUserDetailsLoading(false);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      setUserDetailsLoading(false);
+    }
+  };
+
+  const handleFilter = () => {
+    fetchUserDetails(startDate, toDate);
+  };
+
+  const handleTableChange = (pagination) => {
+    fetchUserDetails(
+      startDate,
+      toDate,
+      pagination.current - 1,
+      pagination.pageSize
+    );
+  };
+
+  const refreshAllData = () => {
+    fetchCounts();
+    // Only fetch user details if dates are selected
+    if (startDate && toDate) {
+      fetchUserDetails(startDate, toDate);
+    }
+  };
+
+  useEffect(() => {
+    fetchCounts();
+    // Initial user details fetch only if dates are set
+    if (startDate && toDate) {
+      fetchUserDetails(startDate, toDate);
+    }
+
+    // Set up auto-refresh every 5 minutes
+    const refreshInterval = setInterval(() => {
+      refreshAllData();
+    }, 300000);
+
+    return () => clearInterval(refreshInterval);
+  }, []);
 
   // Calculate growth percentage
   const calculateGrowth = (current, previous) => {
@@ -199,6 +294,83 @@ const DashboardTest = () => {
     </Card>
   );
 
+  // Define columns for the user details table
+  const columns = [
+    {
+      title: "S.No",
+      dataIndex: "serialNumber",
+      key: "serialNumber",
+      align: "center",
+      width: 80,
+    },
+    {
+      title: "User ID",
+      dataIndex: "id",
+      key: "id",
+      align: "center",
+      ellipsis: true,
+    },
+    {
+      title: "Customer Contact",
+      key: "contact",
+      align: "center",
+      render: (text, record) => {
+        if (record.whatsappNumber && !record.mobileNumber) {
+          return (
+            <Tooltip title="WhatsApp Number">
+              <Tag color="green" icon={<WhatsAppOutlined />}>
+                {record.whatsappNumber}
+              </Tag>
+            </Tooltip>
+          );
+        } else if (record.mobileNumber && !record.whatsappNumber) {
+          return (
+            <Tooltip title="Mobile Number">
+              <Tag color="blue" icon={<PhoneOutlined />}>
+                {record.mobileNumber}
+              </Tag>
+            </Tooltip>
+          );
+        } else if (record.mobileNumber && record.whatsappNumber) {
+          return (
+            <Space direction="vertical" size="small">
+              <Tooltip title="WhatsApp Number">
+                <Tag color="green" icon={<WhatsAppOutlined />}>
+                  {record.whatsappNumber}
+                </Tag>
+              </Tooltip>
+              <Tooltip title="Mobile Number">
+                <Tag color="blue" icon={<PhoneOutlined />}>
+                  {record.mobileNumber}
+                </Tag>
+              </Tooltip>
+            </Space>
+          );
+        } else {
+          return <Text type="secondary">No contact info</Text>;
+        }
+      },
+    },
+    {
+      title: "Customer Name",
+      key: "name",
+      align: "center",
+      render: (text, record) => {
+        const name =
+          record.fullName ||
+          `${record.firstName || ""} ${record.lastName || ""}`.trim();
+        return name || <Text type="secondary">No name provided</Text>;
+      },
+    },
+    {
+      title: "Registration Date",
+      dataIndex: "created_at",
+      key: "created_at",
+      align: "center",
+      render: (text) => (text ? new Date(text).toLocaleString() : "-"),
+    },
+  ];
+
   return (
     <AdminPanelLayoutTest>
       <Layout style={{ background: "#f8fafc" }}>
@@ -216,9 +388,6 @@ const DashboardTest = () => {
                 >
                   Admin Dashboard
                 </Title>
-                {/* <Text style={{ color: "#64748b" }}>
-                  Real-time analytics overview
-                </Text> */}
               </Col>
               <Col>
                 <Tooltip title="Refresh data">
@@ -226,7 +395,7 @@ const DashboardTest = () => {
                     <Button
                       type="default"
                       icon={<ReloadOutlined spin={refreshing} />}
-                      onClick={fetchData}
+                      onClick={refreshAllData}
                       disabled={refreshing}
                       style={{
                         borderRadius: 8,
@@ -292,13 +461,68 @@ const DashboardTest = () => {
                   </Col>
                 </Row>
 
-                <Row gutter={[24, 24]}>
+                <Row gutter={[24, 24]} className="mb-8">
                   <Col xs={24}>
                     <Card
                       className="shadow-sm rounded-lg border-0"
                       bodyStyle={{ padding: "24px", height: "400px" }}
                     >
                       <Line data={chartData} options={chartOptions} />
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Date Range Filter and User Details Section */}
+                <Row gutter={[24, 24]}>
+                  <Col xs={24}>
+                    <Card
+                      title="User Registration Details"
+                      className="shadow-sm rounded-lg border-0"
+                      extra={
+                        <Space>
+                          <Space direction="vertical" size={0}>
+                            <Text className="text-xs text-gray-500">From</Text>
+                            <DatePicker
+                              value={startDate}
+                              onChange={handleFromDateChange}
+                              format="YYYY-MM-DD"
+                              className="w-full"
+                              placeholder="Select From Date"
+                            />
+                          </Space>
+                          <Space direction="vertical" size={0}>
+                            <Text className="text-xs text-gray-500">To</Text>
+                            <DatePicker
+                              value={toDate}
+                              onChange={handleToDateChange}
+                              format="YYYY-MM-DD"
+                              className="w-full"
+                              placeholder="Select To Date"
+                            />
+                          </Space>
+                          <Space direction="vertical" size={0}>
+                            <Text className="text-xs text-gray-500">Get Data</Text>
+                            <Button
+                              type="primary"
+                              icon={<SearchOutlined />}
+                              onClick={handleFilter}
+                            >
+                              Filter
+                            </Button>
+                          </Space>
+                        </Space>
+                      }
+                    >
+                      <Table
+                        columns={columns}
+                        dataSource={userDetails}
+                        rowKey="id"
+                        loading={userDetailsLoading}
+                        pagination={pagination}
+                        onChange={handleTableChange}
+                        scroll={{ x: "max-content" }}
+                        bordered
+                      />
                     </Card>
                   </Col>
                 </Row>
