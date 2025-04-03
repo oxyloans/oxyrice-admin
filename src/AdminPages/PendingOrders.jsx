@@ -16,6 +16,8 @@ const OrdersPending = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [orderDetails, setOrderDetails] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [totalElements, setTotalElements] = useState(0);
+
   // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
@@ -61,11 +63,13 @@ const OrdersPending = () => {
       setLoading(false);
     }
   };
+
   // Handle "View" button click
   const handleViewClick = (orderId) => {
     fetchOrderDetailsModal(orderId); // Fetch order details
     setIsModalVisible(true); // Show modal
   };
+
   // Define table columns
   const columns = [
     {
@@ -98,13 +102,13 @@ const OrdersPending = () => {
       dataIndex: "paymentType",
       key: "paymentType",
       align: "center",
-      render: (type) => (type === 1 ? "ONLINE" : type === 2 ? "COD" : "NA"),
+      render: (type) => (type === 1 ? "ONLINE" : type === 2 ? "COD" : ""),
     },
     {
       title: "Payment Status",
       dataIndex: "paymentStatus",
       key: "paymentStatus",
-      render: (status) => status || "Pending",
+      render: (status) => status || "",
       align: "center",
     },
     {
@@ -153,12 +157,17 @@ const OrdersPending = () => {
       ),
     },
   ];
+
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
         `${BASE_URL}/order-service/cancelled-incomplete`,
         {
+          params: {
+            page: currentPage - 1, // API uses 0-based indexing
+            size: entriesPerPage,
+          },
           headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
@@ -166,7 +175,15 @@ const OrdersPending = () => {
       console.log("API Response:", response.data); // Confirm the structure of response data
 
       if (response.status === 200) {
-        setOrderData(response.data);
+        // Check if response.data has a content property (paginated response)
+        if (response.data.content) {
+          setOrderData(response.data.content);
+          setTotalElements(response.data.totalElements || 0);
+        } else {
+          // If it's a direct array
+          setOrderData(response.data);
+          setTotalElements(response.data.length);
+        }
         message.success("Data fetched successfully");
       }
     } catch (error) {
@@ -179,7 +196,7 @@ const OrdersPending = () => {
 
   useEffect(() => {
     fetchOrderDetails();
-  }, []);
+  }, [currentPage, entriesPerPage]);
 
   const handleDownloadExcel = (orderData) => {
     // Ensure orderData is an array
@@ -229,6 +246,7 @@ const OrdersPending = () => {
     // Generate and download the Excel file
     XLSX.writeFile(workbook, "OrderData.xlsx");
   };
+
   const orderStatusMap = {
     0: "Incomplete",
     1: "Order Placed",
@@ -243,6 +261,7 @@ const OrdersPending = () => {
     1: "COD",
     2: "ONLINE",
   };
+
   return (
     <AdminPanelLayout>
       <div ref={printRef}>
@@ -295,7 +314,16 @@ const OrdersPending = () => {
           className="border"
           pagination={{
             pageSize: entriesPerPage,
+            current: currentPage,
             onChange: (page) => setCurrentPage(page),
+            total: totalElements,
+            showSizeChanger: true,
+            onShowSizeChange: (current, size) => {
+              setCurrentPage(1);
+              setEntriesPerPage(size);
+            },
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
           }}
         />
       </div>

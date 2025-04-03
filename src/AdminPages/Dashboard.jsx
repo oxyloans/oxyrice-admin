@@ -25,10 +25,11 @@ import {
   SearchOutlined,
   PhoneOutlined,
   WhatsAppOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayoutTest from "./AdminPanel";
-
+import * as XLSX from "xlsx";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -63,6 +64,7 @@ const DashboardTest = () => {
 
   const [userDetails, setUserDetails] = useState([]);
   const [userDetailsLoading, setUserDetailsLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100,
@@ -140,6 +142,55 @@ const DashboardTest = () => {
     }
   };
 
+  // New function to fetch all users for Excel download
+  const fetchAllUsersForDownload = async (fromDate, endDate) => {
+    try {
+      setDownloadLoading(true);
+
+      // Ensure both dates are selected
+      if (!fromDate || !endDate) {
+        message.error("Please select a valid date range.");
+        setDownloadLoading(false);
+        return null;
+      }
+
+      // Ensure the fromDate is before the endDate
+      if (fromDate.isAfter(endDate)) {
+        message.error("From date cannot be later than To date.");
+        setDownloadLoading(false);
+        return null;
+      }
+
+      // Format the dates for API call
+      const formattedStartDate = fromDate.format("YYYY-MM-DD");
+      const formattedEndDate = endDate.format("YYYY-MM-DD");
+
+      // Making request for all users without pagination
+      const response = await axios.get(
+        `${BASE_URL}/user-service/date-rangeuserdetails?startDate=${formattedStartDate}&endDate=${formattedEndDate}&page=0&size=10000`
+      );
+
+      // Process the response data
+      if (response.data) {
+        const dataWithIndex = (response.data.content || response.data).map(
+          (item, index) => ({
+            ...item,
+            serialNumber: index + 1,
+          })
+        );
+        setDownloadLoading(false);
+        return dataWithIndex;
+      }
+      setDownloadLoading(false);
+      return null;
+    } catch (error) {
+      console.error("Error fetching users for download:", error);
+      message.error("Failed to fetch users for download");
+      setDownloadLoading(false);
+      return null;
+    }
+  };
+
   const handleFilter = () => {
     fetchUserDetails(startDate, toDate);
   };
@@ -158,6 +209,74 @@ const DashboardTest = () => {
     // Only fetch user details if dates are selected
     if (startDate && toDate) {
       fetchUserDetails(startDate, toDate);
+    }
+  };
+
+  // Function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
+  // Function to download Excel
+  const downloadExcel = async () => {
+    if (!startDate || !toDate) {
+      message.error("Please select a valid date range before downloading");
+      return;
+    }
+
+    const allUsers = await fetchAllUsersForDownload(startDate, toDate);
+
+    if (!allUsers || allUsers.length === 0) {
+      message.info("No data available for download");
+      return;
+    }
+
+    try {
+      // Prepare data for Excel format
+      const excelData = allUsers.map((user, index) => {
+        const name =
+          user.fullName ||
+          `${user.firstName || ""} ${user.lastName || ""}`.trim();
+        return {
+          "S.No": index + 1,
+          "User ID": user.id || "-",
+          "Customer Name": name || "No name provided",
+          "WhatsApp Number": user.whatsappNumber || "-",
+          "Mobile Number": user.mobileNumber || "-",
+          "Registration Date": formatDate(user.created_at),
+        };
+      });
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "User Registration Data"
+      );
+
+      // Format the filename with date range
+      const fromDateStr = startDate.format("YYYY-MM-DD");
+      const toDateStr = toDate.format("YYYY-MM-DD");
+      const fileName = `User_Registrations_${fromDateStr}_to_${toDateStr}.xlsx`;
+
+      // Write file and download
+      XLSX.writeFile(workbook, fileName);
+      message.success("Excel file downloaded successfully");
+    } catch (error) {
+      console.error("Error generating Excel:", error);
+      message.error("Failed to generate Excel file");
     }
   };
 
@@ -367,7 +486,7 @@ const DashboardTest = () => {
       dataIndex: "created_at",
       key: "created_at",
       align: "center",
-      render: (text) => (text ? new Date(text).toLocaleString() : "-"),
+      render: (text) => formatDate(text),
     },
   ];
 
@@ -501,13 +620,33 @@ const DashboardTest = () => {
                             />
                           </Space>
                           <Space direction="vertical" size={0}>
-                            <Text className="text-xs text-gray-500">Get Data</Text>
+                            <Text className="text-xs text-gray-500">
+                              Get Data
+                            </Text>
                             <Button
-                              type="primary"
+                              style={{ background: "#008CBA", color: "white" }}
                               icon={<SearchOutlined />}
                               onClick={handleFilter}
                             >
-                              Filter
+                              Get Data
+                            </Button>
+                          </Space>
+                          <Space direction="vertical" size={0}>
+                            <Text className="text-xs text-gray-500">
+                              Export Data
+                            </Text>
+                            <Button
+                              icon={<DownloadOutlined />}
+                              onClick={downloadExcel}
+                              loading={downloadLoading}
+                              disabled={!startDate || !toDate}
+                              style={{
+                                background: "#04AA6D",
+                                borderColor: "#52c41a",
+                                color: "white",
+                              }}
+                            >
+                              Download Excel
                             </Button>
                           </Space>
                         </Space>

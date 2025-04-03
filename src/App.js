@@ -66,7 +66,7 @@ import CategoryInventory from "./AdminPages/CategoryInventary";
 import TimeSlots from "./AdminPages/TimeSlots";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
-  const isAuthenticated = localStorage.getItem("token") ? true : false; // Check for token
+  const isAuthenticated = localStorage.getItem("token") ? true : false; 
   return isAuthenticated ? element : <Navigate to="/" />;
 };
 
