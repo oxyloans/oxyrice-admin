@@ -3,6 +3,7 @@ import axios from "axios";
 import { Table, DatePicker, Select, Button, Spin, message } from "antd";
 import moment from "moment";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
+import BASE_URL from "../../AdminPages/Config";
 
 const { Option } = Select;
 
@@ -16,7 +17,7 @@ const TaskManagementByDate = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://182.18.139.138:9024/api/user-service/write/get-task-by-date",
+        `${BASE_URL}/user-service/write/get-task-by-date`,
         {
           specificDate: date.format("YYYY-MM-DD"),
           taskStatus: status,
@@ -120,7 +121,8 @@ const TaskManagementByDate = () => {
             dataSource={tasks}
             columns={columns}
             bordered
-            pagination={{ pageSize: 5 }}
+                          pagination={{ pageSize: 5 }}
+                          scroll={{ x: true }}
           />
         )}
       </div>

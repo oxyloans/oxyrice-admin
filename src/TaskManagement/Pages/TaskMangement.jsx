@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
-
+import BASE_URL from "../../AdminPages/Config";
 const TaskManagement = () => {
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState("PENDING");
 
-  const API_URL =
-    "http://182.18.139.138:9024/api/user-service/write/getAllTaskUpdates";
+  const API_URL = `${BASE_URL}/user-service/write/getAllTaskUpdates`;
 
   const fetchTasks = useCallback(async (status) => {
     setIsLoading(true);
