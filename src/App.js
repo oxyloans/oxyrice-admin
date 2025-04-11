@@ -64,6 +64,12 @@ import AllInforMationOfBarCode from "./AdminPages/AllInformationOfBarcode";
 import LoginTest from "./AdminPages/AdminLogin";
 import CategoryInventory from "./AdminPages/CategoryInventary";
 import TimeSlots from "./AdminPages/TimeSlots";
+import TaskManagementLogin from "./TaskManagement/Authentication/TaskManagementLogin";
+import TaskCreation from "./TaskManagement/Pages/TaskCreation";
+import TasksList from "./TaskManagement/Pages/TasksList";
+import TaskAdminPanelLayout from "./TaskManagement/Layout/AdminPanel";
+import TaskManagement from "./TaskManagement/Pages/TaskMangement";
+import TaskManagementByDate from "./TaskManagement/Pages/TaskManagementByDate";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -80,6 +86,15 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
         {/* Protected Routes (Authentication Required) */}
+        <Route path="taskmanagementlogin" element={<TaskManagementLogin />} />
+        <Route path="/taskcreation" element={<TaskCreation />} />
+        <Route path="/taskmanagementbydate" element={<TaskManagementByDate />} />
+        <Route
+          path="/taskmanagementlayout"
+          element={<TaskAdminPanelLayout />}
+        />
+        <Route path="/tasklists" element={<TasksList />} />
+        <Route path="/taskmanagement" element={<TaskManagement />} />
         <Route path="/" element={<LoginTest />} />
         <Route
           path="/dashboard"
