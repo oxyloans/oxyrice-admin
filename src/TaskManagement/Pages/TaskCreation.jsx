@@ -52,15 +52,29 @@ const TaskCreation = () => {
     USER: "USER",
   };
 
-  // Available assignees
+  // Updated available assignees with your provided names
   const availableAssignees = [
-    { value: "VINOD", label: "Vinod", color: "purple" },
-    { value: "NAVEEN", label: "Naveen", color: "orange" },
-    { value: "SURESH", label: "Suresh", color: "blue" },
-    { value: "RAMESH", label: "Ramesh", color: "green" },
-    { value: "RAJU", label: "Raju", color: "red" },
-    { value: "MAHESH", label: "Mahesh", color: "cyan" },
-    { value: "GANESH", label: "Ganesh", color: "magenta" },
+    { value: "VINOD", label: "VINOD", color: "purple" },
+    { value: "NAVEEN", label: "NAVEEN", color: "orange" },
+    { value: "SAIGADI", label: "SAIGADI", color: "blue" },
+    { value: "VIJAY", label: "VIJAY", color: "green" },
+    { value: "SRIDHAR", label: "SRIDHAR", color: "red" },
+    { value: "GUNNA", label: "GUNNA", color: "cyan" },
+    { value: "MANEIAH", label: "MANEIAH", color: "magenta" },
+    { value: "HARIPRIYA", label: "HARIPRIYA", color: "lime" },
+    { value: "NIHARIKA", label: "NIHARIKA", color: "gold" },
+    { value: "SUDHEESH", label: "SUDHEESH", color: "volcano" },
+    { value: "DIVYA", label: "DIVYA", color: "geekblue" },
+    { value: "ANUSHA", label: "ANUSHA", color: "purple" },
+    { value: "SAIKRISHNA", label: "SAIKRISHNA", color: "orange" },
+    { value: "SREEJA", label: "SREEJA", color: "blue" },
+    { value: "GUNNASANKAR", label: "GUNNASANKAR", color: "green" },
+    { value: "HARIBABU", label: "HARIBABU", color: "red" },
+    { value: "UDYA", label: "UDYA", color: "cyan" },
+    { value: "GOPAL", label: "GOPAL", color: "magenta" },
+    { value: "KARTHIK", label: "KARTHIK", color: "lime" },
+    { value: "GHRISHMA", label: "GHRISHMA", color: "gold" },
+    { value: "VARALAKSHMI", label: "VARALAKSHMI", color: "volcano" },
   ];
 
   const handleFileChange = async (e) => {
@@ -70,11 +84,6 @@ const TaskCreation = () => {
       message.warning("Please select a file to upload.");
       return;
     }
-
-    // // Get user ID from form or use a default value
-    // // You might want to adjust this based on your actual requirements
-    // const userId = form.getFieldValue("createdBy") || "ADMIN";
-    // console.log("User ID:", userId);
 
     setFileName(file.name);
     setUploadStatus("uploading");
@@ -128,20 +137,13 @@ const TaskCreation = () => {
     setLoading(true);
 
     try {
-      // Convert multiple assignees to comma-separated string for API
-      const assignees = values.assignedTo.join(",");
-
+      // Pass the assignees as an array instead of comma-separated string
       const taskData = {
         taskcreatedby: values.createdBy,
         admindocumentid: documentId,
-        taskassingnedto: assignees, // Send as comma-separated string
+        taskassingnedto: values.assignedTo, // Send as array ["NAVEEN", "DIVYA"]
         taskcontent: values.content,
       };
-
-      //   // Add document ID to request if available
-      //   if (documentId) {
-      //     taskData.documentId = documentId;
-      //   }
 
       const response = await axios.post(
         `${BASE_URL}/user-service/write/saveTask`,
