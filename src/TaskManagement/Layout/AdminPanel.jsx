@@ -47,34 +47,28 @@ const TaskAdminPanelLayout = ({ children }) => {
   }, [screens]);
   const sidebarItems = [
     {
-      key: "Task Management",
-      label: "Task Management",
-
-      icon: <FaTachometerAlt />,
-      link: "/taskmanagement",
-    },
-    {
-      key: "Task Management By Date",
-      label: "Task Management By Date",
-     icon: <FaTachometerAlt />,
-     
-      link: "/taskmanagementbydate",
-    },
-
-    {
       key: "Task Creation",
       label: "Task Creation",
 
-      icon: <FaUserEdit />,
+      icon: <FaTachometerAlt />,
       link: "/taskcreation",
     },
 
     {
-      key: "Task Lists",
-      label: "Task Lists",
-      icon: <FaSlideshare />,
+      key: "Assigned Tasks List",
+      label: "Assigned Tasks List",
+      icon: <FaUsers />,
       link: "/tasklists",
     },
+    {
+      key: "Task Management Status",
+      label: "Task Management Status",
+      icon: <FaExchangeAlt />,
+
+      
+      link: "/taskmanagement",
+    },
+   
   ];
 
   const toggleCollapse = () => {

@@ -245,7 +245,7 @@ const TasksList = () => {
         }),
         render: (id) => (
           <span className="text-gray-500 font-mono text-xs">
-            {id.substring(0, 8)}...
+            #{id.substring(id.length - 4)}
           </span>
         ),
       });

@@ -15,6 +15,7 @@ import {
   Progress,
   Row,
   Col,
+  Spin,
 } from "antd";
 import {
   SaveOutlined,
@@ -27,6 +28,9 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   LoadingOutlined,
+  PaperClipOutlined,
+  FileOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
@@ -42,6 +46,7 @@ const TaskCreation = () => {
   const [uploadStatus, setUploadStatus] = useState("idle"); // idle, uploading, uploaded, failed
   const [fileName, setFileName] = useState("");
   const [documentId, setDocumentId] = useState(null);
+  const [fileInputKey, setFileInputKey] = useState(Date.now());
 
   const [uploadProgress, setUploadProgress] = useState(0);
   const userId = localStorage.getItem("userId"); // Default to "ADMIN" if not set
@@ -130,6 +135,7 @@ const TaskCreation = () => {
       });
 
       setUploadStatus("failed");
+       setFileInputKey(Date.now());
     }
   };
 
@@ -194,38 +200,88 @@ const TaskCreation = () => {
       </Tag>
     );
   };
+  // Function to reset all upload state
+  const resetUploadState = () => {
+    setUploadStatus("idle");
+    setFileName("");
+    setDocumentId(null);
+    setUploadProgress(0);
+     setFileInputKey(Date.now());
+   
+  };
 
-  // Render upload status indicator
+  // Function to delete the current upload
+  const handleDeleteUpload = () => {
+    resetUploadState();
+    message.success("Upload cleared successfully");
+  };
+
   const renderUploadStatus = () => {
     switch (uploadStatus) {
       case "uploading":
         return (
-          <div className="mt-2">
-            <div className="flex items-center mb-1">
-              <LoadingOutlined className="mr-2 text-blue-500" />
-              <Text className="text-blue-500">Uploading: {fileName}</Text>
+          <div className="w-full">
+            <div className="flex items-center">
+              <Spin size="small" className="mr-2" />
+              <Text>{fileName}</Text>
             </div>
-            <Progress percent={uploadProgress} status="active" />
+            <Progress
+              percent={uploadProgress}
+              size="small"
+              status="active"
+              strokeColor={{
+                "0%": "#108ee9",
+                "100%": "#87d068",
+              }}
+            />
           </div>
         );
       case "uploaded":
         return (
-          <div className="mt-2 flex items-center">
-            <CheckCircleOutlined className="mr-2 text-green-500" />
-            <Text className="text-green-500">
-              Successfully uploaded: {fileName}
-            </Text>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center">
+              <FileOutlined className="mr-2 text-green-500" />
+              <Text className="mr-2">{fileName}</Text>
+              <Tag color="success" icon={<CheckCircleOutlined />}>
+                Uploaded Successfully
+              </Tag>
+            </div>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={handleDeleteUpload}
+              className="ml-2"
+            >
+              Clear
+            </Button>
           </div>
         );
       case "failed":
         return (
-          <div className="mt-2 flex items-center">
-            <ExclamationCircleOutlined className="mr-2 text-red-500" />
-            <Text className="text-red-500">Upload failed: {fileName}</Text>
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center">
+              <FileOutlined className="mr-2 text-red-500" />
+              <Text className="mr-2">{fileName}</Text>
+              <Tag color="error">Upload Failed</Tag>
+            </div>
+            <Button
+              icon={<DeleteOutlined />}
+              size="small"
+              onClick={handleDeleteUpload}
+              className="ml-2"
+            >
+              Clear
+            </Button>
           </div>
         );
       default:
-        return null;
+        return (
+          <Text type="secondary" className="flex items-center">
+            <PaperClipOutlined className="mr-2" />
+            No file selected
+          </Text>
+        );
     }
   };
 
@@ -363,12 +419,6 @@ const TaskCreation = () => {
                     className="hidden"
                     disabled={uploadStatus === "uploading"}
                   />
-                  <Button
-                    icon={<UploadOutlined />}
-                    loading={uploadStatus === "uploading"}
-                  >
-                    Select File
-                  </Button>
                 </label>
 
                 <div className="flex-grow">{renderUploadStatus()}</div>
