@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import TaskAdminPanelLayout from "../Layout/AdminPanel.jsx";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config.jsx";
@@ -52,6 +52,7 @@ const buttonStyle = {
 };
 
 const TaskManagement = () => {
+  // State variables
   const [status, setStatus] = useState("COMPLETED");
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,26 +61,35 @@ const TaskManagement = () => {
   const [activeTab, setActiveTab] = useState("general");
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
-  const [adminComment, setAdminComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [form] = Form.useForm();
 
+  // Fetch user ID on component mount
   useEffect(() => {
-    // Get userId from localStorage
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     }
   }, []);
 
-  const fetchAllTasks = async () => {
+  // Notification helpers
+  const showNotification = (type, message, description, icon) => {
+    notification[type]({
+      message,
+      description,
+      placement: "topRight",
+      duration: type === "error" ? 4 : 3,
+      icon: icon,
+    });
+  };
+
+  // API calls
+  const fetchAllTasks = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.post(
         `${BASE_URL}/user-service/write/getAllTaskUpdates`,
-        {
-          taskStatus: status,
-        },
+        { taskStatus: status },
         {
           headers: {
             accept: "*/*",
@@ -89,43 +99,37 @@ const TaskManagement = () => {
       );
 
       setTasks(response.data);
+
       if (response.data.length === 0) {
-        notification.info({
-          message: "No Tasks Found",
-          description: `No ${status.toLowerCase()} tasks found.`,
-          placement: "topRight",
-          icon: <FileSearchOutlined style={{ color: "#1890ff" }} />,
-        });
+        showNotification(
+          "info",
+          "No Tasks Found",
+          `No ${status.toLowerCase()} tasks found.`,
+          <FileSearchOutlined style={{ color: "#1890ff" }} />
+        );
       } else {
-        notification.success({
-          message: "Tasks Loaded",
-          description: `Found ${response.data.length} ${status.toLowerCase()} tasks.`,
-          placement: "topRight",
-          duration: 3,
-          icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
-        });
+        showNotification(
+          "success",
+          "Tasks Loaded",
+          `Found ${response.data.length} ${status.toLowerCase()} tasks.`,
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        );
       }
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      notification.error({
-        message: "Error Fetching Tasks",
-        description: "Failed to fetch tasks. Please try again later.",
-        placement: "topRight",
-        duration: 4,
-      });
+      showNotification(
+        "error",
+        "Error Fetching Tasks",
+        "Failed to fetch tasks. Please try again later."
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [status]);
 
-  const fetchTasksByDate = async () => {
+  const fetchTasksByDate = useCallback(async () => {
     if (!selectedDate) {
-      notification.warning({
-        message: "Missing Date",
-        description: "Please select a date.",
-        placement: "topRight",
-        duration: 3,
-      });
+      showNotification("warning", "Missing Date", "Please select a date.");
       return;
     }
 
@@ -148,65 +152,33 @@ const TaskManagement = () => {
       );
 
       setTasks(response.data);
+
       if (response.data.length === 0) {
-        notification.info({
-          message: "No Tasks Found",
-          description: `No ${status.toLowerCase()} tasks found for ${formattedDate}.`,
-          placement: "topRight",
-          duration: 3,
-          icon: <FileSearchOutlined style={{ color: "#1890ff" }} />,
-        });
+        showNotification(
+          "info",
+          "No Tasks Found",
+          `No ${status.toLowerCase()} tasks found for ${formattedDate}.`,
+          <FileSearchOutlined style={{ color: "#1890ff" }} />
+        );
       } else {
-        notification.success({
-          message: "Tasks Found",
-          description: `Found ${response.data.length} tasks for ${formattedDate}.`,
-          placement: "topRight",
-          duration: 3,
-          icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
-        });
+        showNotification(
+          "success",
+          "Tasks Found",
+          `Found ${response.data.length} tasks for ${formattedDate}.`,
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        );
       }
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
-      notification.error({
-        message: "Fetch Failed",
-        description: "Failed to fetch tasks. Please try again later.",
-        placement: "topRight",
-        duration: 4,
-      });
+      showNotification(
+        "error",
+        "Fetch Failed",
+        "Failed to fetch tasks. Please try again later."
+      );
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleStatusChange = (value) => {
-    setStatus(value);
-  };
-
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  const handleTabChange = (key) => {
-    setActiveTab(key);
-    setTasks([]); // Clear previous results when switching tabs
-  };
-
-  const openCommentModal = (task) => {
-    setCurrentTask(task);
-    setCommentModalVisible(true);
-    form.resetFields();
-  };
+  }, [selectedDate, status]);
 
   const handleCommentSubmit = async () => {
     try {
@@ -233,12 +205,12 @@ const TaskManagement = () => {
       );
 
       if (response.data) {
-        notification.success({
-          message: "Comment Added",
-          description: "Your comment has been added successfully.",
-          placement: "topRight",
-          duration: 3,
-        });
+        showNotification(
+          "success",
+          "Feedback Added",
+          "Your feedback has been submitted successfully.",
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        );
 
         // Refresh the task list
         if (activeTab === "general") {
@@ -252,25 +224,51 @@ const TaskManagement = () => {
       }
     } catch (error) {
       console.error("Error submitting comment:", error);
-      notification.error({
-        message: "Comment Failed",
-        description: "Failed to add comment. Please try again.",
-        placement: "topRight",
-        duration: 4,
-      });
+      showNotification(
+        "error",
+        "Submission Failed",
+        "Failed to add feedback. Please try again."
+      );
     } finally {
       setSubmittingComment(false);
     }
   };
 
+  // Event handlers
+  const handleStatusChange = (value) => {
+    setStatus(value);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setTasks([]); // Clear previous results when switching tabs
+  };
+
+  const openCommentModal = (task) => {
+    setCurrentTask(task);
+    setCommentModalVisible(true);
+    form.resetFields();
+  };
+
+  // Helper functions
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString();
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  // UI Components
   const renderPendingResponses = (responses) => {
     if (!responses || responses.length === 0) return null;
-
-    const validResponses = responses.filter(
-      (response) => response.pendingEod !== null
-    );
-
-    if (validResponses.length === 0) return null;
 
     return (
       <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -280,47 +278,67 @@ const TaskManagement = () => {
             <DownOutlined rotate={isActive ? 180 : 0} />
           )}
           className="bg-transparent"
+          defaultActiveKey={["1"]} // Auto-expand the panel
         >
           <Panel
             header={
               <div className="flex items-center text-blue-600">
                 <MessageOutlined className="mr-2" />
-                <Text strong>Pending Responses ({validResponses.length})</Text>
+                <Text strong>Task History ({responses.length})</Text>
               </div>
             }
             key="1"
             className="bg-white rounded-md mb-2 shadow-sm"
           >
-            {validResponses.map((response) => (
+            {responses.map((response) => (
               <Card
                 key={response.id}
-                className="mb-3 border-l-4 border-l-blue-400"
+                className={`mb-3 border-l-4 ${
+                  response.updateBy === "ADMIN"
+                    ? "border-l-blue-400"
+                    : "border-l-green-400"
+                }`}
                 size="small"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Text className="text-gray-600 block mb-1">
-                      Response Update:
-                    </Text>
-                    <Text className="text-gray-800">
-                      {response.pendingEod || "No update provided"}
-                    </Text>
-                  </div>
-                  <div>
-                    <Text className="text-gray-600 block mb-1">
-                      Admin Description:
-                    </Text>
-                    <Text className="text-gray-800">
-                      {response.adminDescription || "No admin comments"}
-                    </Text>
-                  </div>
+                  {/* For user updates, show pendingEod */}
+                  {response.updateBy !== "ADMIN" && response.pendingEod && (
+                    <div>
+                      <Text className="text-gray-600 block mb-1">
+                        User Update:
+                      </Text>
+                      <Text className="text-gray-800 bg-green-50 p-2 rounded block">
+                        {response.pendingEod}
+                      </Text>
+                    </div>
+                  )}
+
+                  {/* For admin updates, show adminDescription */}
+                  {response.updateBy === "ADMIN" &&
+                    response.adminDescription && (
+                      <div>
+                        <Text className="text-gray-600 block mb-1">
+                          Admin Feedback:
+                        </Text>
+                        <Text className="text-gray-800 bg-blue-50 p-2 rounded block">
+                          {response.adminDescription}
+                        </Text>
+                      </div>
+                    )}
+
                   <div>
                     <div className="flex justify-between">
                       <div>
                         <Text className="text-gray-600 block mb-1">
                           Updated By:
                         </Text>
-                        <Tag color="blue">{response.updateBy}</Tag>
+                        <Tag
+                          color={
+                            response.updateBy === "ADMIN" ? "blue" : "green"
+                          }
+                        >
+                          {response.updateBy}
+                        </Tag>
                       </div>
                       <div>
                         <Text className="text-gray-600 block mb-1">
@@ -362,12 +380,29 @@ const TaskManagement = () => {
     );
   };
 
-  // New component to render admin comments box
   const renderAdminCommentsBox = (task) => {
     if (task.taskStatus !== "PENDING") return null;
 
-    // Extract admin comments from the task if they exist
-    const adminComments = task.adminDescription || null;
+    // Extract admin comments from pendingUserTaskResponse if they exist
+    let adminComments = task.adminDescription || null;
+
+    // Check pendingUserTaskResponse array for admin comments
+    if (
+      task.pendingUserTaskResponse &&
+      task.pendingUserTaskResponse.length > 0
+    ) {
+      // Try to find a non-empty adminDescription
+      const adminResponseWithDesc = task.pendingUserTaskResponse.find(
+        (resp) =>
+          resp.adminDescription &&
+          resp.adminDescription.trim() !== "" &&
+          resp.updateBy === "ADMIN"
+      );
+
+      if (adminResponseWithDesc) {
+        adminComments = adminResponseWithDesc.adminDescription;
+      }
+    }
 
     return (
       <div className="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -388,11 +423,12 @@ const TaskManagement = () => {
         </div>
 
         {adminComments ? (
-          <div className="bg-white p-3 rounded-md border border-blue-100">
-            <Text className="whitespace-pre-wrap text-gray-700">
-              {adminComments}
-            </Text>
-          </div>
+          // <div className="bg-white p-3 rounded-md border border-blue-100">
+          //   <Text className="whitespace-pre-wrap text-gray-700">
+          //     {adminComments}
+          //   </Text>
+          // </div>
+        <></>
         ) : (
           <div className="bg-white p-3 rounded-md border border-blue-100 text-center">
             <Text className="text-gray-500">
@@ -509,6 +545,87 @@ const TaskManagement = () => {
     </Card>
   );
 
+  const renderCommentModal = () => (
+    <Modal
+      title={
+        <div className="flex items-center text-blue-600">
+         
+          <span>Add Admin Feedback</span>
+        </div>
+      }
+      open={commentModalVisible}
+      onCancel={() => setCommentModalVisible(false)}
+      footer={[
+        <Button key="cancel" onClick={() => setCommentModalVisible(false)}>
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          loading={submittingComment}
+          onClick={handleCommentSubmit}
+          // icon={<SendOutlined />}
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          Submit Feedback
+        </Button>,
+      ]}
+      width={600}
+    >
+      <div className="mb-4 bg-blue-50 p-3 rounded-md">
+        <div className="flex items-center mb-2">
+          <UserOutlined className="mr-2 text-blue-500" />
+          <Text strong>{currentTask?.taskAssignTo || "User"}'s Details</Text>
+        </div>
+
+        {currentTask && (
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <Text className="text-gray-600">Task ID:</Text>
+              <Text className="ml-2 text-gray-800">
+                #{currentTask.id.substring(currentTask.id.length - 4)}
+              </Text>
+            </div>
+            <div>
+              <Text className="text-gray-600">Employee Name:</Text>
+              <Text className="ml-2 text-gray-800">
+                {currentTask.taskAssignTo}
+              </Text>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {currentTask && currentTask.planOftheDay && (
+        <div className="mb-4 bg-gray-50 p-3 rounded-md">
+          <Text className="text-gray-600 block mb-1">Plan of the Day:</Text>
+          <Text className="text-gray-800 block">
+            {currentTask.planOftheDay}
+          </Text>
+        </div>
+      )}
+
+      <Form form={form} layout="vertical">
+        <Form.Item
+          name="adminComment"
+          label="Admin Feedback"
+          rules={[
+            { required: true, message: "Please enter your feedback" },
+            { min: 2, message: "Feedback must be at least 2 characters" },
+          ]}
+        >
+          <TextArea
+            rows={4}
+            placeholder="Enter your feedback or instructions for the task..."
+            maxLength={500}
+            showCount
+            autoFocus
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+
   return (
     <TaskAdminPanelLayout>
       <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -607,7 +724,7 @@ const TaskManagement = () => {
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
             ) : tasks.length > 0 ? (
-              <div>{tasks.map(renderTaskCard)}</div>
+              <div>{tasks.map((task) => renderTaskCard(task))}</div>
             ) : (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -629,62 +746,7 @@ const TaskManagement = () => {
       </div>
 
       {/* Admin Comment Modal */}
-      <Modal
-        title={
-          <div className="flex items-center text-blue-600">
-            <CommentOutlined className="mr-2" />
-            <span>Add Admin Comment</span>
-          </div>
-        }
-        open={commentModalVisible}
-        onCancel={() => setCommentModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setCommentModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={submittingComment}
-            onClick={handleCommentSubmit}
-            icon={<SendOutlined />}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            Submit Comment
-          </Button>,
-        ]}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="adminComment"
-            rules={[
-              { required: true, message: "Please enter your comment" },
-              { min: 2, message: "Comment must be at least 2 characters" },
-            ]}
-          >
-            <TextArea
-              rows={4}
-              placeholder="Enter your feedback or instructions..."
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-
-          {/* {currentTask && (
-            <div className="mt-4 bg-gray-50 p-3 rounded-md text-xs text-gray-500">
-              <p>
-                <strong>Task ID:</strong> {currentTask.id}
-              </p>
-              <p>
-                <strong>User ID:</strong> {currentTask.userId}
-              </p>
-              <p>
-                <strong>Assigned To:</strong> {currentTask.taskAssignTo}
-              </p>
-            </div>
-          )} */}
-        </Form>
-      </Modal>
+      {renderCommentModal()}
     </TaskAdminPanelLayout>
   );
 };
