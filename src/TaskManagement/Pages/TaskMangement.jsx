@@ -20,6 +20,7 @@ import {
   Modal,
   Form,
   Input,
+  Tooltip,
 } from "antd";
 import {
   CalendarOutlined,
@@ -33,6 +34,7 @@ import {
   DownOutlined,
   CommentOutlined,
   SendOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -405,7 +407,7 @@ const TaskManagement = () => {
     }
 
     return (
-      <div className="mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+      <div className="mt-4 bg-blue-50 p-4 rounded-lg border">
         <div className="flex justify-between items-center mb-2">
           <Text strong className="text-blue-700">
             <CommentOutlined className="mr-2" />
@@ -423,12 +425,11 @@ const TaskManagement = () => {
         </div>
 
         {adminComments ? (
-          // <div className="bg-white p-3 rounded-md border border-blue-100">
-          //   <Text className="whitespace-pre-wrap text-gray-700">
-          //     {adminComments}
-          //   </Text>
-          // </div>
-        <></>
+          <div className="bg-white p-3 rounded-md border border-blue-100">
+            <Text className="whitespace-pre-wrap text-gray-700">
+              {adminComments}
+            </Text>
+          </div>
         ) : (
           <div className="bg-white p-3 rounded-md border border-blue-100 text-center">
             <Text className="text-gray-500">
@@ -465,16 +466,23 @@ const TaskManagement = () => {
                 color: "white",
               }}
             />
-            <div>
-              <Text strong className="text-gray-800 text-lg">
-                {task.taskAssignTo}
-              </Text>
-              <Text className="text-gray-500 text-sm ml-2">
-                ID: #{task.id.substring(task.id.length - 4)}
-              </Text>
-              <Text className="text-gray-500 text-sm ml-2">
-                Updated by: {task.updatedBy}
-              </Text>
+            <div className="ml-2">
+              <div className="flex items-center gap-2">
+              
+                {task.taskAssignedBy && (
+                  <Tooltip title="Assigned by">
+                    <Tag color="blue" className="ml-1 flex items-center">
+                      <TeamOutlined className="mr-1" />
+                      {task.taskAssignedBy}
+                    </Tag>
+                  </Tooltip>
+                )}
+              </div>
+              <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm">
+                <span>ID: #{task.id.substring(task.id.length - 4)}</span>
+                <Divider type="vertical" className="mx-2" />
+                <span>Updated by: {task.updatedBy || "N/A"}</span>
+              </div>
             </div>
           </div>
           <Badge
@@ -549,7 +557,7 @@ const TaskManagement = () => {
     <Modal
       title={
         <div className="flex items-center text-blue-600">
-         
+          <CommentOutlined className="mr-2" />
           <span>Add Admin Feedback</span>
         </div>
       }
@@ -564,7 +572,7 @@ const TaskManagement = () => {
           type="primary"
           loading={submittingComment}
           onClick={handleCommentSubmit}
-          // icon={<SendOutlined />}
+          icon={<SendOutlined />}
           className="bg-blue-500 hover:bg-blue-600"
         >
           Submit Feedback
@@ -576,6 +584,12 @@ const TaskManagement = () => {
         <div className="flex items-center mb-2">
           <UserOutlined className="mr-2 text-blue-500" />
           <Text strong>{currentTask?.taskAssignTo || "User"}'s Details</Text>
+          {currentTask?.taskAssignedBy && (
+            <Tag color="blue" className="ml-2">
+              <TeamOutlined className="mr-1" />
+              Assigned by: {currentTask.taskAssignedBy}
+            </Tag>
+          )}
         </div>
 
         {currentTask && (
@@ -589,7 +603,7 @@ const TaskManagement = () => {
             <div>
               <Text className="text-gray-600">Employee Name:</Text>
               <Text className="ml-2 text-gray-800">
-                {currentTask.taskAssignTo}
+                {currentTask.taskAssignTo || "N/A"}
               </Text>
             </div>
           </div>
@@ -633,13 +647,16 @@ const TaskManagement = () => {
           className="shadow-md rounded-lg overflow-hidden border-0"
           bodyStyle={{ padding: 0 }}
         >
-          <div className="bg-gradient-to-r p-2 text-black">
-            <Title level={2} className="text-black mb-1">
-              Task Status
+          <div className="bg-gradient-to-r p-4 text-white">
+            <Title level={2} className="text-white mb-1">
+              Task Management Status
             </Title>
+            <Text className="text-black opacity-80">
+              Monitor and manage task status and updates
+            </Text>
           </div>
 
-          <div className="p-2">
+          <div className="p-4">
             <Tabs activeKey={activeTab} onChange={handleTabChange} type="card">
               <TabPane
                 tab={
@@ -709,7 +726,7 @@ const TaskManagement = () => {
                     onClick={
                       activeTab === "general" ? fetchAllTasks : fetchTasksByDate
                     }
-                    className="bg-[#008CBA] shadow-sm"
+                    className="bg-blue-500 hover:bg-blue-600 shadow-sm"
                     style={buttonStyle}
                   >
                     Search
@@ -720,11 +737,13 @@ const TaskManagement = () => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center p-16">
-                <Spin size="small" />
+                <Spin size="large" />
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
             ) : tasks.length > 0 ? (
-              <div>{tasks.map((task) => renderTaskCard(task))}</div>
+              <div className="transition-all duration-300">
+                {tasks.map((task) => renderTaskCard(task))}
+              </div>
             ) : (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
