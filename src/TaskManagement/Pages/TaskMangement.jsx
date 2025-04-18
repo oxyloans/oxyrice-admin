@@ -21,6 +21,12 @@ import {
   Form,
   Input,
   Tooltip,
+  Space,
+  Radio,
+  InputNumber,
+  Statistic,
+  Row,
+  Col,
 } from "antd";
 import {
   CalendarOutlined,
@@ -35,6 +41,11 @@ import {
   CommentOutlined,
   SendOutlined,
   TeamOutlined,
+  SearchOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+  ReloadOutlined,
+  PieChartOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -43,6 +54,7 @@ const { Option } = Select;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { TextArea } = Input;
+const { Search } = Input;
 
 // Custom styles for consistent buttons
 const buttonStyle = {
@@ -57,6 +69,7 @@ const TaskManagement = () => {
   // State variables
   const [status, setStatus] = useState("COMPLETED");
   const [tasks, setTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -66,13 +79,130 @@ const TaskManagement = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [form] = Form.useForm();
 
+  // New state for sorting and searching
+  const [sortField, setSortField] = useState("planCreatedAt");
+  // Update the state for simplified search and sorting
+  const [sortOrder, setSortOrder] = useState("descend"); // "ascend" or "descend"
+  const [searchText, setSearchText] = useState("");
+  const [searchField, setSearchField] = useState("all");
+
+  // New state for task statistics
+  const [taskStats, setTaskStats] = useState({
+    pending: 0,
+    completed: 0,
+    total: 0,
+    lastUpdated: null,
+  });
+
+  // Fetch task statistics
+  const fetchTaskStats = useCallback(async () => {
+    try {
+      // For demo purposes, we'll calculate stats from the current tasks
+      // In production, you'd likely have a separate API endpoint for this
+
+      const pendingResponse = await axios.post(
+        `${BASE_URL}/user-service/write/getAllTaskUpdates`,
+        { taskStatus: "PENDING" },
+        {
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const completedResponse = await axios.post(
+        `${BASE_URL}/user-service/write/getAllTaskUpdates`,
+        { taskStatus: "COMPLETED" },
+        {
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const pendingCount = pendingResponse.data?.length || 0;
+      const completedCount = completedResponse.data?.length || 0;
+
+      setTaskStats({
+        pending: pendingCount,
+        completed: completedCount,
+        total: pendingCount + completedCount,
+        lastUpdated: new Date(),
+      });
+    } catch (error) {
+      console.error("Error fetching task statistics:", error);
+      showNotification("error", "Error", "Failed to fetch task statistics.");
+    }
+  }, []);
+
   // Fetch user ID on component mount
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     }
-  }, []);
+
+    // Fetch task statistics on component mount
+    fetchTaskStats();
+  }, [fetchTaskStats]);
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      let result = [...tasks];
+
+      // Apply search filters - ENHANCED to include taskAssignedBy
+      if (searchText) {
+        const normalizedSearchText = searchText.toLowerCase();
+        result = result.filter((task) => {
+          return (
+            // Search in task content
+            (task.planOftheDay &&
+              task.planOftheDay.toLowerCase().includes(normalizedSearchText)) ||
+            (task.endOftheDay &&
+              task.endOftheDay.toLowerCase().includes(normalizedSearchText)) ||
+            // Search in assignee name
+            (task.taskAssignTo &&
+              task.taskAssignTo.toLowerCase().includes(normalizedSearchText)) ||
+            // Search in assigner name (taskAssignedBy)
+            (task.taskAssignedBy &&
+              task.taskAssignedBy.toLowerCase().includes(normalizedSearchText))
+          );
+        });
+      }
+      // Apply sorting - using the current field
+      result.sort((a, b) => {
+        let valueA, valueB;
+
+        // Handle different field types
+        if (sortField === "planCreatedAt" || sortField === "planUpdatedAt") {
+          valueA = a[sortField] ? new Date(a[sortField]).getTime() : 0;
+          valueB = b[sortField] ? new Date(b[sortField]).getTime() : 0;
+        } else if (
+          sortField === "taskAssignTo" ||
+          sortField === "taskAssignedBy"
+        ) {
+          valueA = (a[sortField] || "").toLowerCase();
+          valueB = (b[sortField] || "").toLowerCase();
+        } else {
+          valueA = a[sortField];
+          valueB = b[sortField];
+        }
+
+        // Apply sort order
+        if (sortOrder === "ascend") {
+          return valueA > valueB ? 1 : -1;
+        } else {
+          return valueA < valueB ? 1 : -1;
+        }
+      });
+
+      setFilteredTasks(result);
+    } else {
+      setFilteredTasks([]);
+    }
+  }, [tasks, sortField, sortOrder, searchText]);
 
   // Notification helpers
   const showNotification = (type, message, description, icon) => {
@@ -117,6 +247,12 @@ const TaskManagement = () => {
           <CheckCircleOutlined style={{ color: "#52c41a" }} />
         );
       }
+
+      // Update last updated timestamp
+      setTaskStats((prev) => ({
+        ...prev,
+        lastUpdated: new Date(),
+      }));
     } catch (error) {
       console.error("Error fetching tasks:", error);
       showNotification(
@@ -170,6 +306,12 @@ const TaskManagement = () => {
           <CheckCircleOutlined style={{ color: "#52c41a" }} />
         );
       }
+
+      // Update last updated timestamp
+      setTaskStats((prev) => ({
+        ...prev,
+        lastUpdated: new Date(),
+      }));
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
       showNotification(
@@ -248,6 +390,26 @@ const TaskManagement = () => {
   const handleTabChange = (key) => {
     setActiveTab(key);
     setTasks([]); // Clear previous results when switching tabs
+    setFilteredTasks([]);
+    setSearchText("");
+  };
+
+  const handleSortChange = (field) => {
+    // If clicking the same field, toggle order. Otherwise, set new field with descending order
+    if (field === sortField) {
+      setSortOrder(sortOrder === "ascend" ? "descend" : "ascend");
+    } else {
+      setSortField(field);
+      setSortOrder("descend"); // Default to descending
+    }
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+  };
+
+  const handleSearchFieldChange = (e) => {
+    setSearchField(e.target.value);
   };
 
   const openCommentModal = (task) => {
@@ -269,6 +431,25 @@ const TaskManagement = () => {
   };
 
   // UI Components
+  const renderSortButton = (field, label) => (
+    <Button
+      type={sortField === field ? "primary" : "default"}
+      size="small"
+      onClick={() => handleSortChange(field)}
+      className={sortField === field ? "bg-blue-500 hover:bg-blue-600" : ""}
+      icon={
+        sortField === field &&
+        (sortOrder === "ascend" ? (
+          <SortAscendingOutlined />
+        ) : (
+          <SortDescendingOutlined />
+        ))
+      }
+    >
+      {label}
+    </Button>
+  );
+
   const renderPendingResponses = (responses) => {
     if (!responses || responses.length === 0) return null;
 
@@ -468,7 +649,7 @@ const TaskManagement = () => {
             />
             <div className="ml-2">
               <div className="flex items-center gap-2">
-              
+                {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
                 {task.taskAssignedBy && (
                   <Tooltip title="Assigned by">
                     <Tag color="blue" className="ml-1 flex items-center">
@@ -603,7 +784,7 @@ const TaskManagement = () => {
             <div>
               <Text className="text-gray-600">Employee Name:</Text>
               <Text className="ml-2 text-gray-800">
-                {currentTask.taskAssignTo || "N/A"}
+                {currentTask.taskAssignedBy || "N/A"}
               </Text>
             </div>
           </div>
@@ -640,6 +821,65 @@ const TaskManagement = () => {
     </Modal>
   );
 
+  // New component to render task statistics
+  const renderTaskStatistics = () => (
+    <Card
+      className="mb-6 border-0 shadow-sm"
+      title={
+        <div className="flex items-center">
+          <PieChartOutlined className="mr-2 text-blue-500" />
+          <span>Task Overview</span>
+        </div>
+      }
+      extra={
+        <Button icon={<ReloadOutlined />} size="small" onClick={fetchTaskStats}>
+          Refresh
+        </Button>
+      }
+    >
+      <Row gutter={16}>
+        <Col span={6}>
+          <Statistic
+            title="Plan Of The Day Tasks"
+            value={taskStats.pending}
+            valueStyle={{ color: "#faad14" }}
+            prefix={<ClockCircleOutlined />}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="End Of The Day Tasks"
+            value={taskStats.completed}
+            valueStyle={{ color: "#52c41a" }}
+            prefix={<CheckCircleOutlined />}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Total Tasks"
+            value={taskStats.total}
+            valueStyle={{ color: "#1890ff" }}
+            prefix={<FileSearchOutlined />}
+          />
+        </Col>
+        <Col span={6}>
+          <div>
+            <Text type="secondary">Last Updated</Text>
+            <div className="mt-1">
+              {taskStats.lastUpdated ? (
+                <Tag color="blue" icon={<CalendarOutlined />}>
+                  {formatDate(taskStats.lastUpdated)}
+                </Tag>
+              ) : (
+                <Tag color="default">Not updated yet</Tag>
+              )}
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Card>
+  );
+
   return (
     <TaskAdminPanelLayout>
       <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -649,7 +889,7 @@ const TaskManagement = () => {
         >
           <div className="bg-gradient-to-r p-4 text-white">
             <Title level={2} className="text-white mb-1">
-              Task Management Status
+              Task Management Employee Status
             </Title>
             <Text className="text-black opacity-80">
               Monitor and manage task status and updates
@@ -657,6 +897,9 @@ const TaskManagement = () => {
           </div>
 
           <div className="p-4">
+            {/* Add Task Statistics Component */}
+            {renderTaskStatistics()}
+
             <Tabs activeKey={activeTab} onChange={handleTabChange} type="card">
               <TabPane
                 tab={
@@ -735,15 +978,121 @@ const TaskManagement = () => {
               </div>
             </Card>
 
+            {/* Added new Search and Sort UI */}
+            {tasks.length > 0 && (
+              <Card className="mb-6 border border-gray-200">
+                <div className="flex flex-col lg:flex-row gap-4 justify-between">
+                  {/* Search Area - SIMPLIFIED */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex-1 min-w-[200px]">
+                        <Search
+                          placeholder="Search by name or task content..."
+                          allowClear
+                          enterButton={<SearchOutlined />}
+                          size="middle"
+                          value={searchText}
+                          onChange={(e) => setSearchText(e.target.value)}
+                          onSearch={(value) => setSearchText(value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sort Area - ONLY UP/DOWN SORTING */}
+                  <div>
+                    <Button
+                      type={sortOrder === "ascend" ? "primary" : "default"}
+                      icon={<SortAscendingOutlined />}
+                      onClick={() => setSortOrder("ascend")}
+                      className={
+                        sortOrder === "ascend"
+                          ? "bg-blue-500 hover:bg-blue-600"
+                          : ""
+                      }
+                    >
+                      Ascending
+                    </Button>
+                    <Button
+                      type={sortOrder === "descend" ? "primary" : "default"}
+                      icon={<SortDescendingOutlined />}
+                      onClick={() => setSortOrder("descend")}
+                      className={
+                        sortOrder === "descend"
+                          ? "bg-blue-500 hover:bg-blue-600 ml-2"
+                          : "ml-2"
+                      }
+                    >
+                      Descending
+                    </Button>
+                    <Select
+                      value={sortField}
+                      onChange={(value) => {
+                        setSortField(value);
+                      }}
+                      style={{ width: 150, marginLeft: 8 }}
+                    >
+                      <Option value="planUpdatedAt">Updated Date</Option>
+                      <Option value="planCreatedAt">Created Date</Option>
+                      <Option value="taskAssignTo">Name</Option>
+                    </Select>
+                  </div>
+                </div>
+                {/* Task stats */}
+                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                  <div className="flex items-center">
+                    <Badge status="processing" />
+                    <Text className="ml-2">
+                      Showing {filteredTasks.length} of {tasks.length} tasks
+                      {searchText && (
+                        <Tag color="blue" className="ml-2">
+                          <SearchOutlined className="mr-1" />
+                          Search: "{searchText}"
+                        </Tag>
+                      )}
+                    </Text>
+                  </div>
+                  <div>
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        setSortField("planUpdatedAt");
+                        setSortOrder("descend");
+                        setSearchText("");
+                      }}
+                      icon={<FilterOutlined />}
+                    >
+                      Reset Filters
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {loading ? (
               <div className="flex flex-col items-center justify-center p-16">
                 <Spin size="large" />
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
-            ) : tasks.length > 0 ? (
+            ) : filteredTasks.length > 0 ? (
               <div className="transition-all duration-300">
-                {tasks.map((task) => renderTaskCard(task))}
+                {filteredTasks.map((task) => renderTaskCard(task))}
               </div>
+            ) : tasks.length > 0 && filteredTasks.length === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  <div className="text-center">
+                    <Text className="text-gray-500 block mb-2">
+                      No tasks match your search criteria
+                    </Text>
+                    <Button type="primary" onClick={() => setSearchText("")}>
+                      Clear Search
+                    </Button>
+                  </div>
+                }
+                className="py-16"
+              />
             ) : (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}

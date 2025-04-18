@@ -50,7 +50,7 @@ const TaskAdminPanelLayout = ({ children }) => {
       key: "Task Creation",
       label: "Task Creation",
 
-      icon: <FaTachometerAlt />,
+      icon: <FaHandsHelping />,
       link: "/taskcreation",
     },
 
@@ -61,14 +61,12 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/tasklists",
     },
     {
-      key: "Task Management Status",
-      label: "Task Management Status",
-      icon: <FaExchangeAlt />,
-
-      
+      key: "Task Management Employee Status",
+      label: "Task Employee Status",
+      icon: <FaSlideshare />,
+    
       link: "/taskmanagement",
     },
-   
   ];
 
   const toggleCollapse = () => {
