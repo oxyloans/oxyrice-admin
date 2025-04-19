@@ -99,7 +99,7 @@ function TaskManagementLogin() {
         });
 
         setTimeout(() => {
-          navigate("/taskcreation");
+          navigate("/taskmanagement/dashboard");
         }, 1000);
       } else {
         setError("Invalid credentials. Please try again.");

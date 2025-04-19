@@ -47,6 +47,14 @@ const TaskAdminPanelLayout = ({ children }) => {
   }, [screens]);
   const sidebarItems = [
     {
+      key: "Dashboard",
+      label: "Dashboard",
+      
+
+      icon: <FaTachometerAlt />,
+      link: "/taskmanagement/dashboard",
+    },
+    {
       key: "Task Creation",
       label: "Task Creation",
 
@@ -62,9 +70,9 @@ const TaskAdminPanelLayout = ({ children }) => {
     },
     {
       key: "Task Management Employee Status",
-      label: "Task Employee Status",
+      label: "Task Management Status",
       icon: <FaSlideshare />,
-    
+
       link: "/taskmanagement",
     },
   ];
@@ -78,7 +86,7 @@ const TaskAdminPanelLayout = ({ children }) => {
   const handleSignOut = () => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
-    window.location.href = "/taskmanagementlogin"; // Redirect to login
+    window.location.href = "/admin/taskmanagementlogin"; // Redirect to login
   };
 
   return (
@@ -105,7 +113,7 @@ const TaskAdminPanelLayout = ({ children }) => {
               style={{ fontSize: 24 }}
             >
               <Link
-                to="/admin/dashboard"
+                to="/taskmanagement/dashboard"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -127,7 +135,10 @@ const TaskAdminPanelLayout = ({ children }) => {
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <Link to="/admin/dashboard" style={{ textDecoration: "none" }}>
+          <Link
+            to="/taskmanagement/dashboard"
+            style={{ textDecoration: "none" }}
+          >
             <strong className="my-6 " style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Admin"}
             </strong>

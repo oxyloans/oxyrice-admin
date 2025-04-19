@@ -27,14 +27,12 @@ const Coupons = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingCouponId, setEditingCouponId] = useState(null);
   const [form] = Form.useForm();
-  const [searchCouponCode, setSearchCouponCode] = useState("");
-  const [searchResult, setSearchResult] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const accessToken = localStorage.getItem("accessToken");
-  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchCoupons();
@@ -199,6 +197,7 @@ const Coupons = () => {
             backgroundColor: isActive ? "#1C84C6" : "#EC4758",
             color: "white",
           }}
+          loading={loading && editingCouponId === record.couponId}
         >
           {isActive ? "Active" : "Inactive"}
         </Button>
@@ -229,13 +228,35 @@ const Coupons = () => {
     if ("couponId" in record) {
       setIsEditMode(true);
       setEditingCouponId(record.couponId);
+
+      // Parse date strings to moment objects for DatePicker
+      const startDate = record.startDateTime
+        ? moment(record.startDateTime)
+        : null;
+      const endDate = record.endDateTime ? moment(record.endDateTime) : null;
+
+      // Format user mobile numbers if they exist
+      const userMobileNumbers = record.userMobileNumbers
+        ? Array.isArray(record.userMobileNumbers)
+          ? record.userMobileNumbers.join(",")
+          : record.userMobileNumbers
+        : "";
+
+      // Set form values with properly formatted fields
       form.setFieldsValue({
-        ...record,
-        startDate: moment(record.startDate),
-        endDate: moment(record.endDate),
+        couponCode: record.couponCode,
+        couponValue: record.couponValue,
+        minOrder: record.minOrder,
+        maxDiscount: record.maxDiscount,
+        couponUsage: record.couponUsage,
+        discountType: record.discountType,
+        startDate: startDate,
+        endDate: endDate,
+        userMobileNumbers: userMobileNumbers,
       });
     } else {
       setIsEditMode(false);
+      setEditingCouponId(null);
       form.resetFields();
     }
   };
@@ -248,12 +269,17 @@ const Coupons = () => {
   const handleAddCoupon = async () => {
     try {
       const values = await form.validateFields();
+
+      // Format the values for the API
       const formattedValues = {
         ...values,
         startDate: values.startDate.format("YYYY-MM-DDTHH:mm:ss"),
         endDate: values.endDate.format("YYYY-MM-DDTHH:mm:ss"),
+        userMobileNumbers: values.userMobileNumbers,
         isActive: true,
       };
+
+      setLoading(true);
 
       if (isEditMode) {
         await axios.put(
@@ -276,24 +302,24 @@ const Coupons = () => {
     } catch (error) {
       console.error("Failed to submit:", error);
       message.error("Failed to submit coupon. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    const value = e.target.value.toLowerCase().trim();
     setSearchTerm(value);
 
     if (value) {
-      // Filter items based on the search term
       const filtered = coupons.filter((coupon) =>
-        ["couponCode", "minOrder"].some(
-          (key) => coupon[key]?.toString().toLowerCase().includes(value) // Ensure case-insensitive match and safe access
+        ["couponCode", "minOrder"].some((key) =>
+          coupon[key]?.toString().toLowerCase().includes(value)
         )
       );
-
-      setFilteredCoupons(filtered); // Update the filtered items
+      setFilteredCoupons(filtered);
     } else {
-      setFilteredCoupons(coupons); // Reset to all coupons if search term is empty
+      setFilteredCoupons(coupons);
     }
   };
 
@@ -306,7 +332,7 @@ const Coupons = () => {
             <h2 className="text-xl font-bold">Coupon List</h2>
             <Button
               style={{ backgroundColor: "#1C84C6", color: "white" }}
-              onClick={showModal}
+              onClick={() => showModal()}
               className="flex items-center gap-2"
             >
               <FaPlus />
@@ -342,6 +368,7 @@ const Coupons = () => {
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full sm:w-[150px]"
+                placeholder="Search coupons..."
               />
             </Col>
           </Row>
@@ -357,10 +384,13 @@ const Coupons = () => {
               rowKey="couponId"
               pagination={{
                 pageSize: entriesPerPage,
-                onChange: (page) => setCurrentPage(page),
+                current: currentPage,
+                onChange: handlePageChange,
+                total: filteredCoupons.length,
               }}
               scroll={{ x: "100%" }}
               bordered
+              loading={fetching}
             />
           )}
         </div>
@@ -370,11 +400,9 @@ const Coupons = () => {
         visible={isModalVisible}
         onCancel={handleCancel}
         onOk={handleAddCoupon}
+        confirmLoading={loading}
         destroyOnClose
-        bodyStyle={{
-          display: "grid",
-          placeItems: "center", // Centers the modal content horizontally and vertically
-        }}
+        width={700}
       >
         <Form form={form} layout="vertical">
           {/* Coupon Code */}
@@ -432,7 +460,7 @@ const Coupons = () => {
                   { required: true, message: "Please enter the coupon value!" },
                 ]}
               >
-                <Input />
+                <Input type="number" />
               </Form.Item>
             </Col>
           </Row>
@@ -447,7 +475,11 @@ const Coupons = () => {
                   { required: true, message: "Please select a start date!" },
                 ]}
               >
-                <DatePicker showTime />
+                <DatePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm:ss"
+                  style={{ width: "100%" }}
+                />
               </Form.Item>
             </Col>
 
@@ -459,14 +491,18 @@ const Coupons = () => {
                   { required: true, message: "Please select an end date!" },
                 ]}
               >
-                <DatePicker showTime />
+                <DatePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm:ss"
+                  style={{ width: "100%" }}
+                />
               </Form.Item>
             </Col>
           </Row>
 
           {/* End Date */}
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="maxDiscount"
                 label="Maximum Discount"
@@ -478,7 +514,7 @@ const Coupons = () => {
               </Form.Item>
             </Col>
 
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="minOrder"
                 label="Minimum Order Value"
@@ -487,6 +523,18 @@ const Coupons = () => {
                 ]}
               >
                 <Input type="number" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="userMobileNumbers"
+                label="User Mobile Numbers (comma separated)"
+               
+              >
+                <Input placeholder="+919347967774,+919059433013,+919908636995" />
               </Form.Item>
             </Col>
           </Row>

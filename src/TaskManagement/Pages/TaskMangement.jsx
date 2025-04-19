@@ -22,8 +22,6 @@ import {
   Input,
   Tooltip,
   Space,
-  Radio,
-  InputNumber,
   Statistic,
   Row,
   Col,
@@ -73,69 +71,23 @@ const TaskManagement = () => {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState("");
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [activeTab, setActiveTab] = useState("general");
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [form] = Form.useForm();
 
-  // New state for sorting and searching
+  // State for sorting and searching
   const [sortField, setSortField] = useState("planCreatedAt");
-  // Update the state for simplified search and sorting
-  const [sortOrder, setSortOrder] = useState("descend"); // "ascend" or "descend"
+  const [sortOrder, setSortOrder] = useState("descend");
   const [searchText, setSearchText] = useState("");
-  const [searchField, setSearchField] = useState("all");
 
-  // New state for task statistics
-  const [taskStats, setTaskStats] = useState({
+  // State for task statistics specific to selected date
+  const [dateTaskStats, setDateTaskStats] = useState({
     pending: 0,
     completed: 0,
     total: 0,
-    lastUpdated: null,
+    date: null,
   });
-
-  // Fetch task statistics
-  const fetchTaskStats = useCallback(async () => {
-    try {
-      // For demo purposes, we'll calculate stats from the current tasks
-      // In production, you'd likely have a separate API endpoint for this
-
-      const pendingResponse = await axios.post(
-        `${BASE_URL}/user-service/write/getAllTaskUpdates`,
-        { taskStatus: "PENDING" },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const completedResponse = await axios.post(
-        `${BASE_URL}/user-service/write/getAllTaskUpdates`,
-        { taskStatus: "COMPLETED" },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const pendingCount = pendingResponse.data?.length || 0;
-      const completedCount = completedResponse.data?.length || 0;
-
-      setTaskStats({
-        pending: pendingCount,
-        completed: completedCount,
-        total: pendingCount + completedCount,
-        lastUpdated: new Date(),
-      });
-    } catch (error) {
-      console.error("Error fetching task statistics:", error);
-      showNotification("error", "Error", "Failed to fetch task statistics.");
-    }
-  }, []);
 
   // Fetch user ID on component mount
   useEffect(() => {
@@ -143,16 +95,14 @@ const TaskManagement = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     }
+  }, []);
 
-    // Fetch task statistics on component mount
-    fetchTaskStats();
-  }, [fetchTaskStats]);
-
+  // Sort and filter tasks
   useEffect(() => {
     if (tasks.length > 0) {
       let result = [...tasks];
 
-      // Apply search filters - ENHANCED to include taskAssignedBy
+      // Apply search filter
       if (searchText) {
         const normalizedSearchText = searchText.toLowerCase();
         result = result.filter((task) => {
@@ -165,13 +115,14 @@ const TaskManagement = () => {
             // Search in assignee name
             (task.taskAssignTo &&
               task.taskAssignTo.toLowerCase().includes(normalizedSearchText)) ||
-            // Search in assigner name (taskAssignedBy)
+            // Search in assigner name
             (task.taskAssignedBy &&
               task.taskAssignedBy.toLowerCase().includes(normalizedSearchText))
           );
         });
       }
-      // Apply sorting - using the current field
+
+      // Apply sorting
       result.sort((a, b) => {
         let valueA, valueB;
 
@@ -215,56 +166,7 @@ const TaskManagement = () => {
     });
   };
 
-  // API calls
-  const fetchAllTasks = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/user-service/write/getAllTaskUpdates`,
-        { taskStatus: status },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setTasks(response.data);
-
-      if (response.data.length === 0) {
-        showNotification(
-          "info",
-          "No Tasks Found",
-          `No ${status.toLowerCase()} tasks found.`,
-          <FileSearchOutlined style={{ color: "#1890ff" }} />
-        );
-      } else {
-        showNotification(
-          "success",
-          "Tasks Loaded",
-          `Found ${response.data.length} ${status.toLowerCase()} tasks.`,
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />
-        );
-      }
-
-      // Update last updated timestamp
-      setTaskStats((prev) => ({
-        ...prev,
-        lastUpdated: new Date(),
-      }));
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
-      showNotification(
-        "error",
-        "Error Fetching Tasks",
-        "Failed to fetch tasks. Please try again later."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [status]);
-
+  // API call to fetch tasks by date
   const fetchTasksByDate = useCallback(async () => {
     if (!selectedDate) {
       showNotification("warning", "Missing Date", "Please select a date.");
@@ -291,6 +193,35 @@ const TaskManagement = () => {
 
       setTasks(response.data);
 
+      // Update task statistics based on the fetched data
+      const taskCount = response.data.length || 0;
+
+      // Fetch the opposite status count for complete statistics
+      const oppositeStatus = status === "COMPLETED" ? "PENDING" : "COMPLETED";
+      const oppositeResponse = await axios.post(
+        `${BASE_URL}/user-service/write/get-task-by-date`,
+        {
+          taskStatus: oppositeStatus,
+          specificDate: formattedDate,
+        },
+        {
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const oppositeCount = oppositeResponse.data.length || 0;
+
+      // Update date task stats
+      setDateTaskStats({
+        pending: status === "PENDING" ? taskCount : oppositeCount,
+        completed: status === "COMPLETED" ? taskCount : oppositeCount,
+        total: taskCount + oppositeCount,
+        date: selectedDate.toDate(),
+      });
+
       if (response.data.length === 0) {
         showNotification(
           "info",
@@ -306,12 +237,6 @@ const TaskManagement = () => {
           <CheckCircleOutlined style={{ color: "#52c41a" }} />
         );
       }
-
-      // Update last updated timestamp
-      setTaskStats((prev) => ({
-        ...prev,
-        lastUpdated: new Date(),
-      }));
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
       showNotification(
@@ -324,6 +249,7 @@ const TaskManagement = () => {
     }
   }, [selectedDate, status]);
 
+  // Admin comment submission
   const handleCommentSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -333,7 +259,7 @@ const TaskManagement = () => {
       const payload = {
         adminDescription: values.adminComment,
         id: currentTask.id,
-        taskStatus: "PENDING", // As per your requirement, only for PENDING tasks
+        taskStatus: "PENDING", // Only for PENDING tasks
         userId: currentTask.userId,
       };
 
@@ -357,11 +283,7 @@ const TaskManagement = () => {
         );
 
         // Refresh the task list
-        if (activeTab === "general") {
-          fetchAllTasks();
-        } else {
-          fetchTasksByDate();
-        }
+        fetchTasksByDate();
 
         // Close the modal
         setCommentModalVisible(false);
@@ -387,13 +309,6 @@ const TaskManagement = () => {
     setSelectedDate(date);
   };
 
-  const handleTabChange = (key) => {
-    setActiveTab(key);
-    setTasks([]); // Clear previous results when switching tabs
-    setFilteredTasks([]);
-    setSearchText("");
-  };
-
   const handleSortChange = (field) => {
     // If clicking the same field, toggle order. Otherwise, set new field with descending order
     if (field === sortField) {
@@ -406,10 +321,6 @@ const TaskManagement = () => {
 
   const handleSearch = (value) => {
     setSearchText(value);
-  };
-
-  const handleSearchFieldChange = (e) => {
-    setSearchField(e.target.value);
   };
 
   const openCommentModal = (task) => {
@@ -821,60 +732,46 @@ const TaskManagement = () => {
     </Modal>
   );
 
-  // New component to render task statistics
-  const renderTaskStatistics = () => (
+  // Component to render date-specific task statistics
+  const renderDateTaskStatistics = () => (
     <Card
       className="mb-6 border-0 shadow-sm"
       title={
         <div className="flex items-center">
           <PieChartOutlined className="mr-2 text-blue-500" />
-          <span>Task Overview</span>
+          <span>Tasks for {selectedDate.format("YYYY-MM-DD")}</span>
         </div>
       }
       extra={
-        <Button icon={<ReloadOutlined />} size="small" onClick={fetchTaskStats}>
+        <Button icon={<ReloadOutlined />} size="small" onClick={fetchTasksByDate}>
           Refresh
         </Button>
       }
     >
       <Row gutter={16}>
-        <Col span={6}>
+        <Col span={8}>
           <Statistic
             title="Plan Of The Day Tasks"
-            value={taskStats.pending}
+            value={dateTaskStats.pending}
             valueStyle={{ color: "#faad14" }}
             prefix={<ClockCircleOutlined />}
           />
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Statistic
             title="End Of The Day Tasks"
-            value={taskStats.completed}
+            value={dateTaskStats.completed}
             valueStyle={{ color: "#52c41a" }}
             prefix={<CheckCircleOutlined />}
           />
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Statistic
             title="Total Tasks"
-            value={taskStats.total}
+            value={dateTaskStats.total}
             valueStyle={{ color: "#1890ff" }}
             prefix={<FileSearchOutlined />}
           />
-        </Col>
-        <Col span={6}>
-          <div>
-            <Text type="secondary">Last Updated</Text>
-            <div className="mt-1">
-              {taskStats.lastUpdated ? (
-                <Tag color="blue" icon={<CalendarOutlined />}>
-                  {formatDate(taskStats.lastUpdated)}
-                </Tag>
-              ) : (
-                <Tag color="default">Not updated yet</Tag>
-              )}
-            </div>
-          </div>
         </Col>
       </Row>
     </Card>
@@ -892,34 +789,13 @@ const TaskManagement = () => {
               Task Management Employee Status
             </Title>
             <Text className="text-black opacity-80">
-              Monitor and manage task status and updates
+              Monitor and manage tasks by date
             </Text>
           </div>
 
           <div className="p-4">
-            {/* Add Task Statistics Component */}
-            {renderTaskStatistics()}
-
-            <Tabs activeKey={activeTab} onChange={handleTabChange} type="card">
-              <TabPane
-                tab={
-                  <span>
-                    <FileSearchOutlined className="mr-2" />
-                    All Tasks
-                  </span>
-                }
-                key="general"
-              />
-              <TabPane
-                tab={
-                  <span>
-                    <CalendarOutlined className="mr-2" />
-                    Tasks By Date
-                  </span>
-                }
-                key="byDate"
-              />
-            </Tabs>
+            {/* Show date statistics only when tasks are loaded */}
+            {tasks.length > 0 && renderDateTaskStatistics()}
 
             <Card className="bg-gray-50 mb-6 border border-gray-200">
               <div className="flex flex-col md:flex-row md:items-end gap-4">
@@ -949,26 +825,22 @@ const TaskManagement = () => {
                   </Select>
                 </div>
 
-                {activeTab === "byDate" && (
-                  <div className="flex-1 md:max-w-xs">
-                    <Text className="text-gray-600 block mb-1 font-medium">
-                      <CalendarOutlined className="mr-1" /> Select Date
-                    </Text>
-                    <DatePicker
-                      value={selectedDate}
-                      onChange={handleDateChange}
-                      className="w-full"
-                      style={{ height: "40px" }}
-                    />
-                  </div>
-                )}
+                <div className="flex-1 md:max-w-xs">
+                  <Text className="text-gray-600 block mb-1 font-medium">
+                    <CalendarOutlined className="mr-1" /> Select Date
+                  </Text>
+                  <DatePicker
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    className="w-full"
+                    style={{ height: "40px" }}
+                  />
+                </div>
 
                 <div>
                   <Button
                     type="primary"
-                    onClick={
-                      activeTab === "general" ? fetchAllTasks : fetchTasksByDate
-                    }
+                    onClick={fetchTasksByDate}
                     className="bg-blue-500 hover:bg-blue-600 shadow-sm"
                     style={buttonStyle}
                   >
@@ -978,11 +850,11 @@ const TaskManagement = () => {
               </div>
             </Card>
 
-            {/* Added new Search and Sort UI */}
+            {/* Search and Sort UI */}
             {tasks.length > 0 && (
               <Card className="mb-6 border border-gray-200">
                 <div className="flex flex-col lg:flex-row gap-4 justify-between">
-                  {/* Search Area - SIMPLIFIED */}
+                  {/* Search Area */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex-1 min-w-[200px]">
@@ -999,7 +871,7 @@ const TaskManagement = () => {
                     </div>
                   </div>
 
-                  {/* Sort Area - ONLY UP/DOWN SORTING */}
+                  {/* Sort Area */}
                   <div>
                     <Button
                       type={sortOrder === "ascend" ? "primary" : "default"}
