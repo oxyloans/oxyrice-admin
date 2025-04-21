@@ -30,9 +30,13 @@ import {
   DeleteOutlined,
   MenuOutlined,
   SaveOutlined,
+  ClockCircleOutlined,
   CloseOutlined,
   UserOutlined,
+  CheckCircleOutlined,
   TeamOutlined,
+  ExclamationCircleOutlined,
+  PlusCircleOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -305,6 +309,106 @@ const TasksList = () => {
         ),
       },
       {
+        title: "Priority",
+        dataIndex: "priority",
+        key: "priority",
+        align: "center",
+        onHeaderCell: () => ({
+          style: centerStyle,
+        }),
+        render: (priority) => (
+          <Tag color={priority === "HIGH" ? "blue" : "green"}>
+            {priority || ""}
+          </Tag>
+        ),
+      },
+      // Task Status column updated to display text values for numeric codes and add visual styling
+      {
+        title: "Task Status",
+        dataIndex: "status",
+        key: "status",
+        align: "center",
+        onHeaderCell: () => ({
+          style: centerStyle,
+        }),
+        render: (status) => {
+          // Map numeric status codes to their text values and visual properties
+          const statusMap = {
+            1: { text: "CREATED", color: "blue", icon: <PlusCircleOutlined /> },
+            2: {
+              text: "ACCEPTED",
+              color: "green",
+              icon: <CheckCircleOutlined />,
+            },
+            3: {
+              text: "PENDING",
+              color: "orange",
+              icon: <ClockCircleOutlined />,
+            },
+            4: {
+              text: "COMPLETED",
+              color: "purple",
+              icon: <CheckCircleOutlined />,
+            },
+            // Handle the case when status directly contains text values
+            CREATED: {
+              text: "CREATED",
+              color: "blue",
+              icon: <PlusCircleOutlined />,
+            },
+            ACCEPTED: {
+              text: "ACCEPTED",
+              color: "green",
+              icon: <CheckCircleOutlined />,
+            },
+            PENDING: {
+              text: "PENDING",
+              color: "orange",
+              icon: <ClockCircleOutlined />,
+            },
+            COMPLETED: {
+              text: "COMPLETED",
+              color: "purple",
+              icon: <CheckCircleOutlined />,
+            },
+          };
+
+          // Get the appropriate status object or use a default one
+          const statusObj = statusMap[status] || {
+            text: status || "Unknown",
+            color: "default",
+            icon: <ExclamationCircleOutlined />,
+          };
+
+          return (
+            <Tag
+              color={statusObj.color}
+              className="text-xs sm:text-sm py-1 px-2 flex items-center justify-center gap-1"
+            >
+              {statusObj.icon}
+              <span>{statusObj.text}</span>
+            </Tag>
+          );
+        },
+        filters: [
+          { text: "CREATED", value: "1" },
+          { text: "ACCEPTED", value: "2" },
+          { text: "PENDING", value: "3" },
+          { text: "COMPLETED", value: "4" },
+        ],
+        onFilter: (value, record) => {
+          // Handle both numeric and text status values
+          return (
+            record.status === value ||
+            record.status === value.toString() ||
+            (value === "1" && record.status === "CREATED") ||
+            (value === "2" && record.status === "ACCEPTED") ||
+            (value === "3" && record.status === "PENDING") ||
+            (value === "4" && record.status === "COMPLETED")
+          );
+        },
+      },
+      {
         title: "Actions",
         key: "actions",
         align: "center",
@@ -362,17 +466,53 @@ const TasksList = () => {
         ),
       });
 
-      baseColumns.splice(4, 0, {
-        title: "Assigned To",
-        dataIndex: "taskassingnedto",
-        key: "taskassingnedto",
-        align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
-        render: (taskassingnedto, record) =>
-          renderAssignedMembers(taskassingnedto || record.taskassingnedby),
-      });
+     baseColumns.splice(4, 0, {
+       title: "Assigned To",
+       dataIndex: "taskassingnedto",
+       key: "taskassingnedto",
+       align: "center",
+       width: 180, // Restrict column width
+       onHeaderCell: () => ({
+         style: centerStyle,
+       }),
+       render: (taskassingnedto, record) => {
+         const assignees = parseAssignees(
+           taskassingnedto || record.taskassingnedby
+         );
+
+         // Show only first 2 names with count indicator if there are more
+         if (assignees.length > 2) {
+           return (
+             <div className="flex flex-col items-center">
+               <div className="flex flex-wrap gap-1 justify-center">
+                 <Tag color="blue">{assignees[0]}</Tag>
+                 <Tag color="blue">{assignees[1]}</Tag>
+               </div>
+               <Badge
+                 count={`+${assignees.length - 2}`}
+                 style={{ backgroundColor: "#1890ff" }}
+                 title={assignees.slice(2).join(", ")}
+               />
+             </div>
+           );
+         }
+
+         // Show all if 2 or fewer assignees
+         return (
+           <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
+             {assignees.length > 0 ? (
+               assignees.map((assignee, index) => (
+                 <Tag key={index} color="blue">
+                   {assignee}
+                 </Tag>
+               ))
+             ) : (
+               <span>Not assigned</span>
+             )}
+           </div>
+         );
+       },
+     });
     }
 
     return baseColumns;

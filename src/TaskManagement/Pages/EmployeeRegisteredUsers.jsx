@@ -79,7 +79,7 @@ const EmployeeRegisteredUsers = () => {
         <div
           style={{ display: "flex", justifyContent: "center", padding: "50px" }}
         >
-          <Spin size="large" tip="Loading employees data..." />
+          <Spin size="small" tip="Loading employees data..." />
         </div>
       </TaskAdminPanelLayout>
     );

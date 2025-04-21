@@ -36,26 +36,33 @@ const Categories = () => {
   const [previousFile, setPreviousFile] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
   const [selectedFile, setSelectedFile] = useState(null);
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/product-service/getAllcategories`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      setCategories(response.data);
-      setFilteredCategories(response.data);
-      message.success("Categories fetched successfully");
-    } catch (error) {
-      message.error("Failed to fetch categories");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchCategories = async () => {
+  setLoading(true);
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/product-service/getAllcategories`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // Filter only active categories
+    const activeCategories = response.data.filter(
+      (category) => category.isActive === true
+    );
+
+    setCategories(activeCategories);
+    setFilteredCategories(activeCategories);
+    message.success("Categories fetched successfully");
+  } catch (error) {
+    message.error("Failed to fetch categories");
+  } finally {
+    setLoading(false);
+  }
+};
+
   useEffect(() => {
     fetchCategories();
   }, []);
