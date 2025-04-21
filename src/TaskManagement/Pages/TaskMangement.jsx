@@ -65,7 +65,7 @@ const buttonStyle = {
 
 const TaskManagement = () => {
   // State variables
-  const [status, setStatus] = useState("COMPLETED");
+ const [status, setStatus] = useState("PENDING");
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -841,7 +841,7 @@ const TaskManagement = () => {
                   <Button
                     type="primary"
                     onClick={fetchTasksByDate}
-                    className="bg-blue-500 hover:bg-blue-600 shadow-sm"
+                    className="bg-[#008CBA] shadow-sm"
                     style={buttonStyle}
                   >
                     Search

@@ -31,6 +31,8 @@ import {
   MenuOutlined,
   SaveOutlined,
   CloseOutlined,
+  UserOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -54,20 +56,59 @@ const TasksList = () => {
     isMobile: window.innerWidth < 768,
   });
 
-  // Available assignees - same as in TaskCreation component
+  // Updated available assignees with the new names
   const availableAssignees = [
-    { value: "VINOD", label: "Vinod", color: "purple" },
-    { value: "NAVEEN", label: "Naveen", color: "orange" },
-    { value: "SURESH", label: "Suresh", color: "blue" },
-    { value: "RAMESH", label: "Ramesh", color: "green" },
-    { value: "RAJU", label: "Raju", color: "red" },
-    { value: "MAHESH", label: "Mahesh", color: "cyan" },
-    { value: "GANESH", label: "Ganesh", color: "magenta" },
+    { value: "GRISHMA", label: "Grishma" },
+    { value: "GUNA", label: "Guna" },
+    { value: "GUNASHEKAR", label: "Gunashekar" },
+    { value: "SAIKUMAR", label: "Saikumar" },
+    { value: "SREEJA", label: "Sreeja" },
+    { value: "GADISAI", label: "Gadisai" },
+    { value: "GUTTISAI", label: "Guttisai" },
+    { value: "NARENDRA", label: "Narendra" },
+    { value: "MANEIAH", label: "Maneiah" },
+    { value: "VARALAKSHMI", label: "Varalakshmi" },
+    { value: "VIJAY", label: "Vijay" },
+    { value: "NIHARIKA", label: "Niharika" },
+    { value: "HARIPRIYA", label: "Haripriya" },
+    { value: "VINODH", label: "Vinodh" },
+    { value: "NAVEEN", label: "Naveen" },
+    { value: "SRIDHAR", label: "Sridhar" },
+    { value: "SUBBU", label: "Subbu" },
+    { value: "UDAY", label: "Uday" },
+    { value: "HARIBABU", label: "Haribabu" },
+    { value: "SUDHEESH", label: "Sudheesh" },
+    { value: "ANUSHA", label: "Anusha" },
+    { value: "DIVYA", label: "Divya" },
+    { value: "KARTHIK", label: "Karthik" },
+    { value: "RAMADEVI", label: "Ramadevi" },
+    { value: "BHARGAV", label: "Bhargav" },
+    { value: "PRATHIBHA", label: "Prathibha" },
+    { value: "JYOTHI", label: "Jyothi" },
+    { value: "HEMA", label: "Hema" },
+    { value: "RAMYAHR", label: "Ramyahr" },
+    { value: "SURESH", label: "Suresh" },
+    { value: "SUCHITHRA", label: "Suchithra" },
+    { value: "ARUNA", label: "Aruna" },
+    { value: "VENKATESH", label: "Venkatesh" },
+    { value: "RAKESH", label: "Rakesh" },
+    { value: "JHON", label: "Jhon" },
+    { value: "MOUNIKA", label: "Mounika" },
+    { value: "VANDANA", label: "Vandana" },
+    { value: "GOPAL", label: "Gopal" },
+    { value: "ANUSHAACCOUNT", label: "Anushaaccount" },
+    { value: "RADHAKRISHNA", label: "Radhakrishna" },
+    { value: "MADHU", label: "Madhu" },
+    { value: "RAVI", label: "Ravi" },
+    { value: "SAMPATH", label: "Sampath" },
+    { value: "CHANDU", label: "Chandu" },
+    { value: "SWATHI", label: "Swathi" },
+    { value: "SHANTHI", label: "Shanthi" },
   ];
 
   const creatorOptions = [
-    { value: "ADMIN", label: "Admin", color: "blue" },
-    { value: "USER", label: "User", color: "green" },
+    { value: "ADMIN", label: "Admin" },
+    { value: "USER", label: "User" },
   ];
 
   useEffect(() => {
@@ -120,14 +161,46 @@ const TasksList = () => {
     textAlign: "center",
   };
 
+  // Helper function to parse assignees from different formats
+  const parseAssignees = (assigneesData) => {
+    if (!assigneesData) return [];
+
+    // Handle if assignees is a string (comma separated)
+    if (typeof assigneesData === "string") {
+      // Split by comma and trim whitespace
+      return assigneesData.split(",").map((item) => item.trim());
+    }
+    // Handle if it's already an array
+    else if (Array.isArray(assigneesData)) {
+      return assigneesData;
+    }
+
+    // Fallback
+    return [];
+  };
+
   const handleEditTask = (task) => {
     setCurrentTask(task);
+
+    // Determine which field to use for assigned users
+    // First try taskassingnedto, if that's empty, try taskassingnedby
+    const assigneesSource = task.taskassingnedto || task.taskassingnedby || "";
+
+    // Parse the assigned users
+    const taskAssignees = parseAssignees(assigneesSource);
+
+    console.log("Task to edit:", task);
+    console.log("Parsed assignees:", taskAssignees);
+
     // Initialize form with current task values
     editForm.setFieldsValue({
       taskcontent: task.taskcontent,
       taskcreatedby: task.createdby,
-      taskassingnedto: task.taskassingnedby,
+      taskassingnedto: taskAssignees,
     });
+
+    // Log the form values after setting them
+    console.log("Form values set:", editForm.getFieldsValue());
 
     // Open modal on larger screens, drawer on mobile
     if (screenSize.isMobile) {
@@ -142,13 +215,17 @@ const TasksList = () => {
       const values = await editForm.validateFields();
       setUpdateLoading(true);
 
-      // Make API call to update task
+      console.log("Submitting values:", values);
+
+      // Make API call to update task with the new array format for assignees
       const response = await axios.patch(
         `${BASE_URL}/user-service/write/updateTask/${currentTask.id}`,
         {
           taskcontent: values.taskcontent,
           taskcreatedby: values.taskcreatedby,
+          // Send taskassingnedto as an array
           taskassingnedto: values.taskassingnedto,
+          admindocumentid: currentTask.admindocumentid || "string",
         }
       );
 
@@ -159,7 +236,8 @@ const TasksList = () => {
               ...task,
               taskcontent: values.taskcontent,
               createdby: values.taskcreatedby,
-              taskassingnedby: values.taskassingnedto,
+              taskassingnedby: values.taskassingnedto.join(", "), // For display purposes
+              taskassingnedto: values.taskassingnedto, // Keep the array format
             }
           : task
       );
@@ -179,6 +257,24 @@ const TasksList = () => {
     } finally {
       setUpdateLoading(false);
     }
+  };
+
+  // Function to render assigned team members as tags
+  const renderAssignedMembers = (assignees) => {
+    if (!assignees) return <span>Not assigned</span>;
+
+    // Handle both string and array formats
+    let assigneeList = parseAssignees(assignees);
+
+    return (
+      <div className="flex flex-wrap gap-1 justify-center">
+        {assigneeList.map((assignee, index) => (
+          <Tag key={index} color="blue">
+            {assignee}
+          </Tag>
+        ))}
+      </div>
+    );
   };
 
   // Responsive columns configuration
@@ -223,10 +319,11 @@ const TasksList = () => {
               icon={<EditOutlined />}
               size="small"
               className="flex items-center justify-center"
-              // style={{ color: "#52c41a", borderColor: "#52c41a" }}
               onClick={() => handleEditTask(record)}
               title="Edit Task"
-            >Edit</Button>
+            >
+              Edit
+            </Button>
           </Space>
         ),
       },
@@ -245,7 +342,7 @@ const TasksList = () => {
         }),
         render: (id) => (
           <span className="text-gray-500 font-mono text-xs">
-            #{id.substring(id.length - 4)}
+            #{id?.substring(id.length - 4) || "N/A"}
           </span>
         ),
       });
@@ -259,30 +356,22 @@ const TasksList = () => {
           style: centerStyle,
         }),
         render: (createdby) => (
-          <span
-           
-          >
-            {createdby}
-          </span>
+          <Tag color={createdby === "ADMIN" ? "blue" : "green"}>
+            {createdby || "N/A"}
+          </Tag>
         ),
       });
 
       baseColumns.splice(4, 0, {
         title: "Assigned To",
-        dataIndex: "taskassingnedby",
-        key: "taskassingnedby",
+        dataIndex: "taskassingnedto",
+        key: "taskassingnedto",
         align: "center",
         onHeaderCell: () => ({
           style: centerStyle,
         }),
-        render: (taskassingnedby) => (
-          <span
-            // color={taskassingnedby === "VINOD" ? "purple" : "orange"}
-            // className="px-3 py-1 rounded-full font-medium"
-          >
-            {taskassingnedby}
-          </span>
-        ),
+        render: (taskassingnedto, record) =>
+          renderAssignedMembers(taskassingnedto || record.taskassingnedby),
       });
     }
 
@@ -302,20 +391,17 @@ const TasksList = () => {
             </p>
             <p className="mt-2">
               <strong>Created By:</strong>{" "}
-              <span
-                // color={record.createdby === "ADMIN" ? "blue" : "green"}
-                // className="ml-2 px-2 py-0.5 rounded-full font-medium"
-              >
-                {record.createdby}
-              </span>
+              <Tag color={record.createdby === "ADMIN" ? "blue" : "green"}>
+                {record.createdby || "N/A"}
+              </Tag>
             </p>
             <p className="mt-2">
               <strong>Assigned To:</strong>{" "}
-              <span
-               
-              >
-                {record.taskassingnedby}
-              </span>
+              <div className="mt-1">
+                {renderAssignedMembers(
+                  record.taskassingnedto || record.taskassingnedby
+                )}
+              </div>
             </p>
           </div>
         ),
@@ -347,9 +433,10 @@ const TasksList = () => {
         <Select placeholder="Select creator">
           {creatorOptions.map((option) => (
             <Option key={option.value} value={option.value}>
-              <span  className="px-2 py-0.5">
+              <div className="flex items-center">
+                <UserOutlined className="mr-2" />
                 {option.label}
-              </span>
+              </div>
             </Option>
           ))}
         </Select>
@@ -357,15 +444,45 @@ const TasksList = () => {
 
       <Form.Item
         name="taskassingnedto"
-        label="Assigned To"
-        rules={[{ required: true, message: "Please select assignee" }]}
+        label={
+          <div className="flex items-center">
+            <TeamOutlined className="mr-2" />
+            <span>Assigned To (Max 5 members)</span>
+          </div>
+        }
+        rules={[
+          { required: true, message: "Please select at least one assignee" },
+          {
+            validator: (_, value) => {
+              if (!value || value.length <= 5) {
+                return Promise.resolve();
+              }
+              return Promise.reject(
+                new Error("Maximum 5 team members allowed")
+              );
+            },
+          },
+        ]}
       >
-        <Select placeholder="Select assignee">
+        <Select
+          mode="multiple"
+          placeholder="Select up to 5 team members"
+          maxTagCount={5}
+          showArrow
+          maxTagTextLength={10}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.props.children[1]
+              .toLowerCase()
+              .indexOf(input.toLowerCase()) >= 0
+          }
+        >
           {availableAssignees.map((assignee) => (
             <Option key={assignee.value} value={assignee.value}>
-              <span className="px-2 py-0.5">
+              <div className="flex items-center">
+                <UserOutlined className="mr-2" />
                 {assignee.label}
-              </span>
+              </div>
             </Option>
           ))}
         </Select>

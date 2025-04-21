@@ -3,7 +3,12 @@ import { Table, Spin, Alert } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 const EmployeeRegisteredUsers = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,33 +68,47 @@ const EmployeeRegisteredUsers = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
+      render: (date) =>
+        dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A"),
     },
   ];
 
-  if (loading)
-      return (
-    <TaskAdminPanelLayout>
-        
-      <Spin
-        tip="Loading employees..."
-        style={{ display: "flex", justifyContent: "center", marginTop: 50 }}
-              />
-        </TaskAdminPanelLayout>
+  if (loading) {
+    return (
+      <TaskAdminPanelLayout>
+        <div
+          style={{ display: "flex", justifyContent: "center", padding: "50px" }}
+        >
+          <Spin size="large" tip="Loading employees data..." />
+        </div>
+      </TaskAdminPanelLayout>
     );
-  if (error)
-        return
-    <Alert message={error} type="error" style={{ marginTop: 50 }} />;
+  }
+
+  if (error) {
+    return (
+      <TaskAdminPanelLayout>
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          style={{ margin: "20px" }}
+        />
+      </TaskAdminPanelLayout>
+    );
+  }
 
   return (
     <TaskAdminPanelLayout>
-      <div style={{ padding: 20 }}>
-        
+      <div style={{ padding: "20px" }}>
+        <h2 style={{ marginBottom: "20px" }}>Employee Management</h2>
         <Table
-          dataSource={employees}
           columns={columns}
-          rowKey="userId"
+          dataSource={employees}
+          rowKey={(record) => record.id || record.mail}
+          bordered
           pagination={{
-            pageSize: 10,
             showTotal: (total, range) =>
               `${range[0]}-${range[1]} of ${total} employees`,
             showSizeChanger: true,

@@ -11,11 +11,13 @@ import {
   Space,
   Tag,
   Tooltip,
-  Upload,
   Progress,
   Row,
   Col,
   Spin,
+  DatePicker,
+  Upload,
+  Alert,
 } from "antd";
 import {
   SaveOutlined,
@@ -27,18 +29,22 @@ import {
   UploadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  LoadingOutlined,
-  PaperClipOutlined,
+  ClockCircleOutlined,
+  FlagOutlined,
   FileOutlined,
   DeleteOutlined,
+  PaperClipOutlined,
+  ReloadOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
 import BASE_URL from "../../AdminPages/Config";
 
 const { Option } = Select;
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+const { Dragger } = Upload;
 
 const TaskCreation = () => {
   const [form] = Form.useForm();
@@ -47,86 +53,100 @@ const TaskCreation = () => {
   const [fileName, setFileName] = useState("");
   const [documentId, setDocumentId] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
-
   const [uploadProgress, setUploadProgress] = useState(0);
-  const userId = localStorage.getItem("userId"); // Default to "ADMIN" if not set
-  // Get document ID from local storage
+  const userId = localStorage.getItem("userId") || "ADMIN";
+
   // Enums as defined in your API
   const taskCreatedBy = {
     ADMIN: "ADMIN",
     USER: "USER",
   };
 
-const colors = [
-  "purple",
-  "orange",
-  "blue",
-  "green",
-  "red",
-  "cyan",
-  "magenta",
-  "lime",
-  "gold",
-  "volcano",
-  "geekblue",
-];
+  // Priority options
+  const priorityOptions = [
+    { value: "HIGH", label: "HIGH" },
+    { value: "MEDIUM", label: "MEDIUM" },
+    { value: "LOW", label: "LOW" },
+  ];
 
-const names = [
-  "GRISHMA",
-  "GUNA",
-  "GUNASHEKAR",
-  "SAIKUMAR",
-  "SREEJA",
-  "GADISAI",
-  "GUTTISAI",
-  "NARENDRA",
-  "MANEIAH",
-  "VARALAKSHMI",
-  "VIJAY",
-  "NIHARIKA",
-  "HARIPRIYA",
-  "VINODH",
-  "NAVEEN",
-  "SRIDHAR",
-  "SUBBU",
-  "UDAY",
-  "HARIBABU",
-  "SUDHEESH",
-  "ANUSHA",
-  "DIVYA",
-  "KARTHIK",
-  "RAMADEVI",
-  "BHARGAV",
-  "PRATHIBHA",
-  "JYOTHI",
-  "HEMA",
-  "RAMYAHR",
-  "SURESH",
-  "SUCHITHRA",
-  "ARUNA",
-  "VENKATESH",
-  "RAKESH",
-  "JHON",
-  "MOUNIKA",
-  "VANDANA",
-  "GOPAL",
-  "ANUSHAACCOUNT",
-  "RADHAKRISHNA",
-  "MADHU",
-  "RAVI",
-  "SAMPATH",
-  "CHANDU",
-  "SWATHI",
-  "SHANTHI",
-];
+  // Status options
+  const statusOptions = [
+    { value: "NEW", label: "New", color: "blue" },
+    { value: "IN_PROGRESS", label: "In Progress", color: "purple" },
+    { value: "COMPLETED", label: "Completed", color: "green" },
+    { value: "ON_HOLD", label: "On Hold", color: "orange" },
+  ];
 
-const availableAssignees = names.map((name, index) => ({
-  value: name,
-  label: name,
-  color: colors[index % colors.length],
-}));
+  // Color assignments for team members
+  const colors = [
+    "purple",
+    "orange",
+    "blue",
+    "green",
+    "red",
+    "cyan",
+    "magenta",
+    "lime",
+    "gold",
+    "volcano",
+    "geekblue",
+  ];
 
+  // Team member names
+  const names = [
+    "GRISHMA",
+    "GUNA",
+    "GUNASHEKAR",
+    "SAIKUMAR",
+    "SREEJA",
+    "GADISAI",
+    "GUTTISAI",
+    "NARENDRA",
+    "MANEIAH",
+    "VARALAKSHMI",
+    "VIJAY",
+    "NIHARIKA",
+    "HARIPRIYA",
+    "VINODH",
+    "NAVEEN",
+    "SRIDHAR",
+    "SUBBU",
+    "UDAY",
+    "HARIBABU",
+    "SUDHEESH",
+    "ANUSHA",
+    "DIVYA",
+    "KARTHIK",
+    "RAMADEVI",
+    "BHARGAV",
+    "PRATHIBHA",
+    "JYOTHI",
+    "HEMA",
+    "RAMYAHR",
+    "SURESH",
+    "SUCHITHRA",
+    "ARUNA",
+    "VENKATESH",
+    "RAKESH",
+    "JHON",
+    "MOUNIKA",
+    "VANDANA",
+    "GOPAL",
+    "ANUSHAACCOUNT",
+    "RADHAKRISHNA",
+    "MADHU",
+    "RAVI",
+    "SAMPATH",
+    "CHANDU",
+    "SWATHI",
+    "SHANTHI",
+  ];
 
+  const availableAssignees = names.map((name, index) => ({
+    value: name,
+    label: name,
+    color: colors[index % colors.length],
+  }));
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
 
@@ -180,7 +200,7 @@ const availableAssignees = names.map((name, index) => ({
       });
 
       setUploadStatus("failed");
-       setFileInputKey(Date.now());
+      setFileInputKey(Date.now());
     }
   };
 
@@ -188,12 +208,17 @@ const availableAssignees = names.map((name, index) => ({
     setLoading(true);
 
     try {
-      // Pass the assignees as an array instead of comma-separated string
+      // Format the deadline date to ISO string if it exists
+      const deadline = values.deadline ? values.deadline.toISOString() : null;
+
+      // Prepare the task data with new fields
       const taskData = {
         taskcreatedby: values.createdBy,
         admindocumentid: documentId,
-        taskassingnedto: values.assignedTo, // Send as array ["NAVEEN", "DIVYA"]
+        taskassingnedto: values.assignedTo, // Array of assignees
         taskcontent: values.content,
+        deadline: deadline,
+        prioeity: values.priority,
       };
 
       const response = await axios.post(
@@ -202,7 +227,10 @@ const availableAssignees = names.map((name, index) => ({
       );
 
       if (response.data.message === "Task Created Successfully") {
-        message.success("Task created successfully!");
+        message.success({
+          content: "Task created successfully!",
+          icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+        });
 
         // Clear form and reset states
         form.resetFields();
@@ -210,18 +238,17 @@ const availableAssignees = names.map((name, index) => ({
         setFileName("");
         setDocumentId(null);
         setUploadProgress(0);
-
-        // You may choose to keep or clear localStorage here
-        // localStorage.removeItem('taskDocumentId');
       } else {
         message.error("Failed to create task");
       }
     } catch (error) {
       console.error("Error creating task:", error);
-      message.error(
-        "Failed to create task: " +
-          (error.response?.data?.message || error.message)
-      );
+      message.error({
+        content:
+          "Failed to create task: " +
+          (error.response?.data?.message || error.message),
+        icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
+      });
     } finally {
       setLoading(false);
     }
@@ -245,105 +272,114 @@ const availableAssignees = names.map((name, index) => ({
       </Tag>
     );
   };
+
   // Function to reset all upload state
   const resetUploadState = () => {
     setUploadStatus("idle");
     setFileName("");
     setDocumentId(null);
     setUploadProgress(0);
-     setFileInputKey(Date.now());
-   
+    setFileInputKey(Date.now());
   };
 
   // Function to delete the current upload
   const handleDeleteUpload = () => {
     resetUploadState();
-    message.success("Upload cleared successfully");
+    message.success({
+      content: "Upload cleared successfully",
+      icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+    });
   };
 
-  const renderUploadStatus = () => {
-    switch (uploadStatus) {
-      case "uploading":
-        return (
-          <div className="w-full">
-            <div className="flex items-center">
-              <Spin size="small" className="mr-2" />
-              <Text>{fileName}</Text>
-            </div>
-            <Progress
-              percent={uploadProgress}
-              size="small"
-              status="active"
-              strokeColor={{
-                "0%": "#108ee9",
-                "100%": "#87d068",
-              }}
-            />
-          </div>
-        );
-      case "uploaded":
-        return (
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              <FileOutlined className="mr-2 text-green-500" />
-              <Text className="mr-2">{fileName}</Text>
-              <Tag color="success" icon={<CheckCircleOutlined />}>
-                Uploaded Successfully
-              </Tag>
-            </div>
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={handleDeleteUpload}
-              className="ml-2"
-            >
-              Clear
-            </Button>
-          </div>
-        );
-      case "failed":
-        return (
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center">
-              <FileOutlined className="mr-2 text-red-500" />
-              <Text className="mr-2">{fileName}</Text>
-              <Tag color="error">Upload Failed</Tag>
-            </div>
-            <Button
-              icon={<DeleteOutlined />}
-              size="small"
-              onClick={handleDeleteUpload}
-              className="ml-2"
-            >
-              Clear
-            </Button>
-          </div>
-        );
-      default:
-        return (
-          <Text type="secondary" className="flex items-center">
-            <PaperClipOutlined className="mr-2" />
-            No file selected
-          </Text>
-        );
-    }
-  };
+   const renderUploadStatus = () => {
+     switch (uploadStatus) {
+       case "uploading":
+         return (
+           <div className="w-full">
+             <div className="flex items-center">
+               <Spin size="small" className="mr-2" />
+               <Text>{fileName}</Text>
+             </div>
+             <Progress
+               percent={uploadProgress}
+               size="small"
+               status="active"
+               strokeColor={{
+                 "0%": "#108ee9",
+                 "100%": "#87d068",
+               }}
+             />
+           </div>
+         );
+       case "uploaded":
+         return (
+           <div className="flex items-center justify-between w-full">
+             <div className="flex items-center">
+               <FileOutlined className="mr-2 text-green-500" />
+               <Text className="mr-2">{fileName}</Text>
+               <Tag color="success" icon={<CheckCircleOutlined />}>
+                 Uploaded Successfully
+               </Tag>
+             </div>
+             <Button
+               danger
+               icon={<DeleteOutlined />}
+               size="small"
+               onClick={handleDeleteUpload}
+               className="ml-2"
+             >
+               Clear
+             </Button>
+           </div>
+         );
+       case "failed":
+         return (
+           <div className="flex items-center justify-between w-full">
+             <div className="flex items-center">
+               <FileOutlined className="mr-2 text-red-500" />
+               <Text className="mr-2">{fileName}</Text>
+               <Tag color="error">Upload Failed</Tag>
+             </div>
+             <Button
+               icon={<DeleteOutlined />}
+               size="small"
+               onClick={handleDeleteUpload}
+               className="ml-2"
+             >
+               Clear
+             </Button>
+           </div>
+         );
+       default:
+         return (
+           <Text type="secondary" className="flex items-center">
+             <PaperClipOutlined className="mr-2" />
+             No file selected
+           </Text>
+         );
+     }
+   };
+
 
   return (
     <TaskAdminPanelLayout>
-      <div className="p-2 sm:p-4 md:p-6">
-        <Card className="shadow-md rounded-lg">
-          <div className="mb-4">
-            <Title level={3} className="flex items-center text-xl md:text-2xl">
-              <SolutionOutlined className="mr-2" /> Create New Task
+      <div className="p-2 sm:p-4 md:p-6 lg:p-8">
+        <Card className="shadow-lg rounded-lg border-0">
+          <div className="mb-6">
+            <Title
+              level={3}
+              className="flex items-center text-xl md:text-2xl mb-2"
+            >
+              <SolutionOutlined className="mr-3 text-blue-600" /> Create New
+              Task
             </Title>
             <Text type="secondary" className="text-sm md:text-base">
-              Assign tasks to team members and track their progress
+              Create and assign tasks to team members with priorities and
+              deadlines
             </Text>
           </div>
 
-          <Divider />
+          <Divider className="my-4" />
 
           <Form
             form={form}
@@ -351,13 +387,17 @@ const availableAssignees = names.map((name, index) => ({
             onFinish={createTask}
             autoComplete="off"
             requiredMark="optional"
-            className="mt-4"
+            className="mt-6"
+            initialValues={{
+              createdBy: taskCreatedBy.ADMIN,
+            }}
           >
+            {/* Task Description */}
             <Form.Item
               name="content"
               label={
-                <span className="flex items-center">
-                  <FileTextOutlined className="mr-2" />
+                <span className="flex items-center text-base">
+                  <FileTextOutlined className="mr-2 text-blue-500" />
                   Task Description
                 </span>
               }
@@ -368,17 +408,19 @@ const availableAssignees = names.map((name, index) => ({
                 rows={6}
                 placeholder="Enter detailed task description here..."
                 showCount
-                maxLength={8000}
+                maxLength={10000}
+                className="rounded-md"
               />
             </Form.Item>
 
-            <Row gutter={[16, 16]}>
+            <Row gutter={[24, 16]} className="mt-4">
+              {/* First row with Creator and Assignees */}
               <Col xs={24} md={12}>
                 <Form.Item
                   name="createdBy"
                   label={
                     <span className="flex items-center">
-                      <UserOutlined className="mr-2" />
+                      <UserOutlined className="mr-2 text-green-500" />
                       Created By
                     </span>
                   }
@@ -387,14 +429,11 @@ const availableAssignees = names.map((name, index) => ({
                   <Select
                     placeholder="Select creator role"
                     suffixIcon={<InfoCircleOutlined />}
-                    className="w-full"
+                    className="w-full rounded-md"
+                    size="large"
                   >
-                    <Option value={taskCreatedBy.ADMIN}>
-                      <Tag color="blue">Admin</Tag>
-                    </Option>
-                    <Option value={taskCreatedBy.USER}>
-                      <Tag color="green">User</Tag>
-                    </Option>
+                    <Option value={taskCreatedBy.ADMIN}>ADMIN</Option>
+                   
                   </Select>
                 </Form.Item>
               </Col>
@@ -404,7 +443,7 @@ const availableAssignees = names.map((name, index) => ({
                   name="assignedTo"
                   label={
                     <span className="flex items-center">
-                      <TeamOutlined className="mr-2" />
+                      <TeamOutlined className="mr-2 text-purple-500" />
                       Assigned To
                       <Tooltip title="You can select up to 5 assignees">
                         <InfoCircleOutlined className="ml-2 text-gray-400" />
@@ -432,12 +471,74 @@ const availableAssignees = names.map((name, index) => ({
                     placeholder="Select team members"
                     tagRender={tagRender}
                     maxTagCount="responsive"
-                    className="w-full"
+                    className="w-full rounded-md"
                     showArrow
+                    size="large"
+                    showSearch
+                    filterOption={(input, option) =>
+                      option.children
+                        .toLowerCase()
+                        .indexOf(input.toLowerCase()) >= 0
+                    }
+                    listHeight={300}
                   >
                     {availableAssignees.map((assignee) => (
                       <Option key={assignee.value} value={assignee.value}>
                         {assignee.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              {/* Second row with Deadline and Priority */}
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="deadline"
+                  label={
+                    <span className="flex items-center">
+                      <CalendarOutlined className="mr-2 text-orange-500" />
+                      Deadline
+                    </span>
+                  }
+                  // rules={[
+                  //   { required: true, message: "Please select a deadline" },
+                  // ]}
+                  tooltip="Set a deadline for this task"
+                >
+                  <DatePicker
+                    showTime
+                    format="YYYY-MM-DD HH:mm"
+                    placeholder="Select deadline"
+                    className="w-full rounded-md"
+                    disabledDate={(current) => current && current < Date.now()}
+                    size="large"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  name="priority"
+                  label={
+                    <span className="flex items-center">
+                      <FlagOutlined className="mr-2 text-red-500" />
+                      Priority
+                    </span>
+                  }
+                  rules={[
+                    { required: true, message: "Please select a priority" },
+                  ]}
+                  tooltip="Set the task priority"
+                >
+                  <Select
+                    placeholder="Select priority"
+                    className="w-full rounded-md"
+                    size="large"
+                  >
+                    {priorityOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        <div className="flex items-center">{option.label}</div>
                       </Option>
                     ))}
                   </Select>
@@ -452,7 +553,7 @@ const availableAssignees = names.map((name, index) => ({
               title={
                 <div className="flex items-center">
                   <UploadOutlined className="mr-2" />
-                  <span>Attachment</span>
+                  <span>Attachment (optional)</span>
                 </div>
               }
             >
@@ -463,40 +564,86 @@ const availableAssignees = names.map((name, index) => ({
                     onChange={handleFileChange}
                     className="hidden"
                     disabled={uploadStatus === "uploading"}
+                    key={fileInputKey}
                   />
                 </label>
 
                 <div className="flex-grow">{renderUploadStatus()}</div>
               </div>
             </Card>
+            {/* <Card
+              className="mb-6 mt-4 bg-gray-50 shadow border border-gray-200"
+              bordered={false}
+              title={
+                <div className="flex items-center">
+                  <UploadOutlined className="mr-2 text-blue-500" />
+                  <span>Task Attachment</span>
+                </div>
+              }
+            >
+              <div className="flex flex-col gap-4">
+                <Dragger
+                  {...uploadProps}
+                  className="bg-white border-dashed border-2 border-gray-300 rounded-lg"
+                  disabled={uploadStatus === "uploading"}
+                >
+                  <p className="ant-upload-drag-icon">
+                    <UploadOutlined className="text-blue-500 text-3xl" />
+                  </p>
+                  <p className="ant-upload-text">
+                    Click or drag file to this area to upload
+                  </p>
+                  <p className="ant-upload-hint text-gray-500">
+                    Support for a single file upload. Please upload relevant
+                    task documents only.
+                  </p>
+                </Dragger>
 
-            <Form.Item className="mt-4">
-              <Space className="flex flex-wrap gap-2">
-                <Button
-                  type="primary"
-                  style={{ background: "#008CBA", color: "white" }}
-                  htmlType="submit"
-                  loading={loading}
-                  icon={<SaveOutlined />}
-                  size="large"
-                  className="min-w-[140px]"
-                  disabled={uploadStatus === "uploading"}
-                >
-                  Create Task
-                </Button>
-                <Button
-                  onClick={() => {
-                    form.resetFields();
-                    setUploadStatus("idle");
-                    setFileName("");
-                    setDocumentId(null);
-                    setUploadProgress(0);
-                  }}
-                  size="large"
-                  disabled={uploadStatus === "uploading"}
-                >
-                  Reset
-                </Button>
+                {uploadStatus !== "idle" && (
+                  <div className="mt-2 p-3 bg-white rounded-md border border-gray-200">
+                    {renderUploadStatus()}
+                  </div>
+                )}
+              </div>
+            </Card> */}
+
+            {/* Action Buttons */}
+            <Form.Item className="mt-6">
+              <Space className="flex flex-wrap justify-between w-full">
+                <Space className="flex flex-wrap gap-2">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    icon={<SaveOutlined />}
+                    size="large"
+                    className="min-w-[140px] bg-blue-600 hover:bg-blue-700"
+                    disabled={uploadStatus === "uploading"}
+                  >
+                    Create Task
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      form.resetFields();
+                      resetUploadState();
+                    }}
+                    size="large"
+                    icon={<ReloadOutlined />}
+                    disabled={uploadStatus === "uploading"}
+                  >
+                    Reset
+                  </Button>
+                </Space>
+
+                {documentId && (
+                  <Tag
+                    color="blue"
+                    icon={<InfoCircleOutlined />}
+                    className="px-3 py-1"
+                  >
+                    Document ID: {documentId}
+                  </Tag>
+                )}
               </Space>
             </Form.Item>
           </Form>
