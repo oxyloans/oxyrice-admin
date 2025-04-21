@@ -71,6 +71,7 @@ import TaskAdminPanelLayout from "./TaskManagement/Layout/AdminPanel";
 import TaskManagement from "./TaskManagement/Pages/TaskMangement";
 import TaskManagementByDate from "./TaskManagement/Pages/TaskManagementByDate";
 import Dashboard from "./TaskManagement/Pages/Dashboard";
+import EmployeeRegisteredUsers from "./TaskManagement/Pages/EmployeeRegisteredUsers";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -87,15 +88,22 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
         {/* Protected Routes (Authentication Required) */}
-        <Route path="/admin/taskmanagementlogin" element={<TaskManagementLogin />} />
-        <Route path="/taskcreation" element={<TaskCreation />} />
-        <Route path="/taskmanagementbydate" element={<TaskManagementByDate />} />
+        <Route
+          path="/admin/taskmanagementlogin"
+          element={<TaskManagementLogin />}
+        />
+        <Route path="/taskmanagement/taskcreation" element={<TaskCreation />} />
+        <Route
+          path="/taskmanagementbydate"
+          element={<TaskManagementByDate />}
+        />
         <Route
           path="/taskmanagementlayout"
           element={<TaskAdminPanelLayout />}
         />
-        <Route path="/tasklists" element={<TasksList />} />
-        <Route path="/taskmanagement" element={<TaskManagement />} />
+        <Route path="/taskmanagement/tasklists" element={<TasksList />} />
+        <Route path="/taskmanagement/taskstatus" element={<TaskManagement />} />
+        <Route path="/taskmanagement/employee_registered_users" element={<EmployeeRegisteredUsers />} />
         <Route path="/taskmanagement/dashboard" element={<Dashboard />} />
         <Route path="/" element={<LoginTest />} />
         <Route

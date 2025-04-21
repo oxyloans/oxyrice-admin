@@ -57,30 +57,75 @@ const TaskCreation = () => {
     USER: "USER",
   };
 
-  // Updated available assignees with your provided names
-  const availableAssignees = [
-    { value: "VINOD", label: "VINOD", color: "purple" },
-    { value: "NAVEEN", label: "NAVEEN", color: "orange" },
-    { value: "SAIGADI", label: "SAIGADI", color: "blue" },
-    { value: "VIJAY", label: "VIJAY", color: "green" },
-    { value: "SRIDHAR", label: "SRIDHAR", color: "red" },
-    { value: "GUNNA", label: "GUNNA", color: "cyan" },
-    { value: "MANEIAH", label: "MANEIAH", color: "magenta" },
-    { value: "HARIPRIYA", label: "HARIPRIYA", color: "lime" },
-    { value: "NIHARIKA", label: "NIHARIKA", color: "gold" },
-    { value: "SUDHEESH", label: "SUDHEESH", color: "volcano" },
-    { value: "DIVYA", label: "DIVYA", color: "geekblue" },
-    { value: "ANUSHA", label: "ANUSHA", color: "purple" },
-    { value: "SAIKRISHNA", label: "SAIKRISHNA", color: "orange" },
-    { value: "SREEJA", label: "SREEJA", color: "blue" },
-    { value: "GUNNASANKAR", label: "GUNNASANKAR", color: "green" },
-    { value: "HARIBABU", label: "HARIBABU", color: "red" },
-    { value: "UDYA", label: "UDYA", color: "cyan" },
-    { value: "GOPAL", label: "GOPAL", color: "magenta" },
-    { value: "KARTHIK", label: "KARTHIK", color: "lime" },
-    { value: "GHRISHMA", label: "GHRISHMA", color: "gold" },
-    { value: "VARALAKSHMI", label: "VARALAKSHMI", color: "volcano" },
-  ];
+const colors = [
+  "purple",
+  "orange",
+  "blue",
+  "green",
+  "red",
+  "cyan",
+  "magenta",
+  "lime",
+  "gold",
+  "volcano",
+  "geekblue",
+];
+
+const names = [
+  "GRISHMA",
+  "GUNA",
+  "GUNASHEKAR",
+  "SAIKUMAR",
+  "SREEJA",
+  "GADISAI",
+  "GUTTISAI",
+  "NARENDRA",
+  "MANEIAH",
+  "VARALAKSHMI",
+  "VIJAY",
+  "NIHARIKA",
+  "HARIPRIYA",
+  "VINODH",
+  "NAVEEN",
+  "SRIDHAR",
+  "SUBBU",
+  "UDAY",
+  "HARIBABU",
+  "SUDHEESH",
+  "ANUSHA",
+  "DIVYA",
+  "KARTHIK",
+  "RAMADEVI",
+  "BHARGAV",
+  "PRATHIBHA",
+  "JYOTHI",
+  "HEMA",
+  "RAMYAHR",
+  "SURESH",
+  "SUCHITHRA",
+  "ARUNA",
+  "VENKATESH",
+  "RAKESH",
+  "JHON",
+  "MOUNIKA",
+  "VANDANA",
+  "GOPAL",
+  "ANUSHAACCOUNT",
+  "RADHAKRISHNA",
+  "MADHU",
+  "RAVI",
+  "SAMPATH",
+  "CHANDU",
+  "SWATHI",
+  "SHANTHI",
+];
+
+const availableAssignees = names.map((name, index) => ({
+  value: name,
+  label: name,
+  color: colors[index % colors.length],
+}));
+
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -323,7 +368,7 @@ const TaskCreation = () => {
                 rows={6}
                 placeholder="Enter detailed task description here..."
                 showCount
-                maxLength={500}
+                maxLength={8000}
               />
             </Form.Item>
 

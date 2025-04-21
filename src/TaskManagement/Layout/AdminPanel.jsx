@@ -47,9 +47,8 @@ const TaskAdminPanelLayout = ({ children }) => {
   }, [screens]);
   const sidebarItems = [
     {
-      key: "Dashboard",
-      label: "Dashboard",
-      
+      key: "Employee Dashboard",
+      label: "Employee Dashboard",
 
       icon: <FaTachometerAlt />,
       link: "/taskmanagement/dashboard",
@@ -59,21 +58,27 @@ const TaskAdminPanelLayout = ({ children }) => {
       label: "Task Creation",
 
       icon: <FaHandsHelping />,
-      link: "/taskcreation",
-    },
-
-    {
-      key: "Assigned Tasks List",
-      label: "Assigned Tasks List",
-      icon: <FaUsers />,
-      link: "/tasklists",
+      link: "/taskmanagement/taskcreation",
     },
     {
       key: "Task Management Employee Status",
       label: "Task Management Status",
       icon: <FaSlideshare />,
 
-      link: "/taskmanagement",
+      link: "/taskmanagement/taskstatus",
+    },
+
+    {
+      key: "Assigned Tasks List",
+      label: "Assigned Tasks List",
+      icon: <FaUsers />,
+      link: "/taskmanagement/tasklists",
+    },
+    {
+      key: "Employee Registered Users",
+      label: "Employee Registered Users",
+      icon: <FaUserCircle />,
+      link: "/taskmanagement/employee_registered_users",
     },
   ];
 

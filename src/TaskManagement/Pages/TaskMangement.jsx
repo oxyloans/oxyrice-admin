@@ -943,7 +943,7 @@ const TaskManagement = () => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center p-16">
-                <Spin size="large" />
+                <Spin size="small" />
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
             ) : filteredTasks.length > 0 ? (

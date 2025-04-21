@@ -21,6 +21,7 @@ import BASE_URL from "../../AdminPages/Config";
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line no-undef
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -51,33 +52,14 @@ export default function Dashboard() {
     }
   };
 
-  if (loading && !isRefreshing) {
+  if (loading || !dashboardData) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-md">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <div className="text-xl text-gray-600">Loading dashboard data...</div>
-      </div>
+      <TaskAdminPanelLayout>
+        <div className="p-6 text-center text-gray-600">Loading Dashboard...</div>
+      </TaskAdminPanelLayout>
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-red-50 rounded-lg shadow-md">
-        <AlertCircle className="mr-2 text-red-500" size={28} />
-        <div className="text-lg text-red-700">Error: {error}</div>
-      </div>
-    );
-  }
-
-  if (!dashboardData) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg shadow-md">
-        <div className="text-lg text-gray-600">No data available</div>
-      </div>
-    );
-  }
-
-  // Prepare data for the POD/Remaining chart
   const podCompletionData = [
     {
       name: "POD Posted",
@@ -91,7 +73,6 @@ export default function Dashboard() {
     },
   ];
 
-  // Prepare data for the EOD/Remaining chart
   const eodCompletionData = [
     {
       name: "EOD Posted",
@@ -105,17 +86,12 @@ export default function Dashboard() {
     },
   ];
 
-  const COLORS = ["#4ade80", "#f87171"];
-
-  // Calculate percentages
   const podPercentage = (
-    (dashboardData.podPostedEmployeesCount /
-      dashboardData.totalRegisteredEmployees) *
+    (dashboardData.podPostedEmployeesCount / dashboardData.totalRegisteredEmployees) *
     100
   ).toFixed(0);
   const eodPercentage = (
-    (dashboardData.eodPostedEmployeesCount /
-      dashboardData.totalRegisteredEmployees) *
+    (dashboardData.eodPostedEmployeesCount / dashboardData.totalRegisteredEmployees) *
     100
   ).toFixed(0);
 
@@ -146,12 +122,11 @@ export default function Dashboard() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Registered Users */}
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">
-                  Total Registered Users
-                </h3>
+                <h3 className="text-sm font-medium text-gray-500">Total Registered Users</h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.totalRegisteredEmployees}
                 </p>
@@ -162,58 +137,46 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* POD */}
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">
-                  Plan Of The Day
-                </h3>
+                <h3 className="text-sm font-medium text-gray-500">Plan Of The Day</h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.podPostedEmployeesCount}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {podPercentage}% Completion Rate
-                </p>
+                <p className="text-sm text-gray-500 mt-1">{podPercentage}% Completion Rate</p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
                 <Calendar size={28} className="text-green-600" />
               </div>
             </div>
             <div className="mt-4 bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-green-500 h-full"
-                style={{ width: `${podPercentage}%` }}
-              ></div>
+              <div className="bg-green-500 h-full" style={{ width: `${podPercentage}%` }}></div>
             </div>
           </div>
 
+          {/* EOD */}
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">
-                  End Of The Day
-                </h3>
+                <h3 className="text-sm font-medium text-gray-500">End Of The Day</h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.eodPostedEmployeesCount}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {eodPercentage}% Completion Rate
-                </p>
+                <p className="text-sm text-gray-500 mt-1">{eodPercentage}% Completion Rate</p>
               </div>
               <div className="bg-orange-100 p-3 rounded-full">
                 <Calendar size={28} className="text-orange-600" />
               </div>
             </div>
             <div className="mt-4 bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-orange-500 h-full"
-                style={{ width: `${eodPercentage}%` }}
-              ></div>
+              <div className="bg-orange-500 h-full" style={{ width: `${eodPercentage}%` }}></div>
             </div>
           </div>
         </div>
 
-        {/* Additional Status Cards */}
+        {/* Remaining Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-md">
             <div className="flex items-center mb-4">
@@ -302,30 +265,15 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} users`, ""]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                  />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
-            <div className="mt-2 text-center text-sm text-gray-600">
-              <span className="font-semibold">
-                {dashboardData.podPostedEmployeesCount}
-              </span>{" "}
-              out of{" "}
-              <span className="font-semibold">
-                {dashboardData.totalRegisteredEmployees}
-              </span>{" "}
-              employees posted POD
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-md overflow-hidden">
             <div className="flex items-center mb-4">
-              <PieChartIcon size={20} className="text-orange-600 mr-2" />
+              <BarChart size={20} className="text-orange-600 mr-2" />
               <h3 className="text-lg font-semibold text-gray-700">
                 EOD Completion Status
               </h3>
@@ -351,24 +299,9 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} users`, ""]} />
-                  <Legend
-                    layout="horizontal"
-                    verticalAlign="bottom"
-                    align="center"
-                    iconType="circle"
-                  />
+                  <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" />
                 </PieChart>
               </ResponsiveContainer>
-            </div>
-            <div className="mt-2 text-center text-sm text-gray-600">
-              <span className="font-semibold">
-                {dashboardData.eodPostedEmployeesCount}
-              </span>{" "}
-              out of{" "}
-              <span className="font-semibold">
-                {dashboardData.totalRegisteredEmployees}
-              </span>{" "}
-              employees posted EOD
             </div>
           </div>
         </div>
