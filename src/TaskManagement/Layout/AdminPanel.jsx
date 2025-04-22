@@ -57,15 +57,25 @@ const TaskAdminPanelLayout = ({ children }) => {
       key: "Task Creation",
       label: "Task Creation",
 
-      icon: <FaHandsHelping />,
+     icon: <FaHandsHelping />,  
       link: "/taskmanagement/taskcreation",
     },
     {
-      key: "Task Management Employee Status",
-      label: "Task Management Status",
-      icon: <FaSlideshare />,
-
-      link: "/taskmanagement/taskstatus",
+      key: "Daily Activity Status",
+      label: "Daily Activity Status",
+      icon: <FaExchangeAlt />,
+      dropdownItems: [
+        {
+          key: "Plan Of The Day",
+          label: "Plan Of The Day",
+          link: "/taskmanagement/planoftheday",
+        },
+        {
+          key: "End Of The Day",
+          label: "End Of The Day",
+          link: "/taskmanagement/endoftheday",
+        },
+      ],
     },
 
     {

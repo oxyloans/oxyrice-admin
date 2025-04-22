@@ -5,7 +5,6 @@ import BASE_URL from "../../AdminPages/Config.jsx";
 import {
   Card,
   Typography,
-  Select,
   Button,
   Spin,
   Empty,
@@ -25,7 +24,10 @@ import {
   Statistic,
   Row,
   Col,
+  Select,
 } from "antd";
+
+import dayjs from "dayjs";
 import {
   CalendarOutlined,
   FilterOutlined,
@@ -45,10 +47,10 @@ import {
   ReloadOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
+
+const { Option } = Select;
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { TextArea } = Input;
@@ -63,9 +65,9 @@ const buttonStyle = {
   alignItems: "center",
 };
 
-const TaskManagement = () => {
-  // State variables
- const [status, setStatus] = useState("PENDING");
+const PlanOfTheDay = () => {
+  // State variables - Set status to static "PENDING" value
+  const status = "PENDING"; // Static status value
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,14 +79,13 @@ const TaskManagement = () => {
   const [form] = Form.useForm();
 
   // State for sorting and searching
-  const [sortField, setSortField] = useState("planCreatedAt");
-  const [sortOrder, setSortOrder] = useState("descend");
+  const [sortField, setSortField] = useState("taskAssignedBy"); // Default sort by name
+  const [sortOrder, setSortOrder] = useState("ascend"); // Default to ascending (A-Z)
   const [searchText, setSearchText] = useState("");
 
   // State for task statistics specific to selected date
   const [dateTaskStats, setDateTaskStats] = useState({
     pending: 0,
-    completed: 0,
     total: 0,
     date: null,
   });
@@ -196,29 +197,10 @@ const TaskManagement = () => {
       // Update task statistics based on the fetched data
       const taskCount = response.data.length || 0;
 
-      // Fetch the opposite status count for complete statistics
-      const oppositeStatus = status === "COMPLETED" ? "PENDING" : "COMPLETED";
-      const oppositeResponse = await axios.post(
-        `${BASE_URL}/user-service/write/get-task-by-date`,
-        {
-          taskStatus: oppositeStatus,
-          specificDate: formattedDate,
-        },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const oppositeCount = oppositeResponse.data.length || 0;
-
-      // Update date task stats
+      // Update date task stats - only show plan of the day count
       setDateTaskStats({
-        pending: status === "PENDING" ? taskCount : oppositeCount,
-        completed: status === "COMPLETED" ? taskCount : oppositeCount,
-        total: taskCount + oppositeCount,
+        pending: taskCount,
+        total: taskCount,
         date: selectedDate.toDate(),
       });
 
@@ -226,14 +208,14 @@ const TaskManagement = () => {
         showNotification(
           "info",
           "No Tasks Found",
-          `No ${status.toLowerCase()} tasks found for ${formattedDate}.`,
+          `No pending tasks found for ${formattedDate}.`,
           <FileSearchOutlined style={{ color: "#1890ff" }} />
         );
       } else {
         showNotification(
           "success",
           "Tasks Found",
-          `Found ${response.data.length} tasks for ${formattedDate}.`,
+          `Found ${response.data.length} pending tasks for ${formattedDate}.`,
           <CheckCircleOutlined style={{ color: "#52c41a" }} />
         );
       }
@@ -247,7 +229,7 @@ const TaskManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, status]);
+  }, [selectedDate]);
 
   // Admin comment submission
   const handleCommentSubmit = async () => {
@@ -300,13 +282,8 @@ const TaskManagement = () => {
     }
   };
 
-  // Event handlers
-  const handleStatusChange = (value) => {
-    setStatus(value);
-  };
-
   const handleDateChange = (date) => {
-    setSelectedDate(date);
+    setSelectedDate(date || dayjs()); // Fallback to current date if null
   };
 
   const handleSortChange = (field) => {
@@ -329,38 +306,17 @@ const TaskManagement = () => {
     form.resetFields();
   };
 
-  // Helper functions
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
 
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleString();
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  // UI Components
-  const renderSortButton = (field, label) => (
-    <Button
-      type={sortField === field ? "primary" : "default"}
-      size="small"
-      onClick={() => handleSortChange(field)}
-      className={sortField === field ? "bg-blue-500 hover:bg-blue-600" : ""}
-      icon={
-        sortField === field &&
-        (sortOrder === "ascend" ? (
-          <SortAscendingOutlined />
-        ) : (
-          <SortDescendingOutlined />
-        ))
-      }
-    >
-      {label}
-    </Button>
-  );
-
+  try {
+    const date = dayjs(dateString);
+    if (!date.isValid()) return dateString;
+    return date.format("YYYY-MM-DD HH:mm:ss");
+  } catch (e) {
+    return dateString;
+  }
+};
   const renderPendingResponses = (responses) => {
     if (!responses || responses.length === 0) return null;
 
@@ -475,8 +431,6 @@ const TaskManagement = () => {
   };
 
   const renderAdminCommentsBox = (task) => {
-    if (task.taskStatus !== "PENDING") return null;
-
     // Extract admin comments from pendingUserTaskResponse if they exist
     let adminComments = task.adminDescription || null;
 
@@ -538,28 +492,24 @@ const TaskManagement = () => {
       key={task.id}
       className="mb-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
       headStyle={{
-        backgroundColor:
-          task.taskStatus === "COMPLETED" ? "#f6ffed" : "#fff7e6",
-        borderBottom: `1px solid ${
-          task.taskStatus === "COMPLETED" ? "#b7eb8f" : "#ffe58f"
-        }`,
+        backgroundColor: "#fff7e6",
+        borderBottom: "1px solid #ffe58f",
         borderRadius: "8px 8px 0 0",
         padding: "12px 20px",
       }}
       bodyStyle={{ padding: "16px 20px" }}
       title={
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
             <Avatar
               icon={<UserOutlined />}
               style={{
-                backgroundColor:
-                  task.taskStatus === "COMPLETED" ? "#52c41a" : "#faad14",
+                backgroundColor: "#faad14",
                 color: "white",
               }}
             />
             <div className="ml-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center flex-wrap gap-2">
                 {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
                 {task.taskAssignedBy && (
                   <Tooltip title="Assigned by">
@@ -570,7 +520,7 @@ const TaskManagement = () => {
                   </Tooltip>
                 )}
               </div>
-              <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm">
+              <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
                 <span>ID: #{task.id.substring(task.id.length - 4)}</span>
                 <Divider type="vertical" className="mx-2" />
                 <span>Updated by: {task.updatedBy || "N/A"}</span>
@@ -578,19 +528,10 @@ const TaskManagement = () => {
             </div>
           </div>
           <Badge
-            status={task.taskStatus === "COMPLETED" ? "success" : "warning"}
+            status="warning"
             text={
-              <Tag
-                color={task.taskStatus === "COMPLETED" ? "success" : "warning"}
-                icon={
-                  task.taskStatus === "COMPLETED" ? (
-                    <CheckCircleOutlined />
-                  ) : (
-                    <ClockCircleOutlined />
-                  )
-                }
-              >
-                {task.taskStatus}
+              <Tag color="warning" icon={<ClockCircleOutlined />}>
+                PENDING
               </Tag>
             }
           />
@@ -621,11 +562,10 @@ const TaskManagement = () => {
         </div>
       </div>
 
-      {/* Render admin comments box for PENDING tasks */}
-      {task.taskStatus === "PENDING" && renderAdminCommentsBox(task)}
+      {/* Render admin comments box for tasks */}
+      {renderAdminCommentsBox(task)}
 
-      {task.taskStatus === "PENDING" &&
-        renderPendingResponses(task.pendingUserTaskResponse)}
+      {renderPendingResponses(task.pendingUserTaskResponse)}
 
       <Divider className="my-3" />
 
@@ -685,7 +625,7 @@ const TaskManagement = () => {
         </div>
 
         {currentTask && (
-          <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
             <div>
               <Text className="text-gray-600">Task ID:</Text>
               <Text className="ml-2 text-gray-800">
@@ -737,41 +677,71 @@ const TaskManagement = () => {
     <Card
       className="mb-6 border-0 shadow-sm"
       title={
-        <div className="flex items-center">
-          <PieChartOutlined className="mr-2 text-blue-500" />
-          <span>Tasks for {selectedDate.format("YYYY-MM-DD")}</span>
+        <div className="flex items-center flex-wrap">
+          <PieChartOutlined
+            className="mr-2 text-blue-500"
+            style={{ fontSize: "clamp(16px, 4vw, 18px)" }} // Responsive icon size
+          />
+          <Title
+            level={4}
+            className="!text-base sm:!text-lg md:!text-xl" // Responsive font size
+            style={{ margin: 0 }}
+          >
+            Daily Plan Of The Day{" "}
+            {selectedDate ? selectedDate.format("YYYY-MM-DD") : "Select a Date"}
+          </Title>
         </div>
       }
       extra={
-        <Button icon={<ReloadOutlined />} size="small" onClick={fetchTasksByDate}>
+        <Button
+          icon={<ReloadOutlined />}
+          size="small"
+          type="primary"
+          onClick={fetchTasksByDate}
+          className="text-xs sm:text-sm" // Responsive button text
+        >
           Refresh
         </Button>
       }
+      style={{ borderRadius: "8px", overflow: "hidden" }}
+      bodyStyle={{
+        padding: "clamp(12px, 3vw, 16px)", // Responsive padding
+      }}
     >
-      <Row gutter={16}>
-        <Col span={8}>
-          <Statistic
-            title="Plan Of The Day Tasks"
-            value={dateTaskStats.pending}
-            valueStyle={{ color: "#faad14" }}
-            prefix={<ClockCircleOutlined />}
-          />
+      <Row gutter={[16, 16]} justify="space-between">
+        <Col xs={24} md={12}>
+          <Card
+            bordered={false}
+            style={{
+              background: "#fff7e6",
+              borderRadius: "8px",
+              textAlign: "center",
+            }}
+          >
+            <Statistic
+              title={<Text strong>Plan of the Day Tasks</Text>}
+              value={dateTaskStats.pending || 0}
+              valueStyle={{ color: "#faad14", fontSize: "24px" }}
+              prefix={<ClockCircleOutlined style={{ color: "#faad14" }} />}
+            />
+          </Card>
         </Col>
-        <Col span={8}>
-          <Statistic
-            title="End Of The Day Tasks"
-            value={dateTaskStats.completed}
-            valueStyle={{ color: "#52c41a" }}
-            prefix={<CheckCircleOutlined />}
-          />
-        </Col>
-        <Col span={8}>
-          <Statistic
-            title="Total Tasks"
-            value={dateTaskStats.total}
-            valueStyle={{ color: "#1890ff" }}
-            prefix={<FileSearchOutlined />}
-          />
+        <Col xs={24} md={12}>
+          <Card
+            bordered={false}
+            style={{
+              background: "#e6f7ff",
+              borderRadius: "8px",
+              textAlign: "center",
+            }}
+          >
+            <Statistic
+              title={<Text strong>Total Tasks</Text>}
+              value={dateTaskStats.total || 0}
+              valueStyle={{ color: "#1890ff", fontSize: "24px" }}
+              prefix={<FileSearchOutlined style={{ color: "#1890ff" }} />}
+            />
+          </Card>
         </Col>
       </Row>
     </Card>
@@ -784,47 +754,12 @@ const TaskManagement = () => {
           className="shadow-md rounded-lg overflow-hidden border-0"
           bodyStyle={{ padding: 0 }}
         >
-          <div className="bg-gradient-to-r p-4 text-white">
-            <Title level={2} className="text-white mb-1">
-              Task Management Employee Status
-            </Title>
-            <Text className="text-black opacity-80">
-              Monitor and manage tasks by date
-            </Text>
-          </div>
-
           <div className="p-4">
             {/* Show date statistics only when tasks are loaded */}
             {tasks.length > 0 && renderDateTaskStatistics()}
 
             <Card className="bg-gray-50 mb-6 border border-gray-200">
               <div className="flex flex-col md:flex-row md:items-end gap-4">
-                <div className="flex-1 md:max-w-xs">
-                  <Text className="text-gray-600 block mb-1 font-medium">
-                    <FilterOutlined className="mr-1" /> Status Filter
-                  </Text>
-                  <Select
-                    value={status}
-                    onChange={handleStatusChange}
-                    className="w-full"
-                    size="middle"
-                    style={{ height: "40px" }}
-                  >
-                    <Option value="PENDING">
-                      <div className="flex items-center">
-                        <ClockCircleOutlined className="text-orange-500 mr-2" />
-                        <span>PENDING</span>
-                      </div>
-                    </Option>
-                    <Option value="COMPLETED">
-                      <div className="flex items-center">
-                        <CheckCircleOutlined className="text-green-500 mr-2" />
-                        <span>COMPLETED</span>
-                      </div>
-                    </Option>
-                  </Select>
-                </div>
-
                 <div className="flex-1 md:max-w-xs">
                   <Text className="text-gray-600 block mb-1 font-medium">
                     <CalendarOutlined className="mr-1" /> Select Date
@@ -834,6 +769,7 @@ const TaskManagement = () => {
                     onChange={handleDateChange}
                     className="w-full"
                     style={{ height: "40px" }}
+                    allowClear={false} // Prevent clearing the date
                   />
                 </div>
 
@@ -841,7 +777,7 @@ const TaskManagement = () => {
                   <Button
                     type="primary"
                     onClick={fetchTasksByDate}
-                    className="bg-[#008CBA] shadow-sm"
+                    className="bg-[#008CBA] text-white hover:bg-[#008CBA] shadow-sm"
                     style={buttonStyle}
                   >
                     Search
@@ -872,27 +808,27 @@ const TaskManagement = () => {
                   </div>
 
                   {/* Sort Area */}
-                  <div>
+                  <div className="flex flex-wrap gap-2">
                     <Button
-                      type={sortOrder === "ascend" ? "primary" : "default"}
+                      type={sortOrder === "ascend" ? "default" : "default"}
                       icon={<SortAscendingOutlined />}
                       onClick={() => setSortOrder("ascend")}
                       className={
                         sortOrder === "ascend"
-                          ? "bg-blue-500 hover:bg-blue-600"
+                          ? "bg-[#008CBA] text-white hover:bg-[#008CBA]"
                           : ""
                       }
                     >
                       Ascending
                     </Button>
                     <Button
-                      type={sortOrder === "descend" ? "primary" : "default"}
+                      type={sortOrder === "descend" ? "default" : "default"}
                       icon={<SortDescendingOutlined />}
                       onClick={() => setSortOrder("descend")}
                       className={
                         sortOrder === "descend"
-                          ? "bg-blue-500 hover:bg-blue-600 ml-2"
-                          : "ml-2"
+                          ? "bg-[#008CBA] text-white hover:bg-[#008CBA]"
+                          : ""
                       }
                     >
                       Descending
@@ -902,17 +838,17 @@ const TaskManagement = () => {
                       onChange={(value) => {
                         setSortField(value);
                       }}
-                      style={{ width: 150, marginLeft: 8 }}
+                      style={{ width: 150 }}
                     >
+                      <Option value="taskAssignTo">Name</Option>
                       <Option value="planUpdatedAt">Updated Date</Option>
                       <Option value="planCreatedAt">Created Date</Option>
-                      <Option value="taskAssignTo">Name</Option>
                     </Select>
                   </div>
                 </div>
                 {/* Task stats */}
-                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                  <div className="flex items-center">
+                <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <div className="flex items-center mb-2 sm:mb-0">
                     <Badge status="processing" />
                     <Text className="ml-2">
                       Showing {filteredTasks.length} of {tasks.length} tasks
@@ -928,8 +864,8 @@ const TaskManagement = () => {
                     <Button
                       size="small"
                       onClick={() => {
-                        setSortField("planUpdatedAt");
-                        setSortOrder("descend");
+                        setSortField("taskAssignTo");
+                        setSortOrder("ascend");
                         setSearchText("");
                       }}
                       icon={<FilterOutlined />}
@@ -943,7 +879,7 @@ const TaskManagement = () => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center p-16">
-                <Spin size="small" />
+                <Spin size="large" />
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
             ) : filteredTasks.length > 0 ? (
@@ -991,4 +927,4 @@ const TaskManagement = () => {
   );
 };
 
-export default TaskManagement;
+export default PlanOfTheDay;

@@ -433,7 +433,6 @@ const TaskCreation = () => {
                     size="large"
                   >
                     <Option value={taskCreatedBy.ADMIN}>ADMIN</Option>
-                   
                   </Select>
                 </Form.Item>
               </Col>
@@ -617,7 +616,7 @@ const TaskCreation = () => {
                     loading={loading}
                     icon={<SaveOutlined />}
                     size="large"
-                    className="min-w-[140px] bg-blue-600 hover:bg-blue-700"
+                    className="min-w-[140px] bg-[#008CBA] hover:bg-[#008CBA]"
                     disabled={uploadStatus === "uploading"}
                   >
                     Create Task
