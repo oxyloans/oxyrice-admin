@@ -37,6 +37,8 @@ import {
   TeamOutlined,
   ExclamationCircleOutlined,
   PlusCircleOutlined,
+  LinkOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -110,10 +112,7 @@ const TasksList = () => {
     { value: "SHANTHI", label: "Shanthi" },
   ];
 
-  const creatorOptions = [
-    { value: "ADMIN", label: "Admin" },
-    { value: "USER", label: "User" },
-  ];
+  const creatorOptions = [{ value: "ADMIN", label: "Admin" }];
 
   useEffect(() => {
     fetchTasks();
@@ -152,12 +151,13 @@ const TasksList = () => {
     }
   };
 
-  // Filter tasks based on search text
+  // Filter tasks based on search text - updated to include comments
   const filteredTasks = tasks.filter(
     (task) =>
       task.taskcontent?.toLowerCase().includes(searchText.toLowerCase()) ||
       task.createdby?.toLowerCase().includes(searchText.toLowerCase()) ||
-      task.taskassingnedby?.toLowerCase().includes(searchText.toLowerCase())
+      task.taskassingnedby?.toLowerCase().includes(searchText.toLowerCase()) ||
+      task.comments?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   // Define a common style for text alignment in both header and body cells
@@ -201,6 +201,8 @@ const TasksList = () => {
       taskcontent: task.taskcontent,
       taskcreatedby: task.createdby,
       taskassingnedto: taskAssignees,
+      comments: task.comments || "",
+      link: task.link || "",
     });
 
     // Log the form values after setting them
@@ -230,6 +232,8 @@ const TasksList = () => {
           // Send taskassingnedto as an array
           taskassingnedto: values.taskassingnedto,
           admindocumentid: currentTask.admindocumentid || "string",
+          comments: values.comments,
+          link: values.link,
         }
       );
 
@@ -242,6 +246,8 @@ const TasksList = () => {
               createdby: values.taskcreatedby,
               taskassingnedby: values.taskassingnedto.join(", "), // For display purposes
               taskassingnedto: values.taskassingnedto, // Keep the array format
+              comments: values.comments,
+              link: values.link,
             }
           : task
       );
@@ -281,6 +287,42 @@ const TasksList = () => {
     );
   };
 
+  // Function to render link with proper formatting and validation
+  const renderLink = (link) => {
+    if (!link) return <span className="text-gray-400">No link provided</span>;
+
+    // Check if link has http/https prefix, if not add it
+    const formattedLink = link.startsWith("http") ? link : `https://${link}`;
+
+    return (
+      <div className="flex items-center justify-center">
+        <a
+          href={formattedLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 flex items-center"
+        >
+          <LinkOutlined className="mr-1" />
+          {link.length > 30 ? link.substring(0, 27) + "..." : link}
+        </a>
+      </div>
+    );
+  };
+
+  // Function to render comments with proper styling
+  const renderComments = (comments) => {
+    if (!comments) return <span className="text-gray-400">No comments</span>;
+
+    return (
+      <div className="max-w-xs mx-auto overflow-hidden">
+        <div className="flex items-center">
+          <CommentOutlined className="mr-1 text-gray-500" />
+          <span className="text-gray-700">{comments}</span>
+        </div>
+      </div>
+    );
+  };
+
   // Responsive columns configuration
   const getColumns = () => {
     const baseColumns = [
@@ -307,6 +349,26 @@ const TasksList = () => {
             {content}
           </div>
         ),
+      },
+      {
+        title: "Comments",
+        dataIndex: "comments",
+        key: "comments",
+        align: "center",
+        onHeaderCell: () => ({
+          style: centerStyle,
+        }),
+        render: renderComments,
+      },
+      {
+        title: "Link",
+        dataIndex: "link",
+        key: "link",
+        align: "center",
+        onHeaderCell: () => ({
+          style: centerStyle,
+        }),
+        render: renderLink,
       },
       {
         title: "Priority",
@@ -408,6 +470,8 @@ const TasksList = () => {
           );
         },
       },
+      // New columns for Comments and Link
+
       {
         title: "Actions",
         key: "actions",
@@ -451,68 +515,69 @@ const TasksList = () => {
         ),
       });
 
-      baseColumns.splice(3, 0, {
-        title: "Created By",
-        dataIndex: "createdby",
-        key: "createdby",
+     
+
+      baseColumns.splice(4, 0, {
+        title: "Assigned To",
+        dataIndex: "taskassingnedto",
+        key: "taskassingnedto",
         align: "center",
+        width: 180, // Restrict column width
         onHeaderCell: () => ({
           style: centerStyle,
         }),
-        render: (createdby) => (
-          <Tag color={createdby === "ADMIN" ? "blue" : "green"}>
-            {createdby || "N/A"}
-          </Tag>
-        ),
+        render: (taskassingnedto, record) => {
+          const assignees = parseAssignees(
+            taskassingnedto || record.taskassingnedby
+          );
+
+          // Show only first 2 names with count indicator if there are more
+          if (assignees.length > 2) {
+            return (
+              <div className="flex flex-col items-center">
+                <div className="flex flex-wrap gap-1 justify-center">
+                  <Tag color="blue">{assignees[0]}</Tag>
+                  <Tag color="blue">{assignees[1]}</Tag>
+                </div>
+                <Badge
+                  count={`+${assignees.length - 2}`}
+                  style={{ backgroundColor: "#1890ff" }}
+                  title={assignees.slice(2).join(", ")}
+                />
+              </div>
+            );
+          }
+
+          // Show all if 2 or fewer assignees
+          return (
+            <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
+              {assignees.length > 0 ? (
+                assignees.map((assignee, index) => (
+                  <Tag key={index} color="blue">
+                    {assignee}
+                  </Tag>
+                ))
+              ) : (
+                <span>Not assigned</span>
+              )}
+            </div>
+          );
+        },
       });
-
-     baseColumns.splice(4, 0, {
-       title: "Assigned To",
-       dataIndex: "taskassingnedto",
-       key: "taskassingnedto",
-       align: "center",
-       width: 180, // Restrict column width
-       onHeaderCell: () => ({
-         style: centerStyle,
-       }),
-       render: (taskassingnedto, record) => {
-         const assignees = parseAssignees(
-           taskassingnedto || record.taskassingnedby
-         );
-
-         // Show only first 2 names with count indicator if there are more
-         if (assignees.length > 2) {
-           return (
-             <div className="flex flex-col items-center">
-               <div className="flex flex-wrap gap-1 justify-center">
-                 <Tag color="blue">{assignees[0]}</Tag>
-                 <Tag color="blue">{assignees[1]}</Tag>
-               </div>
-               <Badge
-                 count={`+${assignees.length - 2}`}
-                 style={{ backgroundColor: "#1890ff" }}
-                 title={assignees.slice(2).join(", ")}
-               />
-             </div>
-           );
-         }
-
-         // Show all if 2 or fewer assignees
-         return (
-           <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
-             {assignees.length > 0 ? (
-               assignees.map((assignee, index) => (
-                 <Tag key={index} color="blue">
-                   {assignee}
-                 </Tag>
-               ))
-             ) : (
-               <span>Not assigned</span>
-             )}
-           </div>
-         );
-       },
-     });
+       baseColumns.splice(3, 0, {
+         title: "Created By",
+         dataIndex: "createdby",
+         key: "createdby",
+         align: "center",
+         onHeaderCell: () => ({
+           style: centerStyle,
+         }),
+         render: (createdby) => (
+           <Tag color={createdby === "ADMIN" ? "blue" : "green"}>
+             {createdby || "N/A"}
+           </Tag>
+         ),
+       });
     }
 
     return baseColumns;
@@ -543,6 +608,35 @@ const TasksList = () => {
                 )}
               </div>
             </p>
+            {/* Added Comments and Link to the expandable row for mobile */}
+            <p className="mt-2">
+              <strong>Comments:</strong>{" "}
+              <div className="mt-1">
+                {record.comments ? record.comments : "No comments"}
+              </div>
+            </p>
+            <p className="mt-2">
+              <strong>Link:</strong>{" "}
+              <div className="mt-1">
+                {record.link ? (
+                  <a
+                    href={
+                      record.link.startsWith("http")
+                        ? record.link
+                        : `https://${record.link}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:text-blue-700 flex items-center"
+                  >
+                    <LinkOutlined className="mr-1" />
+                    {record.link}
+                  </a>
+                ) : (
+                  "No link provided"
+                )}
+              </div>
+            </p>
           </div>
         ),
         expandIcon: ({ expanded, onExpand, record }) => (
@@ -554,7 +648,7 @@ const TasksList = () => {
       }
     : {};
 
-  // Edit Form Render Function
+  // Edit Form Render Function - Updated to include Comments and Link fields
   const renderEditForm = () => (
     <Form form={editForm} layout="vertical">
       <Form.Item
@@ -627,6 +721,31 @@ const TasksList = () => {
           ))}
         </Select>
       </Form.Item>
+
+      {/* New form items for Comments and Link */}
+      <Form.Item
+        name="comments"
+        label={
+          <div className="flex items-center">
+            <CommentOutlined className="mr-2" />
+            <span>Comments</span>
+          </div>
+        }
+      >
+        <TextArea rows={2} placeholder="Add comments about this task" />
+      </Form.Item>
+
+      <Form.Item
+        name="link"
+        label={
+          <div className="flex items-center">
+            <LinkOutlined className="mr-2" />
+            <span>Link</span>
+          </div>
+        }
+      >
+        <Input placeholder="Add related link (e.g., document URL)" />
+      </Form.Item>
     </Form>
   );
 
@@ -667,7 +786,7 @@ const TasksList = () => {
                     <Button
                       style={{ backgroundColor: "#04AA6D", color: "white" }}
                       icon={<PlusOutlined />}
-                      href="/taskcreation"
+                      href="/taskmanagement/taskcreation"
                     >
                       {!screenSize.isMobile && "New Task"}
                     </Button>

@@ -62,6 +62,11 @@ const AllInforMationOfBarCode = () => {
       dataIndex: "itemId",
       key: "itemId",
       align: "center",
+      render: (itemId) => (
+        <span className="text-gray-500 font-mono text-xs">
+          #{itemId?.substring(itemId.length - 4) || "N/A"}
+        </span>
+      ),
     },
     {
       title: "Item Name",
@@ -70,13 +75,19 @@ const AllInforMationOfBarCode = () => {
       align: "center",
     },
     {
-      title: "Barcode Status",
+      title: "Barcode ID",
       dataIndex: "barcode",
       key: "barcode",
       align: "center",
-      render: (barcode) => (
-        <Tag color={barcode === "active" ? "green" : "red"}>
-          {barcode === "active" ? "Active" : "Inactive"}
+    },
+    {
+      title: "Barcode Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => (
+        <Tag color={status === "active" ? "green" : "red"}>
+          {status === "active" ? "Active" : "Inactive"}
         </Tag>
       ),
     },
