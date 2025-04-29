@@ -195,6 +195,11 @@ const SubscriptionPlansList = () => {
       dataIndex: "planId",
       key: "planId",
       align: "center",
+      render: (planId) => (
+        <span className="text-gray-500 font-mono text-xs">
+          #{planId?.substring(planId.length - 4) || "N/A"}
+        </span>
+      ),
     },
     {
       title: "Pay Amount",

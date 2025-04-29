@@ -11,6 +11,7 @@ import {
   Button,
   message,
   Input,
+  Tag,
 } from "antd";
 import axios from "axios";
 import moment from "moment";
@@ -18,7 +19,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { v4 as uuidv4 } from "uuid";
 import "jspdf-autotable";
-import { AiOutlineDownload } from "react-icons/ai";
+import { AiOutlineDownload, AiOutlinePrinter, AiOutlineEye } from "react-icons/ai";
 import BASE_URL from "./Config.jsx";
 const token = localStorage.getItem("token");
 const { Option } = Select;
@@ -251,6 +252,15 @@ const Ordersdetails = () => {
     setOrderDetails(null);
   };
 
+  // Handle print functionality
+  const handlePrint = () => {
+    if (!orderDetails) {
+      message.error("No order details available to print.");
+      return;
+    }
+    window.print(); // Simple print functionality
+  };
+
   // Define table columns
   const columns = [
     {
@@ -266,6 +276,11 @@ const Ordersdetails = () => {
       dataIndex: "orderId",
       key: "orderId",
       align: "center",
+      render: (orderId) => (
+        <span className="text-gray-500 font-mono text-xs">
+          #{orderId?.substring(orderId.length - 4) || "N/A"}
+        </span>
+      ),
     },
     {
       title: "Customer Name",
@@ -307,7 +322,7 @@ const Ordersdetails = () => {
       align: "center",
       render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : ""),
     },
-  
+
     {
       title: "Order Status",
       dataIndex: "orderStatus",
@@ -333,29 +348,41 @@ const Ordersdetails = () => {
       align: "center",
       render: (order) => (
         <>
-          <Button
-            type="link"
-            style={{
-              backgroundColor: "#23C6C8",
-              color: "white",
-              padding: "2px",
-              margin: "2px",
-            }}
-            onClick={() => handleViewClick(order.orderId)} // Call handleViewClick with orderId
-          >
-            View
-          </Button>
+          <div className="flex justify-center space-x-2">
+            <Button
+              type="link"
+              icon={<AiOutlineEye />}
+              style={{
+                backgroundColor: "#008CBA",
+                borderColor: "#008CBA",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+              }}
+              size="small"
+              onClick={() => handleViewClick(order.orderId)} // Call handleViewClick with orderId
+            >
+              View
+            </Button>
 
-          <Button
-            onClick={() => handleViewClick1(order.orderId)} // Pass orderId to fetch order details and print
-            type="link"
-            style={{
-              backgroundColor: "#23C6C8",
-              color: "white",
-            }}
-          >
-            Print
-          </Button>
+            <Button
+              icon={<AiOutlinePrinter />}
+              onClick={() => handleViewClick1(order.orderId)} // Pass orderId to fetch order details and print
+              type="link"
+              style={{
+                backgroundColor: "#04AA6D",
+                borderColor: "#04AA6D",
+                display: "flex",
+                color: "white",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              size="small"
+            >
+              Print
+            </Button>
+          </div>
 
           {orderDetails && (
             <Button
@@ -402,8 +429,9 @@ const Ordersdetails = () => {
             const statusMap = {
               0: "Incomplete",
               1: "Order Placed",
-              2: "Order Accepted",
-              3: "Order Picked",
+              2: "Order Accepted", // Corrected typo
+              3: "Order Assigned",
+              PickedUp: "Order Picked Up", // Added space for readability
               4: "Order Delivered",
               5: "Order Rejected",
               6: "Order Canceled",
@@ -487,8 +515,9 @@ const Ordersdetails = () => {
   const orderStatusMap = {
     0: "Incomplete",
     1: "Order Placed",
-    2: "Order Accepted",
-    3: "Order Picked",
+    2: "Order Accepted", // Corrected typo
+    3: "Order Assigned",
+    PickedUp: "Order Picked Up", // Added space for readability
     4: "Order Delivered",
     5: "Order Rejected",
     6: "Order Canceled",
@@ -629,208 +658,285 @@ const Ordersdetails = () => {
         {/* Modal for Order Details */}
 
         <Modal
-          title="Order Details"
+          title={
+            <div className="text-lg font-bold text-gray-800">Order Details</div>
+          }
           visible={isModalVisible}
           onCancel={handleModalClose}
-          footer={null}
-          width={650}
+          footer={[
+            <Button
+              key="print"
+              type="primary"
+              onClick={handlePrint}
+              icon={<AiOutlinePrinter />}
+            >
+              Print
+            </Button>,
+            <Button key="close" onClick={handleModalClose}>
+              Close
+            </Button>,
+          ]}
+          width={700}
         >
           {loading ? (
-            <div className="flex justify-center items-center h-full">
-              <Spin />
+            <div className="flex justify-center items-center h-40">
+              <Spin size="large" />
             </div>
           ) : orderDetails ? (
-            <div>
-              <table className="w-full border-collapse border border-gray-300 mb-4">
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Order ID</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.orderId}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Customer Mobile</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {(orderDetails?.customerMobile &&
-                      orderDetails?.customerMobile.trim() !== ""
-                        ? orderDetails.customerMobile
-                        : orderDetails?.mobileNumber) +
-                        " - " +
-                        orderDetails?.customerName}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Customer Address</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1">
-                      <strong>Flat No:</strong>{" "}
-                      {orderDetails?.orderAddress?.flatNo}, <br />
-                      <strong>Land Mark:</strong>{" "}
-                      {orderDetails?.orderAddress?.landMark}, <br />
-                      <strong>Location:</strong>{" "}
-                      {orderDetails?.orderAddress?.address},
-                      <br />
-                      <strong>Pincode:</strong>{" "}
-                      {orderDetails?.orderAddress?.pincode}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Order Status</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.orderStatus
-                        ? orderStatusMap[orderDetails.orderStatus]
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Payment Type</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      {orderDetails?.paymentType
-                        ? paymentTypeMap[orderDetails.paymentType] || "Other"
-                        : ""}
-                    </td>
-                  </tr>
-                  <tr>
-                    {/* <td className="border border-gray-300 px-2 py-1 text-center"><strong>Payment Status</strong></td>
-            <td className="border border-gray-300 px-2 py-1 text-center">
-  {paymentTypeStatus[orderDetails?.payment] || "N/A"}
-</td> */}
-                  </tr>
-                </tbody>
-              </table>
+            <div className="max-h-[70vh] overflow-y-auto">
+              <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                <h3 className="text-md font-semibold text-gray-700 mb-2">
+                  Order Information
+                </h3>
+                <table className="w-full border-collapse border border-gray-300 bg-white">
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50 w-1/3">
+                        Order ID
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <span className="font-mono">
+                          {orderDetails?.orderId}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Order Date
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {orderDetails?.orderDate}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Order Status
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        
+                          {orderDetails?.orderStatus
+                            ? orderStatusMap[orderDetails.orderStatus]
+                            : "N/A"}
+                        
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Payment Type
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <Tag
+                          color={
+                            orderDetails?.paymentType === 1 ? "green" : "blue"
+                          }
+                        >
+                          {orderDetails?.paymentType
+                            ? paymentTypeMap[orderDetails.paymentType] ||
+                              "Other"
+                            : "N/A"}
+                        </Tag>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-              <h2 className="font-semibold mb-2 text-center">
-                Menu Item Details
-              </h2>
-              <Table
-                columns={[
-                  {
-                    title: "Menu Item",
-                    dataIndex: "itemName",
-                    key: "itemName",
-                    align: "center",
-                  },
-                  {
-                    title: "Quantity",
-                    dataIndex: "quantity",
-                    key: "quantity",
-                    align: "center",
-                  },
-                  {
-                    title: "Weight",
-                    dataIndex: "weight",
-                    key: "weight",
-                    align: "center",
-                  },
-                  {
-                    title: "Price",
-                    dataIndex: "price",
-                    key: "price",
-                    align: "center",
-                    render: (text) => `₹${text || "0.00"}`,
-                  },
-                ]}
-                dataSource={orderDetails?.orderItems || []}
-                rowKey={(record, index) => index}
-                pagination={false}
-                scroll={{ x: "100%" }}
-              />
+              <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                <h3 className="text-md font-semibold text-gray-700 mb-2">
+                  Customer Information
+                </h3>
+                <table className="w-full border-collapse border border-gray-300 bg-white">
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50 w-1/3">
+                        Customer Name
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {orderDetails?.customerName || "N/A"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Customer Mobile
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        {(orderDetails?.customerMobile &&
+                        orderDetails?.customerMobile.trim() !== ""
+                          ? orderDetails.customerMobile
+                          : orderDetails?.mobileNumber) || "N/A"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Delivery Address
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2">
+                        <div>
+                          {orderDetails?.orderAddress?.flatNo && (
+                            <span>
+                              <strong>Flat No:</strong>{" "}
+                              {orderDetails.orderAddress.flatNo}
+                            </span>
+                          )}
+                          {orderDetails?.orderAddress?.landMark && (
+                            <div>
+                              <strong>Land Mark:</strong>{" "}
+                              {orderDetails.orderAddress.landMark}
+                            </div>
+                          )}
+                          {orderDetails?.orderAddress?.address && (
+                            <div>
+                              <strong>Location:</strong>{" "}
+                              {orderDetails.orderAddress.address}
+                            </div>
+                          )}
+                          {orderDetails?.orderAddress?.pincode && (
+                            <div>
+                              <strong>Pincode:</strong>{" "}
+                              {orderDetails.orderAddress.pincode}
+                            </div>
+                          )}
+                          {!orderDetails?.orderAddress && (
+                            <span>No address available</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-              <h2 className="font-semibold mt-4 ">
-                <strong>Order Totals</strong>
-              </h2>
-              <table className="w-full border-collapse border border-gray-300 mb-4">
-                <tbody>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Sub Total</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.subTotal || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Delivery Fee</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.deliveryFee || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Coupon Amount Used</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.discountAmount || "0.00"}
-                    </td>
-                  </tr>
+              <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                <h3 className="text-md font-semibold text-gray-700 mb-2">
+                  Order Items
+                </h3>
+                <Table
+                  columns={[
+                    {
+                      title: "Item Name",
+                      dataIndex: "itemName",
+                      key: "itemName",
+                      align: "left",
+                    },
+                    {
+                      title: "Quantity",
+                      dataIndex: "quantity",
+                      key: "quantity",
+                      align: "center",
+                      width: 100,
+                    },
+                    {
+                      title: "Weight",
+                      dataIndex: "weight",
+                      key: "weight",
+                      align: "center",
+                      width: 100,
+                    },
+                    {
+                      title: "Price",
+                      dataIndex: "price",
+                      key: "price",
+                      align: "right",
+                      render: (text) => `₹${Number(text).toFixed(2) || "0.00"}`,
+                      width: 100,
+                    },
+                  ]}
+                  dataSource={orderDetails?.orderItems || []}
+                  rowKey={(record, index) => index}
+                  pagination={false}
+                  scroll={{ x: 500 }}
+                  size="small"
+                  className="bg-white"
+                />
+              </div>
 
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Subscription Amount Used</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.subscriptionAmount || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Wallet Amount Used</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.walletAmount || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Referral Amount Used</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.referralAmountUsed || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Gst Amount</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.gstAmount || "0.00"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      <strong>Grand Total</strong>
-                    </td>
-                    <td className="border border-gray-300 px-2 py-1 text-center">
-                      ₹{orderDetails?.grandTotal || "0.00"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              {/* <Table
-        dataSource={orderDetails?.orderHistory || []}
-        columns={[
-          { title: "Status", dataIndex: "status", key: "status", render: (text) => ({"1": "Order Placed", "2": "Processing", "3": "Shipped", "4": "Delivered"}[text] || "Unknown")) },
-          { title: "Updated At", dataIndex: "createdAt", key: "createdAt", render: (text) => text ? new Date(text).toLocaleString() : "N/A" },
-        ]}
-        rowKey={(record, index) => index}
-        pagination={false}
-      /> */}
+              <div className="bg-gray-100 p-3 rounded-lg">
+                <h3 className="text-md font-semibold text-gray-700 mb-2">
+                  Payment Details
+                </h3>
+                <table className="w-full border-collapse border border-gray-300 bg-white">
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50 w-2/3">
+                        Sub Total
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹{Number(orderDetails?.subTotal).toFixed(2) || "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Delivery Fee
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹
+                        {Number(orderDetails?.deliveryFee).toFixed(2) || "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Coupon Amount Used
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹
+                        {Number(orderDetails?.discountAmount).toFixed(2) ||
+                          "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Subscription Amount Used
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹
+                        {Number(orderDetails?.subscriptionAmount).toFixed(2) ||
+                          "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Wallet Amount Used
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹
+                        {Number(orderDetails?.walletAmount).toFixed(2) ||
+                          "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        Referral Amount Used
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹
+                        {Number(orderDetails?.referralAmountUsed).toFixed(2) ||
+                          "0.00"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">
+                        GST Amount
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">
+                        ₹{Number(orderDetails?.gstAmount).toFixed(2) || "0.00"}
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-100">
+                      <td className="border border-gray-300 px-3 py-2 font-semibold bg-gray-50">
+                        Grand Total
+                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right font-semibold">
+                        ₹{Number(orderDetails?.grandTotal).toFixed(2) || "0.00"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           ) : (
-            <p>No order details available.</p>
+            <div className="text-center py-4">
+              <p>No order details available.</p>
+            </div>
           )}
         </Modal>
       </div>

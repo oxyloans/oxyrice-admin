@@ -140,6 +140,7 @@ const TaskCreation = () => {
     "CHANDU",
     "SWATHI",
     "SHANTHI",
+    "VISWA"
   ];
 
   const availableAssignees = names.map((name, index) => ({

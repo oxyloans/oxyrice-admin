@@ -428,6 +428,11 @@ const DashboardTest = () => {
       key: "id",
       align: "center",
       ellipsis: true,
+      render: (itemId) => (
+        <span className="text-gray-500 font-mono text-xs">
+          #{itemId?.substring(itemId.length - 4) || "N/A"}
+        </span>
+      ),
     },
     {
       title: "Customer Contact",

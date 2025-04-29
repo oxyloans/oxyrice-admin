@@ -723,7 +723,7 @@ const TasksList = () => {
       </Form.Item>
 
       {/* New form items for Comments and Link */}
-      <Form.Item
+      {/* <Form.Item
         name="comments"
         label={
           <div className="flex items-center">
@@ -745,7 +745,7 @@ const TasksList = () => {
         }
       >
         <Input placeholder="Add related link (e.g., document URL)" />
-      </Form.Item>
+      </Form.Item> */}
     </Form>
   );
 
