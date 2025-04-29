@@ -19,26 +19,44 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { v4 as uuidv4 } from "uuid";
 import "jspdf-autotable";
-import { AiOutlineDownload, AiOutlinePrinter, AiOutlineEye } from "react-icons/ai";
+import {
+  AiOutlineDownload,
+  AiOutlinePrinter,
+  AiOutlineEye,
+} from "react-icons/ai";
 import BASE_URL from "./Config.jsx";
 const token = localStorage.getItem("token");
 const { Option } = Select;
-// Generate a unique order ID using UUID v4
 
 const Ordersdetails = () => {
-  const [dateRange, setDateRange] = useState([]);
   const [orderStatus, setOrderStatus] = useState("All");
   const [orderData, setOrderData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const [toDate, setToDate] = useState(null); // Initialize with null
-  const [fromDate, setFromDate] = useState(null); // Initialize with null
+  const [toDate, setToDate] = useState(null);
+  const [fromDate, setFromDate] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
-  const handleStatusChange = (value) => setOrderStatus(value);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Define order status mapping
+  const orderStatusMap = {
+    0: "Incomplete",
+    1: "Order Placed",
+    2: "Order Accepted",
+    3: "Order Assigned",
+    PickedUp: "Order Picked Up",
+    4: "Order Delivered",
+    5: "Order Rejected",
+    6: "Order Canceled",
+  };
+
+  const paymentTypeMap = {
+    1: "COD",
+    2: "ONLINE",
+  };
 
   const handleToDateChange = (date) => {
     setToDate(date);
@@ -47,7 +65,50 @@ const Ordersdetails = () => {
   const handleFromDateChange = (date) => {
     setFromDate(date);
   };
-  console.log(orderDetails);
+
+  // Handle status change - only update the state, don't filter yet
+  const handleStatusChange = (value) => {
+    setOrderStatus(value);
+  };
+
+  // Separate function to apply all filters (status, search) on the data
+  const applyFilters = (data, status, search) => {
+    let filtered = [...data];
+
+    // Apply status filter if not "All"
+    if (status !== "All") {
+      filtered = filtered.filter(
+        (order) =>
+          // Handle both string and number status comparison
+          order.orderStatus === status ||
+          order.orderStatus === parseInt(status) ||
+          // Handle special case for "PickedUp"
+          (status === "PickedUp" && order.orderStatus === "PickedUp")
+      );
+    }
+
+    // Apply search filter if there's a search term
+    if (search && search.trim() !== "") {
+      filtered = filtered.filter((item) => {
+        // Check last 4 digits of order ID
+        const lastFourDigits = item.orderId?.toString().slice(-4);
+
+        // Additional search conditions
+        const orderIdMatch =
+          item.orderId?.toString().toLowerCase().includes(search) ||
+          lastFourDigits?.includes(search);
+        const usernameMatch = item.username?.toLowerCase().includes(search);
+        const mobileNumberMatch = item.mobilenumber
+          ?.toLowerCase()
+          .includes(search);
+
+        return orderIdMatch || usernameMatch || mobileNumberMatch;
+      });
+    }
+
+    return filtered;
+  };
+
   const fetchOrderDetailsModal = async (orderId) => {
     if (!orderId) {
       message.error("Invalid Order ID. Please try again.");
@@ -62,16 +123,13 @@ const Ordersdetails = () => {
       );
 
       if (response?.status === 200 && response?.data?.length > 0) {
-        console.log("Fetched Order Details:", response.data);
         setOrderDetails(response.data[0]);
-        console.log(response.data[0]); // Assuming the response is an array
       } else {
         message.warning("No order details found for the given Order ID.");
       }
     } catch (error) {
       console.error("Error fetching order details:", error);
 
-      // Show different error messages based on the status code
       if (error.response?.status === 500) {
         message.error("Internal server error");
       } else {
@@ -84,42 +142,26 @@ const Ordersdetails = () => {
       setLoading(false);
     }
   };
+
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    const value = e.target.value.toLowerCase().trim();
     setSearchTerm(value);
 
-    if (value) {
-      // Filter items based on multiple search criteria
-      const filtered = orderData.filter((item) => {
-        // Check last 4 digits of order ID
-        const lastFourDigits = item.orderId?.toString().slice(-4);
-
-        // Additional search conditions
-        const orderIdMatch = lastFourDigits?.includes(value);
-        const usernameMatch = item.username?.toLowerCase().includes(value);
-        const mobileNumberMatch = item.mobilenumber
-          ?.toLowerCase()
-          .includes(value);
-
-        // Return true if any of the conditions match
-        return orderIdMatch || usernameMatch || mobileNumberMatch;
-      });
-
-      setFilteredItems(filtered); // Update the filtered items
-    } else {
-      setFilteredItems(orderData); // Reset to all items when search term is empty
-    }
+    // Apply all filters when search changes
+    setFilteredItems(applyFilters(orderData, orderStatus, value));
   };
+
   // Handle "View" button click
   const handleViewClick = (orderId) => {
-    fetchOrderDetailsModal(orderId); // Fetch order details
-    setIsModalVisible(true); // Show modal
+    fetchOrderDetailsModal(orderId);
+    setIsModalVisible(true);
   };
 
   // Function to handle Print Button click
   const handleViewClick1 = async (orderId) => {
-    await fetchOrderDetailsModal(orderId); // Fetch order details
+    await fetchOrderDetailsModal(orderId);
   };
+
   const handleDownloadPDF = () => {
     if (!orderDetails) {
       console.error("Order details not found");
@@ -153,8 +195,8 @@ const Ordersdetails = () => {
     // Set font and title
     pdf.setFontSize(22);
     pdf.setFont("helvetica", "bold");
-    pdf.setTextColor("#4CAF50"); // Green color for the title
-    safeText("BILL FROM OXYRICE", 14, 20); // Custom title
+    pdf.setTextColor("#4CAF50");
+    safeText("BILL FROM OXYRICE", 14, 20);
 
     // Add Order and Date Information
     pdf.setFontSize(16);
@@ -175,7 +217,7 @@ const Ordersdetails = () => {
 
     // Invoice To Details
     pdf.setFontSize(14);
-    safeText("Invoice To:", 105, 55); // Start from a different position
+    safeText("Invoice To:", 105, 55);
     pdf.setFontSize(12);
     safeText(customerName, 105, 65);
     safeText(customermobilenumber, 105, 75);
@@ -203,10 +245,10 @@ const Ordersdetails = () => {
       bodyStyles: { fontSize: 10, textColor: "#333333" },
       alternateRowStyles: { fillColor: "#f9f9f9" },
       columnStyles: {
-        0: { cellWidth: 70, fontStyle: "bold" }, // Item Description
-        1: { cellWidth: 40 }, // Quantity
-        2: { cellWidth: 40 }, // Unit Cost
-        3: { cellWidth: 40 }, // Total
+        0: { cellWidth: 70, fontStyle: "bold" },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: 40 },
       },
     });
 
@@ -246,6 +288,7 @@ const Ordersdetails = () => {
     // Save the PDF
     pdf.save(`Order_${orderId}.pdf`);
   };
+
   // Handle modal close
   const handleModalClose = () => {
     setIsModalVisible(false);
@@ -258,7 +301,109 @@ const Ordersdetails = () => {
       message.error("No order details available to print.");
       return;
     }
-    window.print(); // Simple print functionality
+    window.print();
+  };
+
+  // Improved fetchOrderDetails function
+  const fetchOrderDetails = async () => {
+    // Ensure both dates are selected
+    if (!fromDate || !toDate) {
+      message.error("Please select a valid date range.");
+      return;
+    }
+
+    // Ensure the fromDate is before the toDate
+    if (fromDate.isAfter(toDate)) {
+      message.error("From date cannot be later than To date.");
+      return;
+    }
+
+    const startDate = fromDate.format("YYYY-MM-DD");
+    const endDate = toDate.format("YYYY-MM-DD");
+
+    // IMPORTANT CHANGE: We'll always fetch data without status filter
+    // and then apply status filtering client-side for more flexibility
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
+        params: {
+          startDate,
+          endDate,
+          // Only include status in the API request if it's not "All"
+          ...(orderStatus !== "All" && { status: orderStatus }),
+        },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        let orders = response.data;
+
+        // Filter out test users
+        orders = orders.filter((order) => !order.testUser);
+
+        // Store all orders in orderData
+        setOrderData(orders);
+
+        // Apply filters to get updated filtered items
+        const filtered = applyFilters(orders, orderStatus, searchTerm);
+        setFilteredItems(filtered);
+
+        message.success("Data fetched successfully");
+      } else {
+        message.error("No data found");
+      }
+    } catch (error) {
+      console.error("Error fetching order data:", error);
+      message.error("An error occurred while fetching data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle change in the number of entries per page
+  const handleEntriesPerPageChange = (value) => {
+    setEntriesPerPage(value);
+    setCurrentPage(1);
+  };
+
+  const handleDownloadExcel = (orderData) => {
+    // Ensure orderData is an array
+    const data = Array.isArray(orderData) ? orderData : [];
+
+    // Check if data is empty
+    if (data.length === 0) {
+      console.error("No order data available for download.");
+      return;
+    }
+
+    // Prepare data for Excel sheet
+    const rows = data.map((item) => ({
+      "Order ID": item.orderId || "N/A",
+      "Order Date": item.orderDate || "N/A",
+      "Grand Total": item.grandTotal || "N/A",
+      "Payment Type": item.paymentType
+        ? item.paymentType === 1
+          ? "COD"
+          : item.paymentType === 2
+            ? "ONLINE"
+            : "Other"
+        : "Other",
+      "Order Status": item.orderStatus
+        ? (() => {
+            return orderStatusMap[item.orderStatus] || "Pending";
+          })()
+        : "N/A",
+    }));
+
+    // Create a new workbook and add data to a worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Order Data");
+
+    // Generate and download the Excel file
+    XLSX.writeFile(workbook, "OrderData.xlsx");
   };
 
   // Define table columns
@@ -288,27 +433,18 @@ const Ordersdetails = () => {
       key: "username",
       align: "center",
     },
-
     {
       title: "Mobile Number",
       dataIndex: "mobilenumber",
       key: "mobilenumber",
       align: "center",
     },
-
     {
       title: "Order Date",
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
     },
-    // {
-    //   title: 'Customer Id',
-    //   dataIndex: 'customerId',
-    //   key: 'customerId',
-    //   render: (text) => text || 'N/A',align:'center'
-    // },
-
     {
       title: "Grand Total",
       dataIndex: "grandTotal",
@@ -322,24 +458,13 @@ const Ordersdetails = () => {
       align: "center",
       render: (type) => (type === 1 ? "COD" : type === 2 ? "ONLINE" : ""),
     },
-
     {
       title: "Order Status",
       dataIndex: "orderStatus",
       key: "orderStatus",
       align: "center",
       render: (status) => {
-        const statusMap = {
-          0: "Incomplete",
-          1: "Order Placed",
-          2: "Order Accepted", // Corrected typo
-          3: "Order Assigned",
-          PickedUp: "Order Picked Up", // Added space for readability
-          4: "Order Delivered",
-          5: "Order Rejected",
-          6: "Order Canceled",
-        };
-        return statusMap[status] || status; // Return original status if not found in map
+        return orderStatusMap[status] || status;
       },
     },
     {
@@ -361,14 +486,14 @@ const Ordersdetails = () => {
                 color: "white",
               }}
               size="small"
-              onClick={() => handleViewClick(order.orderId)} // Call handleViewClick with orderId
+              onClick={() => handleViewClick(order.orderId)}
             >
               View
             </Button>
 
             <Button
               icon={<AiOutlinePrinter />}
-              onClick={() => handleViewClick1(order.orderId)} // Pass orderId to fetch order details and print
+              onClick={() => handleViewClick1(order.orderId)}
               type="link"
               style={{
                 backgroundColor: "#04AA6D",
@@ -386,7 +511,7 @@ const Ordersdetails = () => {
 
           {orderDetails && (
             <Button
-              onClick={handleDownloadPDF} // Download PDF button shown when orderDetails are available
+              onClick={handleDownloadPDF}
               type="link"
               style={{
                 backgroundColor: "#23C6C8",
@@ -401,132 +526,6 @@ const Ordersdetails = () => {
       ),
     },
   ];
-
-  const handleDownloadExcel = (orderData) => {
-    // Ensure orderData is an array
-    const data = Array.isArray(orderData) ? orderData : [];
-
-    // Check if data is empty
-    if (data.length === 0) {
-      console.error("No order data available for download.");
-      return; // Exit the function
-    }
-
-    // Prepare data for Excel sheet
-    const rows = data.map((item) => ({
-      "Order ID": item.orderId || "N/A",
-      "Order Date": item.orderDate || "N/A",
-      "Grand Total": item.grandTotal || "N/A",
-      "Payment Type": item.paymentType
-        ? item.paymentType === 1
-          ? "COD"
-          : item.paymentType === 2
-            ? "ONLINE"
-            : "Other"
-        : "Other",
-      "Order Status": item.orderStatus
-        ? (() => {
-            const statusMap = {
-              0: "Incomplete",
-              1: "Order Placed",
-              2: "Order Accepted", // Corrected typo
-              3: "Order Assigned",
-              PickedUp: "Order Picked Up", // Added space for readability
-              4: "Order Delivered",
-              5: "Order Rejected",
-              6: "Order Canceled",
-            };
-            return statusMap[item.orderStatus] || "Pending";
-          })()
-        : "N/A",
-    }));
-
-    // Create a new workbook and add data to a worksheet
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-
-    // Add the worksheet to the workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Order Data");
-
-    // Generate and download the Excel file
-    XLSX.writeFile(workbook, "OrderData.xlsx");
-  };
-
-  const fetchOrderDetails = async () => {
-   
-
-    // Ensure both dates are selected
-    if (!fromDate || !toDate) {
-      message.error("Please select a valid date range.");
-      return;
-    }
-
-    // Ensure the fromDate is before the toDate
-    if (fromDate.isAfter(toDate)) {
-      message.error("From date cannot be later than To date.");
-      return;
-    }
-
-    const startDate = fromDate.format("YYYY-MM-DD");
-    const endDate = toDate.format("YYYY-MM-DD");
-    const statusValue = orderStatus !== "All" ? orderStatus : undefined;
-
-    try {
-      setLoading(true);
-      const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
-        params: { startDate, endDate, status: statusValue },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      console.log("API Response:", response.data); // Confirm the structure of response data
-
-      if (response.status === 200) {
-        let orders = response.data;
-        const uniqueOrderId = uuidv4();
-        console.log("Generated Unique Order ID:", uniqueOrderId);
-
-        // Filter out orders where testUser is true
-        orders = orders.filter((order) => !order.testUser);
-     
-        if (statusValue) {
-          orders = orders.filter((order) => order.orderStatus === statusValue);
-        }
-
-        setOrderData(orders);
-        setFilteredItems(orders);
-        message.success("Data fetched successfully");
-      } else {
-        message.error("No data found");
-      }
-    } catch (error) {
-      console.error("Error fetching order data:", error);
-      message.error("An error occurred while fetching data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle change in the number of entries per page
-  const handleEntriesPerPageChange = (value) => {
-    setEntriesPerPage(value);
-    setCurrentPage(1);
-  };
-
-  const orderStatusMap = {
-    0: "Incomplete",
-    1: "Order Placed",
-    2: "Order Accepted", // Corrected typo
-    3: "Order Assigned",
-    PickedUp: "Order Picked Up", // Added space for readability
-    4: "Order Delivered",
-    5: "Order Rejected",
-    6: "Order Canceled",
-  };
-
-  const paymentTypeMap = {
-    1: "COD",
-    2: "ONLINE",
-  };
 
   return (
     <AdminPanelLayout>
@@ -585,7 +584,6 @@ const Ordersdetails = () => {
             </Col>
 
             {/* Action Buttons */}
-
             <Col
               xs={24}
               sm={24}
@@ -603,7 +601,7 @@ const Ordersdetails = () => {
               <Button
                 className="text-white w-full sm:w-auto flex items-center justify-center gap-2"
                 style={{ backgroundColor: "#1c84c6" }}
-                onClick={() => handleDownloadExcel(orderData)}
+                onClick={() => handleDownloadExcel(filteredItems)} // Use filteredItems for download
               >
                 <AiOutlineDownload className="text-lg" />
                 Download
@@ -653,10 +651,9 @@ const Ordersdetails = () => {
             pageSize: entriesPerPage,
             onChange: (page) => setCurrentPage(page),
           }}
-          // pagination={false}
         />
-        {/* Modal for Order Details */}
 
+        {/* Modal for Order Details */}
         <Modal
           title={
             <div className="text-lg font-bold text-gray-800">Order Details</div>
@@ -713,11 +710,9 @@ const Ordersdetails = () => {
                         Order Status
                       </td>
                       <td className="border border-gray-300 px-3 py-2">
-                        
-                          {orderDetails?.orderStatus
-                            ? orderStatusMap[orderDetails.orderStatus]
-                            : "N/A"}
-                        
+                        {orderDetails?.orderStatus
+                          ? orderStatusMap[orderDetails.orderStatus]
+                          : "N/A"}
                       </td>
                     </tr>
                     <tr>
