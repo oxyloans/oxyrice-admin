@@ -1,42 +1,40 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import AdminPanelLayoutTest from "./AdminPanel";
-// import "./Barcode.css";
-import { Table, Col, Row, Select, Tag } from "antd";
+import { Table, Col, Row, Select, Tag, Button, message } from "antd";
 import { useParams } from "react-router-dom";
+import { DownloadOutlined } from "@ant-design/icons";
 import BASE_URL from "./Config";
 const { Option } = Select;
 
 const AllInforMationOfBarCode = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
   const { itemId } = useParams();
   const [error, setError] = useState(null);
-  // const [status, setStatus] = useState("GENERATED");
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const [count, setCount] = useState(0); // Added count state
-  const [currentStatus, setCurrentStatus] = useState(""); // Added currentStatus state
-
-  // const handleStatusChange = (value) => setStatus(value);
+  const [count, setCount] = useState(0);
+  const [currentStatus, setCurrentStatus] = useState("");
 
   const fetchData = async () => {
     const accessToken = localStorage.getItem("accessToken");
     setLoading(true);
-    setError(null); // Reset the error state before making a request
+    setError(null);
 
     try {
       const response = await axios.get(
-        `${BASE_URL}/product-service/getBarCodeInfo/${itemId}`, // Corrected string interpolation
+        `${BASE_URL}/product-service/getBarCodeInfo/${itemId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
         }
       );
-      setData(response.data.barCodeResponse); // Get the barcode data specifically
-      setCount(response.data.count); // Set the count
-      setCurrentStatus(response.data.status); // Set the current status
+      setData(response.data.barCodeResponse);
+      setCount(response.data.count);
+      setCurrentStatus(response.data.status);
       setLoading(false);
     } catch (error) {
       setError(error);
@@ -46,7 +44,45 @@ const AllInforMationOfBarCode = () => {
 
   useEffect(() => {
     fetchData();
-  }, []); // If the status changes, fetchData will be called again
+  }, []);
+
+  const handleDownloadBarcode = async (record) => {
+    const accessToken = localStorage.getItem("accessToken");
+    setDownloadLoading(true);
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/product-service/downloadSingleBarcode`,
+        {
+          itemId: record.itemId,
+          barcodeValue: record.barcode,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          responseType: "blob",
+        }
+      );
+
+      // Create a blob URL for the downloaded file
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `barcode.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      message.success(`Barcode ${record.barcode} downloaded successfully`);
+      setDownloadLoading(false);
+    } catch (error) {
+      console.error("Download error:", error);
+      message.error("Failed to download barcode");
+      setDownloadLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -97,6 +133,22 @@ const AllInforMationOfBarCode = () => {
       key: "currentStatus",
       align: "center",
     },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Button
+          type="primary"
+          icon={<DownloadOutlined />}
+          onClick={() => handleDownloadBarcode(record)}
+          loading={downloadLoading}
+          disabled={record.status !== "active"}
+        >
+          Download
+        </Button>
+      ),
+    },
   ];
 
   return (
@@ -109,47 +161,7 @@ const AllInforMationOfBarCode = () => {
             <p>{count}</p>
           </div>
         </Col>
-        {/* <Col xs={24} sm={12} md={6}>
-          <div className="card">
-            <h3>Status</h3>
-            <p>{currentStatus}</p>
-          </div>
-        </Col> */}
       </Row>
-
-      {/* <Row justify="start" align="middle" className="mb-8 gap-4">
-   
-        <Col xs={24} sm={12} md={6} className="flex items-center">
-          <Select
-            className="w-full"
-            value={status}
-            onChange={handleStatusChange}
-            style={{
-              height: "40px", 
-            }}
-          >
-            <Option value="GENERATED">GENERATED</Option>
-            <Option value="ASSIGN">ASSIGN</Option>
-            <Option value="DELIVERED">DELIVERED</Option>
-            <Option value="CANCELED">CANCELED</Option>
-          </Select>
-        </Col>
-
-        {/* Button to Get Data */}
-      {/* <Col xs={24} sm={12} md={6} className="flex items-center">
-          <Button
-            className="text-white w-full sm:w-auto"
-            style={{
-              backgroundColor: "#1AB394",
-              height: "40px", 
-            }}
-            onClick={fetchData}
-            loading={loading}
-          >
-            Get Data
-          </Button>
-        </Col> */}
-      {/* </Row>  */}
 
       {/* Display Error */}
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
