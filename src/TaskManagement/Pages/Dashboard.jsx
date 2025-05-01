@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PieChart,
   Pie,
@@ -19,6 +20,7 @@ import {
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
 import BASE_URL from "../../AdminPages/Config";
 
+
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [leaveCount, setLeaveCount] = useState(0);
@@ -26,7 +28,7 @@ export default function Dashboard() {
   // eslint-disable-next-line no-undef
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
+const navigate = useNavigate();
   useEffect(() => {
     fetchDashboardData();
     fetchLeavesData();
@@ -153,11 +155,15 @@ export default function Dashboard() {
             {isRefreshing ? "Refreshing..." : "Refresh Dashboard"}
           </button>
         </div>
-
-        {/* Summary Cards */}
+        {/* Cards Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Registered Users */}
-          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 transition-transform hover:scale-102 hover:shadow-lg">
+          <div
+            onClick={() =>
+              navigate("/taskmanagement/employee_registered_users")
+            }
+            className="cursor-pointer bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 transition-transform hover:scale-102 hover:shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
@@ -174,7 +180,10 @@ export default function Dashboard() {
           </div>
 
           {/* Employees on Leave */}
-          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-500 transition-transform hover:scale-102 hover:shadow-lg">
+          <div
+            onClick={() => navigate("/taskmanagement/employeeleaves")}
+            className="cursor-pointer bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-500 transition-transform hover:scale-102 hover:shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
@@ -191,7 +200,10 @@ export default function Dashboard() {
           </div>
 
           {/* POD */}
-          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 transition-transform hover:scale-102 hover:shadow-lg">
+          <div
+            onClick={() => navigate("/taskmanagement/planoftheday")}
+            className="cursor-pointer bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 transition-transform hover:scale-102 hover:shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
@@ -217,7 +229,10 @@ export default function Dashboard() {
           </div>
 
           {/* EOD */}
-          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500 transition-transform hover:scale-102 hover:shadow-lg">
+          <div
+            onClick={() => navigate("/taskmanagement/endoftheday")}
+            className="cursor-pointer bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500 transition-transform hover:scale-102 hover:shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
@@ -242,7 +257,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
+        
         {/* Remaining Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-md">
@@ -301,7 +316,6 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-
         {/* Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded-xl shadow-md overflow-hidden">
