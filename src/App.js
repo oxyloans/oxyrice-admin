@@ -73,6 +73,7 @@ import TaskManagementByDate from "./TaskManagement/Pages/TaskManagementByDate";
 import Dashboard from "./TaskManagement/Pages/Dashboard";
 import EmployeeRegisteredUsers from "./TaskManagement/Pages/EmployeeRegisteredUsers";
 import EndOfTheDay from "./TaskManagement/Pages/EndOfTheDay";
+import TodayLeaves from "./TaskManagement/Pages/TodayLeaves ";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -105,6 +106,7 @@ function App() {
         <Route path="/taskmanagement/tasklists" element={<TasksList />} />
         <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
         <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
+        <Route path="/taskmanagement/employeeleaves" element={<TodayLeaves />} />
         <Route
           path="/taskmanagement/employee_registered_users"
           element={<EmployeeRegisteredUsers />}

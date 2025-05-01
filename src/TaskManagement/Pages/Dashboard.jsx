@@ -14,12 +14,14 @@ import {
   RefreshCw,
   PieChart as PieChartIcon,
   BarChart,
+  Home,
 } from "lucide-react";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
 import BASE_URL from "../../AdminPages/Config";
 
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
+  const [leaveCount, setLeaveCount] = useState(0);
   const [loading, setLoading] = useState(true);
   // eslint-disable-next-line no-undef
   const [error, setError] = useState(null);
@@ -27,6 +29,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchLeavesData();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -52,10 +55,39 @@ export default function Dashboard() {
     }
   };
 
+  const fetchLeavesData = async () => {
+    try {
+      // Get today's date in format YYYY-MM-DD
+      const today = new Date();
+      const formattedDate = today.toISOString().split("T")[0];
+
+      const response = await fetch(
+        `${BASE_URL}/user-service/write/leaves/today?specificDate=${formattedDate}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch leaves data");
+      }
+
+      const data = await response.json();
+      setLeaveCount(data.count || 0);
+    } catch (err) {
+      console.error("Error fetching leaves data:", err);
+      // Don't set general error state to avoid blocking dashboard display
+    }
+  };
+
+  const refreshAllData = () => {
+    fetchDashboardData();
+    fetchLeavesData();
+  };
+
   if (loading || !dashboardData) {
     return (
       <TaskAdminPanelLayout>
-        <div className="p-6 text-center text-gray-600">Loading Dashboard...</div>
+        <div className="p-6 text-center text-gray-600">
+          Loading Dashboard...
+        </div>
       </TaskAdminPanelLayout>
     );
   }
@@ -87,11 +119,13 @@ export default function Dashboard() {
   ];
 
   const podPercentage = (
-    (dashboardData.podPostedEmployeesCount / dashboardData.totalRegisteredEmployees) *
+    (dashboardData.podPostedEmployeesCount /
+      dashboardData.totalRegisteredEmployees) *
     100
   ).toFixed(0);
   const eodPercentage = (
-    (dashboardData.eodPostedEmployeesCount / dashboardData.totalRegisteredEmployees) *
+    (dashboardData.eodPostedEmployeesCount /
+      dashboardData.totalRegisteredEmployees) *
     100
   ).toFixed(0);
 
@@ -108,7 +142,7 @@ export default function Dashboard() {
             </p>
           </div>
           <button
-            onClick={fetchDashboardData}
+            onClick={refreshAllData}
             disabled={isRefreshing}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2 transition-all shadow-md"
           >
@@ -121,12 +155,14 @@ export default function Dashboard() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Registered Users */}
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Total Registered Users</h3>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Total Registered Users
+                </h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.totalRegisteredEmployees}
                 </p>
@@ -137,22 +173,46 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Employees on Leave */}
+          <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-purple-500 transition-transform hover:scale-102 hover:shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Employees on Leave Today
+                </h3>
+                <p className="text-3xl font-bold text-gray-800 mt-2">
+                  {leaveCount}
+                </p>
+              </div>
+              <div className="bg-purple-100 p-3 rounded-full">
+                <Home size={28} className="text-purple-600" />
+              </div>
+            </div>
+          </div>
+
           {/* POD */}
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">Plan Of The Day</h3>
+                <h3 className="text-sm font-medium text-gray-500">
+                  Plan Of The Day
+                </h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.podPostedEmployeesCount}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">{podPercentage}% Completion Rate</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {podPercentage}% Completion Rate
+                </p>
               </div>
               <div className="bg-green-100 p-3 rounded-full">
                 <Calendar size={28} className="text-green-600" />
               </div>
             </div>
             <div className="mt-4 bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-green-500 h-full" style={{ width: `${podPercentage}%` }}></div>
+              <div
+                className="bg-green-500 h-full"
+                style={{ width: `${podPercentage}%` }}
+              ></div>
             </div>
           </div>
 
@@ -160,18 +220,25 @@ export default function Dashboard() {
           <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-orange-500 transition-transform hover:scale-102 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-medium text-gray-500">End Of The Day</h3>
+                <h3 className="text-sm font-medium text-gray-500">
+                  End Of The Day
+                </h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {dashboardData.eodPostedEmployeesCount}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">{eodPercentage}% Completion Rate</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {eodPercentage}% Completion Rate
+                </p>
               </div>
               <div className="bg-orange-100 p-3 rounded-full">
                 <Calendar size={28} className="text-orange-600" />
               </div>
             </div>
             <div className="mt-4 bg-gray-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-orange-500 h-full" style={{ width: `${eodPercentage}%` }}></div>
+              <div
+                className="bg-orange-500 h-full"
+                style={{ width: `${eodPercentage}%` }}
+              ></div>
             </div>
           </div>
         </div>
@@ -265,7 +332,12 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} users`, ""]} />
-                  <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    align="center"
+                    iconType="circle"
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -299,7 +371,12 @@ export default function Dashboard() {
                     ))}
                   </Pie>
                   <Tooltip formatter={(value) => [`${value} users`, ""]} />
-                  <Legend layout="horizontal" verticalAlign="bottom" align="center" iconType="circle" />
+                  <Legend
+                    layout="horizontal"
+                    verticalAlign="bottom"
+                    align="center"
+                    iconType="circle"
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>

@@ -57,7 +57,7 @@ const TaskAdminPanelLayout = ({ children }) => {
       key: "Task Creation",
       label: "Task Creation",
 
-     icon: <FaHandsHelping />,  
+      icon: <FaHandsHelping />,
       link: "/taskmanagement/taskcreation",
     },
     {
@@ -77,7 +77,12 @@ const TaskAdminPanelLayout = ({ children }) => {
         },
       ],
     },
-
+    {
+      key: "Employee Leaves Status",
+      label: "Employee Leaves Status",
+      icon: <FaSlideshare />,
+      link: "/taskmanagement/employeeleaves",
+    },
     {
       key: "Assigned Tasks List",
       label: "Assigned Tasks List",
