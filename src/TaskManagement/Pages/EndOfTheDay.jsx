@@ -66,7 +66,7 @@ const buttonStyle = {
 };
 
 const EndOfTheDay = () => {
-  // State variables - Set status to static "PENDING" value
+  // State variables - Set status to static "COMPLETED" value
   const status = "COMPLETED"; // Static status value
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -97,6 +97,70 @@ const EndOfTheDay = () => {
       setUserId(storedUserId);
     }
   }, []);
+
+  // API call to fetch tasks by date
+  const fetchTasksByDate = useCallback(async () => {
+    if (!selectedDate) {
+      showNotification("warning", "Missing Date", "Please select a date.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const formattedDate = selectedDate.format("YYYY-MM-DD");
+
+      const response = await axios.post(
+        `${BASE_URL}/user-service/write/get-task-by-date`,
+        {
+          taskStatus: status,
+          specificDate: formattedDate,
+        },
+        {
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setTasks(response.data);
+
+      // Update task statistics based on the fetched data
+      const taskCount = response.data.length || 0;
+
+      // Update date task stats - only show plan of the day count
+      setDateTaskStats({
+        pending: taskCount,
+        total: taskCount,
+        date: selectedDate.toDate(),
+      });
+
+      if (response.data.length === 0) {
+        showNotification(
+          "info",
+          "No Tasks Found",
+          `No completed tasks found for ${formattedDate}.`,
+          <FileSearchOutlined style={{ color: "#1890ff" }} />
+        );
+      } else {
+        showNotification(
+          "success",
+          "Tasks Found",
+          `Found ${response.data.length} completed tasks for ${formattedDate}.`,
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching tasks by date:", error);
+      showNotification(
+        "error",
+        "Fetch Failed",
+        "Failed to fetch tasks. Please try again later."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedDate]);
 
   // Sort and filter tasks
   useEffect(() => {
@@ -156,6 +220,11 @@ const EndOfTheDay = () => {
     }
   }, [tasks, sortField, sortOrder, searchText]);
 
+  // Automatically fetch tasks when selectedDate changes
+  useEffect(() => {
+    fetchTasksByDate();
+  }, [selectedDate, fetchTasksByDate]);
+
   // Notification helpers
   const showNotification = (type, message, description, icon) => {
     notification[type]({
@@ -167,125 +236,12 @@ const EndOfTheDay = () => {
     });
   };
 
-  // API call to fetch tasks by date
-  const fetchTasksByDate = useCallback(async () => {
-    if (!selectedDate) {
-      showNotification("warning", "Missing Date", "Please select a date.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const formattedDate = selectedDate.format("YYYY-MM-DD");
-
-      const response = await axios.post(
-        `${BASE_URL}/user-service/write/get-task-by-date`,
-        {
-          taskStatus: status,
-          specificDate: formattedDate,
-        },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      setTasks(response.data);
-
-      // Update task statistics based on the fetched data
-      const taskCount = response.data.length || 0;
-
-      // Update date task stats - only show plan of the day count
-      setDateTaskStats({
-        pending: taskCount,
-        total: taskCount,
-        date: selectedDate.toDate(),
-      });
-
-      if (response.data.length === 0) {
-        showNotification(
-          "info",
-          "No Tasks Found",
-          `No pending tasks found for ${formattedDate}.`,
-          <FileSearchOutlined style={{ color: "#1890ff" }} />
-        );
-      } else {
-        showNotification(
-          "success",
-          "Tasks Found",
-          `Found ${response.data.length} pending tasks for ${formattedDate}.`,
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching tasks by date:", error);
-      showNotification(
-        "error",
-        "Fetch Failed",
-        "Failed to fetch tasks. Please try again later."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedDate]);
-
-  // Admin comment submission
-  //   const handleCommentSubmit = async () => {
-  //     try {
-  //       const values = await form.validateFields();
-  //       setSubmittingComment(true);
-
-  //       // Prepare the payload for the API
-  //       const payload = {
-  //         adminDescription: values.adminComment,
-  //         id: currentTask.id,
-  //         taskStatus: "PENDING", // Only for PENDING tasks
-  //         userId: currentTask.userId,
-  //       };
-
-  //       // Call the API to update the task with admin comments
-  //       const response = await axios.patch(
-  //         `${BASE_URL}/user-service/write/userTaskUpdate`,
-  //         payload,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //         }
-  //       );
-
-  //       if (response.data) {
-  //         showNotification(
-  //           "success",
-  //           "Feedback Added",
-  //           "Your feedback has been submitted successfully.",
-  //           <CheckCircleOutlined style={{ color: "#52c41a" }} />
-  //         );
-
-  //         // Refresh the task list
-  //         fetchTasksByDate();
-
-  //         // Close the modal
-  //         setCommentModalVisible(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error submitting comment:", error);
-  //       showNotification(
-  //         "error",
-  //         "Submission Failed",
-  //         "Failed to add feedback. Please try again."
-  //       );
-  //     } finally {
-  //       setSubmittingComment(false);
-  //     }
-  //   };
-
   // Event handlers
   const handleDateChange = (date) => {
     setSelectedDate(date || dayjs()); // Fallback to current date if null
+    // No need to call fetchTasksByDate() here as it will be triggered by the useEffect
   };
+
   const handleSortChange = (field) => {
     // If clicking the same field, toggle order. Otherwise, set new field with descending order
     if (field === sortField) {
@@ -307,8 +263,6 @@ const EndOfTheDay = () => {
   };
 
   // Helper functions
-  // Helper functions
-  // Helper functions
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
 
@@ -320,6 +274,7 @@ const EndOfTheDay = () => {
       return dateString;
     }
   };
+
   const renderPendingResponses = (responses) => {
     if (!responses || responses.length === 0) return null;
 
@@ -454,40 +409,6 @@ const EndOfTheDay = () => {
         adminComments = adminResponseWithDesc.adminDescription;
       }
     }
-
-    // return (
-    //   <div className="mt-4 bg-blue-50 p-4 rounded-lg border">
-    //     <div className="flex justify-between items-center mb-2">
-    //       <Text strong className="text-blue-700">
-    //         <CommentOutlined className="mr-2" />
-    //         Admin Comments
-    //       </Text>
-    //       <Button
-    //         type="primary"
-    //         size="small"
-    //         icon={<MessageOutlined />}
-    //         onClick={() => openCommentModal(task)}
-    //         className="bg-blue-500 hover:bg-blue-600"
-    //       >
-    //         Add Comment
-    //       </Button>
-    //     </div>
-
-    //     {adminComments ? (
-    //       <div className="bg-white p-3 rounded-md border border-blue-100">
-    //         <Text className="whitespace-pre-wrap text-gray-700">
-    //           {adminComments}
-    //         </Text>
-    //       </div>
-    //     ) : (
-    //       <div className="bg-white p-3 rounded-md border border-blue-100 text-center">
-    //         <Text className="text-gray-500">
-    //           No admin comments yet. Click "Add Comment" to provide feedback.
-    //         </Text>
-    //       </div>
-    //     )}
-    //   </div>
-    // );
   };
 
   const renderTaskCard = (task) => (
@@ -565,9 +486,6 @@ const EndOfTheDay = () => {
         </div>
       </div>
 
-      {/* Render admin comments box for tasks */}
-      {renderAdminCommentsBox(task)}
-
       {renderPendingResponses(task.pendingUserTaskResponse)}
 
       <Divider className="my-3" />
@@ -587,93 +505,6 @@ const EndOfTheDay = () => {
       </div>
     </Card>
   );
-
-  //   const renderCommentModal = () => (
-  //     <Modal
-  //       title={
-  //         <div className="flex items-center text-blue-600">
-  //           <CommentOutlined className="mr-2" />
-  //           <span>Add Admin Feedback</span>
-  //         </div>
-  //       }
-  //       open={commentModalVisible}
-  //       onCancel={() => setCommentModalVisible(false)}
-  //       footer={[
-  //         <Button key="cancel" onClick={() => setCommentModalVisible(false)}>
-  //           Cancel
-  //         </Button>,
-  //         <Button
-  //           key="submit"
-  //           type="primary"
-  //           loading={submittingComment}
-  //           onClick={handleCommentSubmit}
-  //           icon={<SendOutlined />}
-  //           className="bg-blue-500 hover:bg-blue-600"
-  //         >
-  //           Submit Feedback
-  //         </Button>,
-  //       ]}
-  //       width={600}
-  //     >
-  //       <div className="mb-4 bg-blue-50 p-3 rounded-md">
-  //         <div className="flex items-center mb-2">
-  //           <UserOutlined className="mr-2 text-blue-500" />
-  //           <Text strong>{currentTask?.taskAssignTo || "User"}'s Details</Text>
-  //           {currentTask?.taskAssignedBy && (
-  //             <Tag color="blue" className="ml-2">
-  //               <TeamOutlined className="mr-1" />
-  //               Assigned by: {currentTask.taskAssignedBy}
-  //             </Tag>
-  //           )}
-  //         </div>
-
-  //         {currentTask && (
-  //           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-  //             <div>
-  //               <Text className="text-gray-600">Task ID:</Text>
-  //               <Text className="ml-2 text-gray-800">
-  //                 #{currentTask.id.substring(currentTask.id.length - 4)}
-  //               </Text>
-  //             </div>
-  //             <div>
-  //               <Text className="text-gray-600">Employee Name:</Text>
-  //               <Text className="ml-2 text-gray-800">
-  //                 {currentTask.taskAssignedBy || "N/A"}
-  //               </Text>
-  //             </div>
-  //           </div>
-  //         )}
-  //       </div>
-
-  //       {currentTask && currentTask.planOftheDay && (
-  //         <div className="mb-4 bg-gray-50 p-3 rounded-md">
-  //           <Text className="text-gray-600 block mb-1">Plan of the Day:</Text>
-  //           <Text className="text-gray-800 block">
-  //             {currentTask.planOftheDay}
-  //           </Text>
-  //         </div>
-  //       )}
-
-  //       <Form form={form} layout="vertical">
-  //         <Form.Item
-  //           name="adminComment"
-  //           label="Admin Feedback"
-  //           rules={[
-  //             { required: true, message: "Please enter your feedback" },
-  //             { min: 2, message: "Feedback must be at least 2 characters" },
-  //           ]}
-  //         >
-  //           <TextArea
-  //             rows={4}
-  //             placeholder="Enter your feedback or instructions for the task..."
-  //             maxLength={500}
-  //             showCount
-  //             autoFocus
-  //           />
-  //         </Form.Item>
-  //       </Form>
-  //     </Modal>
-  //   );
 
   // Component to render date-specific task statistics
   const renderDateTaskStatistics = () => (
@@ -775,16 +606,7 @@ const EndOfTheDay = () => {
                     allowClear={false} // Prevent clearing the date
                   />
                 </div>
-                <div>
-                  <Button
-                    type="primary"
-                    onClick={fetchTasksByDate}
-                    className="bg-[#008CBA] text-white hover:bg-[#008CBA] shadow-sm"
-                    style={buttonStyle}
-                  >
-                    Search
-                  </Button>
-                </div>
+                {/* Search button removed as fetch is now automatic on date change */}
               </div>
             </Card>
 
@@ -912,7 +734,7 @@ const EndOfTheDay = () => {
                       No tasks found
                     </Text>
                     <Text className="text-gray-400 text-sm">
-                      Use the filters above to search for tasks
+                      Select a different date to view tasks
                     </Text>
                   </div>
                 }
@@ -922,9 +744,6 @@ const EndOfTheDay = () => {
           </div>
         </Card>
       </div>
-
-      {/* Admin Comment Modal */}
-      {/* {renderCommentModal()} */}
     </TaskAdminPanelLayout>
   );
 };

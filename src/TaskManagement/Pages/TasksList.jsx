@@ -10,41 +10,35 @@ import {
   Typography,
   Input,
   Badge,
-  Dropdown,
-  Menu,
-  Row,
-  Col,
   Modal,
   Form,
   Select,
   Drawer,
+  Tooltip,
+  Row,
+  Col,
 } from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
   DownloadOutlined,
   PlusOutlined,
-  EllipsisOutlined,
-  EyeOutlined,
   EditOutlined,
-  DeleteOutlined,
-  MenuOutlined,
-  SaveOutlined,
-  ClockCircleOutlined,
-  CloseOutlined,
-  UserOutlined,
-  CheckCircleOutlined,
-  TeamOutlined,
-  ExclamationCircleOutlined,
-  PlusCircleOutlined,
   LinkOutlined,
   CommentOutlined,
+  UserOutlined,
+  TeamOutlined,
+  SaveOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  PlusCircleOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
@@ -60,9 +54,9 @@ const TasksList = () => {
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     isMobile: window.innerWidth < 768,
+    isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
   });
 
-  // Updated available assignees with the new names
   const availableAssignees = [
     { value: "GRISHMA", label: "Grishma" },
     { value: "GUNA", label: "Guna" },
@@ -110,6 +104,7 @@ const TasksList = () => {
     { value: "CHANDU", label: "Chandu" },
     { value: "SWATHI", label: "Swathi" },
     { value: "SHANTHI", label: "Shanthi" },
+    { value: "VISWA", label: "Viswa" },
   ];
 
   const creatorOptions = [{ value: "ADMIN", label: "Admin" }];
@@ -117,11 +112,11 @@ const TasksList = () => {
   useEffect(() => {
     fetchTasks();
 
-    // Add responsive window resize handler
     const handleResize = () => {
       setScreenSize({
         width: window.innerWidth,
         isMobile: window.innerWidth < 768,
+        isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
       });
     };
 
@@ -135,23 +130,19 @@ const TasksList = () => {
       const response = await axios.get(
         `${BASE_URL}/user-service/write/getTaskData`
       );
-
       if (Array.isArray(response.data)) {
         setTasks(response.data);
         message.success("Tasks loaded successfully");
       } else {
         message.error("Unexpected response format");
-        console.error("Unexpected response format:", response.data);
       }
     } catch (error) {
       message.error("Failed to fetch tasks");
-      console.error("Error fetching tasks:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter tasks based on search text - updated to include comments
   const filteredTasks = tasks.filter(
     (task) =>
       task.taskcontent?.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -160,43 +151,21 @@ const TasksList = () => {
       task.comments?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // Define a common style for text alignment in both header and body cells
-  const centerStyle = {
-    textAlign: "center",
-  };
-
-  // Helper function to parse assignees from different formats
   const parseAssignees = (assigneesData) => {
     if (!assigneesData) return [];
-
-    // Handle if assignees is a string (comma separated)
-    if (typeof assigneesData === "string") {
-      // Split by comma and trim whitespace
-      return assigneesData.split(",").map((item) => item.trim());
-    }
-    // Handle if it's already an array
-    else if (Array.isArray(assigneesData)) {
-      return assigneesData;
-    }
-
-    // Fallback
-    return [];
+    return typeof assigneesData === "string"
+      ? assigneesData.split(",").map((item) => item.trim())
+      : Array.isArray(assigneesData)
+        ? assigneesData
+        : [];
   };
 
   const handleEditTask = (task) => {
     setCurrentTask(task);
+    const taskAssignees = parseAssignees(
+      task.taskassingnedto || task.taskassingnedby
+    );
 
-    // Determine which field to use for assigned users
-    // First try taskassingnedto, if that's empty, try taskassingnedby
-    const assigneesSource = task.taskassingnedto || task.taskassingnedby || "";
-
-    // Parse the assigned users
-    const taskAssignees = parseAssignees(assigneesSource);
-
-    console.log("Task to edit:", task);
-    console.log("Parsed assignees:", taskAssignees);
-
-    // Initialize form with current task values
     editForm.setFieldsValue({
       taskcontent: task.taskcontent,
       taskcreatedby: task.createdby,
@@ -205,15 +174,8 @@ const TasksList = () => {
       link: task.link || "",
     });
 
-    // Log the form values after setting them
-    console.log("Form values set:", editForm.getFieldsValue());
-
-    // Open modal on larger screens, drawer on mobile
-    if (screenSize.isMobile) {
-      setEditDrawerVisible(true);
-    } else {
-      setEditModalVisible(true);
-    }
+    setEditDrawerVisible(screenSize.isMobile);
+    setEditModalVisible(!screenSize.isMobile);
   };
 
   const handleUpdateTask = async () => {
@@ -221,15 +183,11 @@ const TasksList = () => {
       const values = await editForm.validateFields();
       setUpdateLoading(true);
 
-      console.log("Submitting values:", values);
-
-      // Make API call to update task with the new array format for assignees
-      const response = await axios.patch(
+      await axios.patch(
         `${BASE_URL}/user-service/write/updateTask/${currentTask.id}`,
         {
           taskcontent: values.taskcontent,
           taskcreatedby: values.taskcreatedby,
-          // Send taskassingnedto as an array
           taskassingnedto: values.taskassingnedto,
           admindocumentid: currentTask.admindocumentid || "string",
           comments: values.comments,
@@ -237,117 +195,93 @@ const TasksList = () => {
         }
       );
 
-      // Update local state
-      const updatedTasks = tasks.map((task) =>
-        task.id === currentTask.id
-          ? {
-              ...task,
-              taskcontent: values.taskcontent,
-              createdby: values.taskcreatedby,
-              taskassingnedby: values.taskassingnedto.join(", "), // For display purposes
-              taskassingnedto: values.taskassingnedto, // Keep the array format
-              comments: values.comments,
-              link: values.link,
-            }
-          : task
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === currentTask.id
+            ? {
+                ...task,
+                taskcontent: values.taskcontent,
+                createdby: values.taskcreatedby,
+                taskassingnedby: values.taskassingnedto.join(", "),
+                taskassingnedto: values.taskassingnedto,
+                comments: values.comments,
+                link: values.link,
+              }
+            : task
+        )
       );
 
-      setTasks(updatedTasks);
       message.success("Task updated successfully");
-
-      // Close modals
       setEditModalVisible(false);
       setEditDrawerVisible(false);
     } catch (error) {
-      console.error("Error updating task:", error);
-      message.error(
-        "Failed to update task: " +
-          (error.response?.data?.message || error.message)
-      );
+      message.error("Failed to update task");
     } finally {
       setUpdateLoading(false);
     }
   };
 
-  // Function to render assigned team members as tags
   const renderAssignedMembers = (assignees) => {
-    if (!assignees) return <span>Not assigned</span>;
-
-    // Handle both string and array formats
-    let assigneeList = parseAssignees(assignees);
-
+    const assigneeList = parseAssignees(assignees);
     return (
-      <div className="flex flex-wrap gap-1 justify-center">
+      <Space wrap size={4} className="justify-center">
         {assigneeList.map((assignee, index) => (
-          <Tag key={index} color="blue">
+          <Tag key={index} color="blue" className="m-0">
             {assignee}
           </Tag>
         ))}
-      </div>
+        {!assigneeList.length && <Text type="secondary">Not assigned</Text>}
+      </Space>
     );
   };
 
-  // Function to render link with proper formatting and validation
   const renderLink = (link) => {
-    if (!link) return <span className="text-gray-400">No link provided</span>;
-
-    // Check if link has http/https prefix, if not add it
+    if (!link) return <Text type="secondary">No link</Text>;
     const formattedLink = link.startsWith("http") ? link : `https://${link}`;
-
     return (
-      <div className="flex items-center justify-center">
-        <a
-          href={formattedLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:text-blue-700 flex items-center"
-        >
-          <LinkOutlined className="mr-1" />
-          {link.length > 30 ? link.substring(0, 27) + "..." : link}
-        </a>
-      </div>
+      <a
+        href={formattedLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center text-blue-500 hover:text-blue-700"
+      >
+        <LinkOutlined className="mr-1" />
+        <span className="truncate max-w-[120px]">{link}</span>
+      </a>
     );
   };
 
-  // Function to render comments with proper styling
   const renderComments = (comments) => {
-    if (!comments) return <span className="text-gray-400">No comments</span>;
-
+    if (!comments) return <Text type="secondary">No comments</Text>;
     return (
-      <div className="max-w-xs mx-auto overflow-hidden">
-        <div className="flex items-center">
+      <Tooltip title={comments}>
+        <div className="flex items-center max-w-[150px]">
           <CommentOutlined className="mr-1 text-gray-500" />
-          <span className="text-gray-700">{comments}</span>
+          <span className="truncate">{comments}</span>
         </div>
-      </div>
+      </Tooltip>
     );
   };
 
-  // Responsive columns configuration
   const getColumns = () => {
     const baseColumns = [
       {
         title: "S.No",
         key: "serialNumber",
-        width: screenSize.isMobile ? 50 : 80,
+        width: 60,
         render: (_, __, index) => index + 1,
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
       },
       {
-        title: "Task Content",
+        title: "Task",
         dataIndex: "taskcontent",
         key: "taskcontent",
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: screenSize.isMobile ? 120 : 200,
         render: (content) => (
-          <div className="max-w-xs mx-auto overflow-hidden text-ellipsis">
-            {content}
-          </div>
+          <Tooltip title={content}>
+            <span className="truncate block max-w-[180px]">{content}</span>
+          </Tooltip>
         ),
       },
       {
@@ -355,9 +289,7 @@ const TasksList = () => {
         dataIndex: "comments",
         key: "comments",
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: screenSize.isMobile ? 100 : 150,
         render: renderComments,
       },
       {
@@ -365,9 +297,7 @@ const TasksList = () => {
         dataIndex: "link",
         key: "link",
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: screenSize.isMobile ? 100 : 120,
         render: renderLink,
       },
       {
@@ -375,26 +305,20 @@ const TasksList = () => {
         dataIndex: "priority",
         key: "priority",
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: 100,
         render: (priority) => (
-          <Tag color={priority === "HIGH" ? "blue" : "green"}>
-            {priority || ""}
+          <Tag color={priority === "HIGH" ? "red" : "green"}>
+            {priority || "LOW"}
           </Tag>
         ),
       },
-      // Task Status column updated to display text values for numeric codes and add visual styling
       {
-        title: "Task Status",
+        title: "Status",
         dataIndex: "status",
         key: "status",
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: 120,
         render: (status) => {
-          // Map numeric status codes to their text values and visual properties
           const statusMap = {
             1: { text: "CREATED", color: "blue", icon: <PlusCircleOutlined /> },
             2: {
@@ -412,7 +336,6 @@ const TasksList = () => {
               color: "purple",
               icon: <CheckCircleOutlined />,
             },
-            // Handle the case when status directly contains text values
             CREATED: {
               text: "CREATED",
               color: "blue",
@@ -435,7 +358,6 @@ const TasksList = () => {
             },
           };
 
-          // Get the appropriate status object or use a default one
           const statusObj = statusMap[status] || {
             text: status || "Unknown",
             color: "default",
@@ -443,12 +365,9 @@ const TasksList = () => {
           };
 
           return (
-            <Tag
-              color={statusObj.color}
-              className="text-xs sm:text-sm py-1 px-2 flex items-center justify-center gap-1"
-            >
+            <Tag color={statusObj.color} className="flex items-center gap-1">
               {statusObj.icon}
-              <span>{statusObj.text}</span>
+              {statusObj.text}
             </Tag>
           );
         },
@@ -458,60 +377,54 @@ const TasksList = () => {
           { text: "PENDING", value: "3" },
           { text: "COMPLETED", value: "4" },
         ],
-        onFilter: (value, record) => {
-          // Handle both numeric and text status values
-          return (
-            record.status === value ||
-            record.status === value.toString() ||
-            (value === "1" && record.status === "CREATED") ||
-            (value === "2" && record.status === "ACCEPTED") ||
-            (value === "3" && record.status === "PENDING") ||
-            (value === "4" && record.status === "COMPLETED")
-          );
-        },
+        onFilter: (value, record) =>
+          record.status === value ||
+          record.status === value.toString() ||
+          (value === "1" && record.status === "CREATED") ||
+          (value === "2" && record.status === "ACCEPTED") ||
+          (value === "3" && record.status === "PENDING") ||
+          (value === "4" && record.status === "COMPLETED"),
       },
-      // New columns for Comments and Link
-
       {
         title: "Actions",
         key: "actions",
         align: "center",
-        width: screenSize.isMobile ? 80 : 100,
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: 80,
         render: (_, record) => (
-          <Space size="small" wrap={screenSize.isMobile}>
-            <Button
-              type="default"
-              icon={<EditOutlined />}
-              size="small"
-              className="flex items-center justify-center"
-              onClick={() => handleEditTask(record)}
-              title="Edit Task"
-            >
-              Edit
-            </Button>
-          </Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEditTask(record)}
+            title="Edit Task"
+          />
         ),
       },
     ];
 
-    // Add extra columns for larger screens
     if (!screenSize.isMobile) {
       baseColumns.splice(1, 0, {
-        title: "Task ID",
+        title: "ID",
         dataIndex: "id",
         key: "id",
-        ellipsis: true,
         align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: 80,
         render: (id) => (
-          <span className="text-gray-500 font-mono text-xs">
+          <Text type="secondary" className="font-mono text-xs">
             #{id?.substring(id.length - 4) || "N/A"}
-          </span>
+          </Text>
+        ),
+      });
+
+      baseColumns.splice(3, 0, {
+        title: "Created By",
+        dataIndex: "createdby",
+        key: "createdby",
+        align: "center",
+        width: 120,
+        render: (createdby) => (
+          <Tag color={createdby === "ADMIN" ? "blue" : "green"}>
+            {createdby || "N/A"}
+          </Tag>
         ),
       });
 
@@ -520,143 +433,83 @@ const TasksList = () => {
         dataIndex: "taskassingnedto",
         key: "taskassingnedto",
         align: "center",
-        width: 180, // Restrict column width
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
+        width: 150,
         render: (taskassingnedto, record) => {
           const assignees = parseAssignees(
             taskassingnedto || record.taskassingnedby
           );
-
-          // Show only first 2 names with count indicator if there are more
           if (assignees.length > 2) {
             return (
-              <div className="flex flex-col items-center">
-                <div className="flex flex-wrap gap-1 justify-center">
+              <Space direction="vertical" size={4} align="center">
+                <Space wrap size={4}>
                   <Tag color="blue">{assignees[0]}</Tag>
                   <Tag color="blue">{assignees[1]}</Tag>
-                </div>
+                </Space>
                 <Badge
                   count={`+${assignees.length - 2}`}
                   style={{ backgroundColor: "#1890ff" }}
                   title={assignees.slice(2).join(", ")}
                 />
-              </div>
+              </Space>
             );
           }
-
-          // Show all if 2 or fewer assignees
-          return (
-            <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
-              {assignees.length > 0 ? (
-                assignees.map((assignee, index) => (
-                  <Tag key={index} color="blue">
-                    {assignee}
-                  </Tag>
-                ))
-              ) : (
-                <span>Not assigned</span>
-              )}
-            </div>
+          return renderAssignedMembers(
+            taskassingnedto || record.taskassingnedby
           );
         },
-      });
-      baseColumns.splice(3, 0, {
-        title: "Created By",
-        dataIndex: "createdby",
-        key: "createdby",
-        align: "center",
-        onHeaderCell: () => ({
-          style: centerStyle,
-        }),
-        render: (createdby) => (
-          <Tag color={createdby === "ADMIN" ? "blue" : "green"}>
-            {createdby || "N/A"}
-          </Tag>
-        ),
       });
     }
 
     return baseColumns;
   };
 
-  // Expandable row config for mobile view to show additional information
   const expandableConfig = screenSize.isMobile
     ? {
         expandedRowRender: (record) => (
-          <div className="p-3 bg-gray-50">
-            <p>
-              <strong>Task ID:</strong>{" "}
-              <span className="text-gray-500 font-mono text-xs">
+          <div className="p-3 bg-gray-50 space-y-2">
+            <div>
+              <Text strong>Task ID: </Text>
+              <Text type="secondary" className="font-mono text-xs">
                 {record.id}
-              </span>
-            </p>
-            <p className="mt-2">
-              <strong>Created By:</strong>{" "}
+              </Text>
+            </div>
+            <div>
+              <Text strong>Created By: </Text>
               <Tag color={record.createdby === "ADMIN" ? "blue" : "green"}>
                 {record.createdby || "N/A"}
               </Tag>
-            </p>
-            <p className="mt-2">
-              <strong>Assigned To:</strong>{" "}
-              <div className="mt-1">
-                {renderAssignedMembers(
-                  record.taskassingnedto || record.taskassingnedby
-                )}
-              </div>
-            </p>
-            {/* Added Comments and Link to the expandable row for mobile */}
-            <p className="mt-2">
-              <strong>Comments:</strong>{" "}
-              <div className="mt-1">
-                {record.comments ? record.comments : "No comments"}
-              </div>
-            </p>
-            <p className="mt-2">
-              <strong>Link:</strong>{" "}
-              <div className="mt-1">
-                {record.link ? (
-                  <a
-                    href={
-                      record.link.startsWith("http")
-                        ? record.link
-                        : `https://${record.link}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:text-blue-700 flex items-center"
-                  >
-                    <LinkOutlined className="mr-1" />
-                    {record.link}
-                  </a>
-                ) : (
-                  "No link provided"
-                )}
-              </div>
-            </p>
+            </div>
+            <div>
+              <Text strong>Assigned To: </Text>
+              {renderAssignedMembers(
+                record.taskassingnedto || record.taskassingnedby
+              )}
+            </div>
+            <div>
+              <Text strong>Comments: </Text>
+              {renderComments(record.comments)}
+            </div>
+            <div>
+              <Text strong>Link: </Text>
+              {renderLink(record.link)}
+            </div>
           </div>
-        ),
-        expandIcon: ({ expanded, onExpand, record }) => (
-          <MenuOutlined
-            onClick={(e) => onExpand(record, e)}
-            style={{ color: expanded ? "#1890ff" : undefined }}
-          />
         ),
       }
     : {};
 
-  // Edit Form Render Function - Updated to include Comments and Link fields
   const renderEditForm = () => (
     <Form form={editForm} layout="vertical">
       <Form.Item
         name="taskcontent"
-        label="Task Content"
-        rules={[{ required: true, message: "Please enter task content" }]}
+        label="Task Description"
+        rules={[{ required: true, message: "Please enter task description" }]}
       >
-        <TextArea rows={4} placeholder="Enter task description" />
+        <TextArea
+          rows={screenSize.isMobile ? 3 : 4}
+          placeholder="Enter task description"
+        />
       </Form.Item>
-
       <Form.Item
         name="taskcreatedby"
         label="Created By"
@@ -665,259 +518,224 @@ const TasksList = () => {
         <Select placeholder="Select creator">
           {creatorOptions.map((option) => (
             <Option key={option.value} value={option.value}>
-              <div className="flex items-center">
-                <UserOutlined className="mr-2" />
+              <Space>
+                <UserOutlined />
                 {option.label}
-              </div>
+              </Space>
             </Option>
           ))}
         </Select>
       </Form.Item>
-
       <Form.Item
         name="taskassingnedto"
-        label={
-          <div className="flex items-center">
-            <TeamOutlined className="mr-2" />
-            <span>Assigned To (Max 5 members)</span>
-          </div>
-        }
+        label="Assigned To"
         rules={[
           { required: true, message: "Please select at least one assignee" },
           {
-            validator: (_, value) => {
-              if (!value || value.length <= 5) {
-                return Promise.resolve();
-              }
-              return Promise.reject(
-                new Error("Maximum 5 team members allowed")
-              );
-            },
+            validator: (_, value) =>
+              value && value.length <= 5
+                ? Promise.resolve()
+                : Promise.reject(new Error("Maximum 5 assignees allowed")),
           },
         ]}
       >
         <Select
           mode="multiple"
-          placeholder="Select up to 5 team members"
-          maxTagCount={5}
-          showArrow
-          maxTagTextLength={10}
+          placeholder="Select team members"
+          maxTagCount="responsive"
+          showSearch
           optionFilterProp="children"
           filterOption={(input, option) =>
-            option.children.props.children[1]
+            option.children[1].props.children
               .toLowerCase()
-              .indexOf(input.toLowerCase()) >= 0
+              .includes(input.toLowerCase())
           }
         >
           {availableAssignees.map((assignee) => (
             <Option key={assignee.value} value={assignee.value}>
-              <div className="flex items-center">
-                <UserOutlined className="mr-2" />
+              <Space>
+                <UserOutlined />
                 {assignee.label}
-              </div>
+              </Space>
             </Option>
           ))}
         </Select>
       </Form.Item>
-
-      {/* New form items for Comments and Link */}
-      {/* <Form.Item
+      <Form.Item
         name="comments"
-        label={
-          <div className="flex items-center">
-            <CommentOutlined className="mr-2" />
-            <span>Comments</span>
-          </div>
-        }
+        label="Comments"
+        rules={[{ max: 500, message: "Comments cannot exceed 500 characters" }]}
       >
-        <TextArea rows={2} placeholder="Add comments about this task" />
+        <TextArea
+          rows={screenSize.isMobile ? 2 : 3}
+          placeholder="Add comments"
+        />
       </Form.Item>
-
       <Form.Item
         name="link"
-        label={
-          <div className="flex items-center">
-            <LinkOutlined className="mr-2" />
-            <span>Link</span>
-          </div>
-        }
+        label="Link"
+        rules={[
+          {
+            type: "url",
+            message: "Please enter a valid URL",
+            warningOnly: true,
+          },
+        ]}
       >
-        <Input placeholder="Add related link (e.g., document URL)" />
-      </Form.Item> */}
+        <Input placeholder="Enter task link" prefix={<LinkOutlined />} />
+      </Form.Item>
     </Form>
   );
 
   return (
     <TaskAdminPanelLayout>
-      <div className="p-2 sm:p-4 md:p-6">
-        <Card className="shadow-md rounded-lg" bodyStyle={{ padding: "0" }}>
-          <div className="p-3 sm:p-4 md:p-6 border-b border-gray-200">
-            <Row gutter={[16, 16]} align="middle" justify="space-between">
-              <Col xs={24} md={12}>
-                <Title level={4} style={{ margin: 0 }}>
-                  Tasks Management
-                </Title>
-                <p className="text-gray-500 mt-1">
-                  Manage and monitor all tasks
-                </p>
-              </Col>
+      <div className="p-4 md:p-6 lg:p-8">
+        <Card>
+          <Row gutter={[16, 16]} align="middle" justify="space-between">
+            <Col xs={24} md={12}>
+              <Title level={screenSize.isMobile ? 4 : 3}>
+                Tasks Management
+              </Title>
+              <Text type="secondary">Manage and monitor all tasks</Text>
+            </Col>
+            <Col xs={24} md={12}>
+              <Space
+                direction={screenSize.isMobile ? "vertical" : "horizontal"}
+                size="middle"
+                className="w-full justify-end"
+                wrap
+              >
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  prefix={<SearchOutlined />}
+                  className="w-full md:w-64"
+                />
+                <Space size="small">
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={fetchTasks}
+                    loading={loading}
+                  >
+                    {screenSize.isTablet && "Refresh"}
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    href="/taskmanagement/taskcreation"
+                  >
+                    {screenSize.isTablet && "New Task"}
+                  </Button>
+                </Space>
+              </Space>
+            </Col>
+          </Row>
 
-              <Col xs={24} md={12}>
-                <div className="flex flex-col sm:flex-row items-center gap-3 justify-end">
-                  <Input
-                    placeholder="Search tasks..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    suffix={<SearchOutlined />}
-                    className="w-full sm:w-auto min-w-0 sm:min-w-[200px]"
-                  />
-
-                  <div className="flex gap-2 mt-2 sm:mt-0 w-full sm:w-auto justify-end">
-                    <Button
-                      icon={<ReloadOutlined />}
-                      onClick={fetchTasks}
-                      loading={loading}
-                    >
-                      {!screenSize.isMobile && "Refresh"}
-                    </Button>
-
-                    <Button
-                      style={{ backgroundColor: "#04AA6D", color: "white" }}
-                      icon={<PlusOutlined />}
-                      href="/taskmanagement/taskcreation"
-                    >
-                      {!screenSize.isMobile && "New Task"}
-                    </Button>
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </div>
-
-          <div className="p-3 sm:p-4 md:p-5">
+          <div className="mt-4">
             {loading ? (
               <div className="flex justify-center items-center h-64">
-                <Spin size="medium" />
+                <Spin size="large" />
               </div>
             ) : (
               <>
-                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                  <div className="flex items-center">
-                    <span className="mr-2 text-gray-600 font-medium">
-                      Total Tasks:
-                    </span>
-                    <Badge
-                      count={filteredTasks.length}
-                      showZero
-                      style={{ backgroundColor: "#008CBA" }}
-                    />
-                  </div>
-
-                  <Button type="default" icon={<DownloadOutlined />}>
-                    {!screenSize.isMobile && "Export"}
-                  </Button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <Table
-                    columns={getColumns()}
-                    dataSource={filteredTasks}
-                    rowKey="id"
-                    bordered
-                    size={screenSize.isMobile ? "small" : "middle"}
-                    rowClassName={(record, index) =>
-                      index % 2 === 0 ? "bg-gray-50" : ""
-                    }
-                    pagination={{
-                      pageSize: screenSize.isMobile ? 5 : 10,
-                      showSizeChanger: !screenSize.isMobile,
-                      showTotal: !screenSize.isMobile
-                        ? (total) => `Total ${total} tasks`
-                        : undefined,
-                      showQuickJumper: !screenSize.isMobile,
-                      position: ["bottomRight"],
-                      size: screenSize.isMobile ? "small" : "default",
-                    }}
-                    scroll={{ x: "max-content" }}
-                    className="border border-gray-200 rounded-lg overflow-hidden"
-                    {...expandableConfig}
-                  />
-                </div>
+                <Row justify="space-between" align="middle" className="mb-4">
+                  <Col>
+                    <Space>
+                      <Text strong>Total Tasks:</Text>
+                      <Badge
+                        count={filteredTasks.length}
+                        showZero
+                        style={{ backgroundColor: "#1890ff" }}
+                      />
+                    </Space>
+                  </Col>
+                  <Col>
+                    <Button icon={<DownloadOutlined />}>
+                      {screenSize.isTablet && "Export"}
+                    </Button>
+                  </Col>
+                </Row>
+                <Table
+                  columns={getColumns()}
+                  dataSource={filteredTasks}
+                  rowKey="id"
+                  bordered
+                  size="small"
+                  pagination={{
+                    pageSize: screenSize.isMobile ? 5 : 10,
+                    showSizeChanger: true,
+                    showTotal: (total) => `Total ${total} tasks`,
+                    responsive: true,
+                  }}
+                  scroll={{ x: true }}
+                  {...expandableConfig}
+                />
               </>
             )}
           </div>
         </Card>
-      </div>
 
-      {/* Edit Task Modal for desktop */}
-      <Modal
-        title={
-          <div className="flex items-center">
-            <EditOutlined className="mr-2 text-green-600" />
-            <span>Edit Task</span>
-          </div>
-        }
-        open={editModalVisible}
-        onCancel={() => setEditModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setEditModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            icon={<SaveOutlined />}
-            loading={updateLoading}
-            onClick={handleUpdateTask}
-            style={{
-              backgroundColor: "#04AA6D",
-              color: "white",
-              borderColor: "#52c41a",
-            }}
-          >
-            Update Task
-          </Button>,
-        ]}
-        width={600}
-        maskClosable={false}
-        destroyOnClose={true}
-      >
-        {renderEditForm()}
-      </Modal>
-
-      {/* Edit Task Drawer for mobile */}
-      <Drawer
-        title={
-          <div className="flex items-center">
-            <EditOutlined className="mr-2 text-green-600" />
-            <span>Edit Task</span>
-          </div>
-        }
-        placement="right"
-        onClose={() => setEditDrawerVisible(false)}
-        open={editDrawerVisible}
-        width={screenSize.width < 500 ? "100%" : 400}
-        footer={
-          <div className="flex justify-end gap-2">
+        <Modal
+          title={
+            <Space>
+              <EditOutlined />
+              Edit Task
+            </Space>
+          }
+          open={editModalVisible}
+          onCancel={() => setEditModalVisible(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setEditModalVisible(false)}>
+              Cancel
+            </Button>,
             <Button
+              key="submit"
               type="primary"
               icon={<SaveOutlined />}
-              onClick={handleUpdateTask}
               loading={updateLoading}
-              style={{
-                backgroundColor: "#04AA6D",
-                color: "white",
-                borderColor: "#52c41a",
-              }}
-              block
+              onClick={handleUpdateTask}
             >
               Update Task
-            </Button>
-          </div>
-        }
-      >
-        {renderEditForm()}
-      </Drawer>
+            </Button>,
+          ]}
+          width={screenSize.isTablet ? "90%" : 600}
+          destroyOnClose
+        >
+          {renderEditForm()}
+        </Modal>
+
+        <Drawer
+          title={
+            <Space>
+              <EditOutlined />
+              Edit Task
+            </Space>
+          }
+          placement="right"
+          onClose={() => setEditDrawerVisible(false)}
+          open={editDrawerVisible}
+          width={screenSize.isMobile ? "100%" : "90%"}
+          footer={
+            <Space className="w-full" direction="vertical">
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleUpdateTask}
+                loading={updateLoading}
+                block
+              >
+                Update Task
+              </Button>
+              <Button onClick={() => setEditDrawerVisible(false)} block>
+                Cancel
+              </Button>
+            </Space>
+          }
+        >
+          {renderEditForm()}
+        </Drawer>
+      </div>
     </TaskAdminPanelLayout>
   );
 };

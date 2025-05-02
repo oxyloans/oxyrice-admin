@@ -231,6 +231,12 @@ const PlanOfTheDay = () => {
     }
   }, [selectedDate]);
 
+  // Automatically fetch tasks when the date changes
+  useEffect(() => {
+    // Call the API whenever the date changes
+    fetchTasksByDate();
+  }, [selectedDate, fetchTasksByDate]);
+
   // Admin comment submission
   const handleCommentSubmit = async () => {
     try {
@@ -284,6 +290,7 @@ const PlanOfTheDay = () => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date || dayjs()); // Fallback to current date if null
+    // Note: No need to call fetchTasksByDate here as it will be triggered by the useEffect
   };
 
   const handleSortChange = (field) => {
@@ -306,17 +313,17 @@ const PlanOfTheDay = () => {
     form.resetFields();
   };
 
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
 
-  try {
-    const date = dayjs(dateString);
-    if (!date.isValid()) return dateString;
-    return date.format("YYYY-MM-DD HH:mm:ss");
-  } catch (e) {
-    return dateString;
-  }
-};
+    try {
+      const date = dayjs(dateString);
+      if (!date.isValid()) return dateString;
+      return date.format("YYYY-MM-DD HH:mm:ss");
+    } catch (e) {
+      return dateString;
+    }
+  };
   const renderPendingResponses = (responses) => {
     if (!responses || responses.length === 0) return null;
 
@@ -773,6 +780,7 @@ const formatDate = (dateString) => {
                   />
                 </div>
 
+                {/* Search button kept for manual refresh if needed */}
                 <div>
                   <Button
                     type="primary"
@@ -780,7 +788,7 @@ const formatDate = (dateString) => {
                     className="bg-[#008CBA] text-white hover:bg-[#008CBA] shadow-sm"
                     style={buttonStyle}
                   >
-                    Search
+                    Refresh
                   </Button>
                 </div>
               </div>
@@ -879,7 +887,7 @@ const formatDate = (dateString) => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center p-16">
-                <Spin size="large" />
+                <Spin size="small" />
                 <Text className="mt-4 text-gray-500">Loading tasks...</Text>
               </div>
             ) : filteredTasks.length > 0 ? (
