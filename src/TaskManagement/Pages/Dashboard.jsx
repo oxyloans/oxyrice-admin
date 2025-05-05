@@ -21,7 +21,6 @@ import {
   BarChart as BarChartIcon,
   Home,
   TrendingUp,
-  Check,
   XCircle,
   Clock,
   Activity,
@@ -81,16 +80,10 @@ export default function Dashboard() {
 
       const data = await response.json();
 
-      // Filter leaves for today's date - only count leaves where:
-      // Today falls between fromDate and endDate (inclusive)
+      // Simply use the length of the leaves array if available
       let todayLeaveCount = 0;
-
       if (Array.isArray(data.leaves)) {
-        const todayStr = formattedDate;
-        todayLeaveCount = data.leaves.filter((leave) => {
-          // Check if today falls within the leave date range
-          return leave.fromDate <= todayStr && leave.endDate >= todayStr;
-        }).length;
+        todayLeaveCount = data.leaves.length;
       }
 
       setLeaveCount(todayLeaveCount);
@@ -198,15 +191,6 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-4 lg:mt-0 flex items-center">
-              {/* <div className="bg-blue-50 px-4 py-2 rounded-lg mr-4 hidden md:block">
-                <div className="flex items-center">
-                  <Activity size={20} className="text-blue-600 mr-2" />
-                  <div>
-                    <p className="text-xs text-gray-500">System Status</p>
-                    <p className="text-sm font-medium text-blue-600">Online</p>
-                  </div>
-                </div>
-              </div> */}
               <button
                 onClick={refreshAllData}
                 disabled={isRefreshing}
@@ -258,7 +242,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-medium text-gray-500">
-                  Employees on Leave Today
+                  Employee Leave Request
                 </h3>
                 <p className="text-3xl font-bold text-gray-800 mt-2">
                   {leaveCount}
@@ -270,7 +254,7 @@ export default function Dashboard() {
             </div>
             <div className="mt-4 flex items-center text-xs text-gray-500">
               <Calendar size={14} className="text-purple-500 mr-1" />
-              <span>Leave requests for today</span>
+              <span>Total leave requests</span>
             </div>
           </div>
 

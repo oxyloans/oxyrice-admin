@@ -12,6 +12,7 @@ import {
   Form,
   message,
   Popconfirm,
+  Switch,
 } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -90,6 +91,10 @@ const TimeSlots = () => {
         timeSlot2: formatTimeSlot(values.timeSlot2Start, values.timeSlot2End),
         timeSlot3: formatTimeSlot(values.timeSlot3Start, values.timeSlot3End),
         timeSlot4: formatTimeSlot(values.timeSlot4Start, values.timeSlot4End),
+        slot1Status: values.slot1Status || false,
+        slot2Status: values.slot2Status || false,
+        slot3Status: values.slot3Status || false,
+        slot4Status: values.slot4Status || false,
       };
 
       await axios.post(`${BASE_URL}/order-service/add`, payload);
@@ -136,7 +141,7 @@ const TimeSlots = () => {
 
     // Set initial values for the edit form
     editForm.setFieldsValue({
-      dayOfWeek: record.dayOfWeek.toUpperCase(),
+      dayOfWeek: record.dayOfWeek,
       isAvailable: record.isAvailable,
       timeSlot1Start: timeSlot1.start,
       timeSlot1End: timeSlot1.end,
@@ -146,6 +151,10 @@ const TimeSlots = () => {
       timeSlot3End: timeSlot3.end,
       timeSlot4Start: timeSlot4.start,
       timeSlot4End: timeSlot4.end,
+      slot1Status: record.slot1Status || false,
+      slot2Status: record.slot2Status || false,
+      slot3Status: record.slot3Status || false,
+      slot4Status: record.slot4Status || false,
     });
 
     setIsEditModalOpen(true);
@@ -169,6 +178,10 @@ const TimeSlots = () => {
         timeSlot2: formatTimeSlot(values.timeSlot2Start, values.timeSlot2End),
         timeSlot3: formatTimeSlot(values.timeSlot3Start, values.timeSlot3End),
         timeSlot4: formatTimeSlot(values.timeSlot4Start, values.timeSlot4End),
+        slot1Status: values.slot1Status,
+        slot2Status: values.slot2Status,
+        slot3Status: values.slot3Status,
+        slot4Status: values.slot4Status,
       };
 
       await axios.patch(
@@ -192,6 +205,16 @@ const TimeSlots = () => {
     }
   };
 
+  // Helper function to render slot status tag
+  const renderSlotStatus = (status) => {
+    // false means active, true means inactive
+    return (
+      <Tag color={status ? "red" : "green"}>
+        {status ? "Inactive" : "Active"}
+      </Tag>
+    );
+  };
+
   const columns = [
     {
       title: "Day",
@@ -201,27 +224,47 @@ const TimeSlots = () => {
     },
     {
       title: "Time Slot 1",
-      dataIndex: "timeSlot1",
-      key: "timeSlot1",
+      key: "timeSlot1Group",
       align: "center",
+      render: (_, record) => (
+        <div>
+          <div>{record.timeSlot1 || "Not Set"}</div>
+          {renderSlotStatus(record.slot1Status)}
+        </div>
+      ),
     },
     {
       title: "Time Slot 2",
-      dataIndex: "timeSlot2",
-      key: "timeSlot2",
+      key: "timeSlot2Group",
       align: "center",
+      render: (_, record) => (
+        <div>
+          <div>{record.timeSlot2 || "Not Set"}</div>
+          {renderSlotStatus(record.slot2Status)}
+        </div>
+      ),
     },
     {
       title: "Time Slot 3",
-      dataIndex: "timeSlot3",
-      key: "timeSlot3",
+      key: "timeSlot3Group",
       align: "center",
+      render: (_, record) => (
+        <div>
+          <div>{record.timeSlot3 || "Not Set"}</div>
+          {renderSlotStatus(record.slot3Status)}
+        </div>
+      ),
     },
     {
       title: "Time Slot 4",
-      dataIndex: "timeSlot4",
-      key: "timeSlot4",
+      key: "timeSlot4Group",
       align: "center",
+      render: (_, record) => (
+        <div>
+          <div>{record.timeSlot4 || "Not Set"}</div>
+          {renderSlotStatus(record.slot4Status)}
+        </div>
+      ),
     },
     {
       title: "Availability",
@@ -347,29 +390,43 @@ const TimeSlots = () => {
             </Form.Item>
 
             {[1, 2, 3, 4].map((slot) => (
-              <Form.Item key={slot} label={`Time Slot ${slot}`}>
-                <div className="flex gap-2">
-                  <Form.Item name={`timeSlot${slot}Start`} noStyle>
-                    <TimePicker
-                      format="hh:mm A"
-                      use12Hours
-                      placeholder="Start Time"
-                    />
-                  </Form.Item>
-                  <span> - </span>
-                  <Form.Item name={`timeSlot${slot}End`} noStyle>
-                    <TimePicker
-                      format="hh:mm A"
-                      use12Hours
-                      placeholder="End Time"
-                    />
-                  </Form.Item>
-                </div>
-              </Form.Item>
+              <div key={slot} className="mb-4">
+                <Form.Item label={`Time Slot ${slot}`}>
+                  <div className="flex gap-2 mb-2">
+                    <Form.Item name={`timeSlot${slot}Start`} noStyle>
+                      <TimePicker
+                        format="hh:mm A"
+                        use12Hours
+                        placeholder="Start Time"
+                      />
+                    </Form.Item>
+                    <span> - </span>
+                    <Form.Item name={`timeSlot${slot}End`} noStyle>
+                      <TimePicker
+                        format="hh:mm A"
+                        use12Hours
+                        placeholder="End Time"
+                      />
+                    </Form.Item>
+                  </div>
+                </Form.Item>
+                <Form.Item
+                  name={`slot${slot}Status`}
+                  label="Slot Status"
+                  valuePropName="checked"
+                  initialValue={false}
+                >
+                  <Switch
+                    checkedChildren="Inactive"
+                    unCheckedChildren="Active"
+                  />
+                </Form.Item>
+              </div>
             ))}
+
             <Form.Item
               name="isAvailable"
-              label="Availability"
+              label="Day Availability"
               rules={[
                 { required: true, message: "Please select availability!" },
               ]}
@@ -413,29 +470,42 @@ const TimeSlots = () => {
             </Form.Item>
 
             {[1, 2, 3, 4].map((slot) => (
-              <Form.Item key={slot} label={`Time Slot ${slot}`}>
-                <div className="flex gap-2">
-                  <Form.Item name={`timeSlot${slot}Start`} noStyle>
-                    <TimePicker
-                      format="hh:mm A"
-                      use12Hours
-                      placeholder="Start Time"
-                    />
-                  </Form.Item>
-                  <span> - </span>
-                  <Form.Item name={`timeSlot${slot}End`} noStyle>
-                    <TimePicker
-                      format="hh:mm A"
-                      use12Hours
-                      placeholder="End Time"
-                    />
-                  </Form.Item>
-                </div>
-              </Form.Item>
+              <div key={slot} className="mb-4">
+                <Form.Item label={`Time Slot ${slot}`}>
+                  <div className="flex gap-2 mb-2">
+                    <Form.Item name={`timeSlot${slot}Start`} noStyle>
+                      <TimePicker
+                        format="hh:mm A"
+                        use12Hours
+                        placeholder="Start Time"
+                      />
+                    </Form.Item>
+                    <span> - </span>
+                    <Form.Item name={`timeSlot${slot}End`} noStyle>
+                      <TimePicker
+                        format="hh:mm A"
+                        use12Hours
+                        placeholder="End Time"
+                      />
+                    </Form.Item>
+                  </div>
+                </Form.Item>
+                <Form.Item
+                  name={`slot${slot}Status`}
+                  label="Slot Status"
+                  valuePropName="checked"
+                >
+                  <Switch
+                    checkedChildren="Inactive"
+                    unCheckedChildren="Active"
+                  />
+                </Form.Item>
+              </div>
             ))}
+
             <Form.Item
               name="isAvailable"
-              label="Availability"
+              label="Day Availability"
               rules={[
                 { required: true, message: "Please select availability!" },
               ]}
