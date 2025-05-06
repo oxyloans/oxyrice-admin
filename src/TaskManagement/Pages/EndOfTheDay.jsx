@@ -467,7 +467,7 @@ const EndOfTheDay = () => {
           <Text className="text-gray-600 font-medium block mb-2">
             Plan of the Day:
           </Text>
-          <div className="max-h-32 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
+          <div className="max-h-50 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
             <Text className="whitespace-pre-wrap text-gray-700">
               {task.planOftheDay || "No plan recorded"}
             </Text>
@@ -478,7 +478,7 @@ const EndOfTheDay = () => {
           <Text className="text-gray-600 font-medium block mb-2">
             End of the Day:
           </Text>
-          <div className="max-h-32 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
+          <div className="max-h-50 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
             <Text className="whitespace-pre-wrap text-gray-700">
               {task.endOftheDay || "No end-of-day report"}
             </Text>

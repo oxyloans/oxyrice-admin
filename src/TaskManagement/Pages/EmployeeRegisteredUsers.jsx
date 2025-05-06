@@ -64,6 +64,13 @@ const EmployeeRegisteredUsers = () => {
       align: "center",
     },
     {
+      title: "Mobile Number",
+      dataIndex: "empNumber",
+      key: "empNumber",
+     
+      align: "center",
+    },
+    {
       title: "Created At",
       dataIndex: "createdAt",
       key: "createdAt",

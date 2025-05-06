@@ -47,8 +47,8 @@ const TaskAdminPanelLayout = ({ children }) => {
   }, [screens]);
   const sidebarItems = [
     {
-      key: "Employee Dashboard",
-      label: "Employee Dashboard",
+      key: "Admin Dashboard",
+      label: "Admin Dashboard",
 
       icon: <FaTachometerAlt />,
       link: "/taskmanagement/dashboard",
@@ -78,8 +78,8 @@ const TaskAdminPanelLayout = ({ children }) => {
       ],
     },
     {
-      key: "Employee Leaves Status",
-      label: "Employee Leaves Status",
+      key: "Leave Management",
+      label: "Leave Management",
       icon: <FaSlideshare />,
       link: "/taskmanagement/employeeleaves",
     },
@@ -90,8 +90,8 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/taskmanagement/tasklists",
     },
     {
-      key: "Employee Registered Users",
-      label: "Employee Registered Users",
+      key: "Registered Employees",
+      label: "Registered Employees",
       icon: <FaUserCircle />,
       link: "/taskmanagement/employee_registered_users",
     },
