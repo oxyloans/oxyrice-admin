@@ -74,6 +74,7 @@ import Dashboard from "./TaskManagement/Pages/Dashboard";
 import EmployeeRegisteredUsers from "./TaskManagement/Pages/EmployeeRegisteredUsers";
 import EndOfTheDay from "./TaskManagement/Pages/EndOfTheDay";
 import TodayLeaves from "./TaskManagement/Pages/TodayLeaves ";
+import AllReferralsData from "./AdminPages/AllReferrelsData";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -106,7 +107,10 @@ function App() {
         <Route path="/taskmanagement/tasklists" element={<TasksList />} />
         <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
         <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
-        <Route path="/taskmanagement/employeeleaves" element={<TodayLeaves />} />
+        <Route
+          path="/taskmanagement/employeeleaves"
+          element={<TodayLeaves />}
+        />
         <Route
           path="/taskmanagement/employee_registered_users"
           element={<EmployeeRegisteredUsers />}
@@ -224,6 +228,10 @@ function App() {
         <Route
           path="/admin/dashboard"
           element={<ProtectedRoute element={<DashboardTest />} />}
+        />
+        <Route
+          path="/admin/all-referrals"
+          element={<ProtectedRoute element={<AllReferralsData />} />}
         />
         <Route
           path="/admin/timeslots"

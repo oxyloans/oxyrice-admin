@@ -603,28 +603,30 @@ const DashboardTest = () => {
                       title="User Registration Details"
                       className="shadow-sm rounded-lg border-0"
                       extra={
-                        <Space>
-                          <Space direction="vertical" size={0}>
+                        <div className="flex flex-col md:flex-row gap-3 md:items-end w-full">
+                          <div className="flex flex-col w-full md:w-auto">
                             <Text className="text-xs text-gray-500">From</Text>
                             <DatePicker
                               value={startDate}
                               onChange={handleFromDateChange}
                               format="YYYY-MM-DD"
-                              className="w-full"
+                              className="w-full min-w-[160px]"
                               placeholder="Select From Date"
                             />
-                          </Space>
-                          <Space direction="vertical" size={0}>
+                          </div>
+
+                          <div className="flex flex-col w-full md:w-auto">
                             <Text className="text-xs text-gray-500">To</Text>
                             <DatePicker
                               value={toDate}
                               onChange={handleToDateChange}
                               format="YYYY-MM-DD"
-                              className="w-full"
+                              className="w-full min-w-[160px]"
                               placeholder="Select To Date"
                             />
-                          </Space>
-                          <Space direction="vertical" size={0}>
+                          </div>
+
+                          <div className="flex flex-col w-full md:w-auto">
                             <Text className="text-xs text-gray-500">
                               Get Data
                             </Text>
@@ -632,11 +634,13 @@ const DashboardTest = () => {
                               style={{ background: "#008CBA", color: "white" }}
                               icon={<SearchOutlined />}
                               onClick={handleFilter}
+                              className="w-full md:w-auto"
                             >
                               Get Data
                             </Button>
-                          </Space>
-                          <Space direction="vertical" size={0}>
+                          </div>
+
+                          <div className="flex flex-col w-full md:w-auto">
                             <Text className="text-xs text-gray-500">
                               Export Data
                             </Text>
@@ -650,23 +654,26 @@ const DashboardTest = () => {
                                 borderColor: "#52c41a",
                                 color: "white",
                               }}
+                              className="w-full md:w-auto"
                             >
                               Download Excel
                             </Button>
-                          </Space>
-                        </Space>
+                          </div>
+                        </div>
                       }
                     >
-                      <Table
-                        columns={columns}
-                        dataSource={userDetails}
-                        rowKey="id"
-                        loading={userDetailsLoading}
-                        pagination={pagination}
-                        onChange={handleTableChange}
-                        scroll={{ x: "max-content" }}
-                        bordered
-                      />
+                      <div className="overflow-x-auto">
+                        <Table
+                          columns={columns}
+                          dataSource={userDetails}
+                          rowKey="id"
+                          loading={userDetailsLoading}
+                          pagination={pagination}
+                          onChange={handleTableChange}
+                          scroll={{ x: "max-content" }}
+                          bordered
+                        />
+                      </div>
                     </Card>
                   </Col>
                 </Row>
