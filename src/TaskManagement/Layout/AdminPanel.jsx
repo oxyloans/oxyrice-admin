@@ -55,7 +55,7 @@ const TaskAdminPanelLayout = ({ children }) => {
     },
     {
       key: "Task Creation",
-      label: "Task Creation",
+      label: "Create New Task",
 
       icon: <FaHandsHelping />,
       link: "/taskmanagement/taskcreation",

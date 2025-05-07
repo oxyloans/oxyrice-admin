@@ -55,6 +55,7 @@ const TaskCreation = () => {
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [uploadProgress, setUploadProgress] = useState(0);
   const userId = localStorage.getItem("userId") || "ADMIN";
+    const [fileList, setFileList] = useState([]);
 
   // Enums as defined in your API
   const taskCreatedBy = {
@@ -94,53 +95,64 @@ const TaskCreation = () => {
 
   // Team member names
   const names = [
-    "GRISHMA",
-    "GUNA",
-    "GUNASHEKAR",
-    "SAIKUMAR",
-    "SREEJA",
-    "GADISAI",
-    "GUTTISAI",
-    "NARENDRA",
-    "MANEIAH",
-    "VARALAKSHMI",
-    "VIJAY",
-    "NIHARIKA",
-    "HARIPRIYA",
-    "VINODH",
-    "NAVEEN",
-    "SRIDHAR",
-    "SUBBU",
-    "UDAY",
-    "HARIBABU",
-    "SUDHEESH",
-    "ANUSHA",
-    "DIVYA",
-    "KARTHIK",
-    "RAMADEVI",
-    "BHARGAV",
-    "PRATHIBHA",
-    "JYOTHI",
-    "HEMA",
-    "RAMYAHR",
-    "SURESH",
-    "SUCHITHRA",
-    "ARUNA",
-    "VENKATESH",
-    "RAKESH",
-    "JHON",
-    "MOUNIKA",
-    "VANDANA",
-    "GOPAL",
-    "ANUSHAACCOUNT",
-    "RADHAKRISHNA",
-    "MADHU",
-    "RAVI",
-    "SAMPATH",
-    "CHANDU",
-    "SWATHI",
-    "SHANTHI",
-    "VISWA"
+    "Ramesh Reddy",
+    "Bhargav.M",
+    "Vishwateja Dharmapuri",
+    "UMA MAHESH",
+    "akhila u",
+    "Maneiah",
+    "sudheesh",
+    
+    "Manikanta",
+    "Zubeidha Begum",
+    "g venkata karthik",
+    "vijay dasari",
+    "Haribabu",
+    "Gudelli Gunashekar ",
+    "Divyajyothi",
+    "Niharika Pokuri",
+    "varalakshmi",
+    "Anusha Kowthavarapu",
+    "Raga Ramya",
+    "Labhishetty Sreeja",
+    "Grishma ",
+    "Dharmapuri Sai Krishna",
+    "GOPALA KRISHNA MALLEBOINA ",
+    "Saikarthik Rathod",
+    "Nava Jyothi Pattedi",
+    "M Vinod ",
+    "Sagarla suresh ",
+    "Vandanapu Indu",
+    "Sai Kumar Gadi",
+    "Haripriya Yerreddula",
+    "Dasi srilekha",
+    "Ravikiran s",
+    "Naveen Pairala",
+    "Sala.Divya",
+    "Gudelli Jhansi Rani",
+    "Mounika ",
+    "Hemalatha",
+    "Arla Aruna Jyothi ",
+    "SUBASH SURE",
+    "Anusha",
+    "sridhar",
+    "Darelli nagarani ",
+    "thulasiboda",
+    "Matta madhu venkata durga prasad",
+    "Divya",
+    "thulasi",
+    "Megha",
+    "sandhya",
+    "Darelli nagarani",
+    "swathi",
+    "Narendra Kumar Balijepalli",
+    "Prathibha",
+    "Uday Reddy",
+    "Vishnu",
+    "Shanthi",
+    "Ramadevi",
+    "RANGASAI",
+    "Gutti Sai Kumar",
   ];
 
   const availableAssignees = names.map((name, index) => ({
@@ -148,61 +160,74 @@ const TaskCreation = () => {
     label: name,
     color: colors[index % colors.length],
   }));
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+  // File upload handler
+  const uploadProps = {
+    name: "file",
+    multiple: false,
+    accept: ".pdf,.doc,.docx,.jpg,.jpeg,.png",
+    fileList,
+    beforeUpload: (file) => {
+      const isSizeValid = file.size / 1024 / 1024 < 10; // 10MB limit
+      if (!isSizeValid) {
+        message.error("File must be smaller than 10MB!");
+        return Upload.LIST_IGNORE;
+      }
+      return true;
+    },
+    customRequest: async ({ file, onSuccess, onError, onProgress }) => {
+      setUploadStatus("uploading");
+      setFileName(file.name);
+      setUploadProgress(0);
 
-    if (!file) {
-      message.warning("Please select a file to upload.");
-      return;
-    }
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileType", "kyc");
 
-    setFileName(file.name);
-    setUploadStatus("uploading");
-    setUploadProgress(0);
+      try {
+        const response = await axios.post(
+          `${BASE_URL}/user-service/write/uploadTaskScreenShot?userId=${userId}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setUploadProgress(percentCompleted);
+              onProgress({ percent: percentCompleted });
+            },
+          }
+        );
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileType", "kyc");
+        const docId = response.data.id;
+        setDocumentId(docId);
+        setFileList([{ uid: "-1", name: file.name, status: "done" }]);
+        localStorage.setItem("taskDocumentId", docId);
+        localStorage.setItem("taskDocumentTimestamp", new Date().toISOString());
+        localStorage.setItem("taskDocumentName", file.name);
 
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/user-service/write/uploadTaskScreenShot?userId=${userId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          },
-        }
-      );
-
-      // Set document ID in state and save to local storage
-      const docId = response.data.id;
-      setDocumentId(docId);
-
-      // Store in local storage with a timestamp
-      localStorage.setItem("taskDocumentId", docId);
-      localStorage.setItem("taskDocumentTimestamp", new Date().toISOString());
-      localStorage.setItem("taskDocumentName", file.name);
-
-      message.success("Document uploaded successfully!");
-      setUploadStatus("uploaded");
-    } catch (error) {
-      console.error("Upload Error:", error);
-      message.error({
-        content:
-          error.response?.data?.error || "An error occurred during upload",
-      });
-
-      setUploadStatus("failed");
-      setFileInputKey(Date.now());
-    }
+        message.success("Document uploaded successfully!");
+        setUploadStatus("uploaded");
+        onSuccess(response.data);
+      } catch (error) {
+        console.error("Upload Error:", error);
+        message.error(error.response?.data?.error || "Upload failed");
+        setUploadStatus("failed");
+        setFileList([{ uid: "-1", name: file.name, status: "error" }]);
+        onError(error);
+      }
+    },
+    onRemove: () => {
+      setUploadStatus("idle");
+      setFileName("");
+      setDocumentId(null);
+      setFileList([]);
+      setUploadProgress(0);
+      message.success("File removed successfully");
+      return true;
+    },
   };
 
   const createTask = async (values) => {
@@ -220,6 +245,7 @@ const TaskCreation = () => {
         taskcontent: values.content,
         deadline: deadline,
         prioeity: values.priority,
+        taskname: values.taskname,
       };
 
       const response = await axios.post(
@@ -292,87 +318,26 @@ const TaskCreation = () => {
     });
   };
 
-   const renderUploadStatus = () => {
-     switch (uploadStatus) {
-       case "uploading":
-         return (
-           <div className="w-full">
-             <div className="flex items-center">
-               <Spin size="small" className="mr-2" />
-               <Text>{fileName}</Text>
-             </div>
-             <Progress
-               percent={uploadProgress}
-               size="small"
-               status="active"
-               strokeColor={{
-                 "0%": "#108ee9",
-                 "100%": "#87d068",
-               }}
-             />
-           </div>
-         );
-       case "uploaded":
-         return (
-           <div className="flex items-center justify-between w-full">
-             <div className="flex items-center">
-               <FileOutlined className="mr-2 text-green-500" />
-               <Text className="mr-2">{fileName}</Text>
-               <Tag color="success" icon={<CheckCircleOutlined />}>
-                 Uploaded Successfully
-               </Tag>
-             </div>
-             <Button
-               danger
-               icon={<DeleteOutlined />}
-               size="small"
-               onClick={handleDeleteUpload}
-               className="ml-2"
-             >
-               Clear
-             </Button>
-           </div>
-         );
-       case "failed":
-         return (
-           <div className="flex items-center justify-between w-full">
-             <div className="flex items-center">
-               <FileOutlined className="mr-2 text-red-500" />
-               <Text className="mr-2">{fileName}</Text>
-               <Tag color="error">Upload Failed</Tag>
-             </div>
-             <Button
-               icon={<DeleteOutlined />}
-               size="small"
-               onClick={handleDeleteUpload}
-               className="ml-2"
-             >
-               Clear
-             </Button>
-           </div>
-         );
-       default:
-         return (
-           <Text type="secondary" className="flex items-center">
-             <PaperClipOutlined className="mr-2" />
-             No file selected
-           </Text>
-         );
-     }
-   };
-
+  const resetForm = () => {
+    form.resetFields();
+    setUploadStatus("idle");
+    setFileName("");
+    setDocumentId(null);
+    setFileList([]);
+    setUploadProgress(0);
+  };
 
   return (
     <TaskAdminPanelLayout>
       <div className="p-2 sm:p-4 md:p-6 lg:p-8">
-        <Card className="shadow-lg rounded-lg border-0">
+        <Card className=" border-0">
           <div className="mb-6">
             <Title
               level={3}
               className="flex items-center text-xl md:text-2xl mb-2"
             >
-              <SolutionOutlined className="mr-3 text-blue-600" /> Create New
-              Task
+              <SolutionOutlined className="mr-3 text-blue-600" />
+              Create New Task
             </Title>
             <Text type="secondary" className="text-sm md:text-base">
               Create and assign tasks to team members with priorities and
@@ -393,13 +358,30 @@ const TaskCreation = () => {
               createdBy: taskCreatedBy.ADMIN,
             }}
           >
+            <Form.Item
+              name="taskname"
+              label={
+                <span className="flex items-center text-base">
+                  <FileTextOutlined className="mr-2 text-blue-500" />
+                  Task Name<span className="text-red-500 ml-1">*</span>
+                </span>
+              }
+              rules={[{ required: true, message: "Please enter task name" }]}
+              // tooltip="Provide a detailed description of the task"
+            >
+              <Input
+                placeholder="Enter task description here..."
+                maxLength={10000}
+                className="rounded-md"
+              />
+            </Form.Item>
             {/* Task Description */}
             <Form.Item
               name="content"
               label={
                 <span className="flex items-center text-base">
                   <FileTextOutlined className="mr-2 text-blue-500" />
-                  Task Description
+                  Task Description<span className="text-red-500 ml-1">*</span>
                 </span>
               }
               rules={[{ required: true, message: "Please enter task content" }]}
@@ -422,7 +404,7 @@ const TaskCreation = () => {
                   label={
                     <span className="flex items-center">
                       <UserOutlined className="mr-2 text-green-500" />
-                      Created By
+                      Created By<span className="text-red-500 ml-1">*</span>
                     </span>
                   }
                   rules={[{ required: true, message: "Please select creator" }]}
@@ -444,7 +426,7 @@ const TaskCreation = () => {
                   label={
                     <span className="flex items-center">
                       <TeamOutlined className="mr-2 text-purple-500" />
-                      Assigned To
+                      Assigned To<span className="text-red-500 ml-1">*</span>
                       <Tooltip title="You can select up to 5 assignees">
                         <InfoCircleOutlined className="ml-2 text-gray-400" />
                       </Tooltip>
@@ -523,7 +505,7 @@ const TaskCreation = () => {
                   label={
                     <span className="flex items-center">
                       <FlagOutlined className="mr-2 text-red-500" />
-                      Priority
+                      Priority<span className="text-red-500 ml-1">*</span>
                     </span>
                   }
                   rules={[
@@ -544,70 +526,45 @@ const TaskCreation = () => {
                   </Select>
                 </Form.Item>
               </Col>
+
+              <Col xs={24}>
+                <Card
+                  className="mb-4 bg-gray-50 border-gray-200"
+                  size="small"
+                  title={
+                    <div className="flex items-center text-base font-medium">
+                      <UploadOutlined className="mr-2 text-blue-600" />
+                      Attachment (optional)
+                    </div>
+                  }
+                >
+                  <Upload.Dragger
+                    {...uploadProps}
+                    className="rounded-lg bg-white"
+                  >
+                    <p className="ant-upload-drag-icon">
+                      <UploadOutlined className="text-blue-500 text-2xl" />
+                    </p>
+                    <p className="ant-upload-text text-sm sm:text-base">
+                      Click or drag file to upload
+                    </p>
+                    <p className="ant-upload-hint text-xs sm:text-sm text-gray-500">
+                      Supports PDF, DOC, DOCX, JPG, JPEG, PNG (max 10MB)
+                    </p>
+                  </Upload.Dragger>
+                  {uploadStatus === "uploading" && (
+                    <Progress
+                      percent={uploadProgress}
+                      size="small"
+                      status="active"
+                      strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
+                      className="mt-2"
+                    />
+                  )}
+                </Card>
+              </Col>
             </Row>
 
-            {/* File Upload Section */}
-            <Card
-              className="mb-4 bg-gray-50"
-              size="small"
-              title={
-                <div className="flex items-center">
-                  <UploadOutlined className="mr-2" />
-                  <span>Attachment (optional)</span>
-                </div>
-              }
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    disabled={uploadStatus === "uploading"}
-                    key={fileInputKey}
-                  />
-                </label>
-
-                <div className="flex-grow">{renderUploadStatus()}</div>
-              </div>
-            </Card>
-            {/* <Card
-              className="mb-6 mt-4 bg-gray-50 shadow border border-gray-200"
-              bordered={false}
-              title={
-                <div className="flex items-center">
-                  <UploadOutlined className="mr-2 text-blue-500" />
-                  <span>Task Attachment</span>
-                </div>
-              }
-            >
-              <div className="flex flex-col gap-4">
-                <Dragger
-                  {...uploadProps}
-                  className="bg-white border-dashed border-2 border-gray-300 rounded-lg"
-                  disabled={uploadStatus === "uploading"}
-                >
-                  <p className="ant-upload-drag-icon">
-                    <UploadOutlined className="text-blue-500 text-3xl" />
-                  </p>
-                  <p className="ant-upload-text">
-                    Click or drag file to this area to upload
-                  </p>
-                  <p className="ant-upload-hint text-gray-500">
-                    Support for a single file upload. Please upload relevant
-                    task documents only.
-                  </p>
-                </Dragger>
-
-                {uploadStatus !== "idle" && (
-                  <div className="mt-2 p-3 bg-white rounded-md border border-gray-200">
-                    {renderUploadStatus()}
-                  </div>
-                )}
-              </div>
-            </Card> */}
-
-            {/* Action Buttons */}
             <Form.Item className="mt-6">
               <Space className="flex flex-wrap justify-between w-full">
                 <Space className="flex flex-wrap gap-2">
@@ -617,29 +574,26 @@ const TaskCreation = () => {
                     loading={loading}
                     icon={<SaveOutlined />}
                     size="large"
-                    className="min-w-[140px] bg-[#008CBA] hover:bg-[#008CBA]"
+                    className="min-w-[140px] bg-blue-600 hover:bg-blue-700 rounded-lg"
                     disabled={uploadStatus === "uploading"}
                   >
                     Create Task
                   </Button>
                   <Button
-                    onClick={() => {
-                      form.resetFields();
-                      resetUploadState();
-                    }}
+                    onClick={resetForm}
                     size="large"
                     icon={<ReloadOutlined />}
+                    className="rounded-lg border-gray-300 hover:border-blue-500"
                     disabled={uploadStatus === "uploading"}
                   >
                     Reset
                   </Button>
                 </Space>
-
                 {documentId && (
                   <Tag
                     color="blue"
                     icon={<InfoCircleOutlined />}
-                    className="px-3 py-1"
+                    className="px-3 py-1 rounded-full"
                   >
                     Document ID: {documentId}
                   </Tag>
@@ -649,6 +603,48 @@ const TaskCreation = () => {
           </Form>
         </Card>
       </div>
+
+      <style jsx>{`
+        .ant-form-item-label > label {
+          font-weight: 500;
+          color: #374151;
+        }
+        .ant-input,
+        .ant-select-selector,
+        .ant-picker {
+          border-radius: 8px !important;
+          border-color: #d1d5db !important;
+          transition: all 0.3s ease;
+        }
+        .ant-input:focus,
+        .ant-select-selector:focus,
+        .ant-picker-focused {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        .ant-btn-primary {
+          transition: background-color 0.3s ease;
+        }
+        .ant-upload-drag {
+          border: 2px dashed #d1d5db !important;
+          background: #f9fafb !important;
+          border-radius: 8px !important;
+          transition: all 0.3s ease;
+        }
+        .ant-upload-drag:hover {
+          border-color: #3b82f6 !important;
+          background: #eff6ff !important;
+        }
+        @media (max-width: 640px) {
+          .ant-form-item {
+            margin-bottom: 16px !important;
+          }
+          .ant-btn {
+            width: 100%;
+            margin-bottom: 8px;
+          }
+        }
+      `}</style>
     </TaskAdminPanelLayout>
   );
 };

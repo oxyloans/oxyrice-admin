@@ -24,9 +24,7 @@ import {
   CalendarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  UnorderedListOutlined,
   FileTextOutlined,
-  CommentOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -43,7 +41,7 @@ const LeaveManagement = () => {
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
-  const [activeTab, setActiveTab] = useState("all"); // "all" or "byDate"
+  const [activeTab, setActiveTab] = useState("all");
   const [actionModal, setActionModal] = useState({
     visible: false,
     leaveId: null,
@@ -53,12 +51,10 @@ const LeaveManagement = () => {
     processing: false,
   });
 
-  // Format date for API call
   const formatDateForApi = (date) => {
     return date.format("YYYY-MM-DD");
   };
 
-  // Fetch leaves data
   const fetchLeaves = async (date = dayjs()) => {
     setLoading(true);
     setError(null);
@@ -84,39 +80,32 @@ const LeaveManagement = () => {
     }
   };
 
-  // Refresh data
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
-  // Handle date change
   const handleDateChange = (date) => {
     if (date) {
       setSelectedDate(date);
     }
   };
 
-  // Handle tab change
   const handleTabChange = (activeKey) => {
     setActiveTab(activeKey);
   };
 
-  // Initial data fetch and refresh when dependencies change
   useEffect(() => {
     fetchLeaves(selectedDate);
   }, [selectedDate, refreshKey, activeTab]);
 
-  // Format the date display
   const formatDate = (dateString) => {
     return dayjs(dateString).format("MMM DD, YYYY");
   };
 
-  // Format the time display
   const formatTime = (dateTimeString) => {
     return dayjs(dateTimeString).format("hh:mm A");
   };
 
-  // Show action modal
   const showActionModal = (leaveId, userId, action) => {
     setActionModal({
       visible: true,
@@ -128,7 +117,6 @@ const LeaveManagement = () => {
     });
   };
 
-  // Close action modal
   const closeActionModal = () => {
     setActionModal({
       visible: false,
@@ -140,7 +128,6 @@ const LeaveManagement = () => {
     });
   };
 
-  // Handle admin comments change
   const handleCommentsChange = (e) => {
     setActionModal({
       ...actionModal,
@@ -148,13 +135,11 @@ const LeaveManagement = () => {
     });
   };
 
-  // Handle leave action (Approve/Reject)
   const handleLeaveAction = async () => {
     setActionModal({ ...actionModal, processing: true });
 
     try {
-      const adminId = "28bde0dd-541e-48ea-ac79-007b510ef42a"; // Replace with actual admin ID or fetch from auth system
-
+      const adminId = "28bde0dd-541e-48ea-ac79-007b510ef42a";
       const requestData = {
         adminComments: actionModal.comments,
         adminId: adminId,
@@ -163,13 +148,11 @@ const LeaveManagement = () => {
         userId: actionModal.userId,
       };
 
-      // Wait for the API request to complete
-      const response = await axios.patch(
+      await axios.patch(
         `${BASE_URL}/user-service/write/adminApproval`,
         requestData
       );
 
-      // First close the modal
       setActionModal({
         visible: false,
         leaveId: null,
@@ -179,7 +162,6 @@ const LeaveManagement = () => {
         processing: false,
       });
 
-      // Then show success message and refresh data
       message.success(
         `Leave request ${actionModal.action === "approve" ? "approved" : "rejected"} successfully`
       );
@@ -191,14 +173,12 @@ const LeaveManagement = () => {
     }
   };
 
-  // Count pending requests for badges
   const getPendingCount = () => {
     return leaves.filter(
       (leave) => !leave.adminStatus || leave.adminStatus === "PENDING"
     ).length;
   };
 
-  // Table columns configuration
   const columns = [
     {
       title: "S.No",
@@ -269,15 +249,12 @@ const LeaveManagement = () => {
       width: 290,
       render: (text) => (
         <Tooltip title={text}>
-          <div className="flex items-center">
-            {/* <CommentOutlined className="mr-2 text-gray-500" /> */}
-            <Paragraph
-              ellipsis={{ rows: 8, expandable: false }}
-              className="text-1xs m-0 max-w-[200px] sm:max-w-[300px] text-gray-600"
-            >
-              {text}
-            </Paragraph>
-          </div>
+          <Paragraph
+            ellipsis={{ rows: 2, expandable: false }}
+            className="text-xs m-0 max-w-[200px] sm:max-w-[250px] text-gray-600"
+          >
+            {text}
+          </Paragraph>
         </Tooltip>
       ),
     },
@@ -313,7 +290,8 @@ const LeaveManagement = () => {
             icon={<CheckCircleOutlined />}
             onClick={() => showActionModal(record.id, record.userId, "approve")}
             disabled={record.adminStatus === "APPROVED"}
-            className="bg-[#04AA6D] hover:bg-[#04AA6D] transition-colors duration-200"
+            className="bg-[#008CBA] hover:bg-[#008CBA] transition-colors duration-200"
+            aria-label={`Approve leave request for ${record.name}`}
           >
             Approve
           </Button>
@@ -323,7 +301,8 @@ const LeaveManagement = () => {
             icon={<CloseCircleOutlined />}
             onClick={() => showActionModal(record.id, record.userId, "reject")}
             disabled={record.adminStatus === "REJECTED"}
-            className=" bg-[#f44336] hover:bg-[#f44336] transition-colors duration-200"
+            className="bg-[#f44336] hover:[#f44336] transition-colors duration-200"
+            aria-label={`Reject leave request for ${record.name}`}
           >
             Reject
           </Button>
@@ -332,12 +311,11 @@ const LeaveManagement = () => {
     },
   ];
 
-  // Render leave data table or empty/loading state
   const renderLeaveData = () => {
     if (loading) {
       return (
         <div className="flex justify-center items-center p-10">
-          <Spin size="medium" tip="Loading leave data..." />
+          <Spin size="large" tip="Loading leave data..." />
         </div>
       );
     }
@@ -348,7 +326,7 @@ const LeaveManagement = () => {
           message={error}
           type="error"
           showIcon
-          className="mb-4 rounded-lg"
+          className="mb-4 rounded-lg shadow-sm"
         />
       );
     }
@@ -383,11 +361,13 @@ const LeaveManagement = () => {
           showSizeChanger: true,
           pageSizeOptions: ["5", "10", "20"],
         }}
-        className="mt-4"
+        className="mt-4 rounded-lg shadow-sm"
         scroll={{ x: 1000 }}
         bordered
         rowClassName={(record, index) =>
-          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+          index % 2 === 0
+            ? "bg-gray-50 hover:bg-gray-100"
+            : "bg-white hover:bg-gray-100"
         }
         summary={() => (
           <Table.Summary fixed>
@@ -410,7 +390,6 @@ const LeaveManagement = () => {
     );
   };
 
-  // Render date picker for the "By Date" tab
   const renderDatePicker = () => {
     if (activeTab === "byDate") {
       return (
@@ -418,7 +397,8 @@ const LeaveManagement = () => {
           value={selectedDate}
           onChange={handleDateChange}
           allowClear={false}
-          className="w-full md:w-auto border-gray-300 rounded-lg"
+          className="w-full sm:w-auto border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
+          aria-label="Select date for leave requests"
         />
       );
     }
@@ -428,7 +408,7 @@ const LeaveManagement = () => {
   return (
     <TaskAdminPanelLayout>
       <Card
-        className="shadow-lg rounded-xl bg-white"
+        className="shadow-md rounded-xl bg-white"
         title={
           <Row
             justify="space-between"
@@ -436,24 +416,27 @@ const LeaveManagement = () => {
             gutter={[8, 16]}
             className="w-full"
           >
-            <Col xs={24} md={12}>
+            <Col xs={24} sm={12}>
               <Title
                 level={4}
-                className="mb-0 text-lg md:text-xl lg:text-2xl text-gray-800"
+                className="mb-0 text-lg sm:text-xl md:text-2xl text-gray-800 font-bold"
               >
                 <CalendarOutlined className="mr-2 text-blue-600" />
                 Leave Management
               </Title>
             </Col>
-            <Col xs={24} md={12}>
+            <Col xs={24} sm={12}>
               <Row justify="end" gutter={[8, 8]} wrap>
-                <Col>{renderDatePicker()}</Col>
-                <Col>
+                <Col xs={12} sm={6}>
+                  {renderDatePicker()}
+                </Col>
+                <Col xs={12} sm={6}>
                   <Button
                     icon={<ReloadOutlined />}
                     onClick={handleRefresh}
                     type="primary"
-                    className="w-full bg-[#008CBA] hover:bg-[#008CBA] transition-colors duration-200"
+                    className="w-full bg-[#008CBA] hover:bg-[#008CBA] transition-colors duration-200 rounded-lg"
+                    aria-label="Refresh leave data"
                   >
                     Refresh
                   </Button>
@@ -473,10 +456,10 @@ const LeaveManagement = () => {
         >
           <TabPane
             tab={
-              <span>
+              <span className="flex items-center">
                 <FileTextOutlined />
                 <span className="ml-1">All Leaves</span>
-                {activeTab === "all" && getPendingCount() > 0 && (
+                {getPendingCount() > 0 && (
                   <Badge
                     count={getPendingCount()}
                     offset={[10, -5]}
@@ -491,10 +474,10 @@ const LeaveManagement = () => {
           </TabPane>
           <TabPane
             tab={
-              <span>
+              <span className="flex items-center">
                 <CalendarOutlined />
                 <span className="ml-1">By Date</span>
-                {activeTab === "byDate" && getPendingCount() > 0 && (
+                {getPendingCount() > 0 && (
                   <Badge
                     count={getPendingCount()}
                     offset={[10, -5]}
@@ -510,7 +493,6 @@ const LeaveManagement = () => {
         </Tabs>
       </Card>
 
-      {/* Approval/Rejection Modal */}
       <Modal
         title={
           <span className="text-lg font-semibold text-gray-800">
@@ -525,7 +507,8 @@ const LeaveManagement = () => {
             key="cancel"
             onClick={closeActionModal}
             disabled={actionModal.processing}
-            className="border-gray-300 text-gray-600 hover:text-gray-800"
+            className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
+            aria-label="Cancel action"
           >
             Cancel
           </Button>,
@@ -543,9 +526,10 @@ const LeaveManagement = () => {
             }
             className={
               actionModal.action === "approve"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
+                ? "bg-green-600 hover:bg-green-700 rounded-lg"
+                : "bg-red-600 hover:bg-red-700 rounded-lg"
             }
+            aria-label={`${actionModal.action === "approve" ? "Approve" : "Reject"} leave request`}
           >
             {actionModal.action === "approve" ? "Approve" : "Reject"}
           </Button>,
@@ -561,26 +545,98 @@ const LeaveManagement = () => {
             value={actionModal.comments}
             onChange={handleCommentsChange}
             placeholder={`Enter comments for ${actionModal.action} (optional)`}
-            className="mt-2 border-gray-300 rounded-lg"
+            className="mt-2 border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
+            aria-label="Enter comments for leave action"
           />
         </div>
       </Modal>
 
-      {/* Add some custom CSS for better tablet/mobile display */}
       <style jsx global>{`
         .leave-tabs .ant-tabs-nav {
           margin-bottom: 16px;
+          background: #ffffff;
+          border-radius: 8px;
+          padding: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-
+        .leave-tabs .ant-tabs-tab {
+          padding: 8px 16px;
+          font-weight: 500;
+          border-radius: 6px;
+        }
+        .leave-tabs .ant-tabs-tab-active {
+          background: #e6f4ff;
+        }
+        .ant-table {
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .ant-table-thead > tr > th {
+          background: #f8fafc;
+          font-weight: 600;
+          color: #1f2937;
+        }
+        .ant-table-row {
+          transition: background-color 0.2s ease;
+        }
+        .ant-table-row:hover {
+          background-color: #f1f5f9 !important;
+        }
+        .ant-card {
+          border: 1px solid #e5e7eb;
+        }
+        .ant-modal {
+          max-width: 90%;
+        }
         @media (max-width: 768px) {
           .leave-tabs .ant-tabs-tab {
-            padding: 8px 12px;
+            padding: 6px 12px;
+            font-size: 14px;
+          }
+          .ant-table {
+            font-size: 12px;
+          }
+          .ant-table-tbody > tr > td {
+            padding: 8px;
+          }
+          .ant-card-body {
+            padding: 12px;
+          }
+          .ant-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+          }
+          .ant-modal {
+            padding: 16px;
           }
         }
-
         @media (max-width: 480px) {
           .leave-tabs .ant-tabs-tab {
-            padding: 6px 10px;
+            padding: 4px 8px;
+            font-size: 12px;
+          }
+          .ant-table {
+            font-size: 10px;
+          }
+          .ant-table-tbody > tr > td {
+            padding: 6px;
+          }
+          .ant-card-title {
+            font-size: 16px;
+          }
+          .ant-btn {
+            padding: 4px 6px;
+            font-size: 10px;
+          }
+          .ant-modal {
+            padding: 12px;
+          }
+          .ant-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .ant-col {
+            width: 100%;
           }
         }
       `}</style>
