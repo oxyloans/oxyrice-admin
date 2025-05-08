@@ -437,10 +437,15 @@ const EndOfTheDay = () => {
                 {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
                 {task.taskAssignedBy && (
                   <Tooltip title="Assigned by">
-                    <Tag color="blue" className="ml-1 flex items-center">
-                      <TeamOutlined className="mr-1" />
-                      {task.taskAssignedBy}
-                    </Tag>
+                    <div className="flex items-center">
+                      <Tag color="blue" className="ml-1 flex items-center">
+                        <TeamOutlined className="mr-1" />
+                        {task.taskAssignedBy}
+                      </Tag>
+                      <span className="ml-2">
+                        Spent hours: {task.timeSpentHours || "N/A"}
+                      </span>
+                    </div>
                   </Tooltip>
                 )}
               </div>

@@ -175,7 +175,7 @@ const EmployeeRegisteredUsers = () => {
 
               {loading ? (
                 <div style={{ textAlign: "center", padding: "50px" }}>
-                  <Spin size="large" tip="Loading employees data..." />
+                  <Spin size="small" tip="Loading employees data..." />
                 </div>
               ) : error ? (
                 <Alert

@@ -89,18 +89,25 @@ function TaskManagementLogin() {
           "refreshToken",
           response.data.refreshToken || response.data.refreshToken
         );
+        localStorage.setItem("primaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
         localStorage.setItem("lastLogin", new Date().toISOString());
 
-        // Success animation
-        message.success({
-          content: "Login successful! Redirecting to dashboard...",
-          duration: 2,
-        });
-
-        setTimeout(() => {
-          navigate("/taskmanagement/dashboard");
-        }, 1000);
+        const primaryType = localStorage.getItem("primaryType");
+        if (primaryType === "HELPDESKSUPERADMIN") {
+          // Success animation
+          message.success({
+            content: "Login successful! Redirecting to dashboard...",
+            duration: 2,
+          });
+          setTimeout(() => {
+            navigate("/taskmanagement/dashboard");
+          }, 1000); // Delay navigation to show success message
+        } else {
+          // Show error if primaryType is not HELPDESKSUPERADMIN
+          setError("Access denied. Only HELPDESKSUPERADMIN users can log in.");
+          triggerShakeAnimation();
+        }
       } else {
         setError("Invalid credentials. Please try again.");
         triggerShakeAnimation();
