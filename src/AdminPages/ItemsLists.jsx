@@ -7,6 +7,7 @@ import {
   Select,
   Form,
   Input,
+  InputNumber,
   message,
   Row,
   Col,
@@ -23,6 +24,7 @@ const { Option } = Select;
 const ItemList = () => {
   const [items, setItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
@@ -32,6 +34,8 @@ const ItemList = () => {
   const [form] = Form.useForm(); // Create a form instance
   const accessToken = localStorage.getItem("accessToken");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [offerLoading, setOfferLoading] = useState(false);
+  const [offerForm] = Form.useForm(); // Create a form instance for offers
 
   useEffect(() => {
     fetchItemsData();
@@ -122,6 +126,52 @@ const ItemList = () => {
       } finally {
         setLoading(false);
       }
+    }
+  }; // New function to handle creating an offer
+  const handleCreateOffer = async (values) => {
+    setOfferLoading(true);
+    try {
+      if (!values.minQty || values.minQty < 1) {
+        message.error("Minimum quantity must be at least 1");
+        setOfferLoading(false);
+        return;
+      }
+
+      // Validate that freeQty is at least 1
+      if (!values.freeQty || values.freeQty < 1) {
+        message.error("Free quantity must be at least 1");
+        setOfferLoading(false);
+        return;
+      }
+      const requestBody = {
+        freeItemId: selectedItem.itemId,
+        freeItemName: selectedItem.itemName,
+        freeQty: values.freeQty,
+        minQty: values.minQty,
+        minQtyKg: values.minQtyKg,
+        offerName: values.offerName,
+      };
+
+      await axios.post(
+        `${BASE_URL}/cart-service/cart/createOffer`,
+        requestBody,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      message.success("Offer created successfully");
+      handleOfferModalCancel();
+    } catch (error) {
+      message.error(
+        "Error creating offer: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setOfferLoading(false);
     }
   };
 
@@ -226,9 +276,20 @@ const ItemList = () => {
     setIsModalVisible(true);
   };
 
+  // New function to show offer creation modal
+  const showOfferModal = (item) => {
+    setSelectedItem(item);
+    setIsOfferModalVisible(true);
+  };
+
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedItem(null);
+  };
+  // New function to handle offer modal cancel
+  const handleOfferModalCancel = () => {
+    setIsOfferModalVisible(false);
+    offerForm.resetFields();
   };
 
   // Pagination logic
@@ -369,7 +430,7 @@ const ItemList = () => {
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "8px",
+            gap: "10px",
             justifyContent: "center",
           }}
         >
@@ -377,10 +438,15 @@ const ItemList = () => {
           <Button
             onClick={() => showUpdateModal(item)}
             style={{
-              backgroundColor: "#008CBA",
-              color: "white",
+              minWidth: "120px",
+              padding: "8px 12px",
+              backgroundColor: "#3498db", // Blue
+              color: "#fff",
               border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
             }}
             disabled={loading}
@@ -388,19 +454,49 @@ const ItemList = () => {
             Edit
           </Button>
 
-          {/* Barcode Information Button */}
+          {/* Create Offer Button */}
+          <Button
+            onClick={() => showOfferModal(item)}
+            style={{
+              minWidth: "120px",
+              padding: "8px 12px",
+              backgroundColor: "#f39c12", // Orange
+              color: "#fff",
+              border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            disabled={loading}
+          >
+            Create Offer
+          </Button>
+
+          {/* Barcode Info Button */}
           <Button
             style={{
-              backgroundColor: "#1AB394",
+              minWidth: "120px",
+              padding: "8px 12px",
+              backgroundColor: "#1AB394", // Green
               border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
             }}
             disabled={loading}
           >
             <Link
               to={`/admin/allinformationofbarcode/${item.itemId}`}
-              style={{ color: "white", textDecoration: "none" }}
+              style={{
+                color: "white",
+                textDecoration: "none",
+                width: "100%",
+                textAlign: "center",
+              }}
             >
               Barcode Info
             </Link>
@@ -408,12 +504,17 @@ const ItemList = () => {
 
           {/* View Bar Codes Button */}
           <Button
-            type="primary"
             onClick={() => handleViewGeneratedBarCodes(item)}
             style={{
-              backgroundColor: "#008CBA",
+              minWidth: "140px",
+              padding: "8px 12px",
+              backgroundColor: "#2980b9", // Darker blue
+              color: "#fff",
               border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
             }}
             disabled={loading}
@@ -423,13 +524,17 @@ const ItemList = () => {
 
           {/* Generate Bar Codes Button */}
           <Button
-            type="primary"
             onClick={() => handleToGenerateBarCodes(item)}
             style={{
-              backgroundColor: "#1AB394",
-              color: "white",
+              minWidth: "160px",
+              padding: "8px 12px",
+              backgroundColor: "#27ae60", // Darker green
+              color: "#fff",
               border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
               display: "flex",
+              justifyContent: "center",
               alignItems: "center",
             }}
             disabled={loading}
@@ -581,6 +686,120 @@ const ItemList = () => {
                 style={{ backgroundColor: "#1C84C6", color: "white" }}
               >
                 Update
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
+      {/* Create Offer Modal */}
+      <Modal
+        title={`Create Offer for ${selectedItem?.itemName || ""}`}
+        open={isOfferModalVisible}
+        onCancel={handleOfferModalCancel}
+        footer={null}
+      >
+        {selectedItem && (
+          <Form form={offerForm} onFinish={handleCreateOffer} layout="vertical">
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item
+                  label="Offer Name"
+                  name="offerName"
+                  rules={[
+                    { required: true, message: "Please enter an offer name" },
+                  ]}
+                >
+                  <Input placeholder="E.g., Buy X Get Y Free" />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Free Quantity"
+                  name="freeQty"
+                  rules={[
+                    { required: true, message: "Please enter free quantity" },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Free quantity must be at least 1",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{ width: "100%" }}
+                    placeholder="Number of free items"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={12}>
+                <Form.Item
+                  label="Minimum Quantity Required"
+                  name="minQty"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter minimum quantity",
+                    },
+                    {
+                      type: "number",
+                      min: 1,
+                      message: "Minimum quantity must be at least 1",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={1}
+                    style={{ width: "100%" }}
+                    placeholder="Minimum quantity to qualify"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24}>
+                <Form.Item
+                  label="Minimum Weight Required (KG)"
+                  name="minQtyKg"
+                  rules={[
+                    { required: true, message: "Please select minimum weight" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Select minimum weight"
+                    style={{ width: "100%" }}
+                  >
+                    <Option value={1}>1 KG</Option>
+                    <Option value={5}>5 KG</Option>
+                    <Option value={10}>10 KG</Option>
+                    <Option value={26}>26 KG</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24}>
+                <div className="bg-gray-100 p-4 rounded mb-4">
+                  <p className="font-bold">Selected Item Information:</p>
+                  <p>Item ID: {selectedItem.itemId}</p>
+                  <p>Item Name: {selectedItem.itemName}</p>
+                  <p>
+                    Current Weight: {selectedItem.weight || 0}{" "}
+                    {selectedItem.units}
+                  </p>
+                </div>
+              </Col>
+            </Row>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={offerLoading}
+                style={{ backgroundColor: "#f39c12", color: "white" }}
+              >
+                Create Offer
               </Button>
             </Form.Item>
           </Form>

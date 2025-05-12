@@ -60,12 +60,17 @@ const AdminPanelLayoutTest = ({ children }) => {
       link: "/admin/user_queries",
     },
     {
-      key: "allreferrals",  
+      key: "allreferrals",
       label: "All Referrals",
       icon: <FaExchangeAlt />,
       link: "/admin/all-referrals",
-    }
-,
+    },
+    {
+      key: "allitemsofferLists",
+      label: "Items Offer Lists",
+      icon: <FaSlideshare />,
+      link: "/admin/items-offerlists",
+    },
     {
       key: "Category inventory",
       label: "Category Inventory",
