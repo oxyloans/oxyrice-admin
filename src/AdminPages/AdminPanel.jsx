@@ -1,19 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { useMediaQuery } from "react-responsive";
+
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
-import { FaUserCircle } from "react-icons/fa";
 
-import { FaUserEdit } from "react-icons/fa";
 import {
   FaTachometerAlt,
-  FaUsers,
   FaSlideshare,
   FaBoxOpen,
-  FaStore,
+
   FaShoppingCart,
   FaHandsHelping,
 } from "react-icons/fa";
