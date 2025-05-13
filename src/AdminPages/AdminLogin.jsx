@@ -89,18 +89,51 @@ function AdminLogin() {
           "refreshToken",
           response.data.refreshToken || response.data.refreshToken
         );
+        localStorage.setItem("primaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
         localStorage.setItem("lastLogin", new Date().toISOString());
 
-        // Success animation
-        message.success({
-          content: "Login successful! Redirecting to dashboard...",
-          duration: 2,
-        });
+        const primaryType = response.data.primaryType;
+        const currentMode = localStorage.getItem("userType") || "live";
 
-        setTimeout(() => {
-          navigate("/admin/dashboard");
-        }, 1000);
+        // Check for different permission requirements based on environment
+        if (currentMode === "live") {
+          // Live environment requires HELPDESKSUPERADMIN
+          if (primaryType === "HELPDESKSUPERADMIN") {
+            // Success animation
+            message.success({
+              content: "Login successful! Redirecting to dashboard...",
+              duration: 2,
+            });
+            setTimeout(() => {
+              navigate("/admin/dashboard");
+            }, 1000); // Delay navigation to show success message
+          } else {
+            // Show error if not HELPDESKSUPERADMIN in live environment
+            setError(
+              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment."
+            );
+            triggerShakeAnimation();
+          }
+        } else if (currentMode === "test") {
+          // Test environment requires SELLER
+          if (primaryType === "SELLER") {
+            // Success animation
+            message.success({
+              content: "Login successful! Redirecting to dashboard...",
+              duration: 2,
+            });
+            setTimeout(() => {
+              navigate("/admin/dashboard");
+            }, 1000); // Delay navigation to show success message
+          } else {
+            // Show error if not SELLER in test environment
+            setError(
+              "Access denied. Only SELLER users can access Test environment."
+            );
+            triggerShakeAnimation();
+          }
+        }
       } else {
         setError("Invalid credentials. Please try again.");
         triggerShakeAnimation();
@@ -152,7 +185,7 @@ function AdminLogin() {
           >
             <div className="flex items-center justify-center">
               <div
-                className={` ${activeMode === "live" ? "bg-[#008CBA] animate-pulse" : "bg-gray-300"}`}
+                className={`mr-2  rounded-full ${activeMode === "live" ? "bg-blue-200 animate-pulse" : "bg-gray-300"}`}
               ></div>
               Live Environment
             </div>
@@ -169,7 +202,7 @@ function AdminLogin() {
           >
             <div className="flex items-center justify-center">
               <div
-                className={` ${activeMode === "test" ? "bg-[#04AA6D] animate-pulse" : "bg-gray-300"}`}
+                className={`mr-2  ${activeMode === "test" ? "bg-green-200 animate-pulse" : "bg-gray-300"}`}
               ></div>
               Test Environment
             </div>
@@ -279,6 +312,16 @@ function AdminLogin() {
                 className="rounded-lg"
               />
             </Form.Item>
+
+            {/* <Form.Item>
+              <Checkbox
+                checked={rememberMe}
+                onChange={handleRememberMeChange}
+                className="text-gray-600"
+              >
+                Remember me
+              </Checkbox>
+            </Form.Item> */}
 
             <Form.Item>
               <Button

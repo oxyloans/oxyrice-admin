@@ -183,6 +183,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           transition: "left 0.3s ease-in-out", // Smoother transition
           position: "fixed",
           height: "100vh",
+          overflowY: "auto",
         }}
       >
         <div className="demo-logo-vertical" style={{ padding: "10px 0" }}>
@@ -352,6 +353,48 @@ const AdminPanelLayoutTest = ({ children }) => {
           ASKOXY.AI Admin ©2025 Created by ASKOXY.AI Company
         </Footer>
       </Layout>
+      {/* Custom scrollbar styling */}
+      <style jsx>{`
+        /* Customize scrollbar for the menu */
+        .ant-menu::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .ant-menu::-webkit-scrollbar-track {
+          background: #1a202c;
+        }
+
+        .ant-menu::-webkit-scrollbar-thumb {
+          background-color: #4a5568;
+          border-radius: 10px;
+        }
+
+        /* For Firefox */
+        .ant-menu {
+          scrollbar-width: thin;
+          scrollbar-color: #4a5568 #1a202c;
+        }
+
+        /* Custom scrollbar for the entire Sider */
+        .ant-layout-sider::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        .ant-layout-sider::-webkit-scrollbar-track {
+          background: #1a202c;
+        }
+
+        .ant-layout-sider::-webkit-scrollbar-thumb {
+          background-color: #4a5568;
+          border-radius: 10px;
+        }
+
+        /* For Firefox */
+        .ant-layout-sider {
+          scrollbar-width: thin;
+          scrollbar-color: #4a5568 #1a202c;
+        }
+      `}</style>
     </Layout>
   );
 };
