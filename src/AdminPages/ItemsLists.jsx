@@ -11,6 +11,7 @@ import {
   message,
   Row,
   Col,
+  Popconfirm,
   Tag,
 } from "antd";
 import { Link } from "react-router-dom";
@@ -403,21 +404,27 @@ const ItemList = () => {
       key: "isActive",
       align: "center",
       render: (isActive, record) => {
-        // Ensure boolean conversion
         const status = isActive === true || isActive === "true";
 
         return (
-          <div>
-            <button
-              onClick={() => UpdateItemStatus(record.itemId, status)}
-              danger={!status} // Red button for deactivate
-              style={{ marginLeft: "10px", align: "center" }}
+          <Popconfirm
+            title={`Are you sure you want to mark this item as ${status ? "Inactive" : "Active"}?`}
+            onConfirm={() => UpdateItemStatus(record.itemId, status)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              style={{
+                backgroundColor: status ? "#008CBA" : "#f44336",
+                color: "white",
+                border: "none",
+               
+                textAlign: "center",
+              }}
             >
-              <Tag color={status ? "green" : "red"}>
-                {status ? "Active" : "Inactive"}
-              </Tag>
-            </button>
-          </div>
+              {status ? "Active" : "Inactive"}
+            </Button>
+          </Popconfirm>
         );
       },
     },

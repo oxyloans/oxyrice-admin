@@ -10,6 +10,7 @@ import {
   Select,
   Row,
   Col,
+  Popconfirm,
 } from "antd";
 import axios from "axios";
 import AdminPanelLayout from "./AdminPanel.jsx";
@@ -225,17 +226,24 @@ const SubscriptionPlansList = () => {
       key: "status",
       align: "center",
       render: (isActive, record) => (
-        <Button
-          type="default"
-          onClick={() => updateSubscriptionStatus(record.planId, isActive)}
-          loading={loading}
-          style={{
-            backgroundColor: isActive ? "#1C84C6" : "#EC4758",
-            color: "white",
-          }}
+        <Popconfirm
+          title={`Are you sure you want to ${isActive ? "deactivate" : "activate"} this plan?`}
+          onConfirm={() => updateSubscriptionStatus(record.planId, isActive)}
+          okText="Yes"
+          cancelText="No"
+          placement="topRight"
         >
-          {isActive ? "Active" : "Inactive"}
-        </Button>
+          <Button
+            type="default"
+            loading={loading}
+            style={{
+              backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+              color: "white",
+            }}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </Button>
+        </Popconfirm>
       ),
     },
     {

@@ -11,6 +11,7 @@ import {
   Col,
   Select,
   message,
+  Popconfirm,
 } from "antd";
 import { EditOutlined, UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -425,17 +426,23 @@ const fetchCategories = async () => {
             dataIndex="isActive"
             align="center"
             render={(isActive, record) => (
-              <Button
-                type="default"
-                onClick={() => updateCategoryStatus(record.id, isActive)}
-                loading={loading}
-                style={{
-                  backgroundColor: isActive ? "#1C84C6" : "#EC4758",
-                  color: "white",
-                }}
+              <Popconfirm
+                title={`Are you sure you want to mark this category as ${isActive ? "Inactive" : "Active"}?`}
+                onConfirm={() => updateCategoryStatus(record.id, isActive)}
+                okText="Yes"
+                cancelText="No"
               >
-                {isActive ? "Active" : "Inactive"}
-              </Button>
+                <Button
+                  type="default"
+                  loading={loading}
+                  style={{
+                    backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+                    color: "white",
+                  }}
+                >
+                  {isActive ? "Active" : "Inactive"}
+                </Button>
+              </Popconfirm>
             )}
           />
 

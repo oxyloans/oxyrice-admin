@@ -12,6 +12,7 @@ import {
   Spin,
   Row,
   Col,
+  Popconfirm,
 } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
@@ -190,9 +191,15 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
       render: (isActive, record) => (
+        <Popconfirm
+        title={`Are you sure you want to mark this coupon as ${isActive ? 'Inactive' : 'Active'}?`}
+        onConfirm={() => updateCouponStatus(record.couponId, isActive)}
+        okText="Yes"
+        cancelText="No"
+      >
         <Button
           type="default"
-          onClick={() => updateCouponStatus(record.couponId, isActive)}
+          // onClick={() => updateCouponStatus(record.couponId, isActive)}
           style={{
             backgroundColor: isActive ? "#1C84C6" : "#EC4758",
             color: "white",
@@ -201,6 +208,7 @@ const Coupons = () => {
         >
           {isActive ? "Active" : "Inactive"}
         </Button>
+        </Popconfirm>
       ),
     },
     {
@@ -209,6 +217,7 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
       render: (_, record) => (
+
         <Button
           icon={<EditOutlined />}
           onClick={() => showModal(record)}

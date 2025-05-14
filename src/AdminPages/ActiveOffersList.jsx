@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Table, Tag, Typography, Spin, Button } from "antd";
+import { Card, Table, Tag, Typography, Spin, Button, Popconfirm } from "antd";
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
@@ -110,17 +110,25 @@ const ActiveOffersList = () => {
             alignItems: "center",
           }}
         >
-          <Tag color={record.active ? "blue" : "volcano"}>
-            {record.active ? "Active" : "Inactive"}
-          </Tag>
-          <Button
-            size="small"
-            loading={updatingId === record.id}
-            onClick={() => toggleOfferStatus(record.id, record.active)}
-            style={{ marginTop: 5 }}
+          <Popconfirm
+            title={`Are you sure you want to ${record.active ? "deactivate" : "activate"} this offer?`}
+            onConfirm={() => toggleOfferStatus(record.id, record.active)}
+            okText="Yes"
+            cancelText="No"
           >
-            {record.active ? "Deactivate" : "Activate"}
-          </Button>
+            <Button
+              size="medium"
+              loading={updatingId === record.id}
+              style={{
+                marginTop: 5,
+                backgroundColor: record.active ? "#008CBA" : "#f44336", // Active = blue, Inactive = red
+                color: "white",
+                border: "none",
+              }}
+            >
+              {record.active ? "Active" : "Inactive"}
+            </Button>
+          </Popconfirm>
         </div>
       ),
     },
