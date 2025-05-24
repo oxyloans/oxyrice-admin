@@ -138,7 +138,7 @@ const OrdersPending = () => {
       render: (type) => {
         if (type === 1) return <Tag color="green">ONLINE</Tag>;
         if (type === 2) return <Tag color="blue">COD</Tag>;
-        return <Tag color="default">N/A</Tag>;
+        return <Tag color="default"></Tag>;
       },
       filters: [
         { text: "Online", value: 1 },
@@ -152,7 +152,7 @@ const OrdersPending = () => {
       dataIndex: "paymentStatus",
       key: "paymentStatus",
       render: (status) => {
-        if (!status) return <Tag color="default">N/A</Tag>;
+        if (!status) return <Tag color="default"></Tag>;
         if (status.toLowerCase() === "paid")
           return <Tag color="green">PAID</Tag>;
         if (status.toLowerCase() === "pending")
@@ -300,7 +300,7 @@ const OrdersPending = () => {
             ? "COD"
             : "Other"
         : "Other",
-      "Payment Status": item.paymentStatus || "N/A",
+      "Payment Status": item.paymentStatus || "",
       "Order Status": item.orderStatus
         ? (() => {
             const statusMap = {
@@ -418,10 +418,10 @@ const OrdersPending = () => {
                 onChange={handleEntriesPerPageChange}
                 style={{ width: 80 }}
               >
-                <Option value={5}>5</Option>
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
                 <Option value={50}>50</Option>
+                <Option value={100}>100</Option>
+                <Option value={200}>200</Option>
+                <Option value={500}>500</Option>
               </Select>{" "}
               entries
             </Col>

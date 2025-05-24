@@ -592,7 +592,7 @@ const Ordersdetails = () => {
             >
               <Button
                 className="text-white w-full sm:w-auto"
-                style={{ backgroundColor: "#1AB394" }}
+                style={{ backgroundColor: "#1AB394",color: "white" }}
                 onClick={fetchOrderDetails}
                 loading={loading}
               >
@@ -600,7 +600,7 @@ const Ordersdetails = () => {
               </Button>
               <Button
                 className="text-white w-full sm:w-auto flex items-center justify-center gap-2"
-                style={{ backgroundColor: "#1c84c6" }}
+                style={{ backgroundColor: "#1c84c6",color: "white" }}
                 onClick={() => handleDownloadExcel(filteredItems)} // Use filteredItems for download
               >
                 <AiOutlineDownload className="text-lg" />

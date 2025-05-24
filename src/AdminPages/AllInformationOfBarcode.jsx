@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import AdminPanelLayoutTest from "./AdminPanel";
-import { Table, Col, Row, Select, Tag, Button, message } from "antd";
+import { Table, Col, Row, Select, Tag, Button, message,Spin } from "antd";
 import { useParams } from "react-router-dom";
 import { DownloadOutlined } from "@ant-design/icons";
 import BASE_URL from "./Config";
@@ -139,7 +139,7 @@ const AllInforMationOfBarCode = () => {
       align: "center",
       render: (_, record) => (
         <Button
-          type="primary"
+         style={{ backgroundColor: "#2980b9", color: "white" }}
           icon={<DownloadOutlined />}
           onClick={() => handleDownloadBarcode(record)}
           loading={downloadLoading}
@@ -165,6 +165,12 @@ const AllInforMationOfBarCode = () => {
 
       {/* Display Error */}
       {error && <p style={{ color: "red" }}>Error: {error.message}</p>}
+      {/* Display Loading Spinner */}
+      {loading && (
+        <div className="flex justify-center items-center h-40">
+          <Spin size="medium" tip="Loading barcode information..." />
+        </div>
+      )}
 
       {/* Display Data in Table */}
       {!loading && data.length > 0 && (

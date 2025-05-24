@@ -26,7 +26,7 @@ const SubscriptionPlansList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredPlans, setFilteredPlans] = useState([]);
   const [selectedSubscription, setSelectedSubscription] = useState(null); // Track selected plan for update

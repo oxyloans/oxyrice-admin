@@ -17,6 +17,7 @@ import {
   Tooltip,
   Row,
   Col,
+  Statistic,
 } from "antd";
 import {
   SearchOutlined,
@@ -27,12 +28,13 @@ import {
   LinkOutlined,
   CommentOutlined,
   UserOutlined,
-  TeamOutlined,
   SaveOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
   PlusCircleOutlined,
   ExclamationCircleOutlined,
+  FilterOutlined,
+  ClearOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -51,6 +53,7 @@ const TasksList = () => {
   const [currentTask, setCurrentTask] = useState(null);
   const [editForm] = Form.useForm();
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [activeStatusFilter, setActiveStatusFilter] = useState(null);
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     isMobile: window.innerWidth < 768,
@@ -143,13 +146,43 @@ const TasksList = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(
-    (task) =>
+  // Normalize status for comparison
+  const normalizeStatus = (status) => {
+    if (!status) return "UNKNOWN";
+
+    const statusMap = {
+      1: "CREATED",
+      2: "ACCEPTED",
+      3: "PENDING",
+      4: "COMPLETED",
+    };
+
+    return statusMap[status] || status.toString().toUpperCase();
+  };
+
+  // Handle status card click
+  const handleStatusCardClick = (status) => {
+    if (activeStatusFilter === status) {
+      setActiveStatusFilter(null); // Clear filter if same card is clicked
+    } else {
+      setActiveStatusFilter(status); // Set new filter
+    }
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
       task.taskcontent?.toLowerCase().includes(searchText.toLowerCase()) ||
       task.createdby?.toLowerCase().includes(searchText.toLowerCase()) ||
       task.taskassingnedby?.toLowerCase().includes(searchText.toLowerCase()) ||
-      task.comments?.toLowerCase().includes(searchText.toLowerCase())
-  );
+      task.comments?.toLowerCase().includes(searchText.toLowerCase());
+
+    const taskStatus = normalizeStatus(task.status);
+    const matchesStatus = activeStatusFilter
+      ? taskStatus === activeStatusFilter
+      : true;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const parseAssignees = (assigneesData) => {
     if (!assigneesData) return [];
@@ -174,8 +207,11 @@ const TasksList = () => {
       link: task.link || "",
     });
 
-    setEditDrawerVisible(screenSize.isMobile);
-    setEditModalVisible(!screenSize.isMobile);
+    if (screenSize.isMobile) {
+      setEditDrawerVisible(true);
+    } else {
+      setEditModalVisible(true);
+    }
   };
 
   const handleUpdateTask = async () => {
@@ -223,338 +259,213 @@ const TasksList = () => {
 
   const renderAssignedMembers = (assignees) => {
     const assigneeList = parseAssignees(assignees);
+    if (!assigneeList.length) {
+      return <Text type="secondary">Not assigned</Text>;
+    }
+
     return (
-      <Space wrap size={4} className="justify-center">
-        {assigneeList.map((assignee, index) => (
-          <Tag key={index} color="blue" className="m-0 font-medium">
-            {assignee}
-          </Tag>
-        ))}
-        {!assigneeList.length && <Text type="secondary">Not assigned</Text>}
-      </Space>
+      <div style={{ textAlign: "center" }}>
+        <Space wrap size={2} direction="vertical">
+          {assigneeList.map((assignee, index) => (
+            <Tag key={index} color="blue" size="small">
+              {assignee}
+            </Tag>
+          ))}
+        </Space>
+      </div>
     );
   };
 
   const renderLink = (link) => {
-    if (!link) return <Text type="secondary">No link</Text>;
+    if (!link)
+      return (
+        <div style={{ textAlign: "center" }}>
+          <Text type="secondary">No link</Text>
+        </div>
+      );
     const formattedLink = link.startsWith("http") ? link : `https://${link}`;
     return (
-      <a
-        href={formattedLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center text-blue-500 hover:text-blue-700 transition-colors"
-      >
-        <LinkOutlined className="mr-1" />
-        <span className="truncate max-w-[120px]">{link}</span>
-      </a>
+      <div style={{ textAlign: "center" }}>
+        <Tooltip title={link}>
+          <a
+            href={formattedLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:text-blue-700"
+          >
+            <LinkOutlined />
+            <span className="ml-1 max-w-[100px] truncate inline-block">
+              {link}
+            </span>
+          </a>
+        </Tooltip>
+      </div>
     );
   };
 
   const renderComments = (comments) => {
-    if (!comments) return <Text type="secondary">No comments</Text>;
-    return (
-      <Tooltip title={comments}>
-        <div className="flex items-center max-w-[150px]">
-          <CommentOutlined className="mr-1 text-gray-500" />
-          <span className="truncate text-gray-600">{comments}</span>
+    if (!comments)
+      return (
+        <div style={{ textAlign: "center" }}>
+          <Text type="secondary">No comments</Text>
         </div>
-      </Tooltip>
+      );
+    return (
+      <div style={{ textAlign: "center" }}>
+        <Tooltip title={comments}>
+          <div className="flex items-center justify-center">
+            <CommentOutlined className="text-gray-500" />
+            <span className="ml-1 max-w-[100px] truncate">{comments}</span>
+          </div>
+        </Tooltip>
+      </div>
     );
   };
 
-  const getColumns = () => {
-    const baseColumns = [
-      {
-        title: "S.No",
-        key: "serialNumber",
-        width: 60,
-        render: (_, __, index) => index + 1,
-        align: "center",
+  const columns = [
+    {
+      title: "S.No",
+      key: "serialNumber",
+      width: 60,
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      width: 80,
+      align: "center",
+      render: (id) => (
+        <Text type="secondary" style={{ fontFamily: "monospace" }}>
+          #{id?.slice(-4) || "N/A"}
+        </Text>
+      ),
+    },
+    {
+      title: "Task",
+      dataIndex: "taskcontent",
+      key: "taskcontent",
+      width: 200,
+      align: "center",
+      ellipsis: {
+        showTitle: false, // disables default tooltip
       },
-      {
-        title: "Task",
-        dataIndex: "taskcontent",
-        key: "taskcontent",
-        align: "center",
-        width: screenSize.isMobile ? 120 : 200,
-        render: (content) => (
-          <Tooltip title={content}>
-            <span className="truncate block max-w-[180px] text-gray-800">
-              {content}
-            </span>
-          </Tooltip>
-        ),
-      },
-      {
-        title: "Comments",
-        dataIndex: "comments",
-        key: "comments",
-        align: "center",
-        width: screenSize.isMobile ? 100 : 150,
-        render: renderComments,
-      },
-      {
-        title: "Link",
-        dataIndex: "link",
-        key: "link",
-        align: "center",
-        width: screenSize.isMobile ? 100 : 120,
-        render: renderLink,
-      },
-      {
-        title: "Priority",
-        dataIndex: "priority",
-        key: "priority",
-        align: "center",
-        width: 100,
-        render: (priority) => (
+      render: (content) => (
+        <Tooltip placement="topLeft" title={content}>
+          <Typography.Text>{content}</Typography.Text>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Assigned To",
+      dataIndex: "taskassingnedto",
+      key: "taskassingnedto",
+      width: 150,
+      align: "center",
+      render: (taskassingnedto, record) =>
+        renderAssignedMembers(taskassingnedto || record.taskassingnedby),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 120,
+      align: "center",
+      render: (status) => {
+        const normalizedStatus = normalizeStatus(status);
+
+        const statusConfig = {
+          CREATED: { color: "blue" },
+          ACCEPTED: { color: "green" },
+          PENDING: { color: "orange" },
+          COMPLETED: { color: "purple" },
+        };
+
+        const config = statusConfig[normalizedStatus] || { color: "default" };
+
+        return (
           <Tag
-            color={priority === "HIGH" ? "red" : "green"}
-            className="font-medium"
+            color={config.color}
+            style={{
+              display: "inline-flex",
+              justifyContent: "center",
+              minWidth: 80,
+              textAlign: "center",
+            }}
           >
-            {priority || "LOW"}
+            {normalizedStatus}
           </Tag>
-        ),
+        );
       },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        width: 120,
-        render: (status) => {
-          const statusMap = {
-            1: { text: "CREATED", color: "blue", icon: <PlusCircleOutlined /> },
-            2: {
-              text: "ACCEPTED",
-              color: "green",
-              icon: <CheckCircleOutlined />,
-            },
-            3: {
-              text: "PENDING",
-              color: "orange",
-              icon: <ClockCircleOutlined />,
-            },
-            4: {
-              text: "COMPLETED",
-              color: "purple",
-              icon: <CheckCircleOutlined />,
-            },
-            CREATED: {
-              text: "CREATED",
-              color: "blue",
-              icon: <PlusCircleOutlined />,
-            },
-            ACCEPTED: {
-              text: "ACCEPTED",
-              color: "green",
-              icon: <CheckCircleOutlined />,
-            },
-            PENDING: {
-              text: "PENDING",
-              color: "orange",
-              icon: <ClockCircleOutlined />,
-            },
-            COMPLETED: {
-              text: "COMPLETED",
-              color: "purple",
-              icon: <CheckCircleOutlined />,
-            },
-          };
-
-          const statusObj = statusMap[status] || {
-            text: status || "Unknown",
-            color: "default",
-            icon: <ExclamationCircleOutlined />,
-          };
-
-          return (
-            <Tag
-              color={statusObj.color}
-              className="flex items-center gap-1 font-medium"
-            >
-              {statusObj.icon}
-              {statusObj.text}
-            </Tag>
-          );
-        },
-        filters: [
-          { text: "CREATED", value: "1" },
-          { text: "ACCEPTED", value: "2" },
-          { text: "PENDING", value: "3" },
-          { text: "COMPLETED", value: "4" },
-        ],
-        onFilter: (value, record) =>
-          record.status === value ||
-          record.status === value.toString() ||
-          (value === "1" && record.status === "CREATED") ||
-          (value === "2" && record.status === "ACCEPTED") ||
-          (value === "3" && record.status === "PENDING") ||
-          (value === "4" && record.status === "COMPLETED"),
+    },
+    {
+      title: "Created By",
+      dataIndex: "createdby",
+      key: "createdby",
+      width: 80,
+      align: "center",
+      render: (createdby) => <Tag color="blue">{createdby || "N/A"}</Tag>,
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      key: "priority",
+      width: 100,
+      align: "center",
+      render: (priority) => {
+        const color = priority === "HIGH" ? "red" : "green";
+        return <Tag color={color}>{priority || "LOW"}</Tag>;
       },
-      {
-        title: "Actions",
-        key: "actions",
-        align: "center",
-        width: 80,
-        render: (_, record) => (
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEditTask(record)}
-            className="text-blue-600 hover:text-blue-800"
-            aria-label={`Edit task ${record.taskcontent}`}
-            title="Edit Task"
-          />
-        ),
-      },
-    ];
-
-    if (!screenSize.isMobile) {
-      baseColumns.splice(1, 0, {
-        title: "ID",
-        dataIndex: "id",
-        key: "id",
-        align: "center",
-        width: 80,
-        render: (id) => (
-          <Text type="secondary" className="font-mono text-xs text-gray-600">
-            #{id?.substring(id.length - 4) || "N/A"}
-          </Text>
-        ),
-      });
-
-      baseColumns.splice(3, 0, {
-        title: "Created By",
-        dataIndex: "createdby",
-        key: "createdby",
-        align: "center",
-        width: 120,
-        render: (createdby) => (
-          <Tag
-            color={createdby === "ADMIN" ? "blue" : "green"}
-            className="font-medium"
-          >
-            {createdby || "N/A"}
-          </Tag>
-        ),
-      });
-
-      baseColumns.splice(4, 0, {
-        title: "Assigned To",
-        dataIndex: "taskassingnedto",
-        key: "taskassingnedto",
-        align: "center",
-        width: 150,
-        render: (taskassingnedto, record) => {
-          const assignees = parseAssignees(
-            taskassingnedto || record.taskassingnedby
-          );
-          if (assignees.length > 2) {
-            return (
-              <Space direction="vertical" size={4} align="center">
-                <Space wrap size={4}>
-                  <Tag color="blue" className="font-medium">
-                    {assignees[0]}
-                  </Tag>
-                  <Tag color="blue" className="font-medium">
-                    {assignees[1]}
-                  </Tag>
-                </Space>
-                <Badge
-                  count={`+${assignees.length - 2}`}
-                  style={{ backgroundColor: "#1890ff" }}
-                  title={assignees.slice(2).join(", ")}
-                />
-              </Space>
-            );
-          }
-          return renderAssignedMembers(
-            taskassingnedto || record.taskassingnedby
-          );
-        },
-      });
-    }
-
-    return baseColumns;
-  };
-
-  const expandableConfig = screenSize.isMobile
-    ? {
-        expandedRowRender: (record) => (
-          <div className="p-3 bg-gray-50 space-y-2 rounded-lg">
-            <div>
-              <Text strong className="text-gray-800">
-                Task ID:{" "}
-              </Text>
-              <Text
-                type="secondary"
-                className="font-mono text-xs text-gray-600"
-              >
-                {record.id}
-              </Text>
-            </div>
-            <div>
-              <Text strong className="text-gray-800">
-                Created By:{" "}
-              </Text>
-              <Tag
-                color={record.createdby === "ADMIN" ? "blue" : "green"}
-                className="font-medium"
-              >
-                {record.createdby || "N/A"}
-              </Tag>
-            </div>
-            <div>
-              <Text strong className="text-gray-800">
-                Assigned To:{" "}
-              </Text>
-              {renderAssignedMembers(
-                record.taskassingnedto || record.taskassingnedby
-              )}
-            </div>
-            <div>
-              <Text strong className="text-gray-800">
-                Comments:{" "}
-              </Text>
-              {renderComments(record.comments)}
-            </div>
-            <div>
-              <Text strong className="text-gray-800">
-                Link:{" "}
-              </Text>
-              {renderLink(record.link)}
-            </div>
-          </div>
-        ),
-      }
-    : {};
+    },
+    {
+      title: "Comments",
+      dataIndex: "comments",
+      key: "comments",
+      width: 120,
+      align: "center",
+      render: renderComments,
+    },
+    {
+      title: "Link",
+      dataIndex: "link",
+      key: "link",
+      width: 100,
+      align: "center",
+      render: renderLink,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 80,
+      align: "center",
+      render: (_, record) => (
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => handleEditTask(record)}
+          style={{ color: "#1677ff" }}
+        />
+      ),
+    },
+  ];
 
   const renderEditForm = () => (
-    <Form form={editForm} layout="vertical" className="space-y-4">
+    <Form form={editForm} layout="vertical">
       <Form.Item
         name="taskcontent"
         label="Task Description"
         rules={[{ required: true, message: "Please enter task description" }]}
       >
-        <TextArea
-          rows={screenSize.isMobile ? 3 : 4}
-          placeholder="Enter task description"
-          className="border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
-          aria-label="Task description"
-        />
+        <TextArea rows={3} placeholder="Enter task description" />
       </Form.Item>
+
       <Form.Item
         name="taskcreatedby"
         label="Created By"
         rules={[{ required: true, message: "Please select creator" }]}
       >
-        <Select
-          placeholder="Select creator"
-          className="rounded-lg"
-          aria-label="Select task creator"
-        >
+        <Select placeholder="Select creator">
           {creatorOptions.map((option) => (
             <Option key={option.value} value={option.value}>
               <Space>
@@ -565,6 +476,7 @@ const TasksList = () => {
           ))}
         </Select>
       </Form.Item>
+
       <Form.Item
         name="taskassingnedto"
         label="Assigned To"
@@ -581,7 +493,6 @@ const TasksList = () => {
         <Select
           mode="multiple"
           placeholder="Select team members"
-          maxTagCount="responsive"
           showSearch
           optionFilterProp="children"
           filterOption={(input, option) =>
@@ -589,8 +500,6 @@ const TasksList = () => {
               .toLowerCase()
               .includes(input.toLowerCase())
           }
-          className="rounded-lg"
-          aria-label="Select assignees"
         >
           {availableAssignees.map((assignee) => (
             <Option key={assignee.value} value={assignee.value}>
@@ -602,59 +511,93 @@ const TasksList = () => {
           ))}
         </Select>
       </Form.Item>
-      <Form.Item
-        name="comments"
-        label="Comments"
-        rules={[{ max: 500, message: "Comments cannot exceed 500 characters" }]}
-      >
-        <TextArea
-          rows={screenSize.isMobile ? 2 : 3}
-          placeholder="Add comments"
-          className="border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
-          aria-label="Task comments"
-        />
+
+      <Form.Item name="comments" label="Comments">
+        <TextArea rows={2} placeholder="Add comments" maxLength={500} />
       </Form.Item>
-      <Form.Item
-        name="link"
-        label="Link"
-        rules={[
-          {
-            type: "url",
-            message: "Please enter a valid URL",
-            warningOnly: true,
-          },
-        ]}
-      >
-        <Input
-          placeholder="Enter task link"
-          prefix={<LinkOutlined />}
-          className="border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
-          aria-label="Task link"
-        />
+
+      <Form.Item name="link" label="Link">
+        <Input placeholder="Enter task link" prefix={<LinkOutlined />} />
       </Form.Item>
     </Form>
   );
 
+  const getStatusCounts = () => {
+    const counts = {
+      CREATED: 0,
+      ACCEPTED: 0,
+      PENDING: 0,
+      COMPLETED: 0,
+    };
+
+    tasks.forEach((task) => {
+      const status = normalizeStatus(task.status);
+      if (counts.hasOwnProperty(status)) {
+        counts[status]++;
+      }
+    });
+
+    return counts;
+  };
+
+  const statusCounts = getStatusCounts();
+
+  const statusCards = [
+    {
+      key: "CREATED",
+      title: "Created",
+      count: statusCounts.CREATED,
+      color: "#1890ff",
+      icon: (
+        <PlusCircleOutlined style={{ fontSize: "24px", color: "#1890ff" }} />
+      ),
+    },
+    {
+      key: "ACCEPTED",
+      title: "Accepted",
+      count: statusCounts.ACCEPTED,
+      color: "#52c41a",
+      icon: (
+        <CheckCircleOutlined style={{ fontSize: "24px", color: "#52c41a" }} />
+      ),
+    },
+    {
+      key: "PENDING",
+      title: "Pending",
+      count: statusCounts.PENDING,
+      color: "#faad14",
+      icon: (
+        <ClockCircleOutlined style={{ fontSize: "24px", color: "#faad14" }} />
+      ),
+    },
+    {
+      key: "COMPLETED",
+      title: "Completed",
+      count: statusCounts.COMPLETED,
+      color: "#722ed1",
+      icon: (
+        <CheckCircleOutlined style={{ fontSize: "24px", color: "#722ed1" }} />
+      ),
+    },
+  ];
+
   return (
     <TaskAdminPanelLayout>
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10 bg-gray-50 min-h-screen">
-        <Card className="shadow-md rounded-xl bg-white border border-gray-200">
+      <div className="p-4 bg-gray-50 min-h-screen">
+        <Card className="shadow-sm mb-4">
           <Row gutter={[16, 16]} align="middle" justify="space-between">
             <Col xs={24} md={12}>
               <Title
                 level={screenSize.isMobile ? 4 : 3}
-                className="text-gray-800 font-bold mb-1"
+                className="text-gray-800 mb-1"
               >
                 Tasks Management
               </Title>
-              <Text type="secondary" className="text-gray-600">
-                Manage and monitor all tasks
-              </Text>
+              <Text type="secondary">Manage and monitor all tasks</Text>
             </Col>
             <Col xs={24} md={12}>
               <Space
                 direction={screenSize.isMobile ? "vertical" : "horizontal"}
-                size="middle"
                 className="w-full justify-end"
                 wrap
               >
@@ -663,34 +606,101 @@ const TasksList = () => {
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   prefix={<SearchOutlined />}
-                  className="w-full md:w-64 border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
-                  aria-label="Search tasks"
+                  className="w-full md:w-64"
                 />
-                <Space size="small">
+                <Space>
                   <Button
                     icon={<ReloadOutlined />}
                     onClick={fetchTasks}
                     loading={loading}
-                    className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
-                    aria-label="Refresh tasks"
                   >
-                    {screenSize.isTablet && "Refresh"}
+                    {!screenSize.isMobile && "Refresh"}
                   </Button>
                   <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     href="/taskmanagement/taskcreation"
-                    className="bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                    aria-label="Create new task"
                   >
-                    {screenSize.isTablet && "New Task"}
+                    {!screenSize.isMobile && "New Task"}
                   </Button>
                 </Space>
               </Space>
             </Col>
           </Row>
+        </Card>
 
-          <div className="mt-6">
+        {/* Status Summary Cards */}
+        <Row gutter={[16, 16]} className="mb-4">
+          {statusCards.map((card) => (
+            <Col xs={12} sm={6} key={card.key}>
+              <Card
+                hoverable
+                className={`cursor-pointer transition-all duration-200 ${
+                  activeStatusFilter === card.key
+                    ? "border-2 shadow-lg"
+                    : "border hover:shadow-md"
+                }`}
+                style={{
+                  borderColor:
+                    activeStatusFilter === card.key ? card.color : undefined,
+                  backgroundColor:
+                    activeStatusFilter === card.key
+                      ? `${card.color}10`
+                      : undefined,
+                }}
+                onClick={() => handleStatusCardClick(card.key)}
+              >
+                <Statistic
+                  title={card.title}
+                  value={card.count}
+                  prefix={card.icon}
+                  valueStyle={{
+                    color: card.color,
+                    textAlign: "center",
+                  }}
+                />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+
+        {/* Filter Status Display */}
+        {activeStatusFilter && (
+          <Card
+            size="small"
+            className="mb-4"
+            style={{ backgroundColor: "#f6ffed" }}
+          >
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Space>
+                  <FilterOutlined style={{ color: "#52c41a" }} />
+                  <Text strong>Filtered by: </Text>
+                  <Tag
+                    color={statusCards
+                      .find((c) => c.key === activeStatusFilter)
+                      ?.color?.replace("#", "")}
+                  >
+                    {activeStatusFilter}
+                  </Tag>
+                  <Text type="secondary">({filteredTasks.length} tasks)</Text>
+                </Space>
+              </Col>
+              <Col>
+                <Button
+                  size="small"
+                  icon={<ClearOutlined />}
+                  onClick={() => setActiveStatusFilter(null)}
+                >
+                  Clear Filter
+                </Button>
+              </Col>
+            </Row>
+          </Card>
+        )}
+
+        <Card className="shadow-sm">
+          <div className="mt-4">
             {loading ? (
               <div className="flex justify-center items-center h-64">
                 <Spin size="large" tip="Loading tasks..." />
@@ -700,68 +710,50 @@ const TasksList = () => {
                 <Row justify="space-between" align="middle" className="mb-4">
                   <Col>
                     <Space>
-                      <Text strong className="text-gray-800">
-                        Total Tasks:
-                      </Text>
-                      <Badge
-                        count={filteredTasks.length}
-                        showZero
-                        style={{ backgroundColor: "#1890ff" }}
-                      />
+                      <Text strong>Total Tasks:</Text>
+                      <Badge count={filteredTasks.length} showZero />
                     </Space>
                   </Col>
                   <Col>
-                    <Button
-                      icon={<DownloadOutlined />}
-                      className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
-                      aria-label="Export tasks"
-                    >
-                      {screenSize.isTablet && "Export"}
+                    <Button icon={<DownloadOutlined />}>
+                      {!screenSize.isMobile && "Export"}
                     </Button>
                   </Col>
                 </Row>
+
                 <Table
-                  columns={getColumns()}
+                  columns={columns}
                   dataSource={filteredTasks}
                   rowKey="id"
-                  bordered
-                  size="small"
+                  bordered={true}
+                  loading={loading}
+                  size={screenSize.isMobile ? "small" : "middle"}
+                  scroll={{ x: "100%" }}
                   pagination={{
-                    pageSize: screenSize.isMobile ? 5 : 10,
-                    showSizeChanger: true,
+                    pageSize: screenSize.isMobile ? 10 : 20,
+                    showSizeChanger: !screenSize.isMobile,
                     showTotal: (total) => `Total ${total} tasks`,
-                    responsive: true,
+                    size: screenSize.isMobile ? "small" : "default",
                   }}
-                  scroll={{ x: true }}
-                  {...expandableConfig}
-                  className="rounded-lg shadow-sm"
-                  rowClassName={(record, index) =>
-                    index % 2 === 0
-                      ? "bg-gray-50 hover:bg-gray-100"
-                      : "bg-white hover:bg-gray-100"
-                  }
+                  className="overflow-x-auto"
                 />
               </>
             )}
           </div>
         </Card>
 
+        {/* Edit Modal for Desktop/Tablet */}
         <Modal
           title={
             <Space>
               <EditOutlined />
-              <span className="text-gray-800 font-semibold">Edit Task</span>
+              Edit Task
             </Space>
           }
           open={editModalVisible}
           onCancel={() => setEditModalVisible(false)}
           footer={[
-            <Button
-              key="cancel"
-              onClick={() => setEditModalVisible(false)}
-              className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
-              aria-label="Cancel edit task"
-            >
+            <Button key="cancel" onClick={() => setEditModalVisible(false)}>
               Cancel
             </Button>,
             <Button
@@ -770,30 +762,28 @@ const TasksList = () => {
               icon={<SaveOutlined />}
               loading={updateLoading}
               onClick={handleUpdateTask}
-              className="bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-              aria-label="Update task"
             >
               Update Task
             </Button>,
           ]}
           width={screenSize.isTablet ? "90%" : 600}
           destroyOnClose
-          className="rounded-lg"
         >
           {renderEditForm()}
         </Modal>
 
+        {/* Edit Drawer for Mobile */}
         <Drawer
           title={
             <Space>
               <EditOutlined />
-              <span className="text-gray-800 font-semibold">Edit Task</span>
+              Edit Task
             </Space>
           }
           placement="right"
           onClose={() => setEditDrawerVisible(false)}
           open={editDrawerVisible}
-          width={screenSize.isMobile ? "100%" : "90%"}
+          width="100%"
           footer={
             <Space className="w-full" direction="vertical">
               <Button
@@ -802,100 +792,18 @@ const TasksList = () => {
                 onClick={handleUpdateTask}
                 loading={updateLoading}
                 block
-                className="bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                aria-label="Update task"
               >
                 Update Task
               </Button>
-              <Button
-                onClick={() => setEditDrawerVisible(false)}
-                block
-                className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
-                aria-label="Cancel edit task"
-              >
+              <Button onClick={() => setEditDrawerVisible(false)} block>
                 Cancel
               </Button>
             </Space>
           }
-          className="rounded-lg"
         >
           {renderEditForm()}
         </Drawer>
       </div>
-
-      <style jsx global>{`
-        .ant-table {
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        .ant-table-thead > tr > th {
-          background: #f8fafc;
-          font-weight: 600;
-          color: #1f2937;
-        }
-        .ant-table-row {
-          transition: background-color 0.2s ease;
-        }
-        .ant-table-row:hover {
-          background-color: #f1f5f9 !important;
-        }
-        .ant-card {
-          border: 1px solid #e5e7eb;
-        }
-        .ant-modal,
-        .ant-drawer-content {
-          border-radius: 8px;
-        }
-        .ant-form-item-label > label {
-          color: #1f2937;
-          font-weight: 500;
-        }
-        @media (max-width: 768px) {
-          .ant-table {
-            font-size: 12px;
-          }
-          .ant-table-tbody > tr > td {
-            padding: 8px;
-          }
-          .ant-card-body {
-            padding: 12px;
-          }
-          .ant-btn {
-            padding: 4px 8px;
-            font-size: 12px;
-          }
-          .ant-input,
-          .ant-select-selector {
-            font-size: 12px;
-          }
-        }
-        @media (max-width: 480px) {
-          .ant-table {
-            font-size: 10px;
-          }
-          .ant-table-tbody > tr > td {
-            padding: 6px;
-          }
-          .ant-card-title {
-            font-size: 16px;
-          }
-          .ant-btn {
-            padding: 4px 6px;
-            font-size: 10px;
-          }
-          .ant-input,
-          .ant-select-selector {
-            font-size: 10px;
-          }
-          .ant-row {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          .ant-col {
-            width: 100%;
-          }
-        }
-      `}</style>
     </TaskAdminPanelLayout>
   );
 };

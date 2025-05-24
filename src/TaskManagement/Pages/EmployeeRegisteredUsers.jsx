@@ -23,7 +23,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 const { Title, Text } = Typography;
-const { Search } = Input;
 
 const EmployeeRegisteredUsers = () => {
   const [employees, setEmployees] = useState([]);
@@ -35,11 +34,12 @@ const EmployeeRegisteredUsers = () => {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${BASE_URL}/user-service/getAllEmployees`
+      const response = await axios.get(`${BASE_URL}/user-service/getAllEmployees`);
+      const sorted = response.data.sort((a, b) =>
+        a.name?.localeCompare(b.name)
       );
-      setEmployees(response.data);
-      setFilteredEmployees(response.data);
+      setEmployees(sorted);
+      setFilteredEmployees(sorted);
     } catch (err) {
       setError("Failed to fetch employees");
     } finally {
@@ -70,145 +70,107 @@ const EmployeeRegisteredUsers = () => {
   const columns = [
     {
       title: "S.No",
-      key: "sno",
       render: (_, __, index) => index + 1,
-      align: "center",
-      width: 80,
+      align: "center" ,
+      width: 70,
     },
     {
       title: "User ID",
       dataIndex: "lastFourDigitsUserId",
-      key: "lastFourDigitsUserId",
-      align: "center",
-      width: 120,
+      align: "center" ,
+      width: 100,
     },
     {
       title: "Name",
       dataIndex: "name",
-      key: "name",
-      align: "center",
+      align: "center" ,
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Email",
       dataIndex: "mail",
-      key: "mail",
       align: "center",
       render: (text) => <Text copyable>{text}</Text>,
     },
     {
       title: "Email Verified",
       dataIndex: "emailVerified",
-      key: "emailVerified",
+      align: "center" ,
+      width: 120,
       render: (verified) => (
         <Text type={verified === "true" ? "success" : "danger"}>
           {verified === "true" ? "✅ Yes" : "❌ No"}
         </Text>
       ),
-      align: "center",
-      width: 120,
     },
     {
-      title: "Mobile Number",
+      title: "Mobile",
       dataIndex: "empNumber",
-      key: "empNumber",
       align: "center",
       render: (text) => <Text copyable>{text}</Text>,
     },
     {
       title: "Created At",
       dataIndex: "createdAt",
-      key: "createdAt",
-      align: "center",
-      sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
+      align: "center" ,
       render: (date) =>
         dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A"),
+      sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
     },
   ];
 
   return (
     <TaskAdminPanelLayout>
-      <div
-        style={{ minHeight: "100vh" }}
-      >
-        <Row gutter={[16, 16]}>
-          <Col xs={24}>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: 8,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <Row
-                justify="space-between"
-                align="middle"
-                style={{ marginBottom: 24 }}
-              >
-                <Col>
-                  <Title level={3} style={{ margin: 0, color: "#1a3c34" }}>
-                    Employee Management
-                  </Title>
-                </Col>
-                <Col>
-                  <Space>
-                    <Search
-                      placeholder="Search by name, email, or user ID"
-                      value={searchText}
-                      onChange={(e) => handleSearch(e.target.value)}
-                      enterButton={<SearchOutlined />}
-                      style={{ width: 300 }}
-                      allowClear
-                    />
-                    <Button
-                      icon={<ReloadOutlined />}
-                      onClick={() => {
-                        handleReset();
-                        fetchEmployees();
-                      }}
-                    >
-                      Refresh
-                    </Button>
-                  </Space>
-                </Col>
-              </Row>
+      <div className="p-4">
+        <Card bordered={false} style={{ borderRadius: 12 }}>
+          <Row justify="space-between" align="middle" className="mb-4">
+            <Col>
+              <Title level={3} style={{ marginBottom: 0 }}>
+                👥 Employee Users
+              </Title>
+            </Col>
+            <Col>
+              <Space>
+                <Input
+                  placeholder="Search by name, email, or ID"
+                  value={searchText}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  prefix={<SearchOutlined />}
+                  allowClear
+                  style={{ width: 250 }}
+                />
+                <Button icon={<ReloadOutlined />} onClick={() => {
+                  handleReset();
+                  fetchEmployees();
+                }}>
+                  Refresh
+                </Button>
+              </Space>
+            </Col>
+          </Row>
 
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "50px" }}>
-                  <Spin size="small" tip="Loading employees data..." />
-                </div>
-              ) : error ? (
-                <Alert
-                  message="Error"
-                  description={error}
-                  type="error"
-                  showIcon
-                  style={{ marginBottom: 16 }}
-                />
-              ) : (
-                <Table
-                  columns={columns}
-                  dataSource={filteredEmployees}
-                  rowKey={(record) => record.id || record.mail}
-                  bordered
-                  pagination={{
-                    showTotal: (total, range) =>
-                      `${range[0]}-${range[1]} of ${total} employees`,
-                    showSizeChanger: true,
-                    pageSizeOptions: ["5", "10", "20", "50"],
-                    position: ["bottomRight"],
-                    responsive: true,
-                  }}
-                  scroll={{ x: 1000 }}
-                  style={{ background: "#fff", borderRadius: 8 }}
-                  rowClassName={(record, index) =>
-                    index % 2 === 0 ? "table-row-light" : "table-row-dark"
-                  }
-                />
-              )}
-            </Card>
-          </Col>
-        </Row>
+          {loading ? (
+            <div className="text-center py-20">
+              <Spin size="medium" tip="Loading employee records..." />
+            </div>
+          ) : error ? (
+            <Alert message="Error" description={error} type="error" showIcon />
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredEmployees}
+              rowKey={(record) => record.id || record.mail}
+              bordered
+              pagination={{
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} employees`,
+                showSizeChanger: true,
+                pageSizeOptions: ["5", "10", "20", "50"],
+              }}
+              scroll={{ x: 1000 }}
+            />
+          )}
+        </Card>
       </div>
     </TaskAdminPanelLayout>
   );

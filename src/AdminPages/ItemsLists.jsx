@@ -28,7 +28,7 @@ const ItemList = () => {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [entriesPerPage, setEntriesPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);

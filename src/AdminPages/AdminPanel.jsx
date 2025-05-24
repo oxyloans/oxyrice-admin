@@ -176,7 +176,9 @@ const AdminPanelLayoutTest = ({ children }) => {
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
           zIndex: 1000,
-          left: collapsed ? (isMobile ? "-200px" : "-80px") : 0,
+          // left: collapsed ? (isMobile ? "-200px" : "-80px") : 0,
+          left: 0,
+          top: 0,
           transition: "left 0.3s ease-in-out", // Smoother transition
           position: "fixed",
           height: "100vh",
@@ -293,9 +295,12 @@ const AdminPanelLayoutTest = ({ children }) => {
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
-            position: "relative", // Ensure it's positioned correctly
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
+            position: "fixed",
+            top: 0,
+            zIndex: 9,
+            height: 64, // Ensure it's positioned correctly
           }}
         >
           <button
@@ -323,13 +328,15 @@ const AdminPanelLayoutTest = ({ children }) => {
         </Header>
         <Content
           style={{
-            margin: "16px",
+            margin: screens.xs
+              ? "80px 16px 16px"
+              : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
             padding: screens.xs ? 12 : 24,
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative", // Ensure it's positioned correctly
           }}
         >
@@ -341,10 +348,10 @@ const AdminPanelLayoutTest = ({ children }) => {
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "0px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "0px" : "240px",
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative", // Ensure it's positioned correctly
-            bottom: 0,
+            bottom: 0
           }}
         >
           ASKOXY.AI Admin ©2025 Created by ASKOXY.AI Company
