@@ -697,9 +697,6 @@
 
 // export default Categories;
 
-
-
-
 import React, { useState, useEffect } from "react";
 import BASE_URL from "./Config";
 import {
@@ -740,7 +737,9 @@ const Categories = () => {
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [inactiveSearchTerm, setInactiveSearchTerm] = useState("");
   const [filteredActiveCategories, setFilteredActiveCategories] = useState([]);
-  const [filteredInactiveCategories, setFilteredInactiveCategories] = useState([]);
+  const [filteredInactiveCategories, setFilteredInactiveCategories] = useState(
+    []
+  );
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentActivePage, setCurrentActivePage] = useState(1);
   const [currentInactivePage, setCurrentInactivePage] = useState(1);
@@ -763,16 +762,20 @@ const Categories = () => {
 
       // Set all categories
       setCategories(response.data);
-      
+
       // Separate active and inactive categories
-      const active = response.data.filter(category => category.isActive === true);
-      const inactive = response.data.filter(category => category.isActive === false);
-      
+      const active = response.data.filter(
+        (category) => category.isActive === true
+      );
+      const inactive = response.data.filter(
+        (category) => category.isActive === false
+      );
+
       setActiveCategories(active);
       setInactiveCategories(inactive);
       setFilteredActiveCategories(active);
       setFilteredInactiveCategories(inactive);
-      
+
       message.success("Categories fetched successfully");
     } catch (error) {
       message.error("Failed to fetch categories");
@@ -811,7 +814,7 @@ const Categories = () => {
   };
 
   const handleAddCategory = async (values) => {
-    const { categoryName, file } = values;
+    const { categoryName, file, categoryType } = values;
 
     // Check if a file is selected
     if (!file || file.length === 0) {
@@ -822,6 +825,7 @@ const Categories = () => {
     const formData = new FormData();
     formData.append("categoryName", categoryName);
     formData.append("fileType", "document"); // Specify file type
+    formData.append("categoryType", categoryType); // Append category type
 
     // Ensure valid file selection
     const uploadedFile = file[0]?.originFileObj;
@@ -932,7 +936,7 @@ const Categories = () => {
     setIsAddItemModalVisible(false);
     setSelectedCategoryId(null);
   };
-  
+
   const handleFileChange = (fileList) => {
     setFile(fileList); // Update the file state
   };
@@ -969,7 +973,7 @@ const Categories = () => {
 
     try {
       // API call to add the item
-      const response = await axios.post(
+      await axios.post(
         `${BASE_URL}/product-service/ItemAddAndImageUpload`,
         formData,
         {
@@ -980,12 +984,8 @@ const Categories = () => {
         }
       );
 
-      if (response.status === 200) {
-        message.success("Item added successfully");
-        closeAddItemModal(); // Close the modal after successful submission
-      } else {
-        message.error(`Failed to add item: ${response.statusText}`);
-      }
+      message.success("Item added successfully");
+      closeAddItemModal(); // Close the modal after successful submission
     } catch (error) {
       console.error("Error adding item:", error);
       message.error("Failed to add item");
@@ -1163,7 +1163,9 @@ const Categories = () => {
     <AdminPanelLayoutTest>
       <div className="p-4">
         <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
-          <h2 className="text-xl font-bold mb-2 md:mb-0">Category Management</h2>
+          <h2 className="text-xl font-bold mb-2 md:mb-0">
+            Category Management
+          </h2>
           <Button
             style={{ backgroundColor: "#1C84C6", color: "white" }}
             onClick={openAddCategoryModal}
@@ -1174,8 +1176,7 @@ const Categories = () => {
         </div>
 
         <Tabs defaultActiveKey="1" onChange={handleTabChange}>
-
-              <TabPane tab="Active Categories" key="1">
+          <TabPane tab="Active Categories" key="1">
             <Row
               justify="space-between"
               align="middle"
@@ -1265,8 +1266,6 @@ const Categories = () => {
               bordered
             />
           </TabPane>
-          
-      
         </Tabs>
 
         {/* Add/Edit Category Modal */}
@@ -1328,6 +1327,22 @@ const Categories = () => {
                   ]}
                 >
                   <Input placeholder="Enter category name" />
+                </Form.Item>
+                <Form.Item
+                  label="Category Type"
+                  name="categoryType"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select a category type!",
+                    },
+                  ]}
+                >
+                  <Select placeholder="Select category type" size="large">
+                    <Option value="RICE">RICE</Option>
+                    <Option value="Grocery">GROCERY</Option>
+                    <Option value="GOLD">GOLD</Option>
+                  </Select>
                 </Form.Item>
 
                 <Form.Item

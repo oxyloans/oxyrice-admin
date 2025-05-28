@@ -26,6 +26,7 @@ const ItemList = () => {
   const [items, setItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
+  const [isImageViewModalVisible, setIsImageViewModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [entriesPerPage, setEntriesPerPage] = useState(50);
@@ -36,8 +37,9 @@ const ItemList = () => {
   const accessToken = localStorage.getItem("accessToken");
   const [selectedFile, setSelectedFile] = useState(null);
   const [offerLoading, setOfferLoading] = useState(false);
+  const [imageViewLoading, setImageViewLoading] = useState(false);
   const [offerForm] = Form.useForm(); // Create a form instance for offers
-
+  const [imageViewForm] = Form.useForm(); 
   useEffect(() => {
     fetchItemsData();
   }, []);
@@ -176,6 +178,48 @@ const ItemList = () => {
     }
   };
 
+  const handleImageViewUpload = async (values) => {
+    setImageViewLoading(true);
+    try {
+      if (!selectedFile) {
+        message.error("Please select a file to upload");
+        setImageViewLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("multiPart", selectedFile);
+     
+      const response = await axios.post(
+        `${BASE_URL}/product-service/imageViews`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+          params: {
+            fileType: "kyc", // Fixed as kyc
+            itemId: selectedItem.itemId,
+            itemView: values.itemView, // BACK, LEFT, or RIGHT
+          },
+        }
+      );
+
+      message.success(
+        `image uploaded successfully for ${values.itemView} view`
+      );
+      handleImageViewModalCancel();
+      fetchItemsData(); // Refresh data if needed
+    } catch (error) {
+      message.error(
+        "Error uploading KYC image: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setImageViewLoading(false);
+    }
+  };
   useEffect(() => {
     if (selectedItem) {
       form.setFieldsValue({
@@ -277,20 +321,35 @@ const ItemList = () => {
     setIsModalVisible(true);
   };
 
+  
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setSelectedItem(null);
+    setSelectedFile(null);
+  };
+
   // New function to show offer creation modal
   const showOfferModal = (item) => {
     setSelectedItem(item);
     setIsOfferModalVisible(true);
   };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setSelectedItem(null);
+  // New function to show image view modal
+  const showImageViewModal = (item) => {
+    setSelectedItem(item);
+    setIsImageViewModalVisible(true);
   };
+
   // New function to handle offer modal cancel
   const handleOfferModalCancel = () => {
     setIsOfferModalVisible(false);
     offerForm.resetFields();
+  };
+
+  // New function to handle image view modal cancel
+  const handleImageViewModalCancel = () => {
+    setIsImageViewModalVisible(false);
+    imageViewForm.resetFields();
+    setSelectedFile(null);
   };
 
   // Pagination logic
@@ -418,7 +477,7 @@ const ItemList = () => {
                 backgroundColor: status ? "#008CBA" : "#f44336",
                 color: "white",
                 border: "none",
-               
+
                 textAlign: "center",
               }}
             >
@@ -479,6 +538,24 @@ const ItemList = () => {
             disabled={loading}
           >
             Create Offer
+          </Button>
+          <Button
+            onClick={() => showImageViewModal(item)}
+            style={{
+              minWidth: "120px",
+              padding: "8px 12px",
+              backgroundColor: "#9b59b6", // Purple
+              color: "#fff",
+              border: "none",
+              fontSize: "14px",
+              fontWeight: 500,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            disabled={loading}
+          >
+           Add Images 
           </Button>
 
           {/* Barcode Info Button */}
@@ -807,6 +884,96 @@ const ItemList = () => {
                 style={{ backgroundColor: "#f39c12", color: "white" }}
               >
                 Create Offer
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
+
+      {/* Images View Modal - NEW */}
+      <Modal
+        title={
+          <span className="text-xl font-semibold">
+            Upload Images for{" "}
+            <span className="text-black">
+              {selectedItem?.itemName || "Item"}
+            </span>
+          </span>
+        }
+        open={isImageViewModalVisible}
+        onCancel={handleImageViewModalCancel}
+        footer={null}
+        width={600}
+        className="rounded-md"
+      >
+        {selectedItem && (
+          <Form
+            form={imageViewForm}
+            onFinish={handleImageViewUpload}
+            layout="vertical"
+            initialValues={{ fileType: "kyc" }}
+          >
+            <Row gutter={16}>
+              <Col xs={24}>
+                <Form.Item
+                  label={<span className="font-medium">Item View Type</span>}
+                  name="itemView"
+                  rules={[
+                    { required: true, message: "Please select item view type" },
+                  ]}
+                >
+                  <Select
+                    placeholder="Choose view type (e.g., BACK, LEFT)"
+                    size="large"
+                  >
+                    <Option value="BACK">Back View</Option>
+                    <Option value="LEFT">Left View</Option>
+                    <Option value="RIGHT">Right View</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24}>
+                <Form.Item
+                  label={<span className="font-medium">Upload File</span>}
+                  name="multiPart"
+                  rules={[{ required: true, message: "Please upload a file" }]}
+                >
+                  <Input
+                    type="file"
+                    onChange={handleFileChange}
+                    accept="image/*,video/*,.pdf,.doc,.docx"
+                    size="large"
+                  />
+                </Form.Item>
+
+                {selectedFile && (
+                  <div className="mt-2 px-4 py-2 border border-green-200 rounded bg-green-50">
+                    <p className="text-green-700 text-sm font-medium">
+                      Selected: {selectedFile.name}
+                    </p>
+                    <p className="text-green-600 text-xs">
+                      Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                )}
+              </Col>
+            </Row>
+
+            <Form.Item className="mt-4">
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={imageViewLoading}
+                style={{
+                  backgroundColor: "#9b59b6",
+                  color: "#fff",
+                  fontWeight: "600",
+                  height: "40px",
+                }}
+              >
+                Upload Image
               </Button>
             </Form.Item>
           </Form>
