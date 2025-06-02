@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import {
   Table,
   Button,
@@ -176,6 +179,10 @@ const Coupons = () => {
       key: "startDateTime",
       align: "center",
       className: "text-1xl",
+      render: (date) =>
+        date
+          ? dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A")
+          : "",
     },
     {
       title: "End Date",
@@ -183,7 +190,12 @@ const Coupons = () => {
       key: "endDateTime",
       align: "center",
       className: "text-1xl",
+      render: (date) =>
+        date
+          ? dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A")
+          : "",
     },
+
     {
       title: "Status",
       dataIndex: "isActive",
@@ -192,22 +204,22 @@ const Coupons = () => {
       className: "text-1xl",
       render: (isActive, record) => (
         <Popconfirm
-        title={`Are you sure you want to mark this coupon as ${isActive ? 'Inactive' : 'Active'}?`}
-        onConfirm={() => updateCouponStatus(record.couponId, isActive)}
-        okText="Yes"
-        cancelText="No"
-      >
-        <Button
-          type="default"
-          // onClick={() => updateCouponStatus(record.couponId, isActive)}
-          style={{
-            backgroundColor: isActive ? "#1C84C6" : "#EC4758",
-            color: "white",
-          }}
-          loading={loading && editingCouponId === record.couponId}
+          title={`Are you sure you want to mark this coupon as ${isActive ? "Inactive" : "Active"}?`}
+          onConfirm={() => updateCouponStatus(record.couponId, isActive)}
+          okText="Yes"
+          cancelText="No"
         >
-          {isActive ? "Active" : "Inactive"}
-        </Button>
+          <Button
+            type="default"
+            // onClick={() => updateCouponStatus(record.couponId, isActive)}
+            style={{
+              backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+              color: "white",
+            }}
+            loading={loading && editingCouponId === record.couponId}
+          >
+            {isActive ? "Active" : "Inactive"}
+          </Button>
         </Popconfirm>
       ),
     },
@@ -217,7 +229,6 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
       render: (_, record) => (
-
         <Button
           icon={<EditOutlined />}
           onClick={() => showModal(record)}
@@ -317,7 +328,7 @@ const Coupons = () => {
   };
 
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase().trim();
+    const value = e.target.value.toLowerCase();
     setSearchTerm(value);
 
     if (value) {

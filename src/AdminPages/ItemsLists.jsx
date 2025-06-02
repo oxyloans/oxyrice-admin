@@ -526,7 +526,7 @@ const ItemList = () => {
             style={{
               minWidth: "120px",
               padding: "8px 12px",
-              backgroundColor: "#f39c12", // Orange
+              backgroundColor: "#f39c45", // Orange
               color: "#fff",
               border: "none",
               fontSize: "14px",
@@ -555,7 +555,7 @@ const ItemList = () => {
             }}
             disabled={loading}
           >
-           Add Images 
+            Add Images
           </Button>
 
           {/* Barcode Info Button */}
@@ -612,7 +612,7 @@ const ItemList = () => {
             style={{
               minWidth: "160px",
               padding: "8px 12px",
-              backgroundColor: "#27ae60", // Darker green
+              backgroundColor: "#04AA6D", // Darker green
               color: "#fff",
               border: "none",
               fontSize: "14px",
@@ -631,7 +631,7 @@ const ItemList = () => {
   ];
 
   const handleSearchChange = (e) => {
-    const value = e.target.value.toLowerCase().trim(); // Normalize and trim input
+    const value = e.target.value.toLowerCase(); // Normalize and trim input
     setSearchTerm(value);
 
     if (value) {
@@ -691,6 +691,7 @@ const ItemList = () => {
             value={searchTerm}
             onChange={handleSearchChange}
             className="w-full sm:w-[150px]"
+            // placeholder="name, category"
           />
         </Col>
       </Row>
