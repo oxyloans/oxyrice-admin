@@ -145,12 +145,12 @@ const ActiveOffersList = () => {
               loading={updatingId === record.id}
               style={{
                 marginTop: 5,
-                backgroundColor: record.active ? "#008CBA" : "#f44336",
+                backgroundColor: record.active ? "#f44336" : "#008CBA",
                 color: "white",
                 border: "none",
               }}
             >
-              {record.active ? "Active" : "Inactive"}
+              {record.active ? "Inactive" : "Active"}
             </Button>
           </Popconfirm>
         </div>

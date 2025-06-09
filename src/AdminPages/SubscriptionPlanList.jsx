@@ -22,7 +22,7 @@ const SubscriptionPlansList = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModal, setIsModal] = useState(false);
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
@@ -237,11 +237,11 @@ const SubscriptionPlansList = () => {
             type="default"
             loading={loading}
             style={{
-              backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+              backgroundColor: isActive ? "#EC4758" : "#1C84C6",
               color: "white",
             }}
           >
-            {isActive ? "Active" : "Inactive"}
+            {isActive ? "Inactive" : "Active"}
           </Button>
         </Popconfirm>
       ),

@@ -163,7 +163,8 @@ const AdminPanelLayoutTest = ({ children }) => {
     window.location.href = "/"; // Redirect to login
   };
 
-
+  const date = new Date();
+  const fullYear = date.getFullYear();
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -354,7 +355,7 @@ const AdminPanelLayoutTest = ({ children }) => {
             bottom: 0
           }}
         >
-          ASKOXY.AI Admin ©2025 Created by ASKOXY.AI Company
+          ASKOXY.AI Admin ©{fullYear} Created by ASKOXY.AI Company
         </Footer>
       </Layout>
       {/* Custom scrollbar styling */}

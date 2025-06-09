@@ -474,14 +474,14 @@ const ItemList = () => {
           >
             <Button
               style={{
-                backgroundColor: status ? "#008CBA" : "#f44336",
+                backgroundColor: status ? "#f44336" : "#008CBA",
                 color: "white",
                 border: "none",
 
                 textAlign: "center",
               }}
             >
-              {status ? "Active" : "Inactive"}
+              {status ? "Inactive" : "Active"}
             </Button>
           </Popconfirm>
         );

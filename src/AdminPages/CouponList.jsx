@@ -213,12 +213,12 @@ const Coupons = () => {
             type="default"
             // onClick={() => updateCouponStatus(record.couponId, isActive)}
             style={{
-              backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+              backgroundColor: isActive ? "#EC4758" : "#1C84C6",
               color: "white",
             }}
             loading={loading && editingCouponId === record.couponId}
           >
-            {isActive ? "Active" : "Inactive"}
+            {isActive ? "Inactive" : "Active"}
           </Button>
         </Popconfirm>
       ),
