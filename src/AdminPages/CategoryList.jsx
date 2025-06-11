@@ -713,7 +713,7 @@ import {
   Popconfirm,
   Tabs,
 } from "antd";
-import { EditOutlined, UploadOutlined } from "@ant-design/icons";
+import {  UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayoutTest from "./AdminPanel";
 import { MdModeEditOutline } from "react-icons/md";
@@ -733,7 +733,7 @@ const Categories = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [file, setFile] = useState(null);
   const [addItemForm] = Form.useForm();
-  const [searchTerm, setSearchTerm] = useState("");
+ 
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [inactiveSearchTerm, setInactiveSearchTerm] = useState("");
   const [filteredActiveCategories, setFilteredActiveCategories] = useState([]);
@@ -743,9 +743,9 @@ const Categories = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentActivePage, setCurrentActivePage] = useState(1);
   const [currentInactivePage, setCurrentInactivePage] = useState(1);
-  const [previousFile, setPreviousFile] = useState(null);
+
   const accessToken = localStorage.getItem("accessToken");
-  const [selectedFile, setSelectedFile] = useState(null);
+
   const [activeTabKey, setActiveTabKey] = useState("1");
 
   const fetchCategories = async () => {

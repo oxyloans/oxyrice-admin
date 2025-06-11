@@ -174,6 +174,23 @@ const Coupons = () => {
       },
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      className: "text-1xl",
+      render: (status) => (
+        <span
+          style={{
+            color: status === "PUBLIC" ? "#52c41a" : "#1890ff",
+            fontWeight: "semibold",
+          }}
+        >
+          {status || "N/A"}
+        </span>
+      ),
+    },
+    {
       title: "Start Date",
       dataIndex: "startDateTime",
       key: "startDateTime",
@@ -195,9 +212,8 @@ const Coupons = () => {
           ? dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A")
           : "",
     },
-
     {
-      title: "Status",
+      title: "Active Status",
       dataIndex: "isActive",
       key: "isActive",
       align: "center",
@@ -211,7 +227,6 @@ const Coupons = () => {
         >
           <Button
             type="default"
-            // onClick={() => updateCouponStatus(record.couponId, isActive)}
             style={{
               backgroundColor: isActive ? "#EC4758" : "#1C84C6",
               color: "white",
@@ -250,10 +265,10 @@ const Coupons = () => {
       setEditingCouponId(record.couponId);
 
       // Parse date strings to moment objects for DatePicker
-      const startDate = record.startDateTime
+      const startDateTime = record.startDateTime
         ? moment(record.startDateTime)
         : null;
-      const endDate = record.endDateTime ? moment(record.endDateTime) : null;
+      const endDateTime = record.endDateTime ? moment(record.endDateTime) : null;
 
       // Format user mobile numbers if they exist
       const userMobileNumbers = record.userMobileNumbers
@@ -270,14 +285,19 @@ const Coupons = () => {
         maxDiscount: record.maxDiscount,
         couponUsage: record.couponUsage,
         discountType: record.discountType,
-        startDate: startDate,
-        endDate: endDate,
+        status: record.status || "PUBLIC", // Default to PUBLIC if not set
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
         userMobileNumbers: userMobileNumbers,
       });
     } else {
       setIsEditMode(false);
       setEditingCouponId(null);
       form.resetFields();
+      // Set default status for new coupons
+      form.setFieldsValue({
+        status: "PUBLIC",
+      });
     }
   };
 
@@ -293,9 +313,10 @@ const Coupons = () => {
       // Format the values for the API
       const formattedValues = {
         ...values,
-        startDate: values.startDate.format("YYYY-MM-DDTHH:mm:ss"),
-        endDate: values.endDate.format("YYYY-MM-DDTHH:mm:ss"),
+        startDateTime: values.startDateTime.format("YYYY-MM-DDTHH:mm:ss"),
+        endDateTime: values.endDateTime.format("YYYY-MM-DDTHH:mm:ss"),
         userMobileNumbers: values.userMobileNumbers,
+        status: values.status, // Include status field
         isActive: true,
       };
 
@@ -455,7 +476,7 @@ const Coupons = () => {
             </Col>
           </Row>
 
-          {/* Discount Type */}
+          {/* Discount Type and Status */}
           <Row gutter={16}>
             <Col xs={24} sm={12}>
               <Form.Item
@@ -474,6 +495,22 @@ const Coupons = () => {
 
             <Col xs={24} sm={12}>
               <Form.Item
+                label="Status"
+                name="status"
+                rules={[{ required: true, message: "Please select a status!" }]}
+              >
+                <Select placeholder="Select status">
+                  <Option value="PRIVATE">Private</Option>
+                  <Option value="PUBLIC">Public</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Coupon Value */}
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
                 label="Value"
                 name="couponValue"
                 rules={[
@@ -483,14 +520,25 @@ const Coupons = () => {
                 <Input type="number" />
               </Form.Item>
             </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="maxDiscount"
+                label="Maximum Discount"
+                rules={[
+                  { required: true, message: "Please enter max discount!" },
+                ]}
+              >
+                <Input type="number" />
+              </Form.Item>
+            </Col>
           </Row>
 
-          {/* Start Date */}
+          {/* Start Date and End Date */}
           <Row gutter={16}>
             <Col xs={24} sm={12}>
               <Form.Item
                 label="Start Date"
-                name="startDate"
+                name="startDateTime"
                 rules={[
                   { required: true, message: "Please select a start date!" },
                 ]}
@@ -506,7 +554,7 @@ const Coupons = () => {
             <Col xs={24} sm={12}>
               <Form.Item
                 label="End Date"
-                name="endDate"
+                name="endDateTime"
                 rules={[
                   { required: true, message: "Please select an end date!" },
                 ]}
@@ -520,20 +568,8 @@ const Coupons = () => {
             </Col>
           </Row>
 
-          {/* End Date */}
+          {/* Minimum Order */}
           <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="maxDiscount"
-                label="Maximum Discount"
-                rules={[
-                  { required: true, message: "Please enter max discount!" },
-                ]}
-              >
-                <Input type="number" />
-              </Form.Item>
-            </Col>
-
             <Col xs={24} sm={12}>
               <Form.Item
                 name="minOrder"
@@ -545,14 +581,17 @@ const Coupons = () => {
                 <Input type="number" />
               </Form.Item>
             </Col>
+            <Col xs={24} sm={12}>
+              {/* Empty column for spacing */}
+            </Col>
           </Row>
 
+          {/* User Mobile Numbers */}
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item
                 name="userMobileNumbers"
                 label="User Mobile Numbers (comma separated)"
-               
               >
                 <Input placeholder="+919347967774,+919059433013,+919908636995" />
               </Form.Item>
