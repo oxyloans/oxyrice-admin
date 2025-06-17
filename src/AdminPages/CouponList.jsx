@@ -182,8 +182,8 @@ const Coupons = () => {
       render: (status) => (
         <span
           style={{
-            color: status === "PUBLIC" ? "#52c41a" : "#1890ff",
-            fontWeight: "semibold",
+            color: status === "PUBLIC" ? "#008CBA" : "#04AA6D",
+            fontWeight: "bold",
           }}
         >
           {status || "N/A"}

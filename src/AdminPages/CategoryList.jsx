@@ -1176,7 +1176,7 @@ const Categories = () => {
         </div>
 
         <Tabs defaultActiveKey="1" onChange={handleTabChange}>
-          <TabPane tab="Active Categories" key="1">
+          <TabPane tab="InActive Categories" key="1">
             <Row
               justify="space-between"
               align="middle"
@@ -1221,7 +1221,7 @@ const Categories = () => {
               bordered
             />
           </TabPane>
-          <TabPane tab="Inactive Categories" key="2">
+          <TabPane tab="Active Categories" key="2">
             <Row
               justify="space-between"
               align="middle"
@@ -1342,6 +1342,16 @@ const Categories = () => {
                     <Option value="RICE">RICE</Option>
                     <Option value="Grocery">GROCERY</Option>
                     <Option value="GOLD">GOLD</Option>
+                    <Option value="AI | BLOCKCHAIN & IT SERVICES">
+                      AI | BLOCKCHAIN & IT SERVICES
+                    </Option>
+                    <Option value="CA | CS SERVICES">CA | CS SERVICES</Option>
+                    <Option value="SILVER">SILVER</Option>
+                    <Option value="DIAMOND">DIAMOND</Option>
+                    <Option value="LOANS">LOANS</Option>
+                    <Option value="INVESTMENTS">INVESTMENTS</Option>
+                    <Option value="NYAYA GPT">NYAYA GPT</Option>
+                    <Option value="FRACTIONAL OWNERSHIP">FRACTIONAL OWNERSHIP</Option>
                   </Select>
                 </Form.Item>
 

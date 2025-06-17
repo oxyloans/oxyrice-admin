@@ -119,7 +119,7 @@ const ActiveOffersList = () => {
       key: "freeOnce",
       align: "center",
       render: (freeOnce) => (
-        <Tag color={freeOnce ? "green" : "red"}>{freeOnce ? "Yes" : "No"}</Tag>
+        <Tag color={freeOnce ? "green" : "red"}>{freeOnce ? "True" : "False"}</Tag>
       ),
     },
     {

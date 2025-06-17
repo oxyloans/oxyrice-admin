@@ -48,9 +48,7 @@ function TaskManagementLogin() {
     }, 800);
   };
 
-  const handleRememberMeChange = (e) => {
-    setRememberMe(e.target.checked);
-  };
+  
 
   const handleLogin = async () => {
     try {
