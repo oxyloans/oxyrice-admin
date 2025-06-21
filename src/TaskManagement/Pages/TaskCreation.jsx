@@ -29,11 +29,9 @@ import {
   UploadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  ClockCircleOutlined,
   FlagOutlined,
-  FileOutlined,
-  DeleteOutlined,
-  PaperClipOutlined,
+  BankOutlined,
+  ProjectOutlined,
   ReloadOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
@@ -55,13 +53,40 @@ const TaskCreation = () => {
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [uploadProgress, setUploadProgress] = useState(0);
   const userId = localStorage.getItem("userId") || "ADMIN";
-    const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState([]);
+  const [selectedBusinessUnit, setSelectedBusinessUnit] = useState(null);
+  const [businessUnitSubType, setBusinessUnitSubType] = useState(null);
 
   // Enums as defined in your API
   const taskCreatedBy = {
     ADMIN: "ADMIN",
     USER: "USER",
   };
+  const businessUnitMainOptions = [
+    { value: "FREELANCERS", label: "Freelancers", color: "purple" },
+    { value: "EMPLOYEES", label: "Employees", color: "green" },
+  ];
+
+  // Business Unit Type sub-options
+  const businessUnitSubOptions = {
+    FREELANCERS: [
+      { value: "PAID", label: "Paid", color: "red" },
+      { value: "OTHERS", label: "Others", color: "orange" },
+    ],
+    EMPLOYEES: [
+      { value: "OWNED", label: "Owned", color: "blue" },
+      { value: "OTHERS", label: "Others", color: "orange" },
+    ],
+  };
+
+  // Project Type options
+  const projectTypeOptions = [
+    { value: "ASKOXY", label: "AskOxy", color: "blue" },
+    { value: "STUDENTX", label: "StudentX", color: "green" },
+    { value: "OXYLOANS", label: "OxyLoans", color: "orange" },
+    { value: "OXYBRICKS", label: "OxyBricks", color: "red" },
+    { value: "BVMMONEY", label: "BVM Money", color: "purple" },
+  ];
 
   // Priority options
   const priorityOptions = [
@@ -102,7 +127,7 @@ const TaskCreation = () => {
     "akhila u",
     "Maneiah",
     "sudheesh",
-    
+
     "Manikanta",
     "Zubeidha Begum",
     "g venkata karthik",
@@ -246,6 +271,8 @@ const TaskCreation = () => {
         deadline: deadline,
         prioeity: values.priority,
         taskname: values.taskname,
+        businessUnitType: businessUnitSubType || selectedBusinessUnit, // Use sub-type if available, otherwise main type
+        projectType: values.projectType, // New field
       };
 
       const response = await axios.post(
@@ -325,6 +352,19 @@ const TaskCreation = () => {
     setDocumentId(null);
     setFileList([]);
     setUploadProgress(0);
+    setSelectedBusinessUnit(null);
+    setBusinessUnitSubType(null);
+  };
+  // Handle business unit type change
+  const handleBusinessUnitChange = (value) => {
+    setSelectedBusinessUnit(value);
+    setBusinessUnitSubType(null);
+    form.setFieldsValue({ businessUnitSubType: undefined });
+  };
+
+  // Handle business unit sub-type change
+  const handleBusinessUnitSubTypeChange = (value) => {
+    setBusinessUnitSubType(value);
   };
 
   return (
@@ -397,7 +437,123 @@ const TaskCreation = () => {
             </Form.Item>
 
             <Row gutter={[24, 16]} className="mt-4">
-              {/* First row with Creator and Assignees */}
+              {/* Business Unit Type and Sub-Type */}
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="businessUnitType"
+                  label={
+                    <span className="flex items-center">
+                      <BankOutlined className="mr-2 text-cyan-500" />
+                      Business Unit Type
+                      <span className="text-red-500 ml-1">*</span>
+                    </span>
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select business unit type",
+                    },
+                  ]}
+                  tooltip="Select the main business unit type"
+                >
+                  <Select
+                    placeholder="Select business unit type"
+                    className="w-full rounded-md"
+                    size="large"
+                    onChange={handleBusinessUnitChange}
+                  >
+                    {businessUnitMainOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        <div className="flex items-center">
+                          <Tag color={option.color} className="mr-2">
+                            {option.label}
+                          </Tag>
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="businessUnitSubType"
+                  label={
+                    <span className="flex items-center">
+                      <BankOutlined className="mr-2 text-teal-500" />
+                      Business Unit Sub-Type
+                      <span className="text-red-500 ml-1">*</span>
+                    </span>
+                  }
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select business unit sub-type",
+                    },
+                  ]}
+                  tooltip="Select the specific sub-type based on your business unit selection"
+                >
+                  <Select
+                    placeholder={
+                      selectedBusinessUnit
+                        ? `Select ${selectedBusinessUnit.toLowerCase()} sub-type`
+                        : "First select business unit type"
+                    }
+                    className="w-full rounded-md"
+                    size="large"
+                    disabled={!selectedBusinessUnit}
+                    onChange={handleBusinessUnitSubTypeChange}
+                  >
+                    {selectedBusinessUnit &&
+                      businessUnitSubOptions[selectedBusinessUnit]?.map(
+                        (option) => (
+                          <Option key={option.value} value={option.value}>
+                            <div className="flex items-center">
+                              <Tag color={option.color} className="mr-2">
+                                {option.label}
+                              </Tag>
+                            </div>
+                          </Option>
+                        )
+                      )}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              {/* Project Type */}
+              <Col xs={24} md={12}>
+                <Form.Item
+                  name="projectType"
+                  label={
+                    <span className="flex items-center">
+                      <ProjectOutlined className="mr-2 text-indigo-500" />
+                      Project Type<span className="text-red-500 ml-1">*</span>
+                    </span>
+                  }
+                  rules={[
+                    { required: true, message: "Please select project type" },
+                  ]}
+                  tooltip="Select the project type for this task"
+                >
+                  <Select
+                    placeholder="Select project type"
+                    className="w-full rounded-md"
+                    size="large"
+                  >
+                    {projectTypeOptions.map((option) => (
+                      <Option key={option.value} value={option.value}>
+                        <div className="flex items-center">
+                          <Tag color={option.color} className="mr-2">
+                            {option.label}
+                          </Tag>
+                        </div>
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              {/* Creator and Assignees */}
               <Col xs={24} md={12}>
                 <Form.Item
                   name="createdBy"
@@ -473,7 +629,7 @@ const TaskCreation = () => {
                 </Form.Item>
               </Col>
 
-              {/* Second row with Deadline and Priority */}
+              {/* Deadline and Priority */}
               <Col xs={24} sm={12}>
                 <Form.Item
                   name="deadline"
@@ -483,9 +639,6 @@ const TaskCreation = () => {
                       Deadline
                     </span>
                   }
-                  // rules={[
-                  //   { required: true, message: "Please select a deadline" },
-                  // ]}
                   tooltip="Set a deadline for this task"
                 >
                   <DatePicker
@@ -650,3 +803,4 @@ const TaskCreation = () => {
 };
 
 export default TaskCreation;
+

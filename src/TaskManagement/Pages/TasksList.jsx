@@ -419,20 +419,24 @@ const TasksList = () => {
       },
     },
     {
-      title: "Comments",
-      dataIndex: "comments",
-      key: "comments",
+      title: "ProjectType",
+      dataIndex: "projectType",
+      key: "projectType",
       width: 120,
       align: "center",
-      render: renderComments,
+      render: (projectType) => (
+        <Tag color="geekblue">{projectType || "N/A"}</Tag>
+      ),
     },
     {
-      title: "Link",
-      dataIndex: "link",
-      key: "link",
+      title: "BusinessUnitType",
+      dataIndex: "businessUnitType",
+      key: "businessUnitType",
       width: 100,
       align: "center",
-      render: renderLink,
+      render: (businessUnitType) => (
+        <Tag color="purple">{businessUnitType || "N/A"}</Tag>
+      ),
     },
     {
       title: "Actions",

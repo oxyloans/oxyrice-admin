@@ -1351,7 +1351,9 @@ const Categories = () => {
                     <Option value="LOANS">LOANS</Option>
                     <Option value="INVESTMENTS">INVESTMENTS</Option>
                     <Option value="NYAYA GPT">NYAYA GPT</Option>
-                    <Option value="FRACTIONAL OWNERSHIP">FRACTIONAL OWNERSHIP</Option>
+                    <Option value="FRACTIONAL OWNERSHIP">
+                      FRACTIONAL OWNERSHIP
+                    </Option>
                   </Select>
                 </Form.Item>
 
