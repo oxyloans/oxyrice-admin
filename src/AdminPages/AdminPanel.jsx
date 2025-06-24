@@ -5,7 +5,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
-
+import { FaUserGraduate } from "react-icons/fa";
 import {
   FaTachometerAlt,
   FaSlideshare,
@@ -48,6 +48,12 @@ const AdminPanelLayoutTest = ({ children }) => {
       label: "Dashboard",
       icon: <FaTachometerAlt />,
       link: "/admin/dashboard",
+    },
+    {
+      key: "Student Applications",
+      label: "Student Applications",
+      icon: <FaUserGraduate />,
+      link: "/admin/studentapplications",
     },
 
     {
