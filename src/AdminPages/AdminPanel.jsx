@@ -14,6 +14,8 @@ import {
   FaShoppingCart,
   FaHandsHelping,
 } from "react-icons/fa";
+import { AppstoreOutlined } from "@ant-design/icons";
+
 
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 
@@ -98,6 +100,25 @@ const AdminPanelLayoutTest = ({ children }) => {
         },
       ],
     },
+    {
+      key: "Services",
+      label: "Services",
+      icon: <AppstoreOutlined />,
+      dropdownItems: [
+        {
+          key: "Category List",
+          label: "Category List",
+          link: "/admin/services",
+        },
+        {
+          key: "Items List",
+          label: "Items List",
+          link: "/admin/serviceslist",
+        },
+      ],
+    }
+,    
+
     {
       key: "subscriptionPlans",
       label: "Subscription Plans",

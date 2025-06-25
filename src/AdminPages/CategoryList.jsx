@@ -1166,13 +1166,17 @@ const Categories = () => {
           <h2 className="text-xl font-bold mb-2 md:mb-0">
             Category Management
           </h2>
-          <Button
-            style={{ backgroundColor: "#1C84C6", color: "white" }}
-            onClick={openAddCategoryModal}
-            className="w-full sm:w-auto"
-          >
-            Add New Category
-          </Button>
+
+          <div className="flex gap-2 w-full md:w-auto">
+           
+            <Button
+              style={{ backgroundColor: "#1C84C6", color: "white" }}
+              onClick={openAddCategoryModal}
+              className="w-full sm:w-auto"
+            >
+              Add New Category
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultActiveKey="1" onChange={handleTabChange}>

@@ -77,6 +77,8 @@ import TodayLeaves from "./TaskManagement/Pages/TodayLeaves ";
 import AllReferralsData from "./AdminPages/AllReferrelsData";
 import ActiveOffersList from "./AdminPages/ActiveOffersList";
 import StudentApplications from "./AdminPages/StudentApplications";
+import Services from "./AdminPages/ServicesList";
+import ServiceList from "./AdminPages/ServiceList";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -258,6 +260,14 @@ function App() {
         <Route
           path="/admin/customer-updation"
           element={<ProtectedRoute element={<CustomerUpdation />} />}
+        />
+        <Route
+          path="/admin/services"
+          element={<ProtectedRoute element={<Services />} />}
+        />
+        <Route
+          path="/admin/serviceslist"
+          element={<ProtectedRoute element={<ServiceList />} />}
         />
         <Route
           path="/admin/category-inventory"
