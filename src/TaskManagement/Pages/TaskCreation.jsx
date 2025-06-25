@@ -125,9 +125,13 @@ const TaskCreation = () => {
     "Vishwateja Dharmapuri",
     "UMA MAHESH",
     "akhila u",
+    "varalakshmi",
     "Maneiah",
+    "T.Tejaswini Reddy",
     "sudheesh",
-
+    "Prameela Kovvali",
+    "Siddu venkata shiva narayana reddy",
+    "Srilekha Kailasapu",
     "Manikanta",
     "Zubeidha Begum",
     "g venkata karthik",
@@ -136,7 +140,7 @@ const TaskCreation = () => {
     "Gudelli Gunashekar ",
     "Divyajyothi",
     "Niharika Pokuri",
-    "varalakshmi",
+
     "Anusha Kowthavarapu",
     "Raga Ramya",
     "Labhishetty Sreeja",
