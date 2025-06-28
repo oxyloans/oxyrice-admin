@@ -1475,8 +1475,8 @@ const Categories = () => {
                 { required: true, message: "Please select an item unit." },
               ]}
             >
-              <Select placeholder="Select Units Like (Grams, Kgs, Ltr, Ml, Pcs)">
-                <Select.Option value="grams">gm</Select.Option>
+              <Select placeholder="Select Units Like (Gms, Kgs, Ltr, Ml, Pcs)">
+                <Select.Option value="grams">gms</Select.Option>
                 <Select.Option value="kgs">kgs</Select.Option>
                 <Select.Option value="ltr">ltr</Select.Option>
                 <Select.Option value="ml">ml</Select.Option>
