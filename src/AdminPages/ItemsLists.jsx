@@ -1698,9 +1698,9 @@ const ItemList = () => {
             style={{ width: 80 }}
             className="w-full sm:w-[80px]"
           >
-            <Option value={5}>5</Option>
-            <Option value={10}>10</Option>
-            <Option value={20}>20</Option>
+            <Option value={50}>50</Option>
+            <Option value={100}>100</Option>
+            <Option value={150}>150</Option>
           </Select>{" "}
           entries
         </Col>

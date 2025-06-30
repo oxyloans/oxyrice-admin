@@ -114,6 +114,16 @@ const Services = () => {
       align: "center",
     },
     {
+      title: "Category SubType",
+      dataIndex: "categorySubType",
+      align: "center",
+    },
+    {
+      title: "Category SubType1",
+      dataIndex: "categorySubType1",
+      align: "center",
+    },
+    {
       title: "Category Image",
       dataIndex: "categoryUrl",
       align: "center",
@@ -232,9 +242,9 @@ const Services = () => {
             <Form.Item
               label="Category Name"
               name="categoryName"
-              rules={[
-                { required: true, message: "Please enter category name" },
-              ]}
+              // rules={[
+              //   { required: true, message: "Please enter category name" },
+              // ]}
             >
               <Input />
             </Form.Item>
@@ -242,9 +252,27 @@ const Services = () => {
             <Form.Item
               label="Category Type"
               name="categoryType"
-              rules={[
-                { required: true, message: "Please enter category type" },
-              ]}
+              // rules={[
+              //   { required: true, message: "Please enter category type" },
+              // ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Category SubType"
+              name="categorySubType"
+              // rules={[
+              //   { required: true, message: "Please enter category subType" },
+              // ]}
+            >
+              <Input />
+            </Form.Item>
+            <Form.Item
+              label="Category SubType1"
+              name="categorySubType1"
+              // rules={[
+              //   { required: true, message: "Please enter category subType1" },
+              // ]}
             >
               <Input />
             </Form.Item>
