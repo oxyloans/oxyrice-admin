@@ -1015,20 +1015,25 @@ const ItemList = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [isImageViewModalVisible, setIsImageViewModalVisible] = useState(false);
+  const [isComboModalVisible, setIsComboModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [comboLoading, setComboLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
   const [activeTab, setActiveTab] = useState("all"); // New state for active tab
   const [form] = Form.useForm(); // Create a form instance
+  const [comboForm] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
   const [selectedFile, setSelectedFile] = useState(null);
   const [offerLoading, setOfferLoading] = useState(false);
   const [imageViewLoading, setImageViewLoading] = useState(false);
   const [offerForm] = Form.useForm(); // Create a form instance for offers
   const [imageViewForm] = Form.useForm();
+  const [selectedComboItem, setSelectedComboItem] = useState(null);
+  const [selectedIndividualItems, setSelectedIndividualItems] = useState([]);
 
   useEffect(() => {
     fetchItemsData();
@@ -1412,6 +1417,93 @@ const ItemList = () => {
     }
   };
 
+  // Function to show combo creation modal
+  const showComboModal = (item) => {
+    // Reset form fields first to avoid stale data
+    comboForm.resetFields();
+
+    // Set the new selected combo item
+    setSelectedComboItem(item);
+
+    // Set modal visibility
+    setIsComboModalVisible(true);
+
+    // Set form values for the new item
+    comboForm.setFieldsValue({
+      comboItemId: item.itemId,
+      comboItemName: item.itemName,
+      itemWeight: item.weight,
+      units: item.units ,
+      items: [], // Ensure items list is empty initially
+    });
+  };
+
+  // Function to handle combo modal cancel
+  const handleComboModalCancel = () => {
+    setIsComboModalVisible(false);
+    setSelectedComboItem(null);
+    comboForm.resetFields(); // Reset form to clear all fields
+    setSelectedIndividualItems([]); // Clear selected individual items
+  };
+
+  // Function to handle combo creation
+  const handleCreateCombo = async (values) => {
+    if (!selectedComboItem) {
+      message.error("Please select a combo item");
+      return;
+    }
+    if (!values.items?.length) {
+      message.error("Please add at least one individual item");
+      return;
+    }
+
+    setComboLoading(true);
+    try {
+      const requestBody = {
+        comboItemId: selectedComboItem.itemId,
+        comboItemName: selectedComboItem.itemName,
+        itemWeight: values.itemWeight,
+        units: values.units || "unit",
+        minQty: values.minQty , 
+        items: values.items.map((item) => ({
+          individualItemId: item.individualItemId,
+          itemName:
+            items.find((i) => i.itemId === item.individualItemId)?.itemName ||
+            "",
+          itemWeight: item.itemWeight0,
+          quantity: item.quantity,
+          itemPrice: item.itemPrice,
+          itemMrp: item.itemMrp,
+          discountedPrice: item.discountedPrice,
+          status: item.status, // Use status from form instead of hardcoding
+          units: item.units,
+        })),
+      };
+
+      await axios.post(`${BASE_URL}/product-service/saveCombo`, requestBody, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      message.success("Combo created successfully");
+      handleComboModalCancel(); // Close modal and reset state
+    } catch (error) {
+      message.error(
+        "Error creating combo: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setComboLoading(false);
+    }
+  };
+  // NEW: Handle individual item selection
+  const handleIndividualItemSelect = (itemIds) => {
+    const selected = items.filter((item) => itemIds.includes(item.itemId));
+    setSelectedIndividualItems(selected);
+  };
+
   const columns = [
     {
       title: "S.NO",
@@ -1517,80 +1609,78 @@ const ItemList = () => {
           style={{
             display: "flex",
             flexWrap: "wrap",
-            gap: "10px",
+            gap: "8px",
             justifyContent: "center",
+            padding: "4px",
           }}
         >
-          {/* Edit Button */}
           <Button
+            size="small"
             onClick={() => showUpdateModal(item)}
             style={{
-              minWidth: "120px",
-              padding: "8px 12px",
-              backgroundColor: "#3498db", // Blue
+              backgroundColor: "#3498db",
               color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
             Edit
           </Button>
 
-          {/* Create Offer Button */}
           <Button
+            size="small"
             onClick={() => showOfferModal(item)}
             style={{
-              minWidth: "120px",
-              padding: "8px 12px",
-              backgroundColor: "#f39c45", // Orange
+              backgroundColor: "#f39c45",
               color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
             Create Offer
           </Button>
+
           <Button
+            size="small"
             onClick={() => showImageViewModal(item)}
             style={{
-              minWidth: "120px",
-              padding: "8px 12px",
-              backgroundColor: "#9b59b6", // Purple
+              backgroundColor: "#9b59b6",
               color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
-            Add Images
+            Images
           </Button>
 
-          {/* Barcode Info Button */}
           <Button
+            size="small"
+            onClick={() => showComboModal(item)}
             style={{
-              minWidth: "120px",
-              padding: "8px 12px",
-              backgroundColor: "#1AB394", // Green
+              backgroundColor: "#e74c3c",
+              color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
+            }}
+            disabled={loading}
+          >
+            Create Combo
+          </Button>
+
+          <Button
+            size="small"
+            style={{
+              backgroundColor: "#1AB394",
+              border: "none",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
@@ -1599,48 +1689,36 @@ const ItemList = () => {
               style={{
                 color: "white",
                 textDecoration: "none",
-                width: "100%",
-                textAlign: "center",
               }}
             >
               Barcode Info
             </Link>
           </Button>
 
-          {/* View Bar Codes Button */}
           <Button
+            size="small"
             onClick={() => handleViewGeneratedBarCodes(item)}
             style={{
-              minWidth: "140px",
-              padding: "8px 12px",
-              backgroundColor: "#2980b9", // Darker blue
+              backgroundColor: "#2980b9",
               color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
             View Bar Codes
           </Button>
 
-          {/* Generate Bar Codes Button */}
           <Button
+            size="small"
             onClick={() => handleToGenerateBarCodes(item)}
             style={{
-              minWidth: "160px",
-              padding: "8px 12px",
-              backgroundColor: "#04AA6D", // Darker green
+              backgroundColor: "#04AA6D",
               color: "#fff",
               border: "none",
-              fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              fontSize: "13px",
+              padding: "4px 10px",
             }}
             disabled={loading}
           >
@@ -1672,7 +1750,6 @@ const ItemList = () => {
           <h2 className="text-xl font-bold mb-2 sm:mb-0">Items List</h2>
         </Col>
       </Row>
-
       {/* Status Filter Tabs */}
       <Row className="mb-4">
         <Col span={24}>
@@ -1683,7 +1760,6 @@ const ItemList = () => {
           </Tabs>
         </Col>
       </Row>
-
       <Row
         justify="space-between"
         align="middle"
@@ -1716,7 +1792,6 @@ const ItemList = () => {
           />
         </Col>
       </Row>
-
       <Table
         dataSource={filteredItems}
         columns={columns}
@@ -1733,7 +1808,6 @@ const ItemList = () => {
         scroll={{ x: "100%" }} // Enables horizontal scroll on smaller screens
         bordered
       />
-
       {/* Update Modal */}
       <Modal
         title="Update Item"
@@ -1916,7 +1990,6 @@ const ItemList = () => {
           </Form>
         )}
       </Modal>
-
       {/* Images View Modal - NEW */}
       <Modal
         title={
@@ -2001,6 +2074,191 @@ const ItemList = () => {
                 }}
               >
                 Upload Image
+              </Button>
+            </Form.Item>
+          </Form>
+        )}
+      </Modal>
+
+      <Modal
+        title={
+          <div className="text-2xl font-semibold text-[#008CBA]">
+            Create Combo for{" "}
+            <span className="text-black">
+              {selectedComboItem?.itemName || "Item"}
+            </span>
+          </div>
+        }
+        open={isComboModalVisible}
+        onCancel={handleComboModalCancel}
+        footer={null}
+        width={850}
+        className="rounded-md"
+      >
+        {selectedComboItem && (
+          <Form
+            form={comboForm}
+            onFinish={handleCreateCombo}
+            layout="vertical"
+            initialValues={{
+              comboItemId: selectedComboItem.itemId,
+              comboItemName: selectedComboItem.itemName,
+              itemWeight: selectedComboItem.weight || 0,
+              items: [],
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Form.Item
+                label="Combo Item ID"
+                name="comboItemId"
+                rules={[
+                  { required: true, message: "Combo Item ID is required" },
+                ]}
+              >
+                <Input disabled />
+              </Form.Item>
+
+              <Form.Item
+                label="Combo Item Name"
+                name="comboItemName"
+                rules={[
+                  { required: true, message: "Combo Item Name is required" },
+                ]}
+              >
+                <Input disabled />
+              </Form.Item>
+
+              <Form.Item
+                label="Combo Item Weight"
+                name="itemWeight"
+                rules={[{ required: true, message: "Weight is required" }]}
+              >
+                <InputNumber min={0} style={{ width: "100%" }} />
+              </Form.Item>
+              <Form.Item
+                label="Combo Item Quantity"
+                name="minQty"
+                rules={[{ required: true, message: "Quantity is required" }]}
+              >
+                <InputNumber min={0} style={{ width: "100%" }} />
+              </Form.Item>
+            </div>
+
+            <div className="my-6 border-t border-gray-300" />
+
+            <Form.List name="items">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map(({ key, name, ...restField }) => (
+                    <div
+                      key={key}
+                      className="border border-gray-300 p-4 rounded-lg mb-6 bg-gray-50"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Form.Item
+                          {...restField}
+                          label="Select Item"
+                          name={[name, "individualItemId"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select an item",
+                            },
+                          ]}
+                        >
+                          <Select placeholder="Select an item">
+                            {items.map((item) => (
+                              <Option key={item.itemId} value={item.itemId}>
+                                {item.itemName}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                          {...restField}
+                          label="Quantity"
+                          name={[name, "quantity"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please enter quantity",
+                            },
+                            {
+                              type: "number",
+                              min: 1,
+                              message: "Must be at least 1",
+                            },
+                          ]}
+                        >
+                          <InputNumber min={1} style={{ width: "100%" }} />
+                        </Form.Item>
+
+                        <Form.Item
+                          {...restField}
+                          label="Discounted Price"
+                          name={[name, "discountedPrice"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Enter discounted price",
+                            },
+                            {
+                              type: "number",
+                              min: 0,
+                              message: "Must be non-negative",
+                            },
+                          ]}
+                        >
+                          <InputNumber min={0} style={{ width: "100%" }} />
+                        </Form.Item>
+                      </div>
+
+                      <Button
+                        danger
+                        onClick={() => remove(name)}
+                        className="w-full mt-3"
+                      >
+                        Remove Item
+                      </Button>
+                    </div>
+                  ))}
+
+                  <Form.Item>
+                    <Button
+                      onClick={() => add()}
+                      block
+                      icon={<i className="fas fa-plus" />}
+                      style={{
+                        backgroundColor: "#008CBA",
+                        color: "white",
+                        fontWeight: 600,
+                        border: "none",
+                      }}
+                    >
+                      Add Item to Combo
+                    </Button>
+                  </Form.Item>
+                </>
+              )}
+            </Form.List>
+
+            <Form.Item className="mt-6">
+              <Button
+                type="primary"
+                htmlType="submit"
+                block
+                loading={comboLoading}
+                style={{
+                  backgroundColor: "#04AA6D",
+                  color: "white",
+                  fontWeight: "600",
+                  height: "45px",
+                  fontSize: "16px",
+                  border: "none",
+                }}
+              >
+                Create Combo
               </Button>
             </Form.Item>
           </Form>

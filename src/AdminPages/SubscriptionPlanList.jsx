@@ -237,11 +237,11 @@ const SubscriptionPlansList = () => {
             type="default"
             loading={loading}
             style={{
-              backgroundColor: isActive ? "#EC4758" : "#1C84C6",
+              backgroundColor: isActive ? "#1C84C6" : "#EC4758",
               color: "white",
             }}
           >
-            {isActive ? "Inactive" : "Active"}
+            {isActive ? "Active" : "Inactive"}
           </Button>
         </Popconfirm>
       ),

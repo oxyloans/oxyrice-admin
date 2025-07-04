@@ -64,12 +64,12 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <FaHandsHelping />,
       link: "/admin/user_queries",
     },
-    {
-      key: "allreferrals",
-      label: "All Referrals",
-      icon: <FaExchangeAlt />,
-      link: "/admin/all-referrals",
-    },
+    // {
+    //   key: "allreferrals",
+    //   label: "All Referrals",
+    //   icon: <FaExchangeAlt />,
+    //   link: "/admin/all-referrals",
+    // },
     {
       key: "allitemsofferLists",
       label: "Items Offer Lists",
@@ -116,8 +116,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           link: "/admin/serviceslist",
         },
       ],
-    }
-,    
+    },
 
     {
       key: "subscriptionPlans",
@@ -150,6 +149,11 @@ const AdminPanelLayoutTest = ({ children }) => {
           key: "couponsList",
           label: "Coupons List",
           link: "/admin/coupons",
+        },
+        {
+          key: "ordersByCoupon",
+          label: "OrdersByCoupon",
+          link: "/admin/ordersByCoupon",
         },
       ],
     },

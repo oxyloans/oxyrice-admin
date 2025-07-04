@@ -1117,11 +1117,11 @@ const Categories = () => {
             type="default"
             loading={loading}
             style={{
-              backgroundColor: isActive === false ? "#1C84C6" : "#EC4758",
+              backgroundColor: isActive === false ? "#EC4758" : "#1C84C6",
               color: "white",
             }}
           >
-            {isActive === false ? "Active" : "Inactive"}
+            {isActive === false ? "Inactive" : "Active"}
           </Button>
         </Popconfirm>
       ),

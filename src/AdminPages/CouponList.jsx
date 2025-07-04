@@ -213,47 +213,93 @@ const Coupons = () => {
           : "",
     },
     {
-      title: "Active Status",
-      dataIndex: "isActive",
-      key: "isActive",
+      title: "couponApplicaple",
+      dataIndex: "couponApplicaple",
+      key: "couponApplicaple",
       align: "center",
-      className: "text-1xl",
-      render: (isActive, record) => (
-        <Popconfirm
-          title={`Are you sure you want to mark this coupon as ${isActive ? "Inactive" : "Active"}?`}
-          onConfirm={() => updateCouponStatus(record.couponId, isActive)}
-          okText="Yes"
-          cancelText="No"
-        >
-          <Button
-            type="default"
-            style={{
-              backgroundColor: isActive ? "#EC4758" : "#1C84C6",
-              color: "white",
-            }}
-            loading={loading && editingCouponId === record.couponId}
-          >
-            {isActive ? "Inactive" : "Active"}
-          </Button>
-        </Popconfirm>
-      ),
     },
+
+    // {
+    //   title: "Active Status",
+    //   dataIndex: "isActive",
+    //   key: "isActive",
+    //   align: "center",
+    //   className: "text-1xl",
+    //   render: (isActive, record) => (
+    //     <Popconfirm
+    //       title={`Are you sure you want to mark this coupon as ${isActive ? "Inactive" : "Active"}?`}
+    //       onConfirm={() => updateCouponStatus(record.couponId, isActive)}
+    //       okText="Yes"
+    //       cancelText="No"
+    //     >
+    //       <Button
+    //         type="default"
+    //         style={{
+    //           backgroundColor: isActive ? "#1C84C6" : "#EC4758",
+    //           color: "white",
+    //         }}
+    //         loading={loading && editingCouponId === record.couponId}
+    //       >
+    //         {isActive ? "Active" : "Inactive"}
+    //       </Button>
+    //     </Popconfirm>
+    //   ),
+    // },
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   align: "center",
+    //   className: "text-1xl",
+    //   render: (_, record) => (
+    //     <Button
+    //       icon={<EditOutlined />}
+    //       onClick={() => showModal(record)}
+    //       style={{
+    //         backgroundColor: "#23C6C8",
+    //         color: "white",
+    //       }}
+    //     >
+    //       Edit
+    //     </Button>
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
       align: "center",
       className: "text-1xl",
       render: (_, record) => (
-        <Button
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-          style={{
-            backgroundColor: "#23C6C8",
-            color: "white",
-          }}
-        >
-          Edit
-        </Button>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+          <Button
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+            style={{
+              backgroundColor: "#23C6C8",
+              color: "white",
+            }}
+          >
+            Edit
+          </Button>
+          <Popconfirm
+            title={`Are you sure you want to mark this coupon as ${record.isActive ? "Inactive" : "Active"}?`}
+            onConfirm={() =>
+              updateCouponStatus(record.couponId, record.isActive)
+            }
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              type="default"
+              style={{
+                backgroundColor: record.isActive ? "#1C84C6" : "#EC4758",
+                color: "white",
+              }}
+              loading={loading && editingCouponId === record.couponId}
+            >
+              {record.isActive ? "Active" : "Inactive"}
+            </Button>
+          </Popconfirm>
+        </div>
       ),
     },
   ];
@@ -317,6 +363,7 @@ const Coupons = () => {
         endDateTime: values.endDateTime.format("YYYY-MM-DDTHH:mm:ss"),
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
+        couponApplicaple: values.couponApplicaple,
         isActive: true,
       };
 
@@ -583,6 +630,30 @@ const Coupons = () => {
             </Col>
             <Col xs={24} sm={12}>
               {/* Empty column for spacing */}
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                label="Coupon Applicable Categories"
+                name="couponApplicaple"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select applicable categories!",
+                  },
+                ]}
+              >
+                <Select
+                  mode="single"
+                  placeholder="Select applicable categories"
+                  allowClear
+                >
+                  <Option value="RICE">RICE</Option>
+                  <Option value="Grocery">GROCERY</Option>
+                  <Option value="GOLD">GOLD</Option>
+                </Select>
+              </Form.Item>
             </Col>
           </Row>
 

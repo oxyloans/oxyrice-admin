@@ -10,66 +10,133 @@ import {
   Input,
   Row,
   Col,
+  Tabs,
+  Pagination,
+  message,
 } from "antd";
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
-import { SearchOutlined } from "@ant-design/icons"; // Add this import
+import { SearchOutlined } from "@ant-design/icons";
+
 const { Title } = Typography;
 const { Search } = Input;
+const { TabPane } = Tabs;
 
 const ActiveOffersList = () => {
-  const [offers, setOffers] = useState([]);
-  const [filteredOffers, setFilteredOffers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeOffers, setActiveOffers] = useState([]);
+  const [comboOffers, setComboOffers] = useState([]);
+  const [filteredActive, setFilteredActive] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
+  const [activeTab, setActiveTab] = useState("active");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [comboPage, setComboPage] = useState(1);
+  const [comboPageSize, setComboPageSize] = useState(10);
+  const [comboTotal, setComboTotal] = useState(0);
+
   const pageSize = 20;
 
   const fetchActiveOffers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/cart-service/cart/activeOffers`);
-      setOffers(response.data);
-      setFilteredOffers(response.data);
+      const response = await axios.get(
+        `${BASE_URL}/cart-service/cart/activeOffers`
+      );
+      setActiveOffers(response.data);
+      setFilteredActive(response.data);
+      message.success("Active offers loaded successfully");
     } catch (error) {
-      console.error("Error fetching active offers:", error);
+      message.error(
+        "Failed to fetch active offers: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchComboOffers = async (page = 1, size = 10) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/product-service/combo-offers?page=${page - 1}&size=${size}`
+      );
+      const { content, totalElements } = response.data;
+      setComboOffers(content || []);
+      setComboTotal(totalElements || 0);
+      message.success("Combo offers loaded successfully");
+    } catch (error) {
+      message.error(
+        "Failed to fetch combo offers: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "active") {
+      fetchActiveOffers();
+    } else {
+      fetchComboOffers(comboPage, comboPageSize);
+    }
+  }, [activeTab, comboPage, comboPageSize]);
+
   const handleSearch = (value) => {
     const search = value.toLowerCase();
     setSearchText(search);
-    const filtered = offers.filter(
+    const filtered = activeOffers.filter(
       (offer) =>
         offer.offerName?.toLowerCase().includes(search) ||
         offer.freeItemName?.toLowerCase().includes(search) ||
         offer.freeItemId?.toLowerCase().includes(search)
     );
-    setFilteredOffers(filtered);
-    setCurrentPage(1); // reset to page 1 after filtering
+    setFilteredActive(filtered);
+    setCurrentPage(1);
   };
 
   const toggleOfferStatus = async (id, currentStatus) => {
     setUpdatingId(id);
     try {
-      await axios.patch(`${BASE_URL}/cart-service/cart/${id}/status?active=${!currentStatus}`);
+      await axios.patch(
+        `${BASE_URL}/cart-service/cart/${id}/status?active=${!currentStatus}`
+      );
       await fetchActiveOffers();
+      message.success(
+        `Offer ${currentStatus ? "deactivated" : "activated"} successfully`
+      );
     } catch (error) {
-      console.error("Error updating offer status:", error);
+      message.error(
+        "Failed to update offer status: " +
+          (error.response?.data?.message || error.message)
+      );
     } finally {
       setUpdatingId(null);
     }
   };
 
-  useEffect(() => {
-    fetchActiveOffers();
-  }, []);
+  const toggleComboStatus = async (comboId) => {
+    setUpdatingId(comboId);
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/product-service/updateComboStatus/${comboId}`
+      );
+      await fetchComboOffers(comboPage, comboPageSize);
+      message.success("Combo status updated successfully");
+    } catch (error) {
+      message.error(
+        "Failed to update combo status: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
-  const columns = [
+  const activeOfferColumns = [
     {
       title: "S.No",
       key: "serialNumber",
@@ -119,7 +186,9 @@ const ActiveOffersList = () => {
       key: "freeOnce",
       align: "center",
       render: (freeOnce) => (
-        <Tag color={freeOnce ? "green" : "red"}>{freeOnce ? "True" : "False"}</Tag>
+        <span className="status-indicator font-bold">
+          {freeOnce ? "True" : "False"}
+        </span>
       ),
     },
     {
@@ -127,77 +196,203 @@ const ActiveOffersList = () => {
       key: "active",
       align: "center",
       render: (_, record) => (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
+        <Popconfirm
+          title={`Are you sure you want to ${record.active ? "deactivate" : "activate"} this offer?`}
+          onConfirm={() => toggleOfferStatus(record.id, record.active)}
+          okText="Yes"
+          cancelText="No"
         >
-          <Popconfirm
-            title={`Are you sure you want to ${record.active ? "deactivate" : "activate"} this offer?`}
-            onConfirm={() => toggleOfferStatus(record.id, record.active)}
-            okText="Yes"
-            cancelText="No"
+          <Button
+            size="medium"
+            loading={updatingId === record.id}
+            style={{
+              marginTop: 5,
+              backgroundColor: record.active ? "#008CBA" : "#f44336",
+              color: "white",
+              border: "none",
+            }}
           >
-            <Button
-              size="medium"
-              loading={updatingId === record.id}
-              style={{
-                marginTop: 5,
-                backgroundColor: record.active ? "#f44336" : "#008CBA",
-                color: "white",
-                border: "none",
-              }}
-            >
-              {record.active ? "Inactive" : "Active"}
-            </Button>
-          </Popconfirm>
+            {record.active ? "Active" : "Inactive"}
+          </Button>
+        </Popconfirm>
+      ),
+    },
+  ];
+
+  const comboOfferColumns = [
+    {
+      title: "S.No",
+      key: "serial",
+      render: (text, record, index) =>
+        (comboPage - 1) * comboPageSize + index + 1,
+      align: "center",
+    },
+    {
+      title: "Combo Name",
+      dataIndex: "comboItemName",
+      key: "comboItemName",
+      align: "center",
+      render: (text) => (
+        <div style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+          {text}
         </div>
+      ),
+    },
+    {
+      title: "Items",
+      key: "items",
+      align: "center",
+      render: (_, record) => {
+        const itemColumns = [
+          {
+            title: "Item Name",
+            dataIndex: "itemName",
+            align: "center",
+            key: "itemName",
+            render: (text) => <strong>{text?.trim()}</strong>,
+          },
+          {
+            title: "Quantity",
+            dataIndex: "quantity",
+            key: "quantity",
+            align: "center",
+          },
+          {
+            title: "MRP (₹)",
+            dataIndex: "itemMrp",
+            key: "itemMrp",
+            align: "center",
+          },
+          {
+            title: "Price (₹)",
+            dataIndex: "itemPrice",
+            key: "itemPrice",
+            align: "center",
+          },
+        ];
+
+        return (
+          <Table
+            columns={itemColumns}
+            dataSource={record.items}
+            rowKey={(item, index) => index}
+            pagination={false}
+            scroll={{ x: true }}
+            size="small"
+            bordered
+          />
+        );
+      },
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Popconfirm
+          title={`Are you sure you want to update status of this combo offer?`}
+          onConfirm={() => toggleComboStatus(record.comboItemId)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button
+            size="small"
+            loading={updatingId === record.comboItemId}
+            style={{
+              backgroundColor: "#008CBA",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Update Status
+          </Button>
+        </Popconfirm>
       ),
     },
   ];
 
   return (
     <AdminPanelLayoutTest>
-      <Card
-        title={
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Title level={4}>Active Offers</Title>
-            </Col>
-            <Col>
-              <Input
-                placeholder="Search by Offer or Free Item Name"
-                value={searchText}
-                onChange={(e) => handleSearch(e.target.value)}
-                allowClear
-                prefix={<SearchOutlined />} // This adds the search icon inside the input
-                style={{ width: 300 }}
+      <Card>
+        <Tabs
+          defaultActiveKey="active"
+          activeKey={activeTab}
+          onChange={(key) => setActiveTab(key)}
+          type="card"
+        >
+          <TabPane tab="Active Offers" key="active">
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 16 }}
+            >
+              <Col>
+                <Title level={4}>Active Offers</Title>
+              </Col>
+              <Col>
+                <Search
+                  placeholder="Search by Offer or Free Item"
+                  value={searchText}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  allowClear
+                  prefix={<SearchOutlined />}
+                  style={{ width: 300 }}
+                />
+              </Col>
+            </Row>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                <Spin size="medium" />
+              </div>
+            ) : (
+              <Table
+                columns={activeOfferColumns}
+                dataSource={filteredActive}
+                rowKey="id"
+                bordered
+                scroll={{ x: true }}
+                pagination={{
+                  current: currentPage,
+                  pageSize,
+                  total: filteredActive.length,
+                  onChange: (page) => setCurrentPage(page),
+                }}
               />
-            </Col>
-          </Row>
-        }
-      >
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <Spin size="medium" />
-          </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredOffers}
-            rowKey="id"
-            bordered
-            scroll={{ x: 100 }}
-            pagination={{
-              current: currentPage,
-              pageSize,
-              total: filteredOffers.length,
-              onChange: (page) => setCurrentPage(page),
-            }}
-          />
-        )}
+            )}
+          </TabPane>
+
+          <TabPane tab="Combo Offers" key="combo">
+            <Title level={4}>Combo Offers</Title>
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "50px" }}>
+                <Spin size="medium" />
+              </div>
+            ) : (
+              <>
+                <Table
+                  columns={comboOfferColumns}
+                  dataSource={comboOffers}
+                  rowKey="comboItemId"
+                  bordered
+                  pagination={false}
+                />
+                <div style={{ marginTop: 16, textAlign: "right" }}>
+                  <Pagination
+                    current={comboPage}
+                    pageSize={comboPageSize}
+                    total={comboTotal}
+                    showSizeChanger
+                    pageSizeOptions={["5", "10", "20", "50"]}
+                    onChange={(page, size) => {
+                      setComboPage(page);
+                      setComboPageSize(size);
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </TabPane>
+        </Tabs>
       </Card>
     </AdminPanelLayoutTest>
   );

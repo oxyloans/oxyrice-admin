@@ -79,6 +79,7 @@ import ActiveOffersList from "./AdminPages/ActiveOffersList";
 import StudentApplications from "./AdminPages/StudentApplications";
 import Services from "./AdminPages/ServicesList";
 import ServiceList from "./AdminPages/ServiceList";
+import OrdersByCoupon from "./AdminPages/OrdersByCoupon";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -248,6 +249,10 @@ function App() {
         <Route
           path="/admin/coupons"
           element={<ProtectedRoute element={<Coupons />} />}
+        />
+        <Route
+          path="/admin/ordersByCoupon"
+          element={<ProtectedRoute element={<OrdersByCoupon />} />}
         />
         <Route
           path="/admin/studentapplications"
