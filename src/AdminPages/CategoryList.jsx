@@ -713,7 +713,7 @@ import {
   Popconfirm,
   Tabs,
 } from "antd";
-import {  UploadOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import AdminPanelLayoutTest from "./AdminPanel";
 import { MdModeEditOutline } from "react-icons/md";
@@ -733,7 +733,7 @@ const Categories = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [file, setFile] = useState(null);
   const [addItemForm] = Form.useForm();
- 
+
   const [activeSearchTerm, setActiveSearchTerm] = useState("");
   const [inactiveSearchTerm, setInactiveSearchTerm] = useState("");
   const [filteredActiveCategories, setFilteredActiveCategories] = useState([]);
@@ -965,7 +965,9 @@ const Categories = () => {
     // Add other form fields
     formData.append("itemName", values.itemName || ""); // Ensure no undefined value
     formData.append("weight", values.weight || 0); // Default to 0 if quantity is not provided
-    formData.append("itemUnit", values.itemUnit || ""); // Default to empty string if unit is not selected
+    formData.append("itemUnit", values.itemUnit || "");
+    formData.append("makingCost", values.makingCost || 0); // Default to 0 if making cost is not provided
+    // Default to empty string if unit is not selected
     formData.append("tag", values.tag || "");
     formData.append("quantity", values.quantity || "");
     // Default to empty string if tag is undefined
@@ -1168,7 +1170,6 @@ const Categories = () => {
           </h2>
 
           <div className="flex gap-2 w-full md:w-auto">
-           
             <Button
               style={{ backgroundColor: "#1C84C6", color: "white" }}
               onClick={openAddCategoryModal}
@@ -1482,6 +1483,25 @@ const Categories = () => {
                 <Select.Option value="ml">ml</Select.Option>
                 <Select.Option value="pcs">pcs</Select.Option>
               </Select>
+            </Form.Item>
+            <Form.Item
+              name="makingCost"
+              label="Making Cost"
+              // rules={[
+              //   { required: true, message: "Please enter the making cost." },
+              //   {
+              //     validator: (_, value) => {
+              //       if (!value || parseFloat(value) <= 0) {
+              //         return Promise.reject(
+              //           new Error("Making cost must be greater than 0.")
+              //         );
+              //       }
+              //       return Promise.resolve();
+              //     },
+              //   },
+              // ]}
+            >
+              <Input placeholder="Enter making cost" />
             </Form.Item>
 
             <Form.Item

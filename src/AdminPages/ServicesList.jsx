@@ -324,7 +324,7 @@ const Services = () => {
             <Form.Item
               label="Price A"
               name="agreementPriceA"
-              rules={[{ required: true, message: "Enter Price A" }]}
+             
             >
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>
@@ -332,7 +332,7 @@ const Services = () => {
             <Form.Item
               label="Price B"
               name="agreementPriceB"
-              rules={[{ required: true, message: "Enter Price B" }]}
+            
             >
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>
@@ -340,7 +340,6 @@ const Services = () => {
             <Form.Item
               label="Price C"
               name="agreementPriceC"
-              rules={[{ required: true, message: "Enter Price C" }]}
             >
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>

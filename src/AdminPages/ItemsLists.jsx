@@ -1134,6 +1134,7 @@ const ItemList = () => {
         formData.append("quantity", values.quantity || 0);
         formData.append("weight", values.weight || 0);
         formData.append("itemUnit", values.itemUnit);
+        formData.append("makingCost", values.makingCost || 0);
         formData.append("itemDescription", values.itemDescription);
         formData.append("tag", values.tag);
 
@@ -1262,6 +1263,8 @@ const ItemList = () => {
         itemUnit: selectedItem.units,
         tag: selectedItem.tag || "",
         itemDescription: selectedItem.itemDescription || "",
+        makingCost: selectedItem.makingCost || "",
+        itemImage: selectedItem.itemImage || "",
       });
     }
   }, [selectedItem]);
@@ -1463,14 +1466,15 @@ const ItemList = () => {
         comboItemId: selectedComboItem.itemId,
         comboItemName: selectedComboItem.itemName,
         itemWeight: values.itemWeight,
+        discountType: values.discountType,
         units: values.units || "unit",
-        minQty: values.minQty , 
+        minQty: values.minQty,
         items: values.items.map((item) => ({
           individualItemId: item.individualItemId,
           itemName:
             items.find((i) => i.itemId === item.individualItemId)?.itemName ||
             "",
-          itemWeight: item.itemWeight0,
+          itemWeight: item.itemWeight,
           quantity: item.quantity,
           itemPrice: item.itemPrice,
           itemMrp: item.itemMrp,
@@ -1841,6 +1845,11 @@ const ItemList = () => {
                   <Input />
                 </Form.Item>
               </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item label="Making Cost" name="makingCost">
+                  <Input />
+                </Form.Item>
+              </Col>
 
               <Col xs={24} sm={12}>
                 <Form.Item label="Item Description" name="itemDescription">
@@ -2082,7 +2091,7 @@ const ItemList = () => {
 
       <Modal
         title={
-          <div className="text-2xl font-semibold text-[#008CBA]">
+          <div className="text-xl font-semibold text-[#008CBA]">
             Create Combo for{" "}
             <span className="text-black">
               {selectedComboItem?.itemName || "Item"}
@@ -2092,7 +2101,7 @@ const ItemList = () => {
         open={isComboModalVisible}
         onCancel={handleComboModalCancel}
         footer={null}
-        width={850}
+        width={700}
         className="rounded-md"
       >
         {selectedComboItem && (
@@ -2127,6 +2136,26 @@ const ItemList = () => {
               >
                 <Input disabled />
               </Form.Item>
+              <Form.Item
+                label="Discount Type"
+                name="discountType"
+                rules={[
+                  { required: true, message: "Please select a discount type" },
+                ]}
+              >
+                <Select placeholder="Select a discount type">
+                  {[
+                    { value: "FIXED", label: "Fixed" },
+                    { value: "DISCOUNT", label: "Discount" },
+                    { value: "BULK_DISCOUNT", label: "Bulk Discount" },
+                    { value: "PERCENTAGE", label: "Percentage" },
+                  ].map((type) => (
+                    <Select.Option key={type.value} value={type.value}>
+                      {type.label}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
 
               <Form.Item
                 label="Combo Item Weight"
@@ -2155,7 +2184,7 @@ const ItemList = () => {
                       className="border border-gray-300 p-4 rounded-lg mb-6 bg-gray-50"
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Form.Item
+                        {/* <Form.Item
                           {...restField}
                           label="Select Item"
                           name={[name, "individualItemId"]}
@@ -2172,6 +2201,40 @@ const ItemList = () => {
                                 {item.itemName}
                               </Option>
                             ))}
+                          </Select>
+                        </Form.Item> */}
+                        <Form.Item
+                          {...restField}
+                          label="Select Item"
+                          name={[name, "individualItemId"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select an item",
+                            },
+                          ]}
+                        >
+                          <Select
+                            placeholder="Select an item"
+                            showSearch
+                            filterOption={(input, option) =>
+                              option.children
+                                .toLowerCase()
+                                .includes(input.toLowerCase())
+                            }
+                          >
+                            {items
+                              .sort((a, b) =>
+                                a.itemName.localeCompare(b.itemName)
+                              )
+                              .map((item) => (
+                                <Select.Option
+                                  key={item.itemId}
+                                  value={item.itemId}
+                                >
+                                  {item.itemName}
+                                </Select.Option>
+                              ))}
                           </Select>
                         </Form.Item>
 

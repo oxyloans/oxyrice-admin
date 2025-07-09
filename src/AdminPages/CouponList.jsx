@@ -213,9 +213,9 @@ const Coupons = () => {
           : "",
     },
     {
-      title: "couponApplicaple",
-      dataIndex: "couponApplicaple",
-      key: "couponApplicaple",
+      title: "CouponApplicable",
+      dataIndex: "couponApplicable",
+      key: "couponApplicable",
       align: "center",
     },
 
@@ -363,7 +363,7 @@ const Coupons = () => {
         endDateTime: values.endDateTime.format("YYYY-MM-DDTHH:mm:ss"),
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
-        couponApplicaple: values.couponApplicaple,
+        couponApplicable: values.couponApplicable,
         isActive: true,
       };
 
@@ -636,7 +636,7 @@ const Coupons = () => {
             <Col span={24}>
               <Form.Item
                 label="Coupon Applicable Categories"
-                name="couponApplicaple"
+                name="couponApplicable"
                 rules={[
                   {
                     required: true,
