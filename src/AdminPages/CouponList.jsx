@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
+
 import {
   Table,
   Button,
@@ -17,13 +16,17 @@ import {
   Col,
   Popconfirm,
 } from "antd";
+
+import { Tabs } from "antd";
+
+
 import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
 import moment from "moment";
 import AdminPanelLayout from "./AdminPanel.jsx";
 import BASE_URL from "./Config.jsx";
 const { Option } = Select;
-
+const { TabPane } = Tabs;
 const Coupons = () => {
   const [coupons, setCoupons] = useState([]);
   const [filteredCoupons, setFilteredCoupons] = useState([]);
@@ -34,14 +37,18 @@ const Coupons = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
-  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [entriesPerPage, setEntriesPerPage] = useState(25);
+  const [activeTab, setActiveTab] = useState("PUBLIC");
+
   const [currentPage, setCurrentPage] = useState(1);
   const accessToken = localStorage.getItem("accessToken");
 
   useEffect(() => {
     fetchCoupons();
   }, []);
-
+  const tabFilteredCoupons = filteredCoupons.filter(
+    (coupon) => coupon.status === activeTab
+  );
   const fetchCoupons = useCallback(async () => {
     setFetching(true);
     try {
@@ -53,8 +60,16 @@ const Coupons = () => {
           },
         }
       );
-      setCoupons(response.data);
-      setFilteredCoupons(response.data);
+      // Sort coupons so latest ones appear first (assuming "createdAt" field is present)
+    const sortedCoupons = response.data.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+      // setCoupons(response.data);
+      // setFilteredCoupons(response.data);
+
+
+      setCoupons(sortedCoupons);
+      setFilteredCoupons(sortedCoupons);
     } catch (error) {
       console.error("Error fetching coupons:", error);
       message.error("Failed to fetch coupons.");
@@ -124,14 +139,14 @@ const Coupons = () => {
       className: "text-1xl",
     },
     {
-      title: "Minimum Order",
+      title: "Min Order",
       dataIndex: "minOrder",
       key: "minOrder",
       align: "center",
       className: "text-1xl",
     },
     {
-      title: "Maximum Order",
+      title: "Max Order",
       dataIndex: "maximumOrderAmount",
       key: "maximumOrderAmount",
       align: "center",
@@ -180,23 +195,23 @@ const Coupons = () => {
         }
       },
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      className: "text-1xl",
-      render: (status) => (
-        <span
-          style={{
-            color: status === "PUBLIC" ? "#008CBA" : "#04AA6D",
-            fontWeight: "bold",
-          }}
-        >
-          {status || "N/A"}
-        </span>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   align: "center",
+    //   className: "text-1xl",
+    //   render: (status) => (
+    //     <span
+    //       style={{
+    //         color: status === "PUBLIC" ? "#008CBA" : "#04AA6D",
+    //         fontWeight: "bold",
+    //       }}
+    //     >
+    //       {status || "N/A"}
+    //     </span>
+    //   ),
+    // },
     {
       title: "Start Date",
       dataIndex: "startDateTime",
@@ -276,7 +291,7 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
       render: (_, record) => (
-        <div style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "5px" }}>
           <Button
             icon={<EditOutlined />}
             onClick={() => showModal(record)}
@@ -452,9 +467,9 @@ const Coupons = () => {
                 onChange={handleEntriesPerPageChange}
                 className="w-full sm:w-[80px]"
               >
-                <Option value={5}>5</Option>
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
+                <Option value={25}>25</Option>
+                <Option value={50}>50</Option>
+                <Option value={100}>100</Option>
               </Select>
               <span>entries</span>
             </Col>
@@ -471,7 +486,7 @@ const Coupons = () => {
             </Col>
           </Row>
 
-          {fetching ? (
+          {/* {fetching ? (
             <div className="flex justify-center items-center h-64">
               <Spin size="medium" />
             </div>
@@ -490,6 +505,37 @@ const Coupons = () => {
               bordered
               loading={fetching}
             />
+          )} */}
+
+          {fetching ? (
+            <div className="flex justify-center items-center h-64">
+              <Spin size="medium" />
+            </div>
+          ) : (
+            <>
+              <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
+                <TabPane tab="Public Coupons" key="PUBLIC" />
+                <TabPane tab="Private Coupons" key="PRIVATE" />
+              </Tabs>
+
+              <Table
+                dataSource={filteredCoupons.filter(
+                  (c) => c.status === activeTab
+                )}
+                columns={columns}
+                rowKey="couponId"
+                pagination={{
+                  pageSize: entriesPerPage,
+                  current: currentPage,
+                  onChange: handlePageChange,
+                  total: filteredCoupons.filter((c) => c.status === activeTab)
+                    .length,
+                }}
+                scroll={{ x: "100%" }}
+                bordered
+                loading={fetching}
+              />
+            </>
           )}
         </div>
       </div>

@@ -100,23 +100,6 @@ const AdminPanelLayoutTest = ({ children }) => {
         },
       ],
     },
-    {
-      key: "Services",
-      label: "Services",
-      icon: <AppstoreOutlined />,
-      dropdownItems: [
-        {
-          key: "Category List",
-          label: "Category List",
-          link: "/admin/services",
-        },
-        {
-          key: "Items List",
-          label: "Items List",
-          link: "/admin/serviceslist",
-        },
-      ],
-    },
 
     {
       key: "subscriptionPlans",
@@ -171,6 +154,23 @@ const AdminPanelLayoutTest = ({ children }) => {
           key: "returnPendingList",
           label: "Return Pending List",
           link: "/admin/orders-pending",
+        },
+      ],
+    },
+    {
+      key: "Services",
+      label: "Services",
+      icon: <AppstoreOutlined />,
+      dropdownItems: [
+        {
+          key: "Category List",
+          label: "Category List",
+          link: "/admin/services",
+        },
+        {
+          key: "Items List",
+          label: "Items List",
+          link: "/admin/serviceslist",
         },
       ],
     },

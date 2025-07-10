@@ -32,7 +32,7 @@ const Ordersdetails = () => {
   const [orderStatus, setOrderStatus] = useState("All");
   const [orderData, setOrderData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [entriesPerPage, setEntriesPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [toDate, setToDate] = useState(null);
   const [fromDate, setFromDate] = useState(null);
@@ -631,9 +631,9 @@ const Ordersdetails = () => {
                 onChange={handleEntriesPerPageChange}
                 style={{ width: 70 }}
               >
-                <Option value={5}>5</Option>
-                <Option value={10}>10</Option>
-                <Option value={20}>20</Option>
+                <Option value={50}>50</Option>
+                <Option value={100}>100</Option>
+                <Option value={150}>150</Option>
               </Select>
               <span>entries</span>
             </Col>

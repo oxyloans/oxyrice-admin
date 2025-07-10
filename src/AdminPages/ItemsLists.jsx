@@ -998,13 +998,19 @@ import {
   Row,
   Col,
   Popconfirm,
-  Tag,
+  Upload,
   Tabs,
+  Progress,
 } from "antd";
 import { Link } from "react-router-dom";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
 
+import {
+  UploadOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import "../ItemList.css"; // Import custom CSS for responsive styling
 
 const { Option } = Select;
@@ -1016,10 +1022,11 @@ const ItemList = () => {
   const [isOfferModalVisible, setIsOfferModalVisible] = useState(false);
   const [isImageViewModalVisible, setIsImageViewModalVisible] = useState(false);
   const [isComboModalVisible, setIsComboModalVisible] = useState(false);
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comboLoading, setComboLoading] = useState(false);
-  const [entriesPerPage, setEntriesPerPage] = useState(50);
+  const [entriesPerPage, setEntriesPerPage] = useState(100);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredItems, setFilteredItems] = useState([]);
@@ -1034,7 +1041,9 @@ const ItemList = () => {
   const [imageViewForm] = Form.useForm();
   const [selectedComboItem, setSelectedComboItem] = useState(null);
   const [selectedIndividualItems, setSelectedIndividualItems] = useState([]);
-
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); //
   useEffect(() => {
     fetchItemsData();
   }, []);
@@ -1063,6 +1072,71 @@ const ItemList = () => {
       message.error("Error fetching items data: " + error.message);
     } finally {
       setLoading(false);
+    }
+  };
+  const fileType = "image"; // Fixed fileType
+
+  const handleUpload = async (formIndex) => {
+    if (fileList.length === 0) {
+      message.warning("Please choose a file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("multiPart", fileList[0]);
+
+    try {
+      setUploading(true);
+      setUploadProgress(0); // Reset progress
+
+      const response = await axios.post(
+        `${BASE_URL}/product-service/uploadComboImages?fileType=${fileType}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          },
+        }
+      );
+
+      // Assuming the API returns the image URL in response.data.imageUrl
+      const imageUrl =
+        response.data.imageUrl ||
+        "https://askoxy.s3.ap-south-1.amazonaws.com/image_document_BMVCOINnobg3.jpg";
+
+      // Update the imageUrl field in the specific Form.List item
+      comboForm.setFields([
+        {
+          name: ["items", formIndex, "imageUrl"],
+          value: imageUrl,
+        },
+      ]);
+
+      message.success(
+        <>
+          File uploaded successfully!{" "}
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+        </>
+      );
+      setFileList([]); // Clear fileList after successful upload
+    } catch (error) {
+      console.error("Upload failed:", error);
+      message.error(
+        <>
+          Upload failed.{" "}
+          <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />
+        </>
+      );
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -1436,7 +1510,7 @@ const ItemList = () => {
       comboItemId: item.itemId,
       comboItemName: item.itemName,
       itemWeight: item.weight,
-      units: item.units ,
+      units: item.units,
       items: [], // Ensure items list is empty initially
     });
   };
@@ -1467,6 +1541,7 @@ const ItemList = () => {
         comboItemName: selectedComboItem.itemName,
         itemWeight: values.itemWeight,
         discountType: values.discountType,
+        // imageUrl: values.imageUrl,
         units: values.units || "unit",
         minQty: values.minQty,
         items: values.items.map((item) => ({
@@ -1477,6 +1552,7 @@ const ItemList = () => {
           itemWeight: item.itemWeight,
           quantity: item.quantity,
           itemPrice: item.itemPrice,
+          imageUrl: item.imageUrl,
           itemMrp: item.itemMrp,
           discountedPrice: item.discountedPrice,
           status: item.status, // Use status from form instead of hardcoding
@@ -1652,7 +1728,7 @@ const ItemList = () => {
             size="small"
             onClick={() => showImageViewModal(item)}
             style={{
-              backgroundColor: "#9b59b6",
+              backgroundColor: "#1976d2",
               color: "#fff",
               border: "none",
               fontSize: "13px",
@@ -1667,7 +1743,7 @@ const ItemList = () => {
             size="small"
             onClick={() => showComboModal(item)}
             style={{
-              backgroundColor: "#e74c3c",
+              backgroundColor: "#8e44ad",
               color: "#fff",
               border: "none",
               fontSize: "13px",
@@ -1758,9 +1834,9 @@ const ItemList = () => {
       <Row className="mb-4">
         <Col span={24}>
           <Tabs activeKey={activeTab} onChange={handleTabChange}>
-            <TabPane tab="All " key="all" />
-            <TabPane tab="Active " key="active" />
-            <TabPane tab="Inactive " key="inactive" />
+            <TabPane tab="All Items" key="all" />
+            <TabPane tab="Active Items" key="active" />
+            <TabPane tab="Inactive Items" key="inactive" />
           </Tabs>
         </Col>
       </Row>
@@ -1778,9 +1854,9 @@ const ItemList = () => {
             style={{ width: 80 }}
             className="w-full sm:w-[80px]"
           >
-            <Option value={50}>50</Option>
             <Option value={100}>100</Option>
             <Option value={150}>150</Option>
+            <Option value={200}>200</Option>
           </Select>{" "}
           entries
         </Col>
@@ -2002,7 +2078,7 @@ const ItemList = () => {
       {/* Images View Modal - NEW */}
       <Modal
         title={
-          <span className="text-xl font-semibold">
+          <span>
             Upload Images for{" "}
             <span className="text-black">
               {selectedItem?.itemName || "Item"}
@@ -2171,6 +2247,23 @@ const ItemList = () => {
               >
                 <InputNumber min={0} style={{ width: "100%" }} />
               </Form.Item>
+              {/* <Form.Item
+                label={<span className="font-medium">Image URL</span>}
+                name="imageUrl"
+                rules={[
+                  {
+                    required: true,
+                    message: "Image URL is required",
+                  },
+                  { type: "url", message: "Must be a valid URL" },
+                ]}
+              >
+                <Input
+                  placeholder="Image URL will be populated after upload"
+                  size="large"
+                  disabled // Disable manual input to ensure URL comes from upload
+                />
+              </Form.Item> */}
             </div>
 
             <div className="my-6 border-t border-gray-300" />
@@ -2275,6 +2368,77 @@ const ItemList = () => {
                         >
                           <InputNumber min={0} style={{ width: "100%" }} />
                         </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          label={<span className="font-medium">Image URL</span>}
+                          name={[name, "imageUrl"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Image URL is required",
+                            },
+                            { type: "url", message: "Must be a valid URL" },
+                          ]}
+                        >
+                          <Input
+                            placeholder="Image URL will be populated after upload"
+                            size="large"
+                            disabled // Disable manual input to ensure URL comes from upload
+                          />
+                        </Form.Item>
+
+                        <div className="space-y-4">
+                          <Upload
+                            beforeUpload={(file) => {
+                              setFileList([file]); // Replace previous file with new one
+                              return false; // Prevent auto-upload
+                            }}
+                            fileList={fileList}
+                            onRemove={() => setFileList([])}
+                            accept="image/*"
+                            maxCount={1} // Allow only one file
+                            listType="picture"
+                          >
+                            <Button
+                              icon={<UploadOutlined />}
+                              size="large"
+                              style={{
+                                backgroundColor: "#f0f0f0",
+                                borderColor: "#d9d9d9",
+                                color: "#595959",
+                              }}
+                            >
+                              Choose Image
+                            </Button>
+                          </Upload>
+
+                          {uploading && (
+                            <Progress
+                              percent={uploadProgress}
+                              status="active"
+                              strokeColor={{
+                                from: "#108ee9",
+                                to: "#87d068",
+                              }}
+                            />
+                          )}
+
+                          <Button
+                            type="primary"
+                            onClick={() => handleUpload(name)} // Pass form index to handleUpload
+                            disabled={fileList.length === 0 || uploading}
+                            loading={uploading}
+                            style={{
+                              backgroundColor: "#008CBA",
+                              borderColor: "#008CBA",
+                              color: "white",
+                              width: "100%",
+                              height: "40px",
+                            }}
+                          >
+                            {uploading ? "Uploading..." : "Upload Image"}
+                          </Button>
+                        </div>
                       </div>
 
                       <Button

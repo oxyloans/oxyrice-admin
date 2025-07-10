@@ -10,6 +10,7 @@ import {
   Select,
   Row,
   Col,
+  Tabs,
   Popconfirm,
 } from "antd";
 import axios from "axios";
@@ -26,9 +27,11 @@ const SubscriptionPlansList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("accessToken");
-  const [entriesPerPage, setEntriesPerPage] = useState(15);
+  const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredPlans, setFilteredPlans] = useState([]);
+  const [activePlans, setActivePlans] = useState([]);
+  const [inactivePlans, setInactivePlans] = useState([]);
   const [selectedSubscription, setSelectedSubscription] = useState(null); // Track selected plan for update
 
   // Fetch all plans
@@ -43,8 +46,14 @@ const SubscriptionPlansList = () => {
           },
         }
       );
-      setPlans(response.data || []);
-      setFilteredPlans(response.data || []); // Initially set filtered plans
+      // setPlans(response.data || []);
+      // setFilteredPlans(response.data || []); // Initially set filtered plans
+      const allPlans = response.data || [];
+      setPlans(allPlans);
+      setFilteredPlans(allPlans);
+      setActivePlans(allPlans.filter((plan) => plan.status === true));
+      setInactivePlans(allPlans.filter((plan) => plan.status === false));
+
     } catch (error) {
       notification.error({
         message: "Failed to fetch plans",
@@ -294,9 +303,9 @@ const SubscriptionPlansList = () => {
               onChange={handleEntriesPerPageChange}
               style={{ width: 70 }}
             >
-              <Option value={5}>5</Option>
-              <Option value={10}>10</Option>
-              <Option value={20}>20</Option>
+              <Option value={25}>25</Option>
+              <Option value={50}>50</Option>
+              <Option value={100}>100</Option>
             </Select>{" "}
             entries
           </Col>
@@ -311,7 +320,7 @@ const SubscriptionPlansList = () => {
           </Col>
         </Row>
 
-        <Table
+        {/* <Table
           dataSource={filteredPlans}
           columns={columns}
           rowKey="id"
@@ -321,7 +330,35 @@ const SubscriptionPlansList = () => {
             pageSize: entriesPerPage,
             onChange: (page) => setCurrentPage(page),
           }}
-        />
+        /> */}
+        <Tabs defaultActiveKey="1">
+          <Tabs.TabPane tab="Active Subscription Plans" key="1">
+            <Table
+              dataSource={activePlans}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
+              bordered
+              pagination={{
+                pageSize: entriesPerPage,
+                onChange: (page) => setCurrentPage(page),
+              }}
+            />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Inactive Subscription Plans" key="2">
+            <Table
+              dataSource={inactivePlans}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
+              bordered
+              pagination={{
+                pageSize: entriesPerPage,
+                onChange: (page) => setCurrentPage(page),
+              }}
+            />
+          </Tabs.TabPane>
+        </Tabs>
 
         <Modal
           title={selectedSubscription ? "Update Plan" : "Add New Plan"}

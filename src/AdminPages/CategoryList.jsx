@@ -740,7 +740,7 @@ const Categories = () => {
   const [filteredInactiveCategories, setFilteredInactiveCategories] = useState(
     []
   );
-  const [entriesPerPage, setEntriesPerPage] = useState(20);
+  const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [currentActivePage, setCurrentActivePage] = useState(1);
   const [currentInactivePage, setCurrentInactivePage] = useState(1);
 
@@ -1181,7 +1181,52 @@ const Categories = () => {
         </div>
 
         <Tabs defaultActiveKey="1" onChange={handleTabChange}>
-          <TabPane tab="InActive Categories" key="1">
+          <TabPane tab="Active Categories" key="1">
+            <Row
+              justify="space-between"
+              align="middle"
+              className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
+            >
+              <Col className="w-full sm:w-auto">
+                Show{" "}
+                <Select
+                  value={entriesPerPage}
+                  onChange={handleEntriesPerPageChange}
+                  style={{ width: 70 }}
+                >
+                  <Option value={25}>25</Option>
+                  <Option value={50}>50</Option>
+                  <Option value={100}>100</Option>
+                </Select>{" "}
+                entries
+              </Col>
+
+              <Col className="w-full sm:w-auto flex items-center gap-2">
+                <span>Search:</span>
+                <Input
+                  value={activeSearchTerm}
+                  onChange={handleActiveSearchChange}
+                  style={{ width: 150 }}
+                />
+              </Col>
+            </Row>
+
+            <Table
+              dataSource={filteredActiveCategories}
+              loading={loading}
+              rowKey="id"
+              columns={getColumns()}
+              pagination={{
+                pageSize: entriesPerPage,
+                current: currentActivePage,
+                onChange: (page) => setCurrentActivePage(page),
+              }}
+              scroll={{ x: true }}
+              size="middle"
+              bordered
+            />
+          </TabPane>
+          <TabPane tab="InActive Categories" key="2">
             <Row
               justify="space-between"
               align="middle"
@@ -1220,51 +1265,6 @@ const Categories = () => {
                 pageSize: entriesPerPage,
                 current: currentInactivePage,
                 onChange: (page) => setCurrentInactivePage(page),
-              }}
-              scroll={{ x: true }}
-              size="middle"
-              bordered
-            />
-          </TabPane>
-          <TabPane tab="Active Categories" key="2">
-            <Row
-              justify="space-between"
-              align="middle"
-              className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
-            >
-              <Col className="w-full sm:w-auto">
-                Show{" "}
-                <Select
-                  value={entriesPerPage}
-                  onChange={handleEntriesPerPageChange}
-                  style={{ width: 70 }}
-                >
-                  <Option value={5}>5</Option>
-                  <Option value={10}>10</Option>
-                  <Option value={20}>20</Option>
-                </Select>{" "}
-                entries
-              </Col>
-
-              <Col className="w-full sm:w-auto flex items-center gap-2">
-                <span>Search:</span>
-                <Input
-                  value={activeSearchTerm}
-                  onChange={handleActiveSearchChange}
-                  style={{ width: 150 }}
-                />
-              </Col>
-            </Row>
-
-            <Table
-              dataSource={filteredActiveCategories}
-              loading={loading}
-              rowKey="id"
-              columns={getColumns()}
-              pagination={{
-                pageSize: entriesPerPage,
-                current: currentActivePage,
-                onChange: (page) => setCurrentActivePage(page),
               }}
               scroll={{ x: true }}
               size="middle"
