@@ -131,6 +131,13 @@ const Coupons = () => {
       className: "text-1xl",
     },
     {
+      title: "Maximum Order",
+      dataIndex: "maximumOrderAmount",
+      key: "maximumOrderAmount",
+      align: "center",
+      className: "text-1xl",
+    },
+    {
       title: "Max Discount",
       dataIndex: "maxDiscount",
       key: "maxDiscount",
@@ -328,6 +335,8 @@ const Coupons = () => {
         couponCode: record.couponCode,
         couponValue: record.couponValue,
         minOrder: record.minOrder,
+        maximumOrderAmount: record.maximumOrderAmount,
+        couponApplicable: record.couponApplicable,  
         maxDiscount: record.maxDiscount,
         couponUsage: record.couponUsage,
         discountType: record.discountType,
@@ -361,6 +370,7 @@ const Coupons = () => {
         ...values,
         startDateTime: values.startDateTime.format("YYYY-MM-DDTHH:mm:ss"),
         endDateTime: values.endDateTime.format("YYYY-MM-DDTHH:mm:ss"),
+        maximumOrderAmount: values.maximumOrderAmount,
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
         couponApplicable: values.couponApplicable,
@@ -616,6 +626,7 @@ const Coupons = () => {
           </Row>
 
           {/* Minimum Order */}
+
           <Row gutter={16}>
             <Col xs={24} sm={12}>
               <Form.Item
@@ -629,11 +640,21 @@ const Coupons = () => {
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
-              {/* Empty column for spacing */}
+              <Form.Item
+                name="maximumOrderAmount"
+                label="Maximum Order Value"
+                rules={[
+                  { required: true, message: "Please enter maximum order!" },
+                ]}
+              >
+                <Input type="number" />
+              </Form.Item>
             </Col>
           </Row>
+
+          {/* Coupon Applicable Categories and User Mobile Numbers */}
           <Row gutter={16}>
-            <Col span={24}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 label="Coupon Applicable Categories"
                 name="couponApplicable"
@@ -655,11 +676,8 @@ const Coupons = () => {
                 </Select>
               </Form.Item>
             </Col>
-          </Row>
 
-          {/* User Mobile Numbers */}
-          <Row gutter={16}>
-            <Col span={24}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="userMobileNumbers"
                 label="User Mobile Numbers (comma separated)"
