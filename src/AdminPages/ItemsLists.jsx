@@ -1108,8 +1108,7 @@ const ItemList = () => {
 
       // Assuming the API returns the image URL in response.data.imageUrl
       const imageUrl =
-        response.data.imageUrl ||
-        "https://askoxy.s3.ap-south-1.amazonaws.com/image_document_BMVCOINnobg3.jpg";
+        response.data;
 
       // Update the imageUrl field in the specific Form.List item
       comboForm.setFields([

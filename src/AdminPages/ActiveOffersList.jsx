@@ -27,13 +27,15 @@ const ActiveOffersList = () => {
   const [activeOffers, setActiveOffers] = useState([]);
   const [comboOffers, setComboOffers] = useState([]);
   const [filteredActive, setFilteredActive] = useState([]);
+  const [filteredComboOffers, setFilteredComboOffers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [comboSearchText, setComboSearchText] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
   const [activeTab, setActiveTab] = useState("active");
   const [currentPage, setCurrentPage] = useState(1);
   const [comboPage, setComboPage] = useState(1);
-  const [comboPageSize, setComboPageSize] = useState(10);
+  const [comboPageSize, setComboPageSize] = useState(25);
   const [comboTotal, setComboTotal] = useState(0);
 
   const pageSize = 20;
@@ -57,7 +59,7 @@ const ActiveOffersList = () => {
     }
   };
 
-  const fetchComboOffers = async (page = 1, size = 10) => {
+  const fetchComboOffers = async (page = 1, size =25) => {
     setLoading(true);
     try {
       const response = await axios.get(
@@ -65,6 +67,7 @@ const ActiveOffersList = () => {
       );
       const { content, totalElements } = response.data;
       setComboOffers(content || []);
+      setFilteredComboOffers(content || []);
       setComboTotal(totalElements || 0);
       message.success("Combo offers loaded successfully");
     } catch (error) {
@@ -98,6 +101,22 @@ const ActiveOffersList = () => {
     setCurrentPage(1);
   };
 
+  const handleComboSearch = (value) => {
+    setComboSearchText(value.toLowerCase());
+  };
+  
+  useEffect(() => {
+    if (!comboSearchText.trim()) {
+      setFilteredComboOffers(comboOffers);
+    } else {
+      const matched = comboOffers.filter((offer) =>
+        offer.comboItemName?.toLowerCase().includes(comboSearchText)
+      );
+      setFilteredComboOffers(matched);
+    }
+  }, [comboSearchText, comboOffers]);
+  
+  
   const toggleOfferStatus = async (id, currentStatus) => {
     setUpdatingId(id);
     try {
@@ -121,7 +140,7 @@ const ActiveOffersList = () => {
   const toggleComboStatus = async (comboId) => {
     setUpdatingId(comboId);
     try {
-      const response = await axios.patch(
+      await axios.patch(
         `${BASE_URL}/product-service/updateComboStatus/${comboId}`
       );
       await fetchComboOffers(comboPage, comboPageSize);
@@ -239,6 +258,27 @@ const ActiveOffersList = () => {
       ),
     },
     {
+      title: <div style={{ textAlign: "center" }}>Combo Image</div>,
+      dataIndex: "imageUrl",
+      key: "comboImage",
+      align: "center", // center the content horizontally
+      render: (url) => (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={url}
+            alt="Combo"
+            style={{ maxWidth: 100, maxHeight: 60, objectFit: "contain" }}
+          />
+        </div>
+      ),
+    },
+    {
       title: "Items",
       key: "items",
       align: "center",
@@ -335,7 +375,7 @@ const ActiveOffersList = () => {
                   value={searchText}
                   onChange={(e) => handleSearch(e.target.value)}
                   allowClear
-                  prefix={<SearchOutlined />}
+                  // prefix={<SearchOutlined />}
                   style={{ width: 300 }}
                 />
               </Col>
@@ -362,7 +402,28 @@ const ActiveOffersList = () => {
           </TabPane>
 
           <TabPane tab="Combo Offers" key="combo">
-            <Title level={4}>Combo Offers</Title>
+            <Row
+              justify="space-between"
+              align="middle"
+              style={{ marginBottom: 16 }}
+            >
+              <Col>
+                <Title level={4} style={{ margin: 0 }}>
+                  Combo Offers
+                </Title>
+              </Col>
+              <Col>
+                <Search
+                  placeholder="Search by Combo Item Name"
+                  value={comboSearchText}
+                  onChange={(e) => handleComboSearch(e.target.value)}
+                  allowClear
+                
+                  style={{ width: 300 }}
+                />
+              </Col>
+            </Row>
+
             {loading ? (
               <div style={{ textAlign: "center", padding: "50px" }}>
                 <Spin size="medium" />
@@ -371,10 +432,11 @@ const ActiveOffersList = () => {
               <>
                 <Table
                   columns={comboOfferColumns}
-                  dataSource={comboOffers}
+                  dataSource={filteredComboOffers}
                   rowKey="comboItemId"
                   bordered
                   pagination={false}
+                  scroll={{ x: true }}
                 />
                 <div style={{ marginTop: 16, textAlign: "right" }}>
                   <Pagination
@@ -382,7 +444,7 @@ const ActiveOffersList = () => {
                     pageSize={comboPageSize}
                     total={comboTotal}
                     showSizeChanger
-                    pageSizeOptions={["5", "10", "20", "50"]}
+                    pageSizeOptions={["25", "50", "75", "100"]}
                     onChange={(page, size) => {
                       setComboPage(page);
                       setComboPageSize(size);
