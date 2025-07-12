@@ -943,6 +943,31 @@ const Categories = () => {
 
   const handleAddItem = async (values) => {
     setLoading(true);
+//  if (
+//       !values.itemName ||
+//       !values.itemUnit ||
+//       !values.quantity ||
+//       !values.tag ||
+//       !values.itemDescription
+//     ) {
+//       message.error("Please fill in all the required fields.");
+//       setLoading(false);
+//       return;
+//     }
+
+    // Validate weight for non-FESTIVAL categories
+    // const selectedCategory = categories.find(
+    //   (cat) => cat.id === selectedCategoryId
+    // );
+    // if (selectedCategory?.categoriesType !== "FESTIVAL") {
+    //   if (!values.weight || values.weight <= 0) {
+    //     message.error(
+    //       "Weight is required and must be greater than 0 for this category."
+    //     );
+    //     setLoading(false);
+    //     return;
+    //   }
+    // }
 
     // Validate form fields
     if (!values.itemName || !values.weight || !values.itemUnit) {
@@ -1451,12 +1476,12 @@ const Categories = () => {
               <Input placeholder="Enter item weight" />
             </Form.Item> */}
 
-            {categories.find((cat) => cat.id === selectedCategoryId)
+            {/* {categories.find((cat) => cat.id === selectedCategoryId)
               ?.categoriesType === "FESTIVAL" ? (
               <Form.Item name="weight" label="Item Weight">
                 <Input placeholder="Enter item weight (optional)" />
               </Form.Item>
-            ) : (
+            ) : ( */}
               <Form.Item
                 name="weight"
                 label="Item Weight"
@@ -1476,7 +1501,7 @@ const Categories = () => {
               >
                 <Input placeholder="Enter item weight" />
               </Form.Item>
-            )}
+            {/* )} */}
 
             <Form.Item
               name="quantity"
