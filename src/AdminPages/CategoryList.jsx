@@ -1347,7 +1347,9 @@ const Categories = () => {
                     <Option value="RICE">RICE</Option>
                     <Option value="Grocery">GROCERY</Option>
                     <Option value="GOLD">GOLD</Option>
-                    <Option value="AI | BLOCKCHAIN & IT SERVICES">
+                    <Option value="FESTIVAL">FESTIVAL</Option>
+
+                    {/* <Option value="AI | BLOCKCHAIN & IT SERVICES">
                       AI | BLOCKCHAIN & IT SERVICES
                     </Option>
                     <Option value="CA | CS SERVICES">CA | CS SERVICES</Option>
@@ -1358,7 +1360,7 @@ const Categories = () => {
                     <Option value="NYAYA GPT">NYAYA GPT</Option>
                     <Option value="FRACTIONAL OWNERSHIP">
                       FRACTIONAL OWNERSHIP
-                    </Option>
+                    </Option> */}
                   </Select>
                 </Form.Item>
 
@@ -1429,7 +1431,7 @@ const Categories = () => {
               </Upload>
             </Form.Item>
 
-            <Form.Item
+            {/* <Form.Item
               name="weight"
               label="Item Weight"
               rules={[
@@ -1447,7 +1449,34 @@ const Categories = () => {
               ]}
             >
               <Input placeholder="Enter item weight" />
-            </Form.Item>
+            </Form.Item> */}
+
+            {categories.find((cat) => cat.id === selectedCategoryId)
+              ?.categoriesType === "FESTIVAL" ? (
+              <Form.Item name="weight" label="Item Weight">
+                <Input placeholder="Enter item weight (optional)" />
+              </Form.Item>
+            ) : (
+              <Form.Item
+                name="weight"
+                label="Item Weight"
+                rules={[
+                  { required: true, message: "Please enter the item weight." },
+                  {
+                    validator: (_, value) => {
+                      if (value <= 0) {
+                        return Promise.reject(
+                          new Error("Weight must be greater than 0.")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Input placeholder="Enter item weight" />
+              </Form.Item>
+            )}
 
             <Form.Item
               name="quantity"

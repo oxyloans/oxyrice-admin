@@ -39,6 +39,7 @@ const Coupons = () => {
   const [fetching, setFetching] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [activeTab, setActiveTab] = useState("PUBLIC");
+  const [items, setItems] = useState([]); // <-- Add this line
 
   const [currentPage, setCurrentPage] = useState(1);
   const accessToken = localStorage.getItem("accessToken");
@@ -115,6 +116,32 @@ const Coupons = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
+   useEffect(() => {
+      fetchItemsData();
+    }, []);
+   const fetchItemsData = async () => {
+     setLoading(true);
+     try {
+       const response = await axios.get(
+         `${BASE_URL}/product-service/getItemsData`,
+         {
+           headers: {
+             Authorization: `Bearer ${accessToken}`,
+           },
+         }
+       );
+       const activeItems = response.data.filter(
+         (item) => item.isActive === "true"
+       );
+
+       setItems(activeItems);
+       message.success("Data Fetched Successfully");
+     } catch (error) {
+       message.error("Error fetching items data: " + error.message);
+     } finally {
+       setLoading(false);
+     }
+   };
 
   const columns = [
     {
@@ -389,6 +416,7 @@ const Coupons = () => {
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
         couponApplicable: values.couponApplicable,
+        couponApplicableItemId:values.couponApplicableItemId,
         isActive: true,
       };
 
@@ -697,6 +725,34 @@ const Coupons = () => {
               </Form.Item>
             </Col>
           </Row>
+          {/* <Row gutter={16}>
+            <Col xs={24} sm={24}>
+              <Form.Item
+                label="Applicable Items"
+                name="couponApplicableItemId"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select applicable items!",
+                  },
+                ]}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select item IDs"
+                  allowClear
+                  optionFilterProp="children"
+                  showSearch
+                >
+                  {items.map((item) => (
+                    <Option key={item.itemId} value={item.itemId}>
+                      {item.itemId}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row> */}
 
           {/* Coupon Applicable Categories and User Mobile Numbers */}
           <Row gutter={16}>
