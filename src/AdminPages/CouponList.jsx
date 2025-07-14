@@ -749,7 +749,7 @@ const Coupons = () => {
               </Form.Item>
             </Col>
           </Row>
-          <Row gutter={16}>
+          {/* <Row gutter={16}>
             <Col xs={24} sm={24}>
               <Form.Item
                 label="Applicable Items"
@@ -771,6 +771,30 @@ const Coupons = () => {
                   {items.map((item) => (
                     <Option key={item.itemId} value={item.itemId}>
                       {item.itemId}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row> */}
+          <Row gutter={16}>
+            <Col xs={24} sm={24}>
+              <Form.Item
+                label="Applicable Items"
+                name="couponApplicableItemId"
+                // Uncomment the rule if needed
+                // rules={[{ required: true, message: "Please select applicable items!" }]}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select item IDs"
+                  allowClear
+                  optionFilterProp="children"
+                  showSearch
+                >
+                  {items.map((item) => (
+                    <Option key={item.itemId} value={item.itemId}>
+                      {item.itemName} (#{item.itemId.slice(-4)})
                     </Option>
                   ))}
                 </Select>
