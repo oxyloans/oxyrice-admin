@@ -186,6 +186,25 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
     },
+   {
+  title: "cAppIds",
+  dataIndex: "couponApplicableItemId",
+  key: "couponApplicableItemId",
+  align: "center",
+  className: "text-1xl",
+  render: (text) => {
+    if (!text) return "-";
+
+    // Split, extract last 4 chars, and prefix with #
+    const formatted = text
+      .split(",")
+      .map((id) => `#${id.slice(-4)}`)
+      .join(", ");
+
+    return <span style={{ color: "#333" }}>{formatted}</span>;
+  },
+}
+,
     {
       title: "Usage",
       dataIndex: "couponUsage",
@@ -262,7 +281,7 @@ const Coupons = () => {
           : "",
     },
     {
-      title: "CouponApplicable",
+      title: "Applicable",
       dataIndex: "couponApplicable",
       key: "couponApplicable",
       align: "center",
@@ -378,14 +397,19 @@ const Coupons = () => {
         couponValue: record.couponValue,
         minOrder: record.minOrder,
         maximumOrderAmount: record.maximumOrderAmount,
-        couponApplicable: record.couponApplicable,  
+        couponApplicable: record.couponApplicable,
         maxDiscount: record.maxDiscount,
         couponUsage: record.couponUsage,
         discountType: record.discountType,
         status: record.status || "PUBLIC", // Default to PUBLIC if not set
         startDateTime: startDateTime,
         endDateTime: endDateTime,
+
         userMobileNumbers: userMobileNumbers,
+        // 👇 convert string to array for Select (only for UI)
+        couponApplicableItemId: record.couponApplicableItemId
+          ? record.couponApplicableItemId.split(",")
+          : [],
       });
     } else {
       setIsEditMode(false);
@@ -416,7 +440,7 @@ const Coupons = () => {
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
         couponApplicable: values.couponApplicable,
-        couponApplicableItemId:values.couponApplicableItemId,
+       couponApplicableItemId: values.couponApplicableItemId.join(","),
         isActive: true,
       };
 
@@ -725,17 +749,17 @@ const Coupons = () => {
               </Form.Item>
             </Col>
           </Row>
-          {/* <Row gutter={16}>
+          <Row gutter={16}>
             <Col xs={24} sm={24}>
               <Form.Item
                 label="Applicable Items"
                 name="couponApplicableItemId"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please select applicable items!",
-                  },
-                ]}
+                // rules={[
+                //   {
+                //     required: true,
+                //     message: "Please select applicable items!",
+                //   },
+                // ]}
               >
                 <Select
                   mode="multiple"
@@ -752,7 +776,7 @@ const Coupons = () => {
                 </Select>
               </Form.Item>
             </Col>
-          </Row> */}
+          </Row>
 
           {/* Coupon Applicable Categories and User Mobile Numbers */}
           <Row gutter={16}>

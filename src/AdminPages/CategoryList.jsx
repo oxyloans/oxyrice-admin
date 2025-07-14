@@ -1185,6 +1185,17 @@ const Categories = () => {
   const handleTabChange = (key) => {
     setActiveTabKey(key);
   };
+  const validateFileSize = (file) => {
+    const isLt1MB = file.size / 1024 / 1024 < 1;
+
+    if (!isLt1MB) {
+      message.error("Please select an image smaller than 1MB.");
+      return Upload.LIST_IGNORE; // Prevent file from being added
+    }
+
+    return false; // Accept file but prevent auto upload
+  };
+
 
   return (
     <AdminPanelLayoutTest>
@@ -1338,7 +1349,7 @@ const Categories = () => {
                   valuePropName="file"
                   rules={[{ required: true, message: "Please upload a file" }]}
                 >
-                  <Upload beforeUpload={() => false} maxCount={1}>
+                  <Upload beforeUpload={validateFileSize} maxCount={1}>
                     <Button icon={<UploadOutlined />}>Click to Upload</Button>
                   </Upload>
                 </Form.Item>
@@ -1402,7 +1413,7 @@ const Categories = () => {
                   ]}
                 >
                   <Upload
-                    beforeUpload={() => false} // Prevent automatic upload
+                    beforeUpload={validateFileSize}
                     listType="picture"
                     maxCount={1}
                     showUploadList={{ showRemoveIcon: true }}
@@ -1447,7 +1458,7 @@ const Categories = () => {
               ]}
             >
               <Upload
-                beforeUpload={() => false} // Prevent automatic upload
+                beforeUpload={validateFileSize}
                 listType="picture"
                 maxCount={1}
                 onChange={({ fileList }) => handleFileChange(fileList)} // Handle file change
@@ -1482,25 +1493,25 @@ const Categories = () => {
                 <Input placeholder="Enter item weight (optional)" />
               </Form.Item>
             ) : ( */}
-              <Form.Item
-                name="weight"
-                label="Item Weight"
-                rules={[
-                  { required: true, message: "Please enter the item weight." },
-                  {
-                    validator: (_, value) => {
-                      if (value <= 0) {
-                        return Promise.reject(
-                          new Error("Weight must be greater than 0.")
-                        );
-                      }
-                      return Promise.resolve();
-                    },
+            <Form.Item
+              name="weight"
+              label="Item Weight"
+              rules={[
+                { required: true, message: "Please enter the item weight." },
+                {
+                  validator: (_, value) => {
+                    if (value <= 0) {
+                      return Promise.reject(
+                        new Error("Weight must be greater than 0.")
+                      );
+                    }
+                    return Promise.resolve();
                   },
-                ]}
-              >
-                <Input placeholder="Enter item weight" />
-              </Form.Item>
+                },
+              ]}
+            >
+              <Input placeholder="Enter item weight" />
+            </Form.Item>
             {/* )} */}
 
             <Form.Item
