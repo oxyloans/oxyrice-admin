@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-
+import { DeleteOutlined } from "@ant-design/icons";
 import {
   Table,
   Button,
   message,
   Modal,
+  Tooltip,
   Form,
   Input,
   Select,
@@ -40,6 +41,7 @@ const Coupons = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [activeTab, setActiveTab] = useState("PUBLIC");
   const [items, setItems] = useState([]); // <-- Add this line
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const accessToken = localStorage.getItem("accessToken");
@@ -142,6 +144,27 @@ const Coupons = () => {
        setLoading(false);
      }
    };
+ const handleDeleteCoupon = async (id) => {
+   try {
+     setDeleteLoading(true);
+
+     await axios.delete(`${BASE_URL}/order-service/couponDelete`, {
+       headers: {
+         Authorization: `Bearer ${accessToken}`,
+         "Content-Type": "application/json",
+       },
+       params: { id }, // 👈 ID sent as query param
+     });
+
+     message.success("Coupon deleted successfully!");
+     fetchCoupons(); // Refresh the list after deletion
+   } catch (error) {
+     console.error("Error deleting coupon:", error);
+     message.error("Failed to delete coupon. Please try again.");
+   } finally {
+     setDeleteLoading(false);
+   }
+ };
 
   const columns = [
     {
@@ -186,25 +209,24 @@ const Coupons = () => {
       align: "center",
       className: "text-1xl",
     },
-   {
-  title: "cAppIds",
-  dataIndex: "couponApplicableItemId",
-  key: "couponApplicableItemId",
-  align: "center",
-  className: "text-1xl",
-  render: (text) => {
-    if (!text) return "-";
+    {
+      title: "cAppIds",
+      dataIndex: "couponApplicableItemId",
+      key: "couponApplicableItemId",
+      align: "center",
+      className: "text-1xl",
+      render: (text) => {
+        if (!text) return "-";
 
-    // Split, extract last 4 chars, and prefix with #
-    const formatted = text
-      .split(",")
-      .map((id) => `#${id.slice(-4)}`)
-      .join(", ");
+        // Split, extract last 4 chars, and prefix with #
+        const formatted = text
+          .split(",")
+          .map((id) => `#${id.slice(-4)}`)
+          .join(", ");
 
-    return <span style={{ color: "#333" }}>{formatted}</span>;
-  },
-}
-,
+        return <span style={{ color: "#333" }}>{formatted}</span>;
+      },
+    },
     {
       title: "Usage",
       dataIndex: "couponUsage",
@@ -338,16 +360,31 @@ const Coupons = () => {
       className: "text-1xl",
       render: (_, record) => (
         <div style={{ display: "flex", justifyContent: "center", gap: "5px" }}>
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-            style={{
-              backgroundColor: "#23C6C8",
-              color: "white",
-            }}
-          >
-            Edit
-          </Button>
+          <Tooltip title="Edit Coupon">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => showModal(record)}
+              style={{
+                backgroundColor: "#23C6C8",
+                color: "white",
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Delete Coupon">
+            <Popconfirm
+              title="Are you sure you want to delete this coupon?"
+              onConfirm={() => handleDeleteCoupon(record.couponId)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                loading={deleteLoading}
+              />
+            </Popconfirm>
+          </Tooltip>
+
           <Popconfirm
             title={`Are you sure you want to mark this coupon as ${record.isActive ? "Inactive" : "Active"}?`}
             onConfirm={() =>
