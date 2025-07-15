@@ -477,7 +477,11 @@ const Coupons = () => {
         userMobileNumbers: values.userMobileNumbers,
         status: values.status, // Include status field
         couponApplicable: values.couponApplicable,
-       couponApplicableItemId: values.couponApplicableItemId.join(","),
+        //  couponApplicableItemId: values.couponApplicableItemId.join(","),
+        couponApplicableItemId: Array.isArray(values.couponApplicableItemId)
+          ? values.couponApplicableItemId.join(",")
+          : "",
+
         isActive: true,
       };
 
@@ -503,7 +507,7 @@ const Coupons = () => {
       handleCancel();
     } catch (error) {
       console.error("Failed to submit:", error);
-      message.error("Failed to submit coupon. Please try again.");
+      // message.error("Failed to submit coupon. Please try again.");
     } finally {
       setLoading(false);
     }
