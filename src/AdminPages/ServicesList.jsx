@@ -10,22 +10,25 @@ import {
   Select,
   message,
   InputNumber,
+  Tabs,
 } from "antd";
 import axios from "axios";
 import AdminPanelLayoutTest from "./AdminPanel";
 import BASE_URL from "./Config";
 
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const Services = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [entriesPerPage, setEntriesPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("CA SERVICES");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
-
   const [addItemModalOpen, setAddItemModalOpen] = useState(false);
   const [selectedCaCsEntityId, setSelectedCaCsEntityId] = useState(null);
   const [addItemForm] = Form.useForm();
@@ -45,9 +48,17 @@ const Services = () => {
     fetchCategories();
   }, []);
 
-  const filteredCategories = categories.filter((category) =>
-    category.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Map tab to actual categoryType
+  const tabToTypeMap = {
+    "CA SERVICES": "CA SERVICE",
+    "CS SERVICES": "CS SERVICE",
+  };
+
+  const filteredCategories = categories
+    .filter((category) => category.categoryType === tabToTypeMap[activeTab])
+    .filter((category) =>
+      category.categoryName?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const handleAddCategory = async (values) => {
     const newCategory = {
@@ -74,7 +85,7 @@ const Services = () => {
       ...values,
       caCsEntityId: selectedCaCsEntityId,
       createdAt: new Date().toISOString(),
-      id: selectedCaCsEntityId
+      id: selectedCaCsEntityId,
     };
 
     try {
@@ -108,11 +119,11 @@ const Services = () => {
       dataIndex: "categoryName",
       align: "center",
     },
-    {
-      title: "Category Type",
-      dataIndex: "categoryType",
-      align: "center",
-    },
+    // {
+    //   title: "Category Type",
+    //   dataIndex: "categoryType",
+    //   align: "center",
+    // },
     {
       title: "Category SubType",
       dataIndex: "categorySubType",
@@ -179,33 +190,36 @@ const Services = () => {
             <Button
               style={{ backgroundColor: "#1C84C6", color: "white" }}
               onClick={() => setIsModalOpen(true)}
-              className="w-full sm:w-auto"
             >
               Add New Services
             </Button>
           </div>
         </div>
 
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          <TabPane tab="CA SERVICES" key="CA SERVICES" />
+          <TabPane tab="CS SERVICES" key="CS SERVICES" />
+        </Tabs>
+
         <Row
           justify="space-between"
           align="middle"
           className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-0"
         >
-          <Col className="w-full sm:w-auto">
+          <Col>
             Show{" "}
             <Select
               value={entriesPerPage}
               onChange={setEntriesPerPage}
               style={{ width: 70 }}
             >
-              <Option value={5}>5</Option>
-              <Option value={10}>10</Option>
-              <Option value={20}>20</Option>
+              <Option value={50}>50</Option>
+              <Option value={100}>100</Option>
+              <Option value={200}>200</Option>
             </Select>{" "}
             entries
           </Col>
-
-          <Col className="w-full sm:w-auto flex items-center gap-2">
+          <Col className="flex items-center gap-2">
             <span>Search:</span>
             <Input
               value={searchTerm}
@@ -226,7 +240,6 @@ const Services = () => {
             onChange: setCurrentPage,
           }}
           scroll={{ x: true }}
-          size="middle"
           bordered
         />
 
@@ -239,54 +252,25 @@ const Services = () => {
           okText="Submit"
         >
           <Form form={form} layout="vertical" onFinish={handleAddCategory}>
-            <Form.Item
-              label="Category Name"
-              name="categoryName"
-              // rules={[
-              //   { required: true, message: "Please enter category name" },
-              // ]}
-            >
+            <Form.Item label="Category Name" name="categoryName">
               <Input />
             </Form.Item>
-
-            <Form.Item
-              label="Category Type"
-              name="categoryType"
-              // rules={[
-              //   { required: true, message: "Please enter category type" },
-              // ]}
-            >
+            <Form.Item label="Category Type" name="categoryType">
               <Input />
             </Form.Item>
-            <Form.Item
-              label="Category SubType"
-              name="categorySubType"
-              // rules={[
-              //   { required: true, message: "Please enter category subType" },
-              // ]}
-            >
+            <Form.Item label="Category SubType" name="categorySubType">
               <Input />
             </Form.Item>
-            <Form.Item
-              label="Category SubType1"
-              name="categorySubType1"
-              // rules={[
-              //   { required: true, message: "Please enter category subType1" },
-              // ]}
-            >
+            <Form.Item label="Category SubType1" name="categorySubType1">
               <Input />
             </Form.Item>
-
             <Form.Item label="Category URL" name="categoryUrl">
               <Input />
             </Form.Item>
-
             <Form.Item
               label="Is Active"
               name="isActive"
-              rules={[
-                { required: true, message: "Please select active status" },
-              ]}
+              // rules={[{ required: true, message: "Please select status" }]}
             >
               <Select placeholder="Select status">
                 <Option value="true">Active</Option>
@@ -312,7 +296,6 @@ const Services = () => {
             >
               <Input />
             </Form.Item>
-
             <Form.Item
               label="Agreement Description"
               name="agreementDescription"
@@ -320,27 +303,13 @@ const Services = () => {
             >
               <Input.TextArea rows={3} />
             </Form.Item>
-
-            <Form.Item
-              label="Price A"
-              name="agreementPriceA"
-             
-            >
+            <Form.Item label="Price A" name="agreementPriceA">
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>
-
-            <Form.Item
-              label="Price B"
-              name="agreementPriceB"
-            
-            >
+            <Form.Item label="Price B" name="agreementPriceB">
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>
-
-            <Form.Item
-              label="Price C"
-              name="agreementPriceC"
-            >
+            <Form.Item label="Price C" name="agreementPriceC">
               <InputNumber style={{ width: "100%" }} />
             </Form.Item>
           </Form>

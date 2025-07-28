@@ -59,11 +59,12 @@ const AdminPanelLayoutTest = ({ children }) => {
     },
 
     {
-      key: "alluserqueries",
-      label: "All Queries",
+      key: "NBFCDataList",
+      label: "NBFC Data List",
       icon: <FaHandsHelping />,
-      link: "/admin/user_queries",
+      link: "/admin/nbfcdatalist",
     },
+
     // {
     //   key: "allreferrals",
     //   label: "All Referrals",

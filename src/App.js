@@ -80,6 +80,7 @@ import StudentApplications from "./AdminPages/StudentApplications";
 import Services from "./AdminPages/ServicesList";
 import ServiceList from "./AdminPages/ServiceList";
 import OrdersByCoupon from "./AdminPages/OrdersByCoupon";
+import NBFCDataList from "./AdminPages/NBFCDataList";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -237,6 +238,10 @@ function App() {
         <Route
           path="/admin/all-referrals"
           element={<ProtectedRoute element={<AllReferralsData />} />}
+        />
+        <Route
+          path="/admin/nbfcdatalist"
+          element={<ProtectedRoute element={<NBFCDataList />} />}
         />
         <Route
           path="/admin/timeslots"

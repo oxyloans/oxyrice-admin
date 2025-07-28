@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Table, message, Spin } from "antd";
+import { Table, message, Spin, Tabs } from "antd";
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
+
+const { TabPane } = Tabs;
+
 const ServiceList = () => {
   const [agreements, setAgreements] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("CA SERVICES");
 
-  // Fetch agreements
+  // Fetch all agreements
   const fetchAgreements = async () => {
     setLoading(true);
     try {
@@ -17,15 +21,27 @@ const ServiceList = () => {
       setAgreements(response.data);
     } catch (error) {
       message.error("Failed to fetch agreements");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchAgreements();
   }, []);
 
-  // Define table columns
+  // Mapping visible tab labels to real cacsType values
+  const tabToTypeMap = {
+    "CA SERVICES": "CA SERVICE",
+    "CS SERVICES": "CS SERVICE",
+  };
+
+  // Filter agreements based on selected tab
+  const filteredAgreements = agreements.filter(
+    (item) => item.cacsType === tabToTypeMap[activeTab]
+  );
+
+  // Table column definitions
   const columns = [
     {
       title: "S.No",
@@ -44,6 +60,12 @@ const ServiceList = () => {
       dataIndex: "agreementName",
       align: "center",
     },
+    {
+      title: "Category Name",
+      dataIndex: "cacsName",
+      align: "center",
+    },
+    
     {
       title: "Description",
       dataIndex: "agreementDescription",
@@ -69,39 +91,37 @@ const ServiceList = () => {
       dataIndex: "createdAt",
       align: "center",
     },
-    // {
-    //   title: "Category ID (Last 4)",
-    //   dataIndex: "caCsEntityId",
-    //   align: "center",
-    //   render: (id) => `#${id?.slice(-4)}`,
-    // },
   ];
 
-    return (
-      <AdminPanelLayoutTest>
-        <div className="p-4">
-          <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
-            <h2 className="text-xl font-bold mb-2 md:mb-0">
-              Service List
-            </h2>
-           
-          </div>
-
-          {loading ? (
-            <Spin className="text-center" tip="Loading..." />
-          ) : (
-            <Table
-              dataSource={agreements}
-              rowKey="id"
-              columns={columns}
-              bordered
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: true }}
-            />
-          )}
+  return (
+    <AdminPanelLayoutTest>
+      <div className="p-4">
+        <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
+          <h2 className="text-xl font-bold mb-2 md:mb-0">Service List</h2>
         </div>
-      </AdminPanelLayoutTest>
-    );
+
+        <Tabs activeKey={activeTab} onChange={setActiveTab}>
+          <TabPane tab="CA SERVICES" key="CA SERVICES" />
+          <TabPane tab="CS SERVICES" key="CS SERVICES" />
+        </Tabs>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <Spin tip="Loading..." size="large" />
+          </div>
+        ) : (
+          <Table
+            dataSource={filteredAgreements}
+            rowKey="id"
+            columns={columns}
+            bordered
+            pagination={{ pageSize: 50 }}
+            scroll={{ x: true }}
+          />
+        )}
+      </div>
+    </AdminPanelLayoutTest>
+  );
 };
 
 export default ServiceList;
