@@ -83,49 +83,49 @@ useEffect(() => {
       width: 200,
     },
     {
-      title: "Whether",
+      title: "City",
       dataIndex: "whether",
       key: "whether",
       align: "center",
       width: 120,
     },
+    // {
+    //   title: "Classification",
+    //   dataIndex: "classification",
+    //   key: "classification",
+    //   align: "center",
+    //   width: 100,
+    // },
     {
-      title: "Classification",
-      dataIndex: "classification",
-      key: "classification",
-      align: "center",
-      width: 100,
-    },
-    {
-      title: "CIN",
+      title: "Layer",
       dataIndex: "corporateIdentificationNumber",
       key: "corporateIdentificationNumber",
       align: "center",
       width: 120,
     },
     {
-      title: "Layer",
+      title: "CIN",
       dataIndex: "layer",
       key: "layer",
       align: "center",
       width: 120,
     },
+    // {
+    //   title: "Address",
+    //   dataIndex: "address",
+    //   key: "address",
+    //   align: "center",
+    //   width: 100,
+    // },
     {
       title: "Address",
-      dataIndex: "address",
-      key: "address",
-      align: "center",
-      width: 100,
-    },
-    {
-      title: "Email",
       dataIndex: "emailId",
       key: "emailId",
       align: "center",
       width: 250,
     },
     {
-      title: "Regional Office",
+      title: "Email",
       dataIndex: "regionalOffice",
       key: "regionalOffice",
       align: "center",
@@ -146,7 +146,7 @@ useEffect(() => {
           </Col>
           <Col>
             <Search
-              placeholder="Search NBFC Name, CIN, or Whether"
+              placeholder="Search NBFC Name, Layer, or City"
               onChange={(e) => handleSearch(e.target.value)}
               allowClear
               style={{ width: 300 }}
