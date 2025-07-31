@@ -688,9 +688,6 @@
 
 // export default DashboardTest;
 
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   Layout,
@@ -709,6 +706,7 @@ import {
   Tag,
 } from "antd";
 import { Line } from "react-chartjs-2";
+import dayjs from "dayjs"; // Import dayjs for date handling
 import {
   UserOutlined,
   TeamOutlined,
@@ -736,6 +734,7 @@ import {
 import AdminPanelLayoutTest from "./AdminPanel"; // Assuming this is your layout component
 import BASE_URL from "./Config";
 
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -753,14 +752,16 @@ const DashboardTest = () => {
   const [analyticsData, setAnalyticsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [startDate, setStartDate] = useState(null);
-  const [toDate, setToDate] = useState(null);
+  // const [startDate, setStartDate] = useState(null);
+  // const [toDate, setToDate] = useState(null);
+  const [startDate, setStartDate] = useState(dayjs().subtract(2, "day")); // Default: last 2 days
+  const [toDate, setToDate] = useState(dayjs()); // Default: today
   const [userDetails, setUserDetails] = useState([]);
   const [userDetailsLoading, setUserDetailsLoading] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 100,
+    pageSize: 100000,
     total: 0,
   });
 
@@ -1064,6 +1065,24 @@ const DashboardTest = () => {
       ),
     },
     {
+      title: "Register From",
+      dataIndex: "registerFrom",
+      key: "registerFrom",
+      align: "center",
+      ellipsis: true,
+      render: (_, record) => (
+        <div className="text-gray-500 font-mono text-xs leading-snug">
+          <div>
+            <strong>UserType:</strong> {record.userType}
+          </div>
+          <div>
+            <strong>From:</strong> {record.registerFrom}
+          </div>
+        </div>
+      ),
+    },
+
+    {
       title: "Customer Contact",
       key: "contact",
       align: "center",
@@ -1115,6 +1134,22 @@ const DashboardTest = () => {
         return name || <Text type="secondary">No name provided</Text>;
       },
     },
+    {
+  title: "Address",
+  key: "address",
+  align: "center",
+ 
+  render: (_, record) => (
+    <div className="text-gray-500 font-mono text-xs leading-snug text-left">
+      <div><strong>Flat No:</strong> {record.flatNo}</div>
+      <div><strong>Landmark:</strong> {record.landMark}</div>
+      <div><strong>Pincode:</strong> {record.pinCode}</div>
+      <div><strong>Address:</strong> {record.address}</div>
+      <div><strong>Type:</strong> {record.addressType}</div>
+    </div>
+  ),
+}
+,
     {
       title: "Registration Date",
       dataIndex: "created_at",

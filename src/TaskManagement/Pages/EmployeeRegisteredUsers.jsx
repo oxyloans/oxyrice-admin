@@ -10,6 +10,7 @@ import {
   Typography,
   Row,
   Col,
+  message,
 } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -34,7 +35,9 @@ const EmployeeRegisteredUsers = () => {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/user-service/getAllEmployees`);
+      const response = await axios.get(
+        `${BASE_URL}/user-service/getAllEmployees`
+      );
       const sorted = response.data.sort((a, b) =>
         a.name?.localeCompare(b.name)
       );
@@ -67,23 +70,48 @@ const EmployeeRegisteredUsers = () => {
     setFilteredEmployees(employees);
   };
 
+  const handleToggleStatus = async (record) => {
+    const userId = record.userId;
+    const testUser = !record.testUser; // toggle value to send
+
+    try {
+      await axios.patch(
+        `${BASE_URL}/user-service/updateEmployeeInActive`,
+        {},
+        {
+          params: {
+            testUser,
+            userId,
+          },
+        }
+      );
+      message.success(
+        `User "${record.name}" is now ${testUser ? "Inactive" : "Active"}`
+      );
+      fetchEmployees(); // refresh after toggle
+    } catch (error) {
+      console.error(error);
+      message.error("Failed to update user status");
+    }
+  };
+
   const columns = [
     {
       title: "S.No",
       render: (_, __, index) => index + 1,
-      align: "center" ,
+      align: "center",
       width: 70,
     },
     {
       title: "User ID",
       dataIndex: "lastFourDigitsUserId",
-      align: "center" ,
+      align: "center",
       width: 100,
     },
     {
       title: "Name",
       dataIndex: "name",
-      align: "center" ,
+      align: "center",
       sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
@@ -95,11 +123,11 @@ const EmployeeRegisteredUsers = () => {
     {
       title: "Email Verified",
       dataIndex: "emailVerified",
-      align: "center" ,
+      align: "center",
       width: 120,
       render: (verified) => (
         <Text type={verified === "true" ? "success" : "danger"}>
-          {verified === "true" ? "✅ Yes" : "❌ No"}
+          {verified === "true" ? "Yes" : "No"}
         </Text>
       ),
     },
@@ -112,10 +140,32 @@ const EmployeeRegisteredUsers = () => {
     {
       title: "Created At",
       dataIndex: "createdAt",
-      align: "center" ,
+      align: "center",
       render: (date) =>
         dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A"),
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
+    },
+    {
+      title: "Status",
+      dataIndex: "testUser",
+      align: "center",
+      width: 130,
+      render: (testUser, record) => {
+        const isInactive = testUser === true; // explicitly check for true
+        return (
+          <Button
+            size="small"
+            style={{
+              backgroundColor: isInactive ? "#ff4d4f" : "#1c84c6",
+              color: "#fff",
+              border: "none",
+            }}
+            onClick={() => handleToggleStatus(record)}
+          >
+            {isInactive ? "Inactive" : "Active"}
+          </Button>
+        );
+      },
     },
   ];
 
@@ -139,10 +189,13 @@ const EmployeeRegisteredUsers = () => {
                   allowClear
                   style={{ width: 250 }}
                 />
-                <Button icon={<ReloadOutlined />} onClick={() => {
-                  handleReset();
-                  fetchEmployees();
-                }}>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={() => {
+                    handleReset();
+                    fetchEmployees();
+                  }}
+                >
                   Refresh
                 </Button>
               </Space>
@@ -159,13 +212,13 @@ const EmployeeRegisteredUsers = () => {
             <Table
               columns={columns}
               dataSource={filteredEmployees}
-              rowKey={(record) => record.id || record.mail}
+              rowKey={(record) => record.userId || record.mail}
               bordered
               pagination={{
                 showTotal: (total, range) =>
                   `${range[0]}-${range[1]} of ${total} employees`,
                 showSizeChanger: true,
-                pageSizeOptions: ["5", "10", "20", "50"],
+                pageSizeOptions: ["100", "200", "300", "400"],
               }}
               scroll={{ x: 1000 }}
             />
