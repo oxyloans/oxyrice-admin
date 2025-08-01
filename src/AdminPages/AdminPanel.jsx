@@ -51,12 +51,6 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <FaTachometerAlt />,
       link: "/admin/dashboard",
     },
-    {
-      key: "Student Applications",
-      label: "Student Applications",
-      icon: <FaUserGraduate />,
-      link: "/admin/studentapplications",
-    },
 
     {
       key: "NBFCDataList",
@@ -82,6 +76,24 @@ const AdminPanelLayoutTest = ({ children }) => {
       label: "Category Inventory",
       icon: <MdInventory />,
       link: "/admin/category-inventory",
+    },
+   
+    {
+      key: "StudyAbroad Dashboard",
+      label: "StudyAbroad Admin",
+      icon: <FaUserGraduate />,
+      dropdownItems: [
+        {
+          key: "Student Applications",
+          label: "Student Applications",
+          link: "/admin/studentapplications",
+        },
+        {
+          key: "Student Registrations",
+          label: "Student Registrations",
+          link: "/admin/student-registrations",
+        }
+      ],
     },
     // {
     //   key: "Update User Details",

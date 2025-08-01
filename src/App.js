@@ -81,6 +81,7 @@ import Services from "./AdminPages/ServicesList";
 import ServiceList from "./AdminPages/ServiceList";
 import OrdersByCoupon from "./AdminPages/OrdersByCoupon";
 import NBFCDataList from "./AdminPages/NBFCDataList";
+import StudentRegistrations from "./AdminPages/StudentRegistrations";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -262,6 +263,10 @@ function App() {
         <Route
           path="/admin/studentapplications"
           element={<ProtectedRoute element={<StudentApplications />} />}
+        />
+        <Route
+          path="/admin/student-registrations"
+          element={<ProtectedRoute element={<StudentRegistrations />} />}
         />
         <Route
           path="/admin/customers"
