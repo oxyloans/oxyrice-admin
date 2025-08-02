@@ -54,6 +54,12 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/taskmanagement/dashboard",
     },
     {
+      key: "Team Attendance",
+      label: "Team Attendance",
+      icon: <FaUsers />,
+      link: "/taskmanagement/teamattendance",
+    },
+    {
       key: "Task Creation",
       label: "Create New Task",
 
