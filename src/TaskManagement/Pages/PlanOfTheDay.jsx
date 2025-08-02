@@ -585,7 +585,7 @@ const PlanOfTheDay = () => {
         <div className="flex items-center gap-2 text-gray-500">
           <CalendarOutlined />
           <Text>
-            Updated: {formatDate(task.planUpdatedAt || task.planCreatedAt)}
+            Updated: {formatDate(task.planUpdatedAt )}
           </Text>
         </div>
       </div>

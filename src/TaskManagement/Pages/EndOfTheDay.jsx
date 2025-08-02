@@ -123,10 +123,20 @@ const EndOfTheDay = () => {
         }
       );
 
-      setTasks(response.data);
+      const filteredSameDateTasks = response.data.filter((task) => {
+        const createdDate = task.planCreatedAt
+          ? dayjs(task.planCreatedAt).format("YYYY-MM-DD")
+          : null;
+        const updatedDate = task.planUpdatedAt
+          ? dayjs(task.planUpdatedAt).format("YYYY-MM-DD")
+          : null;
+        return createdDate && updatedDate && createdDate === updatedDate;
+      });
 
-      // Update task statistics based on the fetched data
-      const taskCount = response.data.length || 0;
+      setTasks(filteredSameDateTasks);
+
+      // Update task statistics
+      const taskCount = filteredSameDateTasks.length || 0;
 
       // Update date task stats - only show plan of the day count
       setDateTaskStats({
@@ -135,21 +145,21 @@ const EndOfTheDay = () => {
         date: selectedDate.toDate(),
       });
 
-      if (response.data.length === 0) {
-        showNotification(
-          "info",
-          "No Tasks Found",
-          `No completed tasks found for ${formattedDate}.`,
-          <FileSearchOutlined style={{ color: "#1890ff" }} />
-        );
-      } else {
-        showNotification(
-          "success",
-          "Tasks Found",
-          `Found ${response.data.length} completed tasks for ${formattedDate}.`,
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />
-        );
-      }
+     if (taskCount === 0) {
+       showNotification(
+         "info",
+         "No Tasks Found",
+         `No completed tasks found for ${formattedDate}.`,
+         <FileSearchOutlined style={{ color: "#1890ff" }} />
+       );
+     } else {
+       showNotification(
+         "success",
+         "Tasks Found",
+         `Found ${taskCount} completed tasks for ${formattedDate}.`,
+         <CheckCircleOutlined style={{ color: "#52c41a" }} />
+       );
+     }
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
       showNotification(
