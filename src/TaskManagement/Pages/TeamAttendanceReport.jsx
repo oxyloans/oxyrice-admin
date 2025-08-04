@@ -153,115 +153,110 @@ const TeamAttendanceReport = () => {
         ) : filteredData.length === 0 ? (
           <Text type="danger">No data available.</Text>
         ) : (
-          <Row gutter={[24, 24]}>
-            {filteredData.map((user) => (
-              <Col
-                key={user.userid}
-                xs={24}
-                sm={12}
-                md={8} // 3 columns on medium+ screens
-              >
-                <Card
-                  title={
-                    <Space>
-                      <UserOutlined
-                        style={{ fontSize: 22, color: "#1890ff" }}
-                      />
-                      <Text
-                        strong
-                        style={{
-                          fontSize: 18,
-                          color: "#0c5484",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: "calc(100% - 40px)",
-                        }}
-                        title={user.name}
-                      >
-                        {user.name}
-                      </Text>
-                    </Space>
-                  }
-                  style={{
-                    borderRadius: 10,
-                    boxShadow: "0 4px 14px rgba(24, 144, 255, 0.15)",
-                    width: "100%",
-                  }}
-                  bodyStyle={{ padding: 16 }}
-                  hoverable
-                >
-                  <div style={{ lineHeight: 2 }}>
-                    <div>
-                      <ApartmentOutlined style={iconStyle} />
-                      <span style={labelStyle}>Department:</span>
-                      <span style={valueStyle}>{user.department || "N/A"}</span>
-                    </div>
-                    <div>
-                      <CalendarTwoTone
-                        twoToneColor="#eb2f96"
-                        style={iconStyle}
-                      />
-                      <span style={labelStyle}>Leave Days:</span>
-                      <span style={valueStyle}>
-                        {user.leaveDaysInMonth != null
-                          ? user.leaveDaysInMonth
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <ScheduleOutlined style={iconStyle} />
-                      <span style={labelStyle}>Pod Updates:</span>
-                      <span style={valueStyle}>
-                        {user.podUpdateReport != null
-                          ? user.podUpdateReport
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <ClockCircleOutlined style={iconStyle} />
-                      <span style={labelStyle}>Avg Spent Hours:</span>
-                      <span style={valueStyle}>
-                        {user.avgSpentHours != null
-                          ? user.avgSpentHours
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <CalendarOutlined style={iconStyle} />
-                      <span style={labelStyle}>Working Days:</span>
-                      <span style={valueStyle}>
-                        {user.workingDays != null ? user.workingDays : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <CalendarOutlined style={iconStyle} />
-                      <span style={labelStyle}>Public Holidays:</span>
-                      <span style={valueStyle}>
-                        {user.publicHoliday != null
-                          ? user.publicHoliday
-                          : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <CalendarOutlined style={iconStyle} />
-                      <span style={labelStyle}>Total Month Days:</span>
-                      <span style={valueStyle}>
-                        {user.monthDays != null ? user.monthDays : "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <CalendarOutlined style={iconStyle} />
-                      <span style={labelStyle}>Sundays:</span>
-                      <span style={valueStyle}>
-                        {user.sundayCount != null ? user.sundayCount : "N/A"}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+         <Row
+  gutter={[24, 24]}
+  style={{ display: "flex", flexWrap: "wrap", justifyContent: "start" }}
+>
+  {filteredData.map((user) => (
+    <Col
+      key={user.userid}
+      xs={24} // Full width on mobile
+      sm={12} // Two cards per row on tablets
+      md={8} // Three cards per row on medium+ screens
+      style={{ display: "flex" }}
+    >
+      <Card
+        title={
+          <Space>
+            <UserOutlined style={{ fontSize: 22, color: "#1890ff" }} />
+            <Text
+              strong
+              style={{
+                fontSize: 18,
+                color: "#0c5484",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "calc(100% - 40px)",
+              }}
+              title={user.name}
+            >
+              {user.name}
+            </Text>
+          </Space>
+        }
+        style={{
+          borderRadius: 10,
+          boxShadow: "0 4px 14px rgba(24, 144, 255, 0.15)",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+        bodyStyle={{ padding: 16, flexGrow: 1 }}
+        hoverable
+      >
+        <div style={{ lineHeight: 2 }}>
+          <div>
+            <ApartmentOutlined style={iconStyle} />
+            <span style={labelStyle}>Department:</span>
+            <span style={valueStyle}>{user.department || "N/A"}</span>
+          </div>
+          <div>
+            <CalendarTwoTone twoToneColor="#eb2f96" style={iconStyle} />
+            <span style={labelStyle}>Leave Days:</span>
+            <span style={valueStyle}>
+              {user.leaveDaysInMonth != null ? user.leaveDaysInMonth : "N/A"}
+            </span>
+          </div>
+          <div>
+            <ScheduleOutlined style={iconStyle} />
+            <span style={labelStyle}>Pod Updates:</span>
+            <span style={valueStyle}>
+              {user.podUpdateReport != null ? user.podUpdateReport : "N/A"}
+            </span>
+          </div>
+          <div>
+            <ClockCircleOutlined style={iconStyle} />
+            <span style={labelStyle}>Avg Spent Hours:</span>
+            <span style={valueStyle}>
+              {user.avgSpentHours != null ? user.avgSpentHours : "N/A"}
+            </span>
+          </div>
+          <div>
+            <CalendarOutlined style={iconStyle} />
+            <span style={labelStyle}>Working Days:</span>
+            <span style={valueStyle}>
+              {user.workingDays != null ? user.workingDays : "N/A"}
+            </span>
+          </div>
+          <div>
+            <CalendarOutlined style={iconStyle} />
+            <span style={labelStyle}>Public Holidays:</span>
+            <span style={valueStyle}>
+              {user.publicHoliday != null ? user.publicHoliday : "N/A"}
+            </span>
+          </div>
+          <div>
+            <CalendarOutlined style={iconStyle} />
+            <span style={labelStyle}>Total Month Days:</span>
+            <span style={valueStyle}>
+              {user.monthDays != null ? user.monthDays : "N/A"}
+            </span>
+          </div>
+          <div>
+            <CalendarOutlined style={iconStyle} />
+            <span style={labelStyle}>Sundays:</span>
+            <span style={valueStyle}>
+              {user.sundayCount != null ? user.sundayCount : "N/A"}
+            </span>
+          </div>
+        </div>
+      </Card>
+    </Col>
+  ))}
+</Row>
+
         )}
       </Card>
     </TaskAdminPanelLayout>

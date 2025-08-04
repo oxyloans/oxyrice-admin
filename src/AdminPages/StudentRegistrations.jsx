@@ -77,7 +77,7 @@ const StudentRegistrations = () => {
       render: (record) =>
         record.whatsappNumber
           ? `${record.countryCode}${record.whatsappNumber}`
-          : "N/A",
+          : "",
       align: "center",
     },
     {
@@ -86,14 +86,14 @@ const StudentRegistrations = () => {
       render: (record) =>
         record.mobileNumber
           ? `${record.countryCode}${record.mobileNumber}`
-          : "N/A",
+          : "",
       align: "center",
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      render: (email) => email || "N/A",
+      render: (email) => email || "",
       align: "center",
     },
     {
