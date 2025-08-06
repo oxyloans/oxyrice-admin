@@ -51,7 +51,7 @@ import {
 const { Option } = Select;
 
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
+
 const { Panel } = Collapse;
 const { TextArea } = Input;
 const { Search } = Input;
@@ -167,7 +167,7 @@ const PlanOfTheDay = () => {
     });
   };
 
-  // API call to fetch tasks by date
+
   const fetchTasksByDate = useCallback(async () => {
     if (!selectedDate) {
       showNotification("warning", "Missing Date", "Please select a date.");

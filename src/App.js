@@ -83,6 +83,7 @@ import OrdersByCoupon from "./AdminPages/OrdersByCoupon";
 import NBFCDataList from "./AdminPages/NBFCDataList";
 import StudentRegistrations from "./AdminPages/StudentRegistrations";
 import TeamAttendanceReport from "./TaskManagement/Pages/TeamAttendanceReport";
+import UserTaskDetailsPage from "./TaskManagement/Pages/UserTaskDetailsPage";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -116,6 +117,7 @@ function App() {
         <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
         <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
         <Route path="/taskmanagement/teamattendance" element={<TeamAttendanceReport />} />
+        <Route path="/user-task-details/:userId" element={<UserTaskDetailsPage />} />
         <Route
           path="/taskmanagement/employeeleaves"
           element={<TodayLeaves />}

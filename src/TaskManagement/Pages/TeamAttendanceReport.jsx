@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import {
   Card,
   Spin,
@@ -10,6 +11,7 @@ import {
   Input,
   Row,
   Col,
+  Select,
 } from "antd";
 import {
   UserOutlined,
@@ -30,6 +32,19 @@ import TaskAdminPanelLayout from "../Layout/AdminPanel";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
+const { Option } = Select;
+
+
+const TEAM_OPTIONS = [
+  "ALL",
+  "TECHTEAM",
+  "ADMINTEAM",
+  "HRTEAM",
+  "TELECALLINGTEAM",
+  "ACCOUNTINGTEAM",
+  "SALESTEAM",
+  "MANAGEMENTTEAM",
+];
 
 const labelStyle = {
   fontWeight: 550,
@@ -52,7 +67,8 @@ const TeamAttendanceReport = () => {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(dayjs());
   const [searchText, setSearchText] = useState("");
-
+  const [selectedTeam, setSelectedTeam] = useState("ALL");
+  const navigate = useNavigate(); // Initialize useNavigate
   const fetchAttendanceData = async (month) => {
     try {
       setLoading(true);
@@ -79,12 +95,11 @@ const TeamAttendanceReport = () => {
   };
 
   const exportToExcel = () => {
-    if (!data || data.length === 0) {
+    const users = filteredData.slice(1);
+    if (users.length === 0) {
       message.warning("No data to export.");
       return;
     }
-
-    const users = data.filter((_, index) => index !== 0);
 
     const formattedData = users.map((user) => ({
       Name: user.name,
@@ -110,14 +125,16 @@ const TeamAttendanceReport = () => {
   const filteredData = useMemo(() => {
     return data
       .filter((user) =>
+        selectedTeam === "ALL"
+          ? true
+          : user.department?.toUpperCase() === selectedTeam
+      )
+      .filter((user) =>
         user.name?.toLowerCase().includes(searchText.toLowerCase())
       )
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [data, searchText]);
+  }, [data, selectedTeam, searchText]);
 
-
-
-  
   const summaryCards = [
     {
       label: "Working Days",
@@ -153,11 +170,9 @@ const TeamAttendanceReport = () => {
       label: "Total Employees",
       value: filteredData[0]?.totalEmpCount ?? "",
       icon: <CalendarOutlined style={{ fontSize: 30, color: "#13c2c2" }} />,
-      bgColor: "#e6fffb", // Updated background color for 6th card
+      bgColor: "#e6fffb",
     },
   ];
-
-
 
   return (
     <TaskAdminPanelLayout>
@@ -172,6 +187,17 @@ const TeamAttendanceReport = () => {
         }
         extra={
           <Space wrap>
+            <Select
+              value={selectedTeam}
+              onChange={(value) => setSelectedTeam(value)}
+              style={{ width: 200 }}
+            >
+              {TEAM_OPTIONS.map((team) => (
+                <Option key={team} value={team}>
+                  {team === "ALL" ? "All Teams" : team}
+                </Option>
+              ))}
+            </Select>
             <DatePicker
               picker="month"
               value={selectedMonth}
@@ -190,7 +216,7 @@ const TeamAttendanceReport = () => {
         style={{ margin: 20, borderRadius: 10 }}
         bodyStyle={{ paddingTop: 20 }}
       >
-        {/* Top 5 Summary Cards */}
+        {/* Summary Cards */}
         {!loading && filteredData.length > 0 && (
           <Row gutter={[24, 24]} justify="start" style={{ marginBottom: 30 }}>
             {summaryCards.map((item, index) => (
@@ -255,18 +281,7 @@ const TeamAttendanceReport = () => {
                       <UserOutlined
                         style={{ fontSize: 20, color: "#1890ff" }}
                       />
-                      <Text
-                        strong
-                        style={{
-                          fontSize: 14,
-                          color: "#0c5484",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: "calc(100% - 40px)",
-                        }}
-                        title={user.name}
-                      >
+                      <Text strong style={{ fontSize: 14, color: "#0c5484" }}>
                         {user.name}
                       </Text>
                     </Space>
@@ -279,12 +294,7 @@ const TeamAttendanceReport = () => {
                   }}
                   bodyStyle={{ padding: 16 }}
                   hoverable
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.transform = "scale(1.0)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
+                  onClick={() => navigate(`/user-task-details/${user.userid}`)}
                 >
                   <div style={{ lineHeight: 2 }}>
                     <div>
@@ -312,17 +322,22 @@ const TeamAttendanceReport = () => {
                     </div>
                     <div>
                       <UserOutlined style={iconStyle} />
+                      <span style={labelStyle}>EOD Missing:</span>
+                      <span style={valueStyle}>{user.eodMissingEntries}</span>
+                    </div>
+                    <div>
+                      <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EMP Working Days:</span>
                       <span style={valueStyle}>{user.employeeWorkingDays}</span>
                     </div>
                     <div>
                       <ClockCircleOutlined style={iconStyle} />
-                      <span style={labelStyle}>Avg Spent Hours:</span>
+                      <span style={labelStyle}>Avg/Day Hrs Spent:</span>
                       <span style={valueStyle}>{user.avgPerDaySpentHours}</span>
                     </div>
                     <div>
                       <ScheduleOutlined style={iconStyle} />
-                      <span style={labelStyle}>Monthly Spent Hours:</span>
+                      <span style={labelStyle}>Monthly Hrs Spent:</span>
                       <span style={valueStyle}>
                         {user.employeeMonthlySpentHours}
                       </span>

@@ -173,6 +173,7 @@ const Coupons = () => {
       render: (text, record, index) =>
         index + 1 + (currentPage - 1) * entriesPerPage,
       align: "center",
+    
     },
     {
       title: "Coupon Code",

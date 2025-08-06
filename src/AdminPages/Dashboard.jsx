@@ -1161,7 +1161,7 @@ const DashboardTest = () => {
 
   return (
     <AdminPanelLayoutTest>
-      <Layout className="bg-gray-100 min-h-screen">
+      <Layout className="min-h-screen">
         <Content className="p-4 sm:p-6 md:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
