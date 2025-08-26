@@ -107,10 +107,16 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <WalletOutlined />,
       dropdownItems: [
         {
+          key: "Withdrawal User List",
+          label: "Withdrawal User List", // ✅ Correct
+          link: "/admin/withdrawaluserlist",
+        },
+        {
           key: "Initiated Amounts",
           label: "Initiated Amounts", // ✅ Correct
           link: "/admin/initiatedamountlist",
         },
+
         {
           key: "Approved Amounts", // 🔹 Fix spelling + plural consistency
           label: "Approved Amounts",

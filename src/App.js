@@ -86,6 +86,7 @@ import TeamAttendanceReport from "./TaskManagement/Pages/TeamAttendanceReport";
 import UserTaskDetailsPage from "./TaskManagement/Pages/UserTaskDetailsPage";
 import InitiatedAmountList from "./AdminPages/InitiatedAmountList";
 import ApprovedAmountList from "./AdminPages/ApprovedAmountList";
+import WithdrawalRequests from "./AdminPages/WithdrawalUsersList";
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -271,6 +272,10 @@ function App() {
         <Route
           path="/admin/approvedamountlist"
           element={<ProtectedRoute element={<ApprovedAmountList />} />}
+        />
+        <Route
+          path="/admin/withdrawaluserlist"
+          element={<ProtectedRoute element={<WithdrawalRequests />} />}
         />
         <Route
           path="/admin/coupons"
