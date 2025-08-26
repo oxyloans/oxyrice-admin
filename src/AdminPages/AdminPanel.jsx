@@ -6,16 +6,15 @@ import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
 import { FaUserGraduate } from "react-icons/fa";
+import { WalletOutlined } from "@ant-design/icons";
 import {
   FaTachometerAlt,
   FaSlideshare,
   FaBoxOpen,
-
   FaShoppingCart,
   FaHandsHelping,
 } from "react-icons/fa";
 import { AppstoreOutlined } from "@ant-design/icons";
-
 
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 
@@ -77,7 +76,7 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <MdInventory />,
       link: "/admin/category-inventory",
     },
-   
+
     {
       key: "StudyAbroad Dashboard",
       label: "StudyAbroad Admin",
@@ -92,7 +91,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           key: "Student Registrations",
           label: "Student Registrations",
           link: "/admin/student-registrations",
-        }
+        },
       ],
     },
     // {
@@ -101,6 +100,25 @@ const AdminPanelLayoutTest = ({ children }) => {
     //   icon: <FaUserCircle />,
     //   link: "/admin/category-inventory",
     // },
+
+    {
+      key: "Customer Wallet",
+      label: "Customer Wallet",
+      icon: <WalletOutlined />,
+      dropdownItems: [
+        {
+          key: "Initiated Amounts",
+          label: "Initiated Amounts", // ✅ Correct
+          link: "/admin/initiatedamountlist",
+        },
+        {
+          key: "Approved Amounts", // 🔹 Fix spelling + plural consistency
+          label: "Approved Amounts",
+          link: "/admin/approvedamountlist",
+        },
+      ],
+    },
+
     {
       key: "categories",
       label: "Categories",
@@ -396,7 +414,7 @@ const AdminPanelLayoutTest = ({ children }) => {
               : `calc(100% - ${collapsed ? "80px" : "240px"})`,
             marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative", // Ensure it's positioned correctly
-            bottom: 0
+            bottom: 0,
           }}
         >
           ASKOXY.AI Admin ©{fullYear} Created by ASKOXY.AI Company
