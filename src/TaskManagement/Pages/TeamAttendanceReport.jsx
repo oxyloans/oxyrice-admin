@@ -94,33 +94,34 @@ const TeamAttendanceReport = () => {
     }
   };
 
-  const exportToExcel = () => {
-    const users = filteredData.slice(1);
-    if (users.length === 0) {
-      message.warning("No data to export.");
-      return;
-    }
+ const exportToExcel = () => {
+   const users = filteredData; // include all users
+   if (users.length === 0) {
+     message.warning("No data to export.");
+     return;
+   }
 
-    const formattedData = users.map((user) => ({
-      Name: user.name,
-      Department: user.department,
-      "Leave Days": user.leaveDaysInMonth,
-      "POD Updates": user.podUpdateReport,
-      "EOD Updates": user.eodUpdationEntries,
-      "EMP Working Days": user.employeeWorkingDays,
-      "Avg Per Day Spent Hours": user.avgPerDaySpentHours,
-      "Monthly Spend Hours": user.employeeMonthlySpentHours,
-    }));
+   const formattedData = users.map((user) => ({
+     Name: user.name,
+     Department: user.department,
+     "Leave Days": user.leaveDaysInMonth,
+     "POD Updates": user.podUpdateReport,
+     "EOD Updates": user.eodUpdationEntries,
+     "EMP Working Days": user.employeeWorkingDays,
+     "Avg Per Day Spent Hours": user.avgPerDaySpentHours,
+     "Monthly Spend Hours": user.employeeMonthlySpentHours,
+   }));
 
-    const worksheet = XLSX.utils.json_to_sheet(formattedData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
+   const worksheet = XLSX.utils.json_to_sheet(formattedData);
+   const workbook = XLSX.utils.book_new();
+   XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
 
-    const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([buffer], { type: "application/octet-stream" });
+   const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+   const blob = new Blob([buffer], { type: "application/octet-stream" });
 
-    saveAs(blob, `Team_Attendance_${selectedMonth.format("YYYY-MM")}.xlsx`);
-  };
+   saveAs(blob, `Team_Attendance_${selectedMonth.format("YYYY-MM")}.xlsx`);
+ };
+
 
   const filteredData = useMemo(() => {
     return data
