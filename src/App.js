@@ -87,6 +87,12 @@ import UserTaskDetailsPage from "./TaskManagement/Pages/UserTaskDetailsPage";
 import InitiatedAmountList from "./AdminPages/InitiatedAmountList";
 import ApprovedAmountList from "./AdminPages/ApprovedAmountList";
 import WithdrawalRequests from "./AdminPages/WithdrawalUsersList";
+import AgentsLogin from "./AgentsAdmin/Auth/AgentsLogin";
+import AgentsAdminLayout from "./AgentsAdmin/Components/AgentsAdminLayout";
+import AssistantsList from "./AgentsAdmin/Pages/AssistantsList";
+import PlansList from "./AgentsAdmin/Pages/PlansList";
+import AgentsList from "./AgentsAdmin/Pages/AgentStatusList";
+
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
   const isAuthenticated = localStorage.getItem("token") ? true : false; 
@@ -103,6 +109,11 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
         {/* Protected Routes (Authentication Required) */}
+        <Route path="/admin/agentslogin" element={<AgentsLogin />} />
+        <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
+        <Route path="/admin/assistantslist" element={<AssistantsList />} />
+        <Route path="/admin/agentsplanslist" element={<PlansList />} />
+        <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
         <Route
           path="/admin/taskmanagementlogin"
           element={<TaskManagementLogin />}
