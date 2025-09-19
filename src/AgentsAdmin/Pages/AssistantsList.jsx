@@ -319,7 +319,8 @@ const AssistantsList = () => {
                 }}
               >
                 <Option value="APPROVED">APPROVED</Option>
-              
+                <Option value="REQUESTED">REQUESTED</Option>
+
                 <Option value="REJECTED">REJECTED</Option>
                 <Option value="DELETED">DELETED</Option>
               </Select>
@@ -330,12 +331,12 @@ const AssistantsList = () => {
                 label="Free Trials"
                 name="freetrails"
                 rules={[
-                  { required: true, message: "Please enter free trials" },
+                
                   {
                     validator: (_, value) => {
-                      if (!value || Number(value) <= 0) {
+                      if (value && Number(value) < 5) {
                         return Promise.reject(
-                          new Error("Free trials must be greater than 0")
+                          new Error("Free trials must be at least 5")
                         );
                       }
                       return Promise.resolve();
@@ -345,16 +346,12 @@ const AssistantsList = () => {
               >
                 <InputNumber
                   style={{ width: "100%" }}
-                  min={1}
+                  min={1} // ✅ user can type from 1, but validator enforces >= 5
                   step={1}
-                  precision={0}
-                  controls
-                  stringMode={false}
-                  onKeyPress={(event) => {
-                    if (!/[0-9]/.test(event.key)) {
-                      event.preventDefault();
-                    }
-                  }}
+                  precision={0} // ✅ integers only
+                  placeholder="Enter minimum 5 free trials"
+                  controls={false} // ✅ hides +/- buttons
+                  parser={(value) => value?.replace(/\D/g, "") || ""} // ✅ strip non-numeric
                 />
               </Form.Item>
             )}

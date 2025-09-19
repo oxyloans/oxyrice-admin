@@ -84,23 +84,27 @@ const GeminiUsers = () => {
       dataIndex: "prompt",
       key: "prompt",
       align: "center",
-     
+
       render: (text) => (
-     
-          <div
-            style={{
-              maxWidth: 300,
-              textAlign: "center",
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {text}
-          </div>
-       
+        <div
+          style={{
+            maxWidth: 300,
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {text}
+        </div>
       ),
+    },
+    {
+      title: "User Name",
+      dataIndex: "userName",
+      key: "userName",
+      align: "center",
     },
   ];
 
