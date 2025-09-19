@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-
+import { TeamOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 
@@ -56,6 +56,12 @@ const AgentsAdminLayout = ({ children }) => {
      label: "Agents Status List",
      icon: <MdInventory />,
      link: "/admin/agentsstatuslist",
+   },
+   {
+     key: "useragent-login",
+     label: "Agents Registered Users", // ✅ fixed label spelling
+     icon: <TeamOutlined />, // ✅ added icon
+     link: "/admin/agents-registered-users", // ✅ updated link
    },
  ];
 

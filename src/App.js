@@ -92,6 +92,7 @@ import AgentsAdminLayout from "./AgentsAdmin/Components/AgentsAdminLayout";
 import AssistantsList from "./AgentsAdmin/Pages/AssistantsList";
 import PlansList from "./AgentsAdmin/Pages/PlansList";
 import AgentsList from "./AgentsAdmin/Pages/AgentStatusList";
+import GeminiUsers from "./AgentsAdmin/Pages/GeminiUsers";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -114,6 +115,7 @@ function App() {
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
+        <Route path="/admin/agents-registered-users"  element={<GeminiUsers/>}/>
         <Route
           path="/admin/taskmanagementlogin"
           element={<TaskManagementLogin />}
