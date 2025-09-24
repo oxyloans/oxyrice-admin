@@ -12,6 +12,8 @@ import {
   Tag,
   Empty,
   Image,
+    Row,
+  Col
 } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -144,103 +146,109 @@ const RadhaInstructionView = () => {
           }}
         >
           {/* Header */}
-          <Title
-            level={3}
-            style={{
-              textAlign: "center",
-              marginBottom: "12px",
-              color: "#1677ff",
-              fontWeight: 700,
-            }}
-          >
-            {instructionData.instructionHeader}
-          </Title>
-
-          {/* Instructions */}
-          <Paragraph
-            style={{
-              fontSize: "16px",
-              lineHeight: "1.7",
-              background: "#fafafa",
-              padding: "12px 16px",
-              borderRadius: "8px",
-              marginBottom: "18px",
-              whiteSpace: "pre-line",
-            }}
-          >
-            {instructionData.radhaInstructions}
-          </Paragraph>
-
-          {/* Meta info */}
-          <Text
-            type="secondary"
-            style={{
-              display: "block",
-              marginBottom: "16px",
-              fontSize: "13px",
-            }}
-          >
-            Created: {formatDateIST(instructionData.radhaInstructeddate)} | Last
-            Updated: {formatDateIST(instructionData.radhaUpdateDate)}
-          </Text>
-
-          <Divider />
-
-          {/* Documents */}
-          {instructionData.documents?.length > 0 && (
-            <div style={{ marginBottom: "20px" }}>
+          <Row gutter={[24, 24]} style={{ overflowX: "auto" }}>
+            {/* Left Side - Header & Instructions */}
+            <Col xs={24} md={12}>
               <Title
-                level={4}
-                style={{ marginBottom: "12px", color: "#722ed1" }}
+                level={3}
+                style={{
+                  textAlign: "center",
+                  marginBottom: "12px",
+                  color: "#1677ff",
+                    fontWeight: 400,
+                  
+                }}
               >
-                Documents & Images
+                {instructionData.instructionHeader}
               </Title>
-              <List
-                grid={{ gutter: 16, column: 2 }}
-                dataSource={instructionData.documents}
-                renderItem={(doc) => (
-                  <List.Item>
-                    <Card
-                      hoverable
-                      style={{
-                        borderRadius: "10px",
-                        textAlign: "center",
-                        padding: "12px",
-                      }}
-                    >
-                      {isImage(doc.documentUrl) ? (
-                        <Image
-                          src={doc.documentUrl}
-                          alt={doc.documentName}
+
+              <Paragraph
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "1.7",
+                  background: "#fafafa",
+                  padding: "12px 16px",
+                  borderRadius: "8px",
+                  marginBottom: "18px",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {instructionData.radhaInstructions}
+              </Paragraph>
+
+              <Text
+                type="secondary"
+                style={{
+                  display: "block",
+                  marginBottom: "16px",
+                  fontSize: "13px",
+                }}
+              >
+                Created: {formatDateIST(instructionData.radhaInstructeddate)} |{" "}
+                Last Updated: {formatDateIST(instructionData.radhaUpdateDate)}
+              </Text>
+              <Divider />
+            </Col>
+
+            {/* Right Side - Documents */}
+            <Col xs={24} md={12}>
+              {instructionData.documents?.length > 0 ? (
+                <div style={{ marginBottom: "20px" }}>
+                  <Title
+                    level={4}
+                    style={{ marginBottom: "12px", color: "#722ed1" }}
+                  >
+                    Documents & Images
+                  </Title>
+                  <List
+                    grid={{ gutter: 16, column: 1 }}
+                    dataSource={instructionData.documents}
+                    renderItem={(doc) => (
+                      <List.Item>
+                        <Card
+                          hoverable
                           style={{
-                            maxHeight: "200px",
-                            objectFit: "contain",
-                            marginBottom: "8px",
-                          }}
-                        />
-                      ) : (
-                        <a
-                          href={doc.documentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            fontWeight: 500,
-                            display: "block",
-                            marginBottom: "8px",
+                            borderRadius: "10px",
+                            textAlign: "center",
+                            padding: "12px",
                           }}
                         >
-                          {doc.documentName}
-                        </a>
-                      )}
-                      <Text>{doc.documentName}</Text>
-                    </Card>
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-
-          <Divider />
+                          {isImage(doc.documentUrl) ? (
+                            <Image
+                              src={doc.documentUrl}
+                              alt={doc.documentName}
+                              style={{
+                                maxHeight: "200px",
+                                objectFit: "contain",
+                                marginBottom: "8px",
+                              }}
+                            />
+                          ) : (
+                            <a
+                              href={doc.documentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                fontWeight: 500,
+                                display: "block",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              {doc.documentName}
+                            </a>
+                          )}
+                          <Text>{doc.documentName}</Text>
+                        </Card>
+                      </List.Item>
+                    )}
+                  />
+                </div>
+              ) : (
+                <Empty description="No documents available" />
+              )}
+              <Divider />
+            </Col>
+          </Row>
 
           {/* Employee Interactions */}
           {interactions.length > 0 ? (
@@ -270,3 +278,4 @@ const RadhaInstructionView = () => {
 };
 
 export default RadhaInstructionView;
+

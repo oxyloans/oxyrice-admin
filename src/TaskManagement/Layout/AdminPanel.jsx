@@ -53,7 +53,7 @@ const TaskAdminPanelLayout = ({ children }) => {
     },
     {
       key: "Admin Instructions",
-      label: "Admin Instructions",
+      label: "Admin Tasks",
       icon: <FaClipboardList />,
       link: "/taskmanagement/admininstructions",
     },
