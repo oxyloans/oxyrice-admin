@@ -93,6 +93,8 @@ import AssistantsList from "./AgentsAdmin/Pages/AssistantsList";
 import PlansList from "./AgentsAdmin/Pages/PlansList";
 import AgentsList from "./AgentsAdmin/Pages/AgentStatusList";
 import GeminiUsers from "./AgentsAdmin/Pages/GeminiUsers";
+import AdminInstructions from "./TaskManagement/Pages/AdminInstructions";
+import RadhaInstructionView from "./TaskManagement/Pages/RadhaInstructionView";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -115,7 +117,10 @@ function App() {
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
-        <Route path="/admin/agents-registered-users"  element={<GeminiUsers/>}/>
+        <Route
+          path="/admin/agents-registered-users"
+          element={<GeminiUsers />}
+        />
         <Route
           path="/admin/taskmanagementlogin"
           element={<TaskManagementLogin />}
@@ -130,6 +135,14 @@ function App() {
           element={<TaskAdminPanelLayout />}
         />
         <Route path="/taskmanagement/tasklists" element={<TasksList />} />
+        <Route
+          path="/taskmanagement/admininstructions"
+          element={<AdminInstructions />}
+        />
+        <Route
+          path="/taskmanagement/chatview/:id"
+          element={<RadhaInstructionView />}
+        />
         <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
         <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
         <Route

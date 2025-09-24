@@ -6,18 +6,16 @@ import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
-
-import { FaUserEdit } from "react-icons/fa";
+import { FaFileAlt, FaTasks } from "react-icons/fa";
+import {  FaClipboardList } from "react-icons/fa";
 import {
   FaTachometerAlt,
   FaUsers,
   FaSlideshare,
-  FaBoxOpen,
-  FaStore,
-  FaShoppingCart,
+  
   FaHandsHelping,
 } from "react-icons/fa";
-
+// import { Link } from "react-router-dom";
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -54,11 +52,18 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/taskmanagement/dashboard",
     },
     {
+      key: "Admin Instructions",
+      label: "Admin Instructions",
+      icon: <FaClipboardList />,
+      link: "/taskmanagement/admininstructions",
+    },
+    {
       key: "Team Attendance",
       label: "Team Attendance",
       icon: <FaUsers />,
       link: "/taskmanagement/teamattendance",
     },
+
     {
       key: "Task Creation",
       label: "Create New Task",

@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Table, Image, Spin, Input, Row, Col, Tooltip, message } from "antd";
+import {
+  Table,
+  Image,
+  Spin,
+  Input,
+  Row,
+  Col,
+  message,
+  Button,
+  Tag,
+} from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
@@ -20,19 +30,49 @@ const GeminiUsers = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-          `${BASE_URL}/ai-service/agent/getAllGeminiUsers?page=${pageNumber}&size=${size}`,
+        `${BASE_URL}/ai-service/agent/getAllGeminiUsers?page=${pageNumber}&size=${size}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
-
       );
-      setData(res.data.listResponse || []);
+
+      const reversedList = (res.data.listResponse || []).reverse();
+      setData(reversedList);
       setTotalCount(res.data.count || 0);
     } catch (error) {
       console.error("Error fetching Gemini users:", error);
       message.error("Failed to fetch Gemini users. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔄 Toggle TestUser API
+  const toggleTestUser = async (id, currentStatus) => {
+    try {
+      setLoading(true);
+      await axios.patch(
+        `${BASE_URL}/user-service/updateTestUsers`,
+        {
+          id: id,
+          testUser: !currentStatus, // flip status
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      message.success(
+        `User updated to ${!currentStatus ? "TEST USER" : "LIVE USER"}`
+      );
+      fetchData(page - 1, pageSize); // refresh data
+    } catch (error) {
+      console.error("Error updating test user:", error);
+      message.error("Failed to update user status.");
     } finally {
       setLoading(false);
     }
@@ -57,11 +97,11 @@ const GeminiUsers = () => {
       dataIndex: "userId",
       key: "userId",
       align: "center",
-      render: (id) => `#${id.slice(-4)}`,
+      render: (id) => `#${id?.slice(-4)}`,
     },
     {
       title: "Mobile Number",
-      dataIndex: "mobileNumber" || "_",
+      dataIndex: "mobileNumber",
       key: "mobileNumber",
       align: "center",
     },
@@ -84,7 +124,6 @@ const GeminiUsers = () => {
       dataIndex: "prompt",
       key: "prompt",
       align: "center",
-
       render: (text) => (
         <div
           style={{
@@ -106,6 +145,24 @@ const GeminiUsers = () => {
       key: "userName",
       align: "center",
     },
+    
+    // {
+    //   title: "Action",
+    //   key: "action",
+    //   align: "center",
+    //   render: (record) => (
+    //     <Button
+    //       style={{
+    //         backgroundColor: "#008CBA",
+    //         color: "white",
+    //         border: "none",
+    //       }}
+    //       onClick={() => toggleTestUser(record.userId, record.testUser)}
+    //     >
+    //       {record.testUser ? "Set Live" : "Set Test"}
+    //     </Button>
+    //   ),
+    // },
   ];
 
   return (
