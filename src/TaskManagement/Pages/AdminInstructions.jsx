@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Table, Spin, message, Form, Input, Button, Upload, Modal } from "antd";
+import { Table, Spin, message,Space, Form, Input, Button, Upload, Modal } from "antd";
 import { UploadOutlined, MessageOutlined } from "@ant-design/icons";
 import { MdModeEditOutline } from "react-icons/md";
 import axios from "axios";
@@ -15,28 +15,44 @@ const AdminInstructions = () => {
   const [data, setData] = useState([]);
   const [file, setFile] = useState(null);
   const navigate = useNavigate();
-
+  const [formAdd] = Form.useForm(); // ✅ Add form instance for Add Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState(null);
-
+    const [editingRecord, setEditingRecord] = useState(null);
+      const [searchText, setSearchText] = useState("");
+  const [formEdit] = Form.useForm();
+  const [formInteraction] = Form.useForm();
   const adminUserId = localStorage.getItem("userId");
-  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+    const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+     const [filteredData, setFilteredData] = useState([]);
   const [interactionRecord, setInteractionRecord] = useState(null);
   const API_URL = `${BASE_URL}/user-service/write/getAdminUserId?adminUserId=${adminUserId}`;
   const SAVE_API = `${BASE_URL}/user-service/write/radhaInstructions`;
   const UPLOAD_API = `${BASE_URL}/user-service/write/uploadRadhaFiles?fileType=kyc&userId=${adminUserId}`;
-  const INTERACTION_API = `${BASE_URL}/user-service/write/radhaInteractions`;
+    const INTERACTION_API = `${BASE_URL}/user-service/write/radhaInteractions`;
+     // 🔎 Search handler
+ 
   // Fetch admin instructions
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-      if (Array.isArray(response.data)) {
-        setData(response.data);
-      } else {
-        message.warning("Unexpected response format");
-      }
+     if (Array.isArray(response.data)) {
+       // ✅ sort by updatedDate (if exists) else createdDate
+       const sortedData = response.data.sort((a, b) => {
+         const dateA = new Date(
+           a.radhaUpdateDate || a.radhaInstructeddate
+         ).getTime();
+         const dateB = new Date(
+           b.radhaUpdateDate || b.radhaInstructeddate
+         ).getTime();
+         return dateB - dateA; // descending
+       });
+       setData(sortedData);
+       setFilteredData(sortedData);
+     } else {
+       message.warning("Unexpected response format");
+     }
     } catch (err) {
       message.error("Failed to fetch Admin Instructions");
     } finally {
@@ -47,7 +63,9 @@ const AdminInstructions = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
+  useEffect(() => {
+    setFilteredData(data);
+  }, [data]);
   // Upload file for Add modal
   const uploadFile = async () => {
     if (!file) return null;
@@ -75,7 +93,8 @@ const AdminInstructions = () => {
       await axios.patch(SAVE_API, payload);
       message.success("Instruction added successfully!");
       fetchData();
-      setIsAddModalOpen(false);
+        setIsAddModalOpen(false);
+            formAdd.resetFields();
       setFile(null);
     } catch (err) {
       message.error("Failed to save instruction");
@@ -99,7 +118,8 @@ const AdminInstructions = () => {
       message.success("Instruction updated successfully!");
       fetchData();
       setIsEditModalOpen(false);
-      setEditingRecord(null);
+        setEditingRecord(null);
+           formEdit.resetFields();
     } catch (err) {
       message.error("Failed to update instruction");
     } finally {
@@ -121,13 +141,22 @@ const AdminInstructions = () => {
       await axios.patch(INTERACTION_API, payload);
       message.success("Interaction saved successfully!");
       setIsInteractionModalOpen(false);
-      setInteractionRecord(null);
+        setInteractionRecord(null);
+            formInteraction.resetFields();
     } catch (err) {
       message.error("Failed to save interaction");
     } finally {
       setSaving(false);
     }
   };
+
+  const formatDateIST = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  const istOffset = 5.5 * 60 * 60 * 1000;
+  const istDate = new Date(date.getTime() + istOffset);
+  return istDate.toLocaleString("en-IN", { hour12: true });
+};
   // Table columns
   const columns = [
     { title: "S.No", render: (_, __, index) => index + 1, align: "center" },
@@ -149,70 +178,121 @@ const AdminInstructions = () => {
       align: "center",
     },
     { title: "Instructions", dataIndex: "radhaInstructions", align: "center" },
+  // ✅ Table columns
+{
+  title: "Created Date",
+  dataIndex: "radhaInstructeddate",
+  align: "center",
+  render: (text) => formatDateIST(text),
+},
+{
+  title: "Updated Date",
+  dataIndex: "radhaUpdateDate",
+  align: "center",
+  render: (text) => formatDateIST(text),
+},
     {
-      title: "Created Date",
-      dataIndex: "radhaInstructeddate",
+      title: "Action",
+      key: "action",
       align: "center",
+      render: (_, record) => (
+        <Space align="center" size="middle">
+          {/* Edit Button */}
+          <Button
+            onClick={() => {
+              setEditingRecord(record);
+              setIsEditModalOpen(true);
+            }}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+              border: "none",
+            }}
+            icon={<MdModeEditOutline />}
+          >
+            Edit
+          </Button>
+
+          {/* Write To Us Button */}
+          <Button
+            onClick={() => {
+              setInteractionRecord(record);
+              setIsInteractionModalOpen(true);
+            }}
+            style={{
+              backgroundColor: "#1c84c6",
+              color: "white",
+              border: "none",
+            }}
+            icon={<MessageOutlined />}
+          >
+            Write To Us
+          </Button>
+
+          {/* Chat View Button */}
+          <Button
+            style={{
+              backgroundColor: "#8e44ad",
+              color: "white",
+              border: "none",
+            }}
+            icon={<MdForum />}
+            onClick={() =>
+              navigate(`/taskmanagement/chatview/${record.radhaInstructionsId}`)
+            }
+          >
+            Chat View
+          </Button>
+        </Space>
+      ),
     },
-    { title: "Updated Date", dataIndex: "radhaUpdateDate", align: "center" },
-  {
-    title: "Action",
-    key: "action",
-    align: "center",
-    render: (_, record) => (
-      <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
-        {/* Edit Button */}
-        <Button
-          onClick={() => {
-            setEditingRecord(record);
-            setIsEditModalOpen(true);
-          }}
-          style={{ backgroundColor: "#1AB394", color: "white" }}
-          icon={<MdModeEditOutline />}
-        >
-          Edit
-        </Button>
-
-        {/* Write To Us Button */}
-        <Button
-          onClick={() => {
-            setInteractionRecord(record);
-            setIsInteractionModalOpen(true);
-          }}
-          style={{ backgroundColor: "#1c84c6", color: "white" }}
-          icon={<MessageOutlined />}
-        >
-          Write To Us
-        </Button>
-
-        {/* Chat View Button */}
-        <Button
-          style={{ backgroundColor: "#8e44ad", color: "white" }}
-          icon={<MdForum />}
-          onClick={() =>
-            navigate(`/taskmanagement/chatview/${record.radhaInstructionsId}`)
-          }
-        >
-          Chat View
-        </Button>
-      </div>
-    ),
-  }
   ];
 
   return (
     <TaskAdminPanelLayout>
       {/* Header */}
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h2 className="text-xl font-bold mb-2 md:mb-0">Admin Instructions</h2>
+        <h2 className="text-xl font-bold mb-2 md:mb-0">Radha instructions</h2>
         <Button
           style={{ backgroundColor: "#1c84c6", color: "white" }}
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={() => {
+            setIsAddModalOpen(true);
+            formAdd.resetFields(); // ✅ Clear form whenever opening Add Modal
+          }}
         >
-          Add Admin Instructions
+          Add Radha instructions
         </Button>
       </div>
+      {/* Search */}
+      <div className="mb-4 flex items-center gap-2">
+        <Input
+          placeholder="Search by Header or Instruction"
+          value={searchText}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchText(value);
 
+            if (!value) {
+              setFilteredData(data);
+              return;
+            }
+
+            const filtered = data.filter(
+              (item) =>
+                item.instructionHeader
+                  ?.toLowerCase()
+                  .includes(value.toLowerCase()) ||
+                item.radhaInstructions
+                  ?.toLowerCase()
+                  .includes(value.toLowerCase())
+            );
+
+            setFilteredData(filtered);
+          }}
+          style={{ width: 300 }}
+          allowClear
+        />
+      </div>
       {/* Table */}
       {loading ? (
         <div
@@ -228,22 +308,22 @@ const AdminInstructions = () => {
       ) : (
         <Table
           rowKey="radhaInstructionsId"
-          dataSource={data}
+          dataSource={filteredData}
           columns={columns}
           bordered
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 50 }}
           scroll={{ x: true }}
         />
       )}
 
       {/* Add Modal */}
       <Modal
-        title="Add Admin Instruction"
+        title="Add Admin Inputs"
         open={isAddModalOpen}
         onCancel={() => setIsAddModalOpen(false)}
         footer={null}
       >
-        <Form layout="vertical" onFinish={handleAddSave}>
+        <Form layout="vertical" form={formAdd} onFinish={handleAddSave}>
           <Form.Item
             label="Instruction Header"
             name="instructionHeader"
@@ -294,6 +374,7 @@ const AdminInstructions = () => {
         <Form
           layout="vertical"
           onFinish={handleEditSave}
+          form={formEdit}
           initialValues={{
             instructionHeader: editingRecord?.instructionHeader,
             instructions: editingRecord?.radhaInstructions,
@@ -333,7 +414,11 @@ const AdminInstructions = () => {
         onCancel={() => setIsInteractionModalOpen(false)}
         footer={null}
       >
-        <Form layout="vertical" onFinish={handleInteractionSave}>
+        <Form
+          layout="vertical"
+          form={formInteraction}
+          onFinish={handleInteractionSave}
+        >
           <Form.Item
             label="Admin Conversation"
             name="employeeConversation"

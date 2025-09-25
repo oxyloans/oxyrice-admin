@@ -12,13 +12,17 @@ import {
   Tag,
   Empty,
   Image,
-    Row,
-  Col
+  Row,
+  Col,
+  Modal,
+  Form,
+  Input,
+  Button,
 } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
-
+import { UploadOutlined,ArrowLeftOutlined, MessageOutlined } from "@ant-design/icons";
 const { Title, Text, Paragraph } = Typography;
 
 // Check if file is an image
@@ -37,7 +41,10 @@ const RadhaInstructionView = () => {
   const [loading, setLoading] = useState(false);
   const [instructionData, setInstructionData] = useState(null);
   const [employees, setEmployees] = useState([]);
-
+  // Modal state
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+  const [formInteraction] = Form.useForm();
+  const [saving, setSaving] = useState(false);
   // Fetch Radha Instruction
   const fetchInstructionData = async () => {
     setLoading(true);
@@ -135,9 +142,68 @@ const RadhaInstructionView = () => {
     </List.Item>
   );
 
+  // ✅ Save Interaction
+  const handleInteractionSave = async (values) => {
+    try {
+      setSaving(true);
+      const payload = {
+        employeeConversation: values.employeeConversation,
+        radhaInstructionsId: instructionData?.radhaInstructionsId,
+        type: "RADHA",
+          userid: instructionData?.adminUserId,
+      };
+
+      await axios.patch(
+        `${BASE_URL}/user-service/write/radhaInteractions`,
+        payload
+      );
+      message.success("Interaction saved successfully!");
+      setIsInteractionModalOpen(false);
+      formInteraction.resetFields();
+      fetchInstructionData();
+    } catch (err) {
+      message.error("Failed to save interaction");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <TaskAdminPanelLayout>
-      <div className="px-6 py-6 max-w-5xl mx-auto">
+      <div className="px-6 py-6 max-w-7xl mx-auto">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "20px",
+          }}
+        >
+          {/* Back Button - Left */}
+          <Button
+            icon={<ArrowLeftOutlined />}
+            style={{
+              backgroundColor: "#1c84c6",
+              color: "white",
+              borderRadius: "6px",
+            }}
+            onClick={() => window.history.back()} // ⬅️ Go back
+          >
+            Back
+          </Button>
+
+          {/* Write To Us Button - Right */}
+          <Button
+            icon={<MessageOutlined />}
+            style={{
+              backgroundColor: "#1c84c6",
+              color: "white",
+              borderRadius: "6px",
+            }}
+            onClick={() => setIsInteractionModalOpen(true)}
+          >
+            Write To Us
+          </Button>
+        </div>
         <Card
           bordered={false}
           style={{
@@ -149,45 +215,77 @@ const RadhaInstructionView = () => {
           <Row gutter={[24, 24]} style={{ overflowX: "auto" }}>
             {/* Left Side - Header & Instructions */}
             <Col xs={24} md={12}>
-              <Title
-                level={3}
+              <Card
+                bordered={false}
                 style={{
-                  textAlign: "center",
-                  marginBottom: "12px",
-                  color: "#1677ff",
-                    fontWeight: 400,
-                  
+                  borderRadius: "12px",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+                  padding: "24px",
+                  background: "#ffffff",
+                  transition: "transform 0.2s",
                 }}
+                hoverable
               >
-                {instructionData.instructionHeader}
-              </Title>
+                {/* Card Header */}
+                <Title
+                  level={4}
+                  style={{
+                    marginBottom: "16px",
+                    color: "#722ed1",
+                    textAlign: "center",
+                    fontWeight: 600,
+                  }}
+                >
+                  Radha Instructions
+                </Title>
 
-              <Paragraph
-                style={{
-                  fontSize: "16px",
-                  lineHeight: "1.7",
-                  background: "#fafafa",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  marginBottom: "18px",
-                  whiteSpace: "pre-line",
-                }}
-              >
-                {instructionData.radhaInstructions}
-              </Paragraph>
+                {/* Instruction Header */}
+                <Paragraph
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: 600,
+                    textAlign: "center",
+                    marginBottom: "20px",
+                    color: "#1c84c6",
+                  }}
+                >
+                  {instructionData.instructionHeader}
+                </Paragraph>
 
-              <Text
-                type="secondary"
-                style={{
-                  display: "block",
-                  marginBottom: "16px",
-                  fontSize: "13px",
-                }}
-              >
-                Created: {formatDateIST(instructionData.radhaInstructeddate)} |{" "}
-                Last Updated: {formatDateIST(instructionData.radhaUpdateDate)}
-              </Text>
-              <Divider />
+                {/* Instructions Content */}
+                <Paragraph
+                  style={{
+                    fontSize: "15px",
+                    lineHeight: "1.8",
+                    background: "#f7f9fc",
+                    padding: "16px 20px",
+                    borderRadius: "12px",
+                    marginBottom: "24px",
+                    border: "1px solid #e6eaf0",
+                    color: "#333",
+                    whiteSpace: "pre-line",
+                  }}
+                >
+                  {instructionData.radhaInstructions}
+                </Paragraph>
+
+                {/* Created & Last Updated Info */}
+                <Text
+                  type="secondary"
+                  style={{
+                    display: "block",
+                    textAlign: "center",
+                    fontSize: "13px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  🕒 Created:{" "}
+                  {formatDateIST(instructionData.radhaInstructeddate)}
+                  <br />
+                  ✏️ Last Updated:{" "}
+                  {formatDateIST(instructionData.radhaUpdateDate)}
+                </Text>
+              </Card>
             </Col>
 
             {/* Right Side - Documents */}
@@ -246,13 +344,12 @@ const RadhaInstructionView = () => {
               ) : (
                 <Empty description="No documents available" />
               )}
-              <Divider />
             </Col>
           </Row>
 
           {/* Employee Interactions */}
           {interactions.length > 0 ? (
-            <div>
+            <div className="mt-4">
               <Title
                 level={4}
                 style={{ marginBottom: "16px", color: "#722ed1" }}
@@ -273,6 +370,38 @@ const RadhaInstructionView = () => {
           )}
         </Card>
       </div>
+      {/* ✅ Modal for Write To Us */}
+      <Modal
+        title="Add Interaction"
+        open={isInteractionModalOpen}
+        onCancel={() => setIsInteractionModalOpen(false)}
+        footer={null}
+      >
+        <Form
+          layout="vertical"
+          form={formInteraction}
+          onFinish={handleInteractionSave}
+        >
+          <Form.Item
+            label="Admin Conversation"
+            name="employeeConversation"
+            rules={[{ required: true, message: "Please enter conversation" }]}
+          >
+            <Input.TextArea rows={3} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={saving}
+              style={{ backgroundColor: "#1c84c6", color: "white" }}
+              block
+            >
+              Save Interaction
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </TaskAdminPanelLayout>
   );
 };
