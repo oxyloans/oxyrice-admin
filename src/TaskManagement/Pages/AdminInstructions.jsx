@@ -18,6 +18,8 @@ const AdminInstructions = () => {
   const [formAdd] = Form.useForm(); // ✅ Add form instance for Add Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [fileList, setFileList] = useState([]); // For Ant Design Upload
+const [previewUrl, setPreviewUrl] = useState(null); // For preview
     const [editingRecord, setEditingRecord] = useState(null);
       const [searchText, setSearchText] = useState("");
   const [formEdit] = Form.useForm();
@@ -93,9 +95,11 @@ const AdminInstructions = () => {
       await axios.patch(SAVE_API, payload);
       message.success("Instruction added successfully!");
       fetchData();
-        setIsAddModalOpen(false);
-            formAdd.resetFields();
+      setIsAddModalOpen(false);
+      formAdd.resetFields();
       setFile(null);
+      setPreviewUrl(null); // if you're using preview
+      setFileList([]); // if you're using Upload component with fileList
     } catch (err) {
       message.error("Failed to save instruction");
     } finally {
@@ -252,15 +256,17 @@ const AdminInstructions = () => {
     <TaskAdminPanelLayout>
       {/* Header */}
       <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
-        <h2 className="text-xl font-bold mb-2 md:mb-0">Radha instructions</h2>
+        <h2 className="text-xl font-bold mb-2 md:mb-0">Radha Instructions</h2>
         <Button
           style={{ backgroundColor: "#1c84c6", color: "white" }}
           onClick={() => {
             setIsAddModalOpen(true);
-            formAdd.resetFields(); // ✅ Clear form whenever opening Add Modal
+            formAdd.resetFields();
+            setFile(null); // ✅ Clear previous file
+            setFileList([]); // ✅ Clear Upload file list
           }}
         >
-          Add Radha instructions
+          Add Radha Instructions
         </Button>
       </div>
       {/* Search */}
@@ -320,36 +326,62 @@ const AdminInstructions = () => {
       <Modal
         title="Add Admin Inputs"
         open={isAddModalOpen}
-        onCancel={() => setIsAddModalOpen(false)}
+        onCancel={() => {
+          setIsAddModalOpen(false);
+          formAdd.resetFields();
+          setFile(null); // ✅ Reset state
+          setFileList([]); // ✅ Reset Upload
+        }}
         footer={null}
       >
         <Form layout="vertical" form={formAdd} onFinish={handleAddSave}>
           <Form.Item
             label="Instruction Header"
             name="instructionHeader"
-            rules={[{ required: true, message: "Please enter header" }]}
+            rules={[
+              { required: true, message: "Please enter instruction header" },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Instructions"
             name="instructions"
-            rules={[{ required: true, message: "Please enter instructions" }]}
+            rules={[
+              { required: true, message: "Please enter instructions" },
+              { max: 5000, message: "Maximum 5000 characters allowed" },
+            ]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
           <Form.Item label="Upload Document or Image (Optional)">
             <Upload
+              fileList={fileList} // ✅ Controlled Upload
               beforeUpload={(file) => {
                 setFile(file);
-                return false;
+
+                // ✅ Set fileList in correct format
+                setFileList([
+                  {
+                    uid: String(Date.now()), // unique id
+                    name: file.name,
+                    status: "done",
+                    originFileObj: file,
+                  },
+                ]);
+
+                return false; // Prevent auto upload
               }}
-              onRemove={() => setFile(null)}
+              onRemove={() => {
+                setFile(null);
+                setFileList([]); // ✅ Clear list when removing
+              }}
               maxCount={1}
             >
               <Button icon={<UploadOutlined />}>Select File</Button>
             </Upload>
           </Form.Item>
+
           <Form.Item>
             <Button
               type="primary"
@@ -384,17 +416,23 @@ const AdminInstructions = () => {
           <Form.Item
             label="Instruction Header"
             name="instructionHeader"
-            rules={[{ required: true, message: "Please enter header" }]}
+            rules={[
+              { required: true, message: "Please enter instructions header" },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="Instructions"
             name="instructions"
-            rules={[{ required: true, message: "Please enter instructions" }]}
+            rules={[
+              { required: true, message: "Please enter instructions" },
+              { max: 5000, message: "Maximum 5000 characters allowed" },
+            ]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
+
           <Form.Item>
             <Button
               type="primary"

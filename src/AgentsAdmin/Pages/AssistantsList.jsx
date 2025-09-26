@@ -12,6 +12,8 @@ import {
   Button,
   Tag,
   message,
+  Checkbox,
+  Space,
 } from "antd";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
@@ -29,12 +31,19 @@ const AssistantsList = () => {
     pageSize: 50,
     total: 0,
   });
+
+  // Status Modal
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("APPROVED");
   const [form] = Form.useForm();
 
-  const accessToken = localStorage.getItem("accessToken");
+  // Tools Modal
+  const [toolsModalVisible, setToolsModalVisible] = useState(false);
+  const [selectedTools, setSelectedTools] = useState([]);
+  const [toolForm] = Form.useForm();
+
+  const accessToken = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
   // Fetch Assistants
@@ -69,8 +78,6 @@ const AssistantsList = () => {
   }, []);
 
   const handleTableChange = (newPagination) => {
-    // If your API supports server pagination, you can refetch here.
-    // For now, just update local pagination.
     setPagination((prev) => ({
       ...prev,
       current: newPagination.current,
@@ -78,7 +85,7 @@ const AssistantsList = () => {
     }));
   };
 
-  // LIVE search - filters as you type; clearing restores full list
+  // LIVE search
   const handleSearchChange = (e) => {
     const value = e.target.value || "";
     setSearchTerm(value);
@@ -111,7 +118,6 @@ const AssistantsList = () => {
       const values = form.getFieldsValue();
 
       const payload = {
-        // keep the key as your backend expects (typo intentional if server needs it)
         assistanId: selectedAssistant.assistantId,
         userId,
         status: values.status,
@@ -138,6 +144,59 @@ const AssistantsList = () => {
     } catch (err) {
       console.error(err);
       message.error("Error updating assistant status");
+    }
+  };
+
+  // Open Tools Modal
+  const openToolsModal = (assistant) => {
+    setSelectedAssistant(assistant);
+    setSelectedTools([]); // reset selection
+    toolForm.resetFields();
+    setToolsModalVisible(true);
+  };
+
+  // Save Tools API call
+  const handleSaveTools = async (type) => {
+    if (!selectedAssistant) return;
+
+    let payload = { agentId: selectedAssistant.agentId };
+
+    if (type === "update") {
+      payload.enabledTools = selectedTools; // update tools
+      payload.removeToolType = ""; // nothing to remove
+    } else if (type === "remove") {
+      payload.enabledTools = []; // nothing to enable
+      payload.removeToolType = selectedTools.length
+        ? selectedTools.join(",") // send selected tools
+        : "file_search"; // fallback: remove all tools
+    }
+
+    const endpoint =
+      type === "update"
+        ? `${BASE_URL}/ai-service/agent/update-tools`
+        : `${BASE_URL}/ai-service/agent/remove-tools`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to update tools");
+      message.success(
+        type === "update"
+          ? "Tools updated successfully!"
+          : "Tools removed successfully!"
+      );
+      setToolsModalVisible(false);
+      fetchAssistants(1, pagination.pageSize);
+    } catch (err) {
+      console.error(err);
+      message.error("Error saving tools");
     }
   };
 
@@ -169,13 +228,13 @@ const AssistantsList = () => {
       width: 120,
     },
     { title: "Name", dataIndex: "name", key: "name", align: "center" },
-    {
-      title: "Model",
-      dataIndex: "model",
-      key: "model",
-      align: "center",
-      width: 140,
-    },
+    // {
+    //   title: "Model",
+    //   dataIndex: "model",
+    //   key: "model",
+    //   align: "center",
+    //   width: 140,
+    // },
     {
       title: "Description",
       dataIndex: "description",
@@ -195,6 +254,16 @@ const AssistantsList = () => {
           {text}
         </div>
       ),
+    },
+    {
+      
+      title: "Tools",
+      dataIndex: "tools",
+      key: "tools",
+      align: "center",
+     
+      width: 100,
+   
     },
     {
       title: "Instructions",
@@ -229,15 +298,23 @@ const AssistantsList = () => {
       key: "actions",
       align: "center",
       render: (_text, record) => (
-        <Button
-          type="primary"
-          style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
-          onClick={() => openStatusModal(record)}
-        >
-          Update Status
-        </Button>
+        <Space>
+          <Button
+            type="primary"
+            style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
+            onClick={() => openStatusModal(record)}
+          >
+            Update Status
+          </Button>
+          <Button
+            style={{ backgroundColor: "#6a1b9a", color: "white" }}
+            onClick={() => openToolsModal(record)}
+          >
+            Manage Tools
+          </Button>
+        </Space>
       ),
-      width: 160,
+      width: 220,
     },
   ];
 
@@ -281,6 +358,7 @@ const AssistantsList = () => {
           scroll={{ x: true }}
         />
 
+        {/* Status Modal */}
         <Modal
           open={modalVisible}
           onCancel={() => setModalVisible(false)}
@@ -320,7 +398,6 @@ const AssistantsList = () => {
               >
                 <Option value="APPROVED">APPROVED</Option>
                 <Option value="REQUESTED">REQUESTED</Option>
-
                 <Option value="REJECTED">REJECTED</Option>
                 <Option value="DELETED">DELETED</Option>
               </Select>
@@ -331,7 +408,6 @@ const AssistantsList = () => {
                 label="Free Trials"
                 name="freetrails"
                 rules={[
-                
                   {
                     validator: (_, value) => {
                       if (value && Number(value) < 5) {
@@ -346,15 +422,48 @@ const AssistantsList = () => {
               >
                 <InputNumber
                   style={{ width: "100%" }}
-                  min={1} // ✅ user can type from 1, but validator enforces >= 5
+                  min={1}
                   step={1}
-                  precision={0} // ✅ integers only
+                  precision={0}
                   placeholder="Enter minimum 5 free trials"
-                  controls={false} // ✅ hides +/- buttons
-                  parser={(value) => value?.replace(/\D/g, "") || ""} // ✅ strip non-numeric
+                  controls={false}
+                  parser={(value) => value?.replace(/\D/g, "") || ""}
                 />
               </Form.Item>
             )}
+          </Form>
+        </Modal>
+
+        {/* Tools Modal */}
+        <Modal
+          open={toolsModalVisible}
+          onCancel={() => setToolsModalVisible(false)}
+          footer={null}
+          title="Manage Tools"
+        >
+          <Form form={toolForm} layout="vertical">
+            <Form.Item label="Select Tools">
+              <Checkbox.Group
+                options={[
+                 
+                  { label: "File Search", value: "file_search" },
+                ]}
+                value={selectedTools}
+                onChange={(values) => setSelectedTools(values)}
+              />
+            </Form.Item>
+            <Space style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Button
+                type="primary"
+                style={{ backgroundColor: "#008cba" }}
+                onClick={() => handleSaveTools("update")}
+              >
+                Save Tools
+              </Button>
+              <Button danger onClick={() => handleSaveTools("remove")}>
+                Remove Tools
+              </Button>
+            </Space>
           </Form>
         </Modal>
       </Card>
