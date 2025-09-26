@@ -4,7 +4,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { TeamOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
-
+import { MessageOutlined } from "@ant-design/icons";
 import {
   FaTachometerAlt,
   FaClipboardList ,
@@ -50,6 +50,12 @@ const AgentsAdminLayout = ({ children }) => {
      icon: <FaClipboardList />,
      link: "/admin/agentsplanslist",
    },
+  {
+  key: "agent-conversations",
+  label: "Agent Conversations",
+  icon: <MessageOutlined />,
+  link: "/admin/conversationlist",
+},
 
    {
      key: "agent-status",

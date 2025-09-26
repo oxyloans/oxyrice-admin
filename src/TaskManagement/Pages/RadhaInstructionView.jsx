@@ -7,7 +7,6 @@ import {
   Card,
   List,
   Typography,
-  Divider,
   Avatar,
   Tag,
   Empty,
@@ -18,14 +17,29 @@ import {
   Form,
   Input,
   Button,
+  Space,
+  Divider,
+  Badge,
+  Tooltip,
+  Popconfirm,
 } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
-import { UploadOutlined,ArrowLeftOutlined, MessageOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  MessageOutlined,
+  FileOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
+
 const { Title, Text, Paragraph } = Typography;
 
-// Check if file is an image
 const isImage = (url) => /\.(jpeg|jpg|gif|png|bmp|webp|svg)$/i.test(url);
 
 const formatDateIST = (dateString) => {
@@ -33,7 +47,14 @@ const formatDateIST = (dateString) => {
   const date = new Date(dateString);
   const istOffset = 5.5 * 60 * 60 * 1000;
   const istDate = new Date(date.getTime() + istOffset);
-  return istDate.toLocaleString("en-IN", { hour12: true });
+  return istDate.toLocaleString("en-IN", {
+    hour12: true,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 };
 
 const RadhaInstructionView = () => {
@@ -41,11 +62,10 @@ const RadhaInstructionView = () => {
   const [loading, setLoading] = useState(false);
   const [instructionData, setInstructionData] = useState(null);
   const [employees, setEmployees] = useState([]);
-  // Modal state
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [formInteraction] = Form.useForm();
   const [saving, setSaving] = useState(false);
-  // Fetch Radha Instruction
+
   const fetchInstructionData = async () => {
     setLoading(true);
     try {
@@ -60,7 +80,6 @@ const RadhaInstructionView = () => {
     }
   };
 
-  // Fetch all employees
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(`${BASE_URL}/user-service/getAllEmployees`);
@@ -74,18 +93,30 @@ const RadhaInstructionView = () => {
     fetchEmployees();
     if (id) fetchInstructionData();
   }, [id]);
-
+  const handleDeleteDocument = async (documentId) => {
+    try {
+      await axios.delete(`${BASE_URL}/user-service/write/delete/${documentId}`);
+      message.success("✅ Document deleted successfully");
+      fetchInstructionData(); // Refresh data after delete
+    } catch (err) {
+      message.error("❌ Failed to delete document");
+    }
+  };
   if (loading || !instructionData) {
     return (
       <TaskAdminPanelLayout>
-        <div className="flex justify-center items-center h-[70vh]">
-          <Spin size="large" tip="Loading instruction details..." />
+        <div className="min-h-screen flex justify-center items-center ">
+          <div className="text-center bg-white p-12 rounded-2xl shadow-xl">
+            <Spin size="large" tip="Loading instruction details..." />
+            <div className="mt-4 text-gray-600">
+              Please wait while we fetch the data...
+            </div>
+          </div>
         </div>
       </TaskAdminPanelLayout>
     );
   }
 
-  // Map userId to employee name or Radha
   const getEmployeeName = (userId) => {
     if (
       userId === "91d2f250-20d0-44a5-9b4e-2acb73118b98" ||
@@ -104,45 +135,72 @@ const RadhaInstructionView = () => {
     })) || [];
 
   const renderInteractionItem = (interaction) => (
-    <List.Item
-      style={{
-        padding: "14px 18px",
-        borderRadius: "12px",
-        backgroundColor: interaction.type === "RADHA" ? "#f0f9ff" : "#fdf4ff",
-        marginBottom: "12px",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
-      }}
-    >
-      <Avatar
-        style={{
-          backgroundColor: interaction.type === "RADHA" ? "#1677ff" : "#722ed1",
-          marginRight: "14px",
-        }}
-        size={42}
+    <div className="mb-6 last:mb-0">
+      <Card
+        className={`shadow-md hover:shadow-lg transition-all duration-300 border-0 ${
+          interaction.type === "RADHA"
+            ? "bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-l-blue-500"
+            : "bg-gradient-to-r from-purple-50 to-purple-100 border-l-4 border-l-purple-500"
+        }`}
+        bodyStyle={{ padding: "20px" }}
       >
-        {interaction.employeeName.charAt(0).toUpperCase()}
-      </Avatar>
-      <div style={{ flex: 1 }}>
-        <div className="flex items-center gap-2 mb-1">
-          <Text strong>{interaction.employeeName}</Text>
-          <Tag
-            color={interaction.type === "RADHA" ? "blue" : "purple"}
-            style={{ borderRadius: "6px" }}
+        <div className="flex items-start gap-4">
+          <Badge
+            count={interaction.type === "RADHA" ? "R" : "E"}
+            style={{
+              backgroundColor:
+                interaction.type === "RADHA" ? "#1677ff" : "#722ed1",
+              fontSize: "10px",
+              minWidth: "18px",
+              height: "18px",
+              lineHeight: "18px",
+            }}
           >
-            {interaction.type}
-          </Tag>
+            <Avatar
+              size={50}
+              style={{
+                backgroundColor:
+                  interaction.type === "RADHA" ? "#1677ff" : "#722ed1",
+                fontSize: "18px",
+                fontWeight: "600",
+              }}
+              icon={<UserOutlined />}
+            >
+              {interaction.employeeName.charAt(0).toUpperCase()}
+            </Avatar>
+          </Badge>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <Text strong className="text-lg text-gray-800">
+                {interaction.employeeName}
+              </Text>
+              <Tag
+                color={interaction.type === "RADHA" ? "blue" : "purple"}
+                className="px-3 py-1 rounded-full font-medium"
+              >
+                {interaction.type === "RADHA" ? "Admin" : "Employee"}
+              </Tag>
+              <div className="flex items-center gap-1 text-gray-500 text-sm">
+                <CalendarOutlined />
+                <span>{formatDateIST(interaction.employeeConversionDate)}</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+              <Paragraph
+                className="mb-0 text-gray-700 leading-relaxed"
+                style={{ fontSize: "15px" }}
+              >
+                {interaction.employeeConversation}
+              </Paragraph>
+            </div>
+          </div>
         </div>
-        <Paragraph style={{ marginBottom: "6px" }}>
-          {interaction.employeeConversation}
-        </Paragraph>
-        <Text type="secondary" style={{ fontSize: "12px" }}>
-          {formatDateIST(interaction.employeeConversionDate)}
-        </Text>
-      </div>
-    </List.Item>
+      </Card>
+    </div>
   );
 
-  // ✅ Save Interaction
   const handleInteractionSave = async (values) => {
     try {
       setSaving(true);
@@ -150,19 +208,19 @@ const RadhaInstructionView = () => {
         employeeConversation: values.employeeConversation,
         radhaInstructionsId: instructionData?.radhaInstructionsId,
         type: "RADHA",
-          userid: instructionData?.adminUserId,
+        userid: instructionData?.adminUserId,
       };
 
       await axios.patch(
         `${BASE_URL}/user-service/write/radhaInteractions`,
         payload
       );
-      message.success("Interaction saved successfully!");
+      message.success("✅ Interaction saved successfully!");
       setIsInteractionModalOpen(false);
       formInteraction.resetFields();
       fetchInstructionData();
     } catch (err) {
-      message.error("Failed to save interaction");
+      message.error("❌ Failed to save interaction");
     } finally {
       setSaving(false);
     }
@@ -170,235 +228,383 @@ const RadhaInstructionView = () => {
 
   return (
     <TaskAdminPanelLayout>
-      <div className="px-6 py-6 max-w-7xl mx-auto">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          {/* Back Button - Left */}
-          <Button
-            icon={<ArrowLeftOutlined />}
-            style={{
-              backgroundColor: "#1c84c6",
-              color: "white",
-              borderRadius: "6px",
-            }}
-            onClick={() => window.history.back()} // ⬅️ Go back
-          >
-            Back
-          </Button>
+      <div className="min-h-screen">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between gap-3 mb-6">
+            <Button
+              icon={<ArrowLeftOutlined />}
+              style={{
+                backgroundColor: "#1c84c6",
+                color: "white",
+                borderRadius: "6px",
+              }}
+              onClick={() => window.history.back()}
+            >
+              Back
+            </Button>
+            <Button
+              icon={<MessageOutlined />}
+              style={{
+                backgroundColor: "#1c84c6",
+                color: "white",
+                borderRadius: "6px",
+              }}
+              onClick={() => setIsInteractionModalOpen(true)}
+            >
+              Write Message
+            </Button>
+          </div>
+          {/* Header Section */}
+          <div className=" p-4">
+           
+                <div className="text-gray-600 text-base">
+                  Manage and review Radha's instructions and team interactions
+                </div>
+              
+        
+          </div>
 
-          {/* Write To Us Button - Right */}
-          <Button
-            icon={<MessageOutlined />}
-            style={{
-              backgroundColor: "#1c84c6",
-              color: "white",
-              borderRadius: "6px",
-            }}
-            onClick={() => setIsInteractionModalOpen(true)}
-          >
-            Write To Us
-          </Button>
-        </div>
-        <Card
-          bordered={false}
-          style={{
-            boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
-            borderRadius: "14px",
-          }}
-        >
-          {/* Header */}
-          <Row gutter={[24, 24]} style={{ overflowX: "auto" }}>
-            {/* Left Side - Header & Instructions */}
-            <Col xs={24} md={12}>
+          <Row gutter={[24, 24]}>
+            {/* Left Section - Instructions */}
+            <Col xs={24} lg={14}>
               <Card
-                bordered={false}
-                style={{
-                  borderRadius: "12px",
-                  boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
-                  padding: "24px",
-                  background: "#ffffff",
-                  transition: "transform 0.2s",
-                }}
-                hoverable
+                className="shadow-lg rounded-2xl border-0 h-full"
+                bodyStyle={{ padding: "32px" }}
               >
-                {/* Card Header */}
-                <Title
-                  level={4}
-                  style={{
-                    marginBottom: "16px",
-                    color: "#722ed1",
-                    textAlign: "center",
-                    fontWeight: 600,
-                  }}
-                >
-                  Radha Instructions
-                </Title>
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Title level={3} className="mb-0 text-gray-800 font-bold">
+                      Radha Instructions
+                    </Title>
+                  </div>
+                  <Divider className="my-4" />
+                </div>
 
-                {/* Instruction Header */}
-                <Paragraph
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: 600,
-                    textAlign: "center",
-                    marginBottom: "20px",
-                    color: "#1c84c6",
-                  }}
-                >
-                  {instructionData.instructionHeader}
-                </Paragraph>
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+                    <Title
+                      level={4}
+                      className="mb-3 text-blue-800 flex items-center gap-2"
+                    >
+                      Instruction Header
+                    </Title>
+                    <Paragraph className="text-gray-700 text-base leading-relaxed mb-0">
+                      {instructionData.instructionHeader}
+                    </Paragraph>
+                  </div>
 
-                {/* Instructions Content */}
-                <Paragraph
-                  style={{
-                    fontSize: "15px",
-                    lineHeight: "1.8",
-                    background: "#f7f9fc",
-                    padding: "16px 20px",
-                    borderRadius: "12px",
-                    marginBottom: "24px",
-                    border: "1px solid #e6eaf0",
-                    color: "#333",
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {instructionData.radhaInstructions}
-                </Paragraph>
+                  {/* Main Instructions */}
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100">
+                    <Title
+                      level={4}
+                      className="mb-3 text-purple-800 flex items-center gap-2"
+                    >
+                      Detailed Instructions
+                    </Title>
+                    <Paragraph className="text-gray-700 text-base leading-relaxed mb-0 whitespace-pre-wrap">
+                      {instructionData.radhaInstructions}
+                    </Paragraph>
+                  </div>
 
-                {/* Created & Last Updated Info */}
-                <Text
-                  type="secondary"
-                  style={{
-                    display: "block",
-                    textAlign: "center",
-                    fontSize: "13px",
-                    lineHeight: "1.6",
-                  }}
-                >
-                  🕒 Created:{" "}
-                  {formatDateIST(instructionData.radhaInstructeddate)}
-                  <br />
-                  ✏️ Last Updated:{" "}
-                  {formatDateIST(instructionData.radhaUpdateDate)}
-                </Text>
+                  {/* Metadata */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100">
+                    <Title
+                      level={4}
+                      className="mb-4 text-green-800 flex items-center gap-2"
+                    >
+                      Timeline Information
+                    </Title>
+                    <Row gutter={[16, 16]}>
+                      <Col xs={24} sm={12}>
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <CalendarOutlined className="text-blue-600" />
+                          </div>
+                          <div>
+                            <Text strong className="block text-gray-800">
+                              Created
+                            </Text>
+                            <Text className="text-gray-600 text-sm">
+                              {formatDateIST(
+                                instructionData.radhaInstructeddate
+                              )}
+                            </Text>
+                          </div>
+                        </div>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <EditOutlined className="text-green-600" />
+                          </div>
+                          <div>
+                            <Text strong className="block text-gray-800">
+                              Last Updated
+                            </Text>
+                            <Text className="text-gray-600 text-sm">
+                              {formatDateIST(instructionData.radhaUpdateDate)}
+                            </Text>
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                </div>
               </Card>
             </Col>
 
-            {/* Right Side - Documents */}
-            <Col xs={24} md={12}>
-              {instructionData.documents?.length > 0 ? (
-                <div style={{ marginBottom: "20px" }}>
-                  <Title
-                    level={4}
-                    style={{ marginBottom: "12px", color: "#722ed1" }}
-                  >
-                    Documents & Images
-                  </Title>
-                  <List
-                    grid={{ gutter: 16, column: 1 }}
-                    dataSource={instructionData.documents}
-                    renderItem={(doc) => (
-                      <List.Item>
+            {/* Right Section - Documents */}
+            <Col xs={24} lg={10}>
+              <Card
+                className="shadow-lg rounded-2xl border-0 h-full"
+                bodyStyle={{ padding: "32px" }}
+              >
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div>
+                      <Title level={3} className="mb-1 text-gray-800 font-bold">
+                        Documents & Media
+                      </Title>
+                      <Text className="text-gray-500">
+                        {instructionData.documents?.length || 0} files attached
+                      </Text>
+                    </div>
+                  </div>
+                  <Divider className="my-4" />
+                </div>
+
+                {instructionData.documents?.length > 0 ? (
+                  <Row gutter={[16, 16]}>
+                    {instructionData.documents.map((doc, idx) => (
+                      <Col xs={12} sm={8} md={12} lg={12} key={idx}>
                         <Card
                           hoverable
-                          style={{
-                            borderRadius: "10px",
-                            textAlign: "center",
-                            padding: "12px",
-                          }}
+                          className="h-full shadow-md hover:shadow-lg transition-all duration-300 border-0 rounded-xl overflow-hidden"
+                          bodyStyle={{ padding: "16px" }}
+                          cover={
+                            isImage(doc.documentUrl) ? (
+                              <div className="h-32 overflow-hidden">
+                                <Image
+                                  src={doc.documentUrl}
+                                  alt={doc.documentName}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                <FileOutlined className="text-4xl text-gray-400" />
+                              </div>
+                            )
+                          }
                         >
-                          {isImage(doc.documentUrl) ? (
-                            <Image
-                              src={doc.documentUrl}
-                              alt={doc.documentName}
-                              style={{
-                                maxHeight: "200px",
-                                objectFit: "contain",
-                                marginBottom: "8px",
-                              }}
-                            />
-                          ) : (
-                            <a
+                          <div className="text-center">
+                            <Tooltip title={doc.documentName}>
+                              <Text
+                                className="text-sm font-medium text-gray-700 block"
+                                ellipsis
+                              >
+                                {doc.documentName}
+                              </Text>
+                            </Tooltip>
+                            <Button
+                              type="link"
+                              size="small"
+                              icon={<DownloadOutlined />}
+                              className="mt-2 text-blue-600 hover:text-blue-800"
                               href={doc.documentUrl}
                               target="_blank"
-                              rel="noopener noreferrer"
-                              style={{
-                                fontWeight: 500,
-                                display: "block",
-                                marginBottom: "8px",
-                              }}
                             >
-                              {doc.documentName}
-                            </a>
-                          )}
-                          <Text>{doc.documentName}</Text>
+                              View
+                            </Button>
+                            <Popconfirm
+                              title="Are you sure to delete this document?"
+                              onConfirm={() =>
+                                handleDeleteDocument(doc.documentId)
+                              }
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button
+                                danger
+                                type="link"
+                                size="small"
+                                icon={<DeleteOutlined />}
+                              >
+                                Delete
+                              </Button>
+                            </Popconfirm>
+                          </div>
                         </Card>
-                      </List.Item>
-                    )}
-                  />
-                </div>
-              ) : (
-                <Empty description="No documents available" />
-              )}
+                      </Col>
+                    ))}
+                  </Row>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="p-6 bg-gray-50 rounded-2xl inline-block mb-4">
+                      <FileOutlined className="text-6xl text-gray-300" />
+                    </div>
+                    <Empty
+                      description={
+                        <div>
+                          <div className="text-gray-600 font-medium mb-2">
+                            No documents available
+                          </div>
+                          <Text className="text-gray-400 text-sm">
+                            Documents will appear here when uploaded
+                          </Text>
+                        </div>
+                      }
+                    />
+                  </div>
+                )}
+              </Card>
             </Col>
           </Row>
 
-          {/* Employee Interactions */}
-          {interactions.length > 0 ? (
-            <div className="mt-4">
-              <Title
-                level={4}
-                style={{ marginBottom: "16px", color: "#722ed1" }}
-              >
-                Team Conversations
-              </Title>
-              <List
-                dataSource={interactions.sort(
-                  (a, b) =>
-                    new Date(b.employeeConversionDate).getTime() -
-                    new Date(a.employeeConversionDate).getTime()
-                )}
-                renderItem={renderInteractionItem}
-              />
-            </div>
-          ) : (
-            <Empty description="No interactions yet" />
-          )}
-        </Card>
+          {/* Interactions Section */}
+          <div className="mt-8">
+            <Card
+              className="shadow-lg rounded-2xl border-0"
+              bodyStyle={{ padding: "32px" }}
+            >
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    
+                    <div>
+                      <Title level={3} className="mb-1 text-gray-800 font-bold">
+                        Team Conversations
+                      </Title>
+                      <Text className="text-gray-500">
+                        {interactions.length} conversation
+                        {interactions.length !== 1 ? "s" : ""}
+                      </Text>
+                    </div>
+                  </div>
+
+                  <Badge count={interactions.length} showZero color="#722ed1" />
+                </div>
+                <Divider className="my-4" />
+              </div>
+
+              {interactions.length > 0 ? (
+                <div className="space-y-0">
+                  {interactions
+                    .sort(
+                      (a, b) =>
+                        new Date(b.employeeConversionDate).getTime() -
+                        new Date(a.employeeConversionDate).getTime()
+                    )
+                    .map((interaction, index) => (
+                      <div key={index}>
+                        {renderInteractionItem(interaction)}
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <div className="p-8 bg-gray-50 rounded-2xl inline-block mb-6">
+                    <MessageOutlined className="text-8xl text-gray-300" />
+                  </div>
+                  <Empty
+                    description={
+                      <div>
+                        <div className="text-gray-600 font-medium mb-2 text-lg">
+                          No conversations yet
+                        </div>
+                        <Text className="text-gray-400">
+                          Start the conversation by writing a message
+                        </Text>
+                      </div>
+                    }
+                  >
+                    <Button
+                      type="primary"
+                      icon={<MessageOutlined />}
+                      size="large"
+                      className="mt-4 bg-gradient-to-r from-blue-500 to-blue-600 border-0 px-8 py-2 h-auto rounded-xl font-medium"
+                      onClick={() => setIsInteractionModalOpen(true)}
+                    >
+                      Start Conversation
+                    </Button>
+                  </Empty>
+                </div>
+              )}
+            </Card>
+          </div>
+        </div>
       </div>
-      {/* ✅ Modal for Write To Us */}
+
+      {/* Enhanced Modal */}
       <Modal
-        title="Add Interaction"
+        title={
+          <div className="flex items-center gap-3 py-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <MessageOutlined className="text-blue-600" />
+            </div>
+            <span className="text-xl font-semibold text-gray-800">
+              New Message
+            </span>
+          </div>
+        }
         open={isInteractionModalOpen}
         onCancel={() => setIsInteractionModalOpen(false)}
         footer={null}
+        centered
+        width={600}
+        className="rounded-2xl overflow-hidden"
       >
         <Form
           layout="vertical"
           form={formInteraction}
           onFinish={handleInteractionSave}
+          className="mt-6"
         >
           <Form.Item
-            label="Admin Conversation"
+            label={
+              <span className="text-base font-medium text-gray-700">
+                Your Message
+              </span>
+            }
             name="employeeConversation"
-            rules={[{ required: true, message: "Please enter conversation" }]}
+            rules={[
+              { required: true, message: "Please enter your message" },
+              {
+                min: 10,
+                message: "Message should be at least 10 characters long",
+              },
+            ]}
           >
-            <Input.TextArea rows={3} />
+            <Input.TextArea
+              rows={6}
+              placeholder="Write your message here..."
+              className="rounded-xl text-base"
+              showCount
+              maxLength={1000}
+            />
           </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={saving}
-              style={{ backgroundColor: "#1c84c6", color: "white" }}
-              block
-            >
-              Save Interaction
-            </Button>
+
+          <Form.Item className="mb-0">
+            <Space className="w-full justify-end">
+              <Button
+                size="large"
+                onClick={() => setIsInteractionModalOpen(false)}
+                className="px-6 py-2 h-auto rounded-xl font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={saving}
+                size="large"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 border-0 px-8 py-2 h-auto rounded-xl font-medium shadow-md"
+                icon={<MessageOutlined />}
+              >
+                {saving ? "Sending..." : "Send Message"}
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       </Modal>
@@ -407,4 +613,3 @@ const RadhaInstructionView = () => {
 };
 
 export default RadhaInstructionView;
-

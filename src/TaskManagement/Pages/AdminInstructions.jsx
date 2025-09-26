@@ -1,61 +1,71 @@
-
 import React, { useEffect, useState } from "react";
-import { Table, Spin, message,Space, Form, Input, Button, Upload, Modal } from "antd";
+import {
+  Table,
+  Spin,
+  message,
+  Space,
+  Form,
+  Input,
+  Button,
+  Upload,
+  Modal,
+} from "antd";
 import { UploadOutlined, MessageOutlined } from "@ant-design/icons";
-import { MdModeEditOutline } from "react-icons/md";
+import { MdModeEditOutline, MdForum } from "react-icons/md";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
-
 import { useNavigate } from "react-router-dom";
-import { MdForum } from "react-icons/md"; // Forum/chat related icon
+import { SearchOutlined } from "@ant-design/icons";
 const AdminInstructions = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState([]);
-  const [file, setFile] = useState(null);
+  const [fileList, setFileList] = useState([]);
   const navigate = useNavigate();
-  const [formAdd] = Form.useForm(); // ✅ Add form instance for Add Modal
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [fileList, setFileList] = useState([]); // For Ant Design Upload
-const [previewUrl, setPreviewUrl] = useState(null); // For preview
-    const [editingRecord, setEditingRecord] = useState(null);
-      const [searchText, setSearchText] = useState("");
+
+  const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
   const [formInteraction] = Form.useForm();
-  const adminUserId = localStorage.getItem("userId");
-    const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
-     const [filteredData, setFilteredData] = useState([]);
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
+
+  const [editingRecord, setEditingRecord] = useState(null);
   const [interactionRecord, setInteractionRecord] = useState(null);
+
+  const [searchText, setSearchText] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+
+  const adminUserId = localStorage.getItem("userId");
+
   const API_URL = `${BASE_URL}/user-service/write/getAdminUserId?adminUserId=${adminUserId}`;
   const SAVE_API = `${BASE_URL}/user-service/write/radhaInstructions`;
-  const UPLOAD_API = `${BASE_URL}/user-service/write/uploadRadhaFiles?fileType=kyc&userId=${adminUserId}`;
-    const INTERACTION_API = `${BASE_URL}/user-service/write/radhaInteractions`;
-     // 🔎 Search handler
- 
-  // Fetch admin instructions
+  const UPLOAD_API = `${BASE_URL}/user-service/write/uploadRadhaFiles`;
+  const INTERACTION_API = `${BASE_URL}/user-service/write/radhaInteractions`;
+
+  // ✅ Fetch instructions
   const fetchData = async () => {
     setLoading(true);
     try {
       const response = await axios.get(API_URL);
-     if (Array.isArray(response.data)) {
-       // ✅ sort by updatedDate (if exists) else createdDate
-       const sortedData = response.data.sort((a, b) => {
-         const dateA = new Date(
-           a.radhaUpdateDate || a.radhaInstructeddate
-         ).getTime();
-         const dateB = new Date(
-           b.radhaUpdateDate || b.radhaInstructeddate
-         ).getTime();
-         return dateB - dateA; // descending
-       });
-       setData(sortedData);
-       setFilteredData(sortedData);
-     } else {
-       message.warning("Unexpected response format");
-     }
-    } catch (err) {
+      if (Array.isArray(response.data)) {
+        const sortedData = response.data.sort((a, b) => {
+          const dateA = new Date(
+            a.radhaUpdateDate || a.radhaInstructeddate
+          ).getTime();
+          const dateB = new Date(
+            b.radhaUpdateDate || b.radhaInstructeddate
+          ).getTime();
+          return dateB - dateA;
+        });
+        setData(sortedData);
+        setFilteredData(sortedData);
+      } else {
+        message.warning("Unexpected response format");
+      }
+    } catch {
       message.error("Failed to fetch Admin Instructions");
     } finally {
       setLoading(false);
@@ -65,41 +75,54 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
   useEffect(() => {
     fetchData();
   }, []);
+
   useEffect(() => {
     setFilteredData(data);
   }, [data]);
-  // Upload file for Add modal
-  const uploadFile = async () => {
-    if (!file) return null;
+
+  // ✅ Upload multiple files after instruction is created
+  const uploadFiles = async (instructionId) => {
+    if (!fileList.length) return;
+
     const formData = new FormData();
-    formData.append("file", file);
-    const uploadResp = await axios.post(UPLOAD_API, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
+    fileList.forEach((file) => {
+      formData.append("file", file.originFileObj);
     });
-    return uploadResp.data?.id || null;
+
+    await axios.post(
+      `${UPLOAD_API}?fileType=kyc&instructionId=${instructionId}&userId=${adminUserId}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
   };
 
-  // Add new instruction
+  // ✅ Add new instruction
   const handleAddSave = async (values) => {
     setSaving(true);
     try {
-      const imageUploadedId = await uploadFile();
-
       const payload = {
         adminUserId,
         instructionHeader: values.instructionHeader,
         instructions: values.instructions,
-        ...(imageUploadedId && { imageUploadedId }),
       };
 
-      await axios.patch(SAVE_API, payload);
-      message.success("Instruction added successfully!");
+      // First save instruction
+      const resp = await axios.patch(SAVE_API, payload);
+
+      if (resp.data?.radhaInstructionsId) {
+        // If user uploaded files, upload them linked to instructionId
+        if (fileList.length > 0) {
+          await uploadFiles(resp.data.radhaInstructionsId);
+        }
+        message.success("Instruction added successfully!");
+      }
+
       fetchData();
       setIsAddModalOpen(false);
       formAdd.resetFields();
-      setFile(null);
-      setPreviewUrl(null); // if you're using preview
-      setFileList([]); // if you're using Upload component with fileList
+      setFileList([]);
     } catch (err) {
       message.error("Failed to save instruction");
     } finally {
@@ -107,7 +130,7 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
     }
   };
 
-  // Edit instruction (no file upload)
+  // ✅ Edit instruction
   const handleEditSave = async (values) => {
     if (!editingRecord) return;
     setSaving(true);
@@ -118,19 +141,27 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
         radhaInstructionsId: editingRecord.radhaInstructionsId,
       };
 
-      await axios.patch(SAVE_API, payload);
+      // First update instruction
+      const resp = await axios.patch(SAVE_API, payload);
+
+      // ✅ If user uploaded new files, upload them linked to instructionId
+      if (resp.data?.radhaInstructionsId && fileList.length > 0) {
+        await uploadFiles(resp.data.radhaInstructionsId);
+      }
       message.success("Instruction updated successfully!");
       fetchData();
       setIsEditModalOpen(false);
-        setEditingRecord(null);
-           formEdit.resetFields();
-    } catch (err) {
+      setEditingRecord(null);
+      formEdit.resetFields();
+      setFileList([]); // clear file list after save
+    } catch {
       message.error("Failed to update instruction");
     } finally {
       setSaving(false);
     }
   };
-  // Save interaction
+
+  // ✅ Save interaction
   const handleInteractionSave = async (values) => {
     if (!interactionRecord) return;
     setSaving(true);
@@ -145,9 +176,9 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
       await axios.patch(INTERACTION_API, payload);
       message.success("Interaction saved successfully!");
       setIsInteractionModalOpen(false);
-        setInteractionRecord(null);
-            formInteraction.resetFields();
-    } catch (err) {
+      setInteractionRecord(null);
+      formInteraction.resetFields();
+    } catch {
       message.error("Failed to save interaction");
     } finally {
       setSaving(false);
@@ -155,91 +186,69 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
   };
 
   const formatDateIST = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  const istOffset = 5.5 * 60 * 60 * 1000;
-  const istDate = new Date(date.getTime() + istOffset);
-  return istDate.toLocaleString("en-IN", { hour12: true });
-};
-  // Table columns
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    const istOffset = 5.5 * 60 * 60 * 1000;
+    const istDate = new Date(date.getTime() + istOffset);
+    return istDate.toLocaleString("en-IN", { hour12: true });
+  };
+
   const columns = [
     { title: "S.No", render: (_, __, index) => index + 1, align: "center" },
-    {
-      title: "Admin User ID",
-      dataIndex: "adminUserId",
-      align: "center",
-      render: (text) => (text ? `#${text.slice(-4)}` : "-"),
-    },
+    // {
+    //   title: "Admin User ID",
+    //   dataIndex: "adminUserId",
+    //   align: "center",
+    //   render: (text) => (text ? `#${text.slice(-4)}` : "-"),
+    // },
     {
       title: "Instruction ID",
       dataIndex: "radhaInstructionsId",
       align: "center",
       render: (text) => (text ? `#${text.slice(-4)}` : "-"),
     },
-    {
-      title: "Instruction Header",
-      dataIndex: "instructionHeader",
-      align: "center",
-    },
+    { title: "Instruction Header", dataIndex: "instructionHeader", align: "center" },
     { title: "Instructions", dataIndex: "radhaInstructions", align: "center" },
-  // ✅ Table columns
-{
-  title: "Created Date",
-  dataIndex: "radhaInstructeddate",
-  align: "center",
-  render: (text) => formatDateIST(text),
-},
-{
-  title: "Updated Date",
-  dataIndex: "radhaUpdateDate",
-  align: "center",
-  render: (text) => formatDateIST(text),
-},
+    {
+      title: "Created Date",
+      dataIndex: "radhaInstructeddate",
+      align: "center",
+      render: (text) => formatDateIST(text),
+    },
+    {
+      title: "Updated Date",
+      dataIndex: "radhaUpdateDate",
+      align: "center",
+      render: (text) => formatDateIST(text),
+    },
     {
       title: "Action",
       key: "action",
       align: "center",
       render: (_, record) => (
         <Space align="center" size="middle">
-          {/* Edit Button */}
           <Button
             onClick={() => {
               setEditingRecord(record);
               setIsEditModalOpen(true);
             }}
-            style={{
-              backgroundColor: "#1AB394",
-              color: "white",
-              border: "none",
-            }}
+            style={{ backgroundColor: "#1AB394", color: "white", border: "none" }}
             icon={<MdModeEditOutline />}
           >
             Edit
           </Button>
-
-          {/* Write To Us Button */}
           <Button
             onClick={() => {
               setInteractionRecord(record);
               setIsInteractionModalOpen(true);
             }}
-            style={{
-              backgroundColor: "#1c84c6",
-              color: "white",
-              border: "none",
-            }}
+            style={{ backgroundColor: "#1c84c6", color: "white", border: "none" }}
             icon={<MessageOutlined />}
           >
             Write To Us
           </Button>
-
-          {/* Chat View Button */}
           <Button
-            style={{
-              backgroundColor: "#8e44ad",
-              color: "white",
-              border: "none",
-            }}
+            style={{ backgroundColor: "#8e44ad", color: "white", border: "none" }}
             icon={<MdForum />}
             onClick={() =>
               navigate(`/taskmanagement/chatview/${record.radhaInstructionsId}`)
@@ -262,18 +271,18 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
           onClick={() => {
             setIsAddModalOpen(true);
             formAdd.resetFields();
-            setFile(null); // ✅ Clear previous file
-            setFileList([]); // ✅ Clear Upload file list
+            setFileList([]);
           }}
         >
           Add Radha Instructions
         </Button>
       </div>
-      {/* Search */}
+
       <div className="mb-4 flex items-center gap-2">
         <Input
           placeholder="Search by Header or Instruction"
           value={searchText}
+          prefix={<SearchOutlined style={{ color: "#aaa" }} />}
           onChange={(e) => {
             const value = e.target.value;
             setSearchText(value);
@@ -299,17 +308,11 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
           allowClear
         />
       </div>
+
       {/* Table */}
       {loading ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "200px", // adjust height as needed
-          }}
-        >
-          <Spin size="large" />
+        <div className="flex justify-center items-center h-[200px]">
+          <Spin size="medium" />
         </div>
       ) : (
         <Table
@@ -324,13 +327,12 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
 
       {/* Add Modal */}
       <Modal
-        title="Add Admin Inputs"
+        title="Add Radha instructions"
         open={isAddModalOpen}
         onCancel={() => {
           setIsAddModalOpen(false);
           formAdd.resetFields();
-          setFile(null); // ✅ Reset state
-          setFileList([]); // ✅ Reset Upload
+          setFileList([]);
         }}
         footer={null}
       >
@@ -354,34 +356,29 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
           >
             <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
-          <Form.Item label="Upload Document or Image (Optional)">
+          <Form.Item label="Upload one or more documents or images (optional).">
             <Upload
-              fileList={fileList} // ✅ Controlled Upload
+              multiple
+              fileList={fileList}
               beforeUpload={(file) => {
-                setFile(file);
-
-                // ✅ Set fileList in correct format
-                setFileList([
+                setFileList((prev) => [
+                  ...prev,
                   {
-                    uid: String(Date.now()), // unique id
+                    uid: String(Date.now()),
                     name: file.name,
                     status: "done",
                     originFileObj: file,
                   },
                 ]);
-
-                return false; // Prevent auto upload
+                return false; // prevent auto upload
               }}
-              onRemove={() => {
-                setFile(null);
-                setFileList([]); // ✅ Clear list when removing
+              onRemove={(file) => {
+                setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
               }}
-              maxCount={1}
             >
-              <Button icon={<UploadOutlined />}>Select File</Button>
+              <Button icon={<UploadOutlined />}>Select Files</Button>
             </Upload>
           </Form.Item>
-
           <Form.Item>
             <Button
               type="primary"
@@ -432,7 +429,29 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
           >
             <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
-
+          <Form.Item label="Upload one or more documents or images (optional).">
+            <Upload
+              multiple
+              fileList={fileList}
+              beforeUpload={(file) => {
+                setFileList((prev) => [
+                  ...prev,
+                  {
+                    uid: String(Date.now()),
+                    name: file.name,
+                    status: "done",
+                    originFileObj: file,
+                  },
+                ]);
+                return false; // prevent auto upload
+              }}
+              onRemove={(file) => {
+                setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
+              }}
+            >
+              <Button icon={<UploadOutlined />}>Select Files</Button>
+            </Upload>
+          </Form.Item>
           <Form.Item>
             <Button
               type="primary"
@@ -446,6 +465,8 @@ const [previewUrl, setPreviewUrl] = useState(null); // For preview
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Interaction Modal */}
       <Modal
         title="Add Interaction"
         open={isInteractionModalOpen}

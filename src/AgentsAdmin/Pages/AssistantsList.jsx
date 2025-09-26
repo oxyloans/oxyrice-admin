@@ -265,26 +265,26 @@ const AssistantsList = () => {
       width: 100,
    
     },
-    {
-      title: "Instructions",
-      dataIndex: "instructions",
-      key: "instructions",
-      align: "center",
-      render: (text) => (
-        <div
-          style={{
-            maxWidth: 400,
-            textAlign: "center",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {text}
-        </div>
-      ),
-    },
+    // {
+    //   title: "Instructions",
+    //   dataIndex: "instructions",
+    //   key: "instructions",
+    //   align: "center",
+    //   render: (text) => (
+    //     <div
+    //       style={{
+    //         maxWidth: 400,
+    //         textAlign: "center",
+    //         display: "-webkit-box",
+    //         WebkitLineClamp: 3,
+    //         WebkitBoxOrient: "vertical",
+    //         overflow: "hidden",
+    //       }}
+    //     >
+    //       {text}
+    //     </div>
+    //   ),
+    // },
     {
       title: "Status",
       dataIndex: "status",
