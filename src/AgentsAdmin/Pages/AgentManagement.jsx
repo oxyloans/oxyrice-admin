@@ -1,32 +1,27 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Table, Button, Input, message, Spin, Modal, Form } from "antd";
 import axios from "axios";
-import debounce from "lodash/debounce";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 
 const AgentManagement = () => {
   const [agents, setAgents] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [editingAuthorizedBy, setEditingAuthorizedBy] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Modal state
+  const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [newAuthorizedBy, setNewAuthorizedBy] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
 
   const token = localStorage.getItem("token");
 
+  /** Fetch Agents */
   const fetchAgents = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(
         `${BASE_URL}/ai-service/agent/getAllAgentApproved`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      // API returns array directly
       setAgents(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       message.error(error.response?.data?.message || "Failed to fetch agents");
@@ -36,45 +31,30 @@ const AgentManagement = () => {
     }
   }, [token]);
 
-  // Save agent (update or create)
-  const saveAgent = async (id, authorizedBy) => {
-    if (!authorizedBy.trim()) {
-      message.error("Authorized By field cannot be empty");
-      return;
-    }
+  /** Save Authorized By */
+  const saveAgent = async (values) => {
     setLoading(true);
     try {
-      if (id) {
-        // Update existing
-        await axios.patch(
-          `${BASE_URL}/ai-service/agent/agentApprovedName`,
-          { id, authorizedBy },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        message.success("Agent updated successfully");
-      } else {
-        // Create new
-        await axios.patch(
-          `${BASE_URL}/ai-service/agent/agentApprovedName`,
-          { id, authorizedBy },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        message.success("Agent created successfully");
-      }
+      await axios.patch(
+        `${BASE_URL}/ai-service/agent/agentApprovedName`,
+        {
+          id: selectedAgentId || "6810c5e4-0e80-4673-bff3-f3f2ac1e863e",
+          authorizedBy: values.authorizedBy,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      message.success("Authorized user added successfully");
       fetchAgents();
-      setEditingId(null);
-      setEditingAuthorizedBy("");
+      setIsModalVisible(false);
+      // reset form only after success
+      form.resetFields();
+      setSelectedAgentId(null);
     } catch (error) {
       message.error(error.response?.data?.message || "Failed to save agent");
     } finally {
       setLoading(false);
     }
   };
-
-  const debouncedSetAuthorizedBy = useCallback(
-    debounce((value) => setEditingAuthorizedBy(value), 300),
-    []
-  );
 
   useEffect(() => {
     if (token) {
@@ -83,33 +63,6 @@ const AgentManagement = () => {
       message.error("No authorization token found. Please log in.");
     }
   }, [fetchAgents, token]);
-
-  const handleEdit = (record) => {
-    setEditingId(record.id);
-    setEditingAuthorizedBy(record.authorizedBy);
-  };
-
-  const handleSave = (id) => {
-    saveAgent(id, editingAuthorizedBy);
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditingAuthorizedBy("");
-  };
-
-  // Modal handlers
-  const openModal = () => {
-    setNewAuthorizedBy("");
-    setIsModalVisible(true);
-  };
-  const handleModalOk = () => {
-    saveAgent(null, newAuthorizedBy);
-    setIsModalVisible(false);
-  };
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-  };
 
   const columns = [
     {
@@ -129,76 +82,28 @@ const AgentManagement = () => {
       dataIndex: "authorizedBy",
       key: "authorizedBy",
       align: "center",
-      render: (text, record) => {
-        if (editingId === record.id) {
-          return (
-            <Input
-              value={editingAuthorizedBy}
-              onChange={(e) => debouncedSetAuthorizedBy(e.target.value)}
-              onPressEnter={() => handleSave(record.id)}
-              maxLength={100}
-            />
-          );
-        }
-        return text || "N/A";
-      },
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      align: "center",
-      render: (_, record) =>
-        editingId === record.id ? (
-          <>
-            <Button
-              onClick={() => handleSave(record.id)}
-              style={{
-                backgroundColor: "#008cba",
-                borderColor: "#008cba",
-                color: "#fff",
-                marginRight: 8,
-              }}
-            >
-              Save
-            </Button>
-            <Button onClick={handleCancel}>Cancel</Button>
-          </>
-        ) : (
-          <Button
-            onClick={() => handleEdit(record)}
-            style={{
-              backgroundColor: "#008cba",
-              borderColor: "#008cba",
-              color: "#fff",
-            }}
-          >
-            Edit
-          </Button>
-        ),
     },
   ];
 
   return (
     <AgentsAdminLayout>
       <div style={{ padding: "20px" }}>
-        {/* Header with Button */}
+        {/* Header with Add button */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "center",
             marginBottom: "20px",
           }}
         >
-          <h2>Authorized Users Management</h2>
+          <h1>Authorized Users Management</h1>
           <Button
-            style={{
-              backgroundColor: "#008cba",
-              borderColor: "#008cba",
-              color: "#fff",
-            }}
-            onClick={openModal}
+            type="primary"
+            style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
+            onClick={() => setIsModalVisible(true)}
           >
-            + Add Authorized User
+            Add Authorized User
           </Button>
         </div>
 
@@ -212,29 +117,33 @@ const AgentManagement = () => {
           />
         </Spin>
 
-        {/* Modal for Adding New User */}
+        {/* Modal for Add */}
         <Modal
           title="Add Authorized User"
           open={isModalVisible}
-          onOk={handleModalOk}
-          onCancel={handleModalCancel}
+          onCancel={() => setIsModalVisible(false)} // just close, don't reset
           okText="Save"
-          okButtonProps={{
-            style: {
-              backgroundColor: "#008cba",
-              borderColor: "#008cba",
-              color: "#fff",
-            },
-          }}
+          confirmLoading={loading}
+          onOk={() => form.submit()} // trigger Form validation
+          destroyOnClose={false} // 👈 keeps form values intact
         >
-          <Form layout="vertical">
-            <Form.Item label="Authorized By" required>
-              <Input
-                placeholder="Enter authorized user name"
-                value={newAuthorizedBy}
-                onChange={(e) => setNewAuthorizedBy(e.target.value)}
-                maxLength={100}
-              />
+          <Form
+            layout="vertical"
+            form={form}
+            onFinish={saveAgent} // called only if validation passes
+            preserve={true} // 👈 ensures values stay even when closed
+          >
+            <Form.Item
+              label="Authorized By"
+              name="authorizedBy"
+              rules={[
+                {
+                  required: true,
+                  message: "Please enter authorized user name",
+                },
+              ]}
+            >
+              <Input placeholder="Enter authorized user name" />
             </Form.Item>
           </Form>
         </Modal>
