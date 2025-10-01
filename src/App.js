@@ -96,6 +96,7 @@ import GeminiUsers from "./AgentsAdmin/Pages/GeminiUsers";
 import AdminInstructions from "./TaskManagement/Pages/AdminInstructions";
 import RadhaInstructionView from "./TaskManagement/Pages/RadhaInstructionView";
 import ConversationsList from "./AgentsAdmin/Pages/ConversationsList";
+import AgentManagement from "./AgentsAdmin/Pages/AgentManagement";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -119,6 +120,7 @@ function App() {
         <Route path="/admin/conversationlist" element={<ConversationsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
+        <Route path="/admin/authorizedusers" element={<AgentManagement />} />
         <Route
           path="/admin/agents-registered-users"
           element={<GeminiUsers />}

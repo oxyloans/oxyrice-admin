@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Card,
@@ -14,6 +14,9 @@ import {
   message,
   Checkbox,
   Space,
+  Descriptions,
+  Divider,
+  Tooltip,
 } from "antd";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
@@ -26,46 +29,103 @@ const AssistantsList = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 50,
+    pageSize: 20,
     total: 0,
   });
+  const [cursorAfter, setCursorAfter] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [lastId, setLastId] = useState(null);
 
-  // Status Modal
-  const [modalVisible, setModalVisible] = useState(false);
+  // Forms / Modals
+  const [statusModalVisible, setStatusModalVisible] = useState(false);
+  const [toolsModalVisible, setToolsModalVisible] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(false);
+
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("APPROVED");
+const [authorizedByOptions, setAuthorizedByOptions] = useState([]);
   const [form] = Form.useForm();
-
-  // Tools Modal
-  const [toolsModalVisible, setToolsModalVisible] = useState(false);
-  const [selectedTools, setSelectedTools] = useState([]);
   const [toolForm] = Form.useForm();
+  const [selectedTools, setSelectedTools] = useState([]);
 
-  const accessToken = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+  const accessToken = localStorage.getItem("token") || "";
+  const userId = localStorage.getItem("userId") || "";
 
-  // Fetch Assistants
-  const fetchAssistants = async (page, pageSize) => {
+  // ---------- Utils ----------
+  const parseTools = (a) => {
+    try {
+      if (!a || !a.tools) return [];
+      const parsed = JSON.parse(a.tools);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
+    if (a && a.toolUsed) {
+      return a.toolUsed
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return [];
+  };
+
+  const formatEpochOrIso = (value) => {
+    if (!value) return "-";
+    if (/^\d+$/.test(value)) {
+      const ms = Number(value) * 1000;
+      return isNaN(ms) ? value : new Date(ms).toLocaleString();
+    }
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? value : d.toLocaleString();
+  };
+
+  const renderStatusTag = (statusRaw) => {
+    const s = (statusRaw || "").toString().toUpperCase().trim();
+    if (s === "APPROVED") return <Tag color="success">APPROVED</Tag>;
+    if (s === "REQUESTED") return <Tag color="processing">REQUESTED</Tag>;
+    if (s === "REJECTED") return <Tag color="error">REJECTED</Tag>;
+    if (s === "DELETED" || s === "DELETD") return <Tag>DELETED</Tag>;
+    return <Tag>{statusRaw || "-"}</Tag>;
+  };
+
+  // ---------- Fetching ----------
+  const fetchAssistants = async ({ limit, after, replace = false }) => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${pageSize}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
+      const url =
+        `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${encodeURIComponent(
+          String(limit)
+        )}` + (after ? `&after=${encodeURIComponent(after)}` : "");
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch assistants");
+
       const json = await res.json();
-      const fetchedData = json.data || [];
-      setData(fetchedData);
-      setFilteredData(fetchedData);
+      const fetched = (json && json.data) || [];
+
+      setHasMore(!!(json && json.hasMore));
+      setLastId((json && json.lastId) || null);
+
+      const newData = replace ? fetched : [...data, ...fetched];
+      setData(newData);
+
+      const newFiltered = searchTerm.trim()
+        ? newData.filter((item) =>
+            (item.name || "").toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        : newData;
+      setFilteredData(newFiltered);
+
       setPagination((prev) => ({
         ...prev,
-        current: page,
-        pageSize,
-        total: fetchedData.length,
+        total: newFiltered.length + (json.hasMore ? prev.pageSize : 0),
       }));
     } catch (err) {
-      console.error("Error fetching assistants:", err);
+      console.error(err);
       message.error("Failed to load assistants");
     } finally {
       setLoading(false);
@@ -73,54 +133,83 @@ const AssistantsList = () => {
   };
 
   useEffect(() => {
-    fetchAssistants(pagination.current, pagination.pageSize);
+    setCursorAfter(null);
+    setHasMore(false);
+    setLastId(null);
+    setData([]);
+    setFilteredData([]);
+    fetchAssistants({ limit: pagination.pageSize, replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleTableChange = (newPagination) => {
-    setPagination((prev) => ({
-      ...prev,
+  // ---------- Pagination change ----------
+  const handleTableChange = async (newPagination) => {
+    const goingForward = newPagination.current > pagination.current;
+    const pageSizeChanged = newPagination.pageSize !== pagination.pageSize;
+
+    setPagination({
       current: newPagination.current,
       pageSize: newPagination.pageSize,
-    }));
+      total: newPagination.total,
+    });
+
+    if (pageSizeChanged) {
+      setCursorAfter(null);
+      setHasMore(false);
+      setLastId(null);
+      setData([]);
+      setFilteredData([]);
+      await fetchAssistants({ limit: newPagination.pageSize, replace: true });
+      return;
+    }
+
+    const needRows = newPagination.current * newPagination.pageSize;
+    if (goingForward && filteredData.length < needRows && hasMore && lastId) {
+      await fetchAssistants({ limit: newPagination.pageSize, after: lastId });
+    }
   };
 
-  // LIVE search
+  // ---------- Live search ----------
   const handleSearchChange = (e) => {
     const value = e.target.value || "";
     setSearchTerm(value);
 
-    if (!value.trim()) {
-      setFilteredData(data);
-      setPagination((prev) => ({ ...prev, current: 1, total: data.length }));
-      return;
-    }
-
-    const filtered = data.filter((item) =>
-      (item.name || "").toLowerCase().includes(value.toLowerCase())
-    );
+    const filtered = value.trim()
+      ? data.filter((item) =>
+          (item.name || "").toLowerCase().includes(value.toLowerCase())
+        )
+      : data;
     setFilteredData(filtered);
-    setPagination((prev) => ({ ...prev, current: 1, total: filtered.length }));
+    setPagination((p) => ({
+      ...p,
+      current: 1,
+      total: filtered.length + (hasMore ? p.pageSize : 0),
+    }));
   };
 
-  // Open Status Modal
+  // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
     setSelectedAssistant(assistant);
     setSelectedStatus("APPROVED");
-    form.setFieldsValue({ status: "APPROVED", freetrails: 1 });
-    setModalVisible(true);
+    form.setFieldsValue({ status: "APPROVED", freetrails: 5 });
+    setStatusModalVisible(true);
   };
 
-  // Handle Status Save
   const handleSaveStatus = async () => {
     try {
       await form.validateFields();
       const values = form.getFieldsValue();
 
+      if (!selectedAssistant || !selectedAssistant.assistantId) {
+        message.error("Missing assistantId");
+        return;
+      }
+
       const payload = {
         assistanId: selectedAssistant.assistantId,
         userId,
         status: values.status,
+        authorizedBy: values.authorizedBy,
         freetrails:
           values.status === "APPROVED" ? Number(values.freetrails) : 0,
       };
@@ -138,37 +227,72 @@ const AssistantsList = () => {
       );
 
       if (!res.ok) throw new Error("Failed to update status");
-      message.success("Assistant status updated successfully!");
-      setModalVisible(false);
-      fetchAssistants(1, pagination.pageSize);
+      message.success("Agent status updated successfully!");
+      setStatusModalVisible(false);
+
+      setCursorAfter(null);
+      setHasMore(false);
+      setLastId(null);
+      setData([]);
+      setFilteredData([]);
+      await fetchAssistants({ limit: pagination.pageSize, replace: true });
     } catch (err) {
       console.error(err);
       message.error("Error updating assistant status");
     }
   };
 
-  // Open Tools Modal
+  // ---------- Fetch Authorized By Options ----------
+  const fetchAuthorizedByOptions = async () => {
+    try {
+      const res = await fetch(
+        `${BASE_URL}/ai-service/agent/getAllAgentApproved`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch authorized by options");
+
+      const json = await res.json();
+      const authorizedByList = json.map((item) => item.authorizedBy);
+      setAuthorizedByOptions(authorizedByList);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to load authorized by options");
+    }
+  };
+
+  useEffect(() => {
+    fetchAuthorizedByOptions();
+  }, []);
+  // ---------- Tools Update ----------
   const openToolsModal = (assistant) => {
     setSelectedAssistant(assistant);
-    setSelectedTools([]); // reset selection
-    toolForm.resetFields();
+    setSelectedTools([]); // Reset selected tools when opening the modal
+    toolForm.resetFields(); // Reset the form fields
     setToolsModalVisible(true);
   };
 
-  // Save Tools API call
   const handleSaveTools = async (type) => {
-    if (!selectedAssistant) return;
+    if (!selectedAssistant || !selectedAssistant.agentId) {
+      message.error("Missing agentId");
+      return;
+    }
 
-    let payload = { agentId: selectedAssistant.agentId };
-
+    const payload = { agentId: selectedAssistant.agentId };
     if (type === "update") {
-      payload.enabledTools = selectedTools; // update tools
-      payload.removeToolType = ""; // nothing to remove
-    } else if (type === "remove") {
-      payload.enabledTools = []; // nothing to enable
+      payload.enabledTools = selectedTools;
+      payload.removeToolType = "";
+    } else {
+      payload.enabledTools = [];
       payload.removeToolType = selectedTools.length
-        ? selectedTools.join(",") // send selected tools
-        : "file_search"; // fallback: remove all tools
+        ? selectedTools.join(",")
+        : "file_search,web_search";
     }
 
     const endpoint =
@@ -193,131 +317,166 @@ const AssistantsList = () => {
           : "Tools removed successfully!"
       );
       setToolsModalVisible(false);
-      fetchAssistants(1, pagination.pageSize);
+      setSelectedTools([]); // Reset selected tools after saving
+      toolForm.resetFields(); // Reset form after saving
+      setCursorAfter(null);
+      setHasMore(false);
+      setLastId(null);
+      setData([]);
+      setFilteredData([]);
+      await fetchAssistants({ limit: pagination.pageSize, replace: true });
     } catch (err) {
       console.error(err);
       message.error("Error saving tools");
     }
   };
 
-  const renderStatusTag = (statusRaw) => {
-    const s = (statusRaw || "").toString().toUpperCase().trim();
-    if (s === "APPROVED") return <Tag color="success">APPROVED</Tag>;
-    if (s === "REQUESTED") return <Tag color="processing">REQUESTED</Tag>;
-    if (s === "REJECTED") return <Tag color="error">REJECTED</Tag>;
-    if (s === "DELETED" || s === "DELETD")
-      return <Tag color="default">DELETED</Tag>;
-    return <Tag>{statusRaw || "-"}</Tag>;
-  };
-
-  const columns = [
-    {
-      title: "S.No",
-      key: "sno",
-      align: "center",
-      render: (_text, _record, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
-      width: 80,
-    },
-    {
-      title: "Assistant ID",
-      dataIndex: "assistantId",
-      key: "assistantId",
-      align: "center",
-      render: (id) => (id ? `#${id.slice(-4)}` : "-"),
-      width: 120,
-    },
-    { title: "Name", dataIndex: "name", key: "name", align: "center" },
-    // {
-    //   title: "Model",
-    //   dataIndex: "model",
-    //   key: "model",
-    //   align: "center",
-    //   width: 140,
-    // },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      align: "center",
-      render: (text) => (
-        <div
-          style={{
-            maxWidth: 400,
-            textAlign: "center",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
-        >
-          {text}
-        </div>
-      ),
-    },
-    {
-      
-      title: "Tools",
-      dataIndex: "tools",
-      key: "tools",
-      align: "center",
-     
-      width: 100,
-   
-    },
-    // {
-    //   title: "Instructions",
-    //   dataIndex: "instructions",
-    //   key: "instructions",
-    //   align: "center",
-    //   render: (text) => (
-    //     <div
-    //       style={{
-    //         maxWidth: 400,
-    //         textAlign: "center",
-    //         display: "-webkit-box",
-    //         WebkitLineClamp: 3,
-    //         WebkitBoxOrient: "vertical",
-    //         overflow: "hidden",
-    //       }}
-    //     >
-    //       {text}
-    //     </div>
-    //   ),
-    // },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => renderStatusTag(status),
-      width: 140,
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      align: "center",
-      render: (_text, record) => (
-        <Space>
-          <Button
-            type="primary"
-            style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
-            onClick={() => openStatusModal(record)}
+  // ---------- Columns ----------
+  const columns = useMemo(
+    () => [
+      {
+        title: "S.No",
+        key: "sno",
+        align: "center",
+        render: (_text, _record, index) =>
+          (pagination.current - 1) * pagination.pageSize + index + 1,
+      },
+      // {
+      //   title: "Assistant ID",
+      //   dataIndex: "assistantId",
+      //   key: "assistantId",
+      //   align: "center",
+      //   render: (id) => (id ? `#${id.slice(-4)}` : "-"),
+      //   width: 120,
+      // },
+      {
+        title: "Agent ID",
+        dataIndex: "agentId",
+        key: "agentId",
+        align: "center",
+        render: (id) => (id ? `#${id.slice(-4)}` : "-"),
+      },
+      {
+        title: "Agent Name",
+        dataIndex: "name",
+        key: "name",
+        align: "center",
+      },
+      {
+        title: "Creator Name",
+        dataIndex: "creatorName",
+        key: "creatorName",
+        align: "center",
+      },
+      {
+        title: "Approved By",
+        dataIndex: "authorizedBy",
+        key: "authorizedBy",
+        align: "center",
+      },
+      {
+        title: "Tool Used",
+        dataIndex: "toolUsed",
+        key: "toolUsed",
+        align: "center",
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        align: "center",
+        render: (text) => (
+          <div
+            style={{
+              maxWidth: 300,
+              textAlign: "center",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
           >
-            Update Status
-          </Button>
-          <Button
-            style={{ backgroundColor: "#6a1b9a", color: "white" }}
-            onClick={() => openToolsModal(record)}
-          >
-            Manage Tools
-          </Button>
-        </Space>
-      ),
-      width: 220,
-    },
-  ];
+            {text}
+          </div>
+        ),
+      },
+      // {
+      //   title: "Instructions",
+      //   dataIndex: "instructions",
+      //   key: "instructions",
+      //   align: "center",
+      //   render: (text) => (
+      //     <div
+      //       style={{
+      //         maxWidth: 300,
+      //         textAlign: "center",
+      //         display: "-webkit-box",
+      //         WebkitLineClamp: 3,
+      //         WebkitBoxOrient: "vertical",
+      //         overflow: "hidden",
+      //       }}
+      //     >
+      //       {text}
+      //     </div>
+      //   ),
+      // },
 
+      // {
+      //   title: "Tools",
+      //   dataIndex: "tools",
+      //   key: "tools",
+      //   align: "center",
+      //   width: 140,
+      //   render: (_t, record) => {
+      //     const list = parseTools(record);
+      //     return list.length ? list.join(", ") : "—";
+      //   },
+      // },
+      {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        align: "center",
+        render: (status) => renderStatusTag(status),
+      },
+      {
+        title: "Actions",
+        key: "actions",
+        align: "center",
+
+        render: (_, record) => (
+          <div
+            style={{ display: "flex", gap: "8px", justifyContent: "center" }}
+          >
+            <Button
+              type="primary"
+              onClick={() => {
+                setSelectedAssistant(record);
+                setPreviewVisible(true);
+              }}
+              style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
+            >
+              Preview
+            </Button>
+            <Button
+              type="default"
+              onClick={() => openToolsModal(record)}
+              style={{
+                backgroundColor: "#6a1b9a",
+                color: "#fff",
+                borderColor: "#6a1b9a",
+              }}
+            >
+              Manage Tools
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [pagination.current, pagination.pageSize]
+  );
+
+  // ---------- Render ----------
   return (
     <AgentsAdminLayout>
       <Card
@@ -326,12 +485,12 @@ const AssistantsList = () => {
           <Row justify="space-between" align="middle" style={{ width: "100%" }}>
             <Col>
               <h3 style={{ margin: 0, textAlign: "center" }}>
-                Assistants List
+                Agents Creation List
               </h3>
             </Col>
             <Col>
               <Search
-                placeholder="Search by Assistant Name"
+                placeholder="Search by Agent Name"
                 allowClear
                 value={searchTerm}
                 onChange={handleSearchChange}
@@ -342,14 +501,12 @@ const AssistantsList = () => {
         }
       >
         <Table
-          rowKey="assistantId"
+          rowKey={(r) => r.assistantId || Math.random().toString(36).slice(2)}
           loading={loading}
           columns={columns}
           dataSource={filteredData}
           pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: pagination.total,
+            ...pagination,
             showSizeChanger: true,
             pageSizeOptions: ["50", "100", "200", "300"],
           }}
@@ -358,10 +515,268 @@ const AssistantsList = () => {
           scroll={{ x: true }}
         />
 
+        {/* Preview Modal */}
+        <Modal
+          open={previewVisible}
+          onCancel={() => setPreviewVisible(false)}
+          footer={
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+                padding: "12px 0",
+              }}
+            >
+              <Tooltip title="Update the agent's status">
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (!selectedAssistant) return;
+                    setPreviewVisible(false);
+                    openStatusModal(selectedAssistant);
+                  }}
+                  style={{
+                    backgroundColor: "#008cba",
+                    borderColor: "#008cba",
+                    color: "#fff",
+                    borderRadius: "6px",
+                    padding: "0 16px",
+                    height: "40px",
+                    fontWeight: 500,
+                  }}
+                  loading={loading}
+                  disabled={!selectedAssistant}
+                  aria-label="Update Agent status"
+                >
+                  Update Status
+                </Button>
+              </Tooltip>
+              {/* <Tooltip title="Manage tools associated with this assistant">
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    if (!selectedAssistant) return;
+                    setPreviewVisible(false);
+                    openToolsModal(selectedAssistant);
+                  }}
+                  style={{
+                    backgroundColor: "#6a1b9a",
+                    borderColor: "#6a1b9a",
+                    color: "#fff",
+                    borderRadius: "6px",
+                    padding: "0 16px",
+                    height: "40px",
+                    fontWeight: 500,
+                  }}
+                  loading={loading}
+                  disabled={!selectedAssistant}
+                  aria-label="Manage assistant tools"
+                >
+                  Manage Tools
+                </Button>
+              </Tooltip> */}
+              <Tooltip title="Close the preview">
+                <Button
+                  onClick={() => setPreviewVisible(false)}
+                  style={{
+                    borderRadius: "6px",
+                    padding: "0 16px",
+                    height: "40px",
+                    fontWeight: 500,
+                  }}
+                  aria-label="Close preview modal"
+                >
+                  Close
+                </Button>
+              </Tooltip>
+            </div>
+          }
+          width={650}
+          centered
+          closable
+          closeIcon={<span style={{ fontSize: "18px", color: "#666" }}>✕</span>}
+          bodyStyle={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+
+            backgroundColor: "#f9fafb",
+            borderRadius: "8px",
+          }}
+          style={{ borderRadius: "12px" }}
+          title={
+            <div
+              style={{
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#1a1a1a",
+                padding: "8px 0",
+              }}
+            >
+              Agent Details
+            </div>
+          }
+        >
+          {selectedAssistant ? (
+            <>
+              <Descriptions
+                bordered
+                column={1}
+                size="middle"
+                labelStyle={{
+                  fontWeight: 600,
+                  width: "30%",
+                  backgroundColor: "#f0f2f5",
+                  padding: "12px",
+                }}
+                contentStyle={{
+                  whiteSpace: "pre-wrap",
+                  padding: "12px",
+                  backgroundColor: "#fff",
+                }}
+                style={{ backgroundColor: "#fff", borderRadius: "8px" }}
+              >
+                <Descriptions.Item label="Assistant ID">
+                  {selectedAssistant.assistantId}
+                </Descriptions.Item>
+                <Descriptions.Item label="Created Name">
+                  {selectedAssistant.createdName}
+                </Descriptions.Item>
+                <Descriptions.Item label="Agent ID">
+                  {selectedAssistant.agentId}
+                </Descriptions.Item>
+                <Descriptions.Item label="User ID">
+                  {selectedAssistant.userId}
+                </Descriptions.Item>
+                <Descriptions.Item label="Agent Name">
+                  {selectedAssistant.name}
+                </Descriptions.Item>
+                <Descriptions.Item label="Model">
+                  {selectedAssistant.model}
+                </Descriptions.Item>
+                <Descriptions.Item label="Created At">
+                  {selectedAssistant.createdAt
+                    ? new Date(
+                        Number(selectedAssistant.createdAt) * 1000
+                      ).toLocaleString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Description">
+                  {selectedAssistant.description || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Instructions">
+                  <div
+                    style={{
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                      padding: "8px",
+                      backgroundColor: "#f9fafb",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {selectedAssistant.instructions || ""}
+                  </div>
+                </Descriptions.Item>
+                <Descriptions.Item label="Header Title">
+                  {selectedAssistant.headerTitle || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="User Experience Summary">
+                  {selectedAssistant.userExperienceSummary || ""}
+                </Descriptions.Item>{" "}
+                <Descriptions.Item label="Domain">
+                  {selectedAssistant.domain || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Main Problem Solved">
+                  {selectedAssistant.mainProblemSolved || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Business">
+                  {selectedAssistant.business || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Unique Solution">
+                  {selectedAssistant.uniqueSolution || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Contact Details">
+                  {selectedAssistant.contactDetails || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Approved By">
+                  {selectedAssistant.authorizedBy || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Status">
+                  {renderStatusTag(selectedAssistant.status) || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Approved At">
+                  {selectedAssistant.approvedAt
+                    ? new Date(selectedAssistant.approvedAt).toLocaleString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tool Used">
+                  {selectedAssistant.toolUsed || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tools">
+                  {parseTools(selectedAssistant).length > 0
+                    ? parseTools(selectedAssistant).join(", ")
+                    : ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Choose Store">
+                  {selectedAssistant.chooseStore || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Similarity">
+                  {selectedAssistant.similarity || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Conversation Tone">
+                  {selectedAssistant.conversationTone || ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Image">
+                  {selectedAssistant.imageUrl ? (
+                    <img
+                      src={selectedAssistant.imageUrl}
+                      alt={`Assistant ${selectedAssistant.name || "image"}`}
+                      style={{
+                        maxWidth: "200px",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                    />
+                  ) : (
+                    ""
+                  )}
+                </Descriptions.Item>
+              </Descriptions>
+              <Divider style={{ margin: "16px 0", borderColor: "#e8ecef" }} />
+            </>
+          ) : (
+            <div
+              style={{
+                textAlign: "center",
+                color: "#888",
+                fontSize: "16px",
+                padding: "24px",
+              }}
+            >
+              No assistant selected
+            </div>
+          )}
+        </Modal>
+
         {/* Status Modal */}
         <Modal
-          open={modalVisible}
-          onCancel={() => setModalVisible(false)}
+          open={statusModalVisible}
+          onCancel={() => setStatusModalVisible(false)}
           onOk={handleSaveStatus}
           title="Update Assistant Status"
           okText="Save"
@@ -379,6 +794,7 @@ const AssistantsList = () => {
               color: "#000",
             },
           }}
+          destroyOnClose
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -392,7 +808,7 @@ const AssistantsList = () => {
                   if (value !== "APPROVED") {
                     form.setFieldsValue({ freetrails: undefined });
                   } else {
-                    form.setFieldsValue({ freetrails: 1 });
+                    form.setFieldsValue({ freetrails: 5 });
                   }
                 }}
               >
@@ -402,15 +818,35 @@ const AssistantsList = () => {
                 <Option value="DELETED">DELETED</Option>
               </Select>
             </Form.Item>
-
+            <Form.Item
+              label="Authorized By"
+              name="authorizedBy"
+              rules={[
+                { required: true, message: "Please select an authorized name" },
+              ]}
+            >
+              <Select placeholder="Select an authorized name">
+                {authorizedByOptions.map((authBy) => (
+                  <Option key={authBy} value={authBy}>
+                    {authBy}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
             {selectedStatus === "APPROVED" && (
               <Form.Item
                 label="Free Trials"
                 name="freetrails"
                 rules={[
                   {
-                    validator: (_, value) => {
-                      if (value && Number(value) < 5) {
+                    required: true,
+                    validator: (_rule, value) => {
+                      if (value == null || value === "") {
+                        return Promise.reject(
+                          new Error("Please enter free trials (min 5)")
+                        );
+                      }
+                      if (Number(value) < 5) {
                         return Promise.reject(
                           new Error("Free trials must be at least 5")
                         );
@@ -427,7 +863,7 @@ const AssistantsList = () => {
                   precision={0}
                   placeholder="Enter minimum 5 free trials"
                   controls={false}
-                  parser={(value) => value?.replace(/\D/g, "") || ""}
+                  parser={(v) => (v ? v.replace(/\D/g, "") : "")}
                 />
               </Form.Item>
             )}
@@ -437,25 +873,16 @@ const AssistantsList = () => {
         {/* Tools Modal */}
         <Modal
           open={toolsModalVisible}
-          onCancel={() => setToolsModalVisible(false)}
-          footer={null}
-          title="Manage Tools"
-        >
-          <Form form={toolForm} layout="vertical">
-            <Form.Item label="Select Tools">
-              <Checkbox.Group
-                options={[
-                 
-                  { label: "File Search", value: "file_search" },
-                ]}
-                value={selectedTools}
-                onChange={(values) => setSelectedTools(values)}
-              />
-            </Form.Item>
+          onCancel={() => {
+            setToolsModalVisible(false);
+            setSelectedTools([]); // Reset selected tools on modal close
+            toolForm.resetFields(); // Reset form on modal close
+          }}
+          footer={
             <Space style={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 type="primary"
-                style={{ backgroundColor: "#008cba" }}
+                style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
                 onClick={() => handleSaveTools("update")}
               >
                 Save Tools
@@ -464,6 +891,31 @@ const AssistantsList = () => {
                 Remove Tools
               </Button>
             </Space>
+          }
+          title="Manage Tools"
+          width={520}
+          destroyOnClose
+        >
+          <Form form={toolForm} layout="vertical">
+            <Form.Item
+              label="Select Tools"
+              name="selectedTools"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select at least one tool",
+                },
+              ]}
+            >
+              <Checkbox.Group
+                options={[
+                  { label: "File Search", value: "file_search" },
+                  { label: "Web Search", value: "web_search" },
+                ]}
+                value={selectedTools}
+                onChange={(values) => setSelectedTools(values)}
+              />
+            </Form.Item>
           </Form>
         </Modal>
       </Card>

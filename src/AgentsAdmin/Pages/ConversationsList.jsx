@@ -1,33 +1,29 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-  Row,
-  Col,
-  Card,
-  Typography,
-  Spin,
-  message,
-  Pagination,
-  Input,
-} from "antd";
+import React, { useEffect, useMemo, useState } from "react";
+import { Row, Col, Typography, Spin, message, Table, Input } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title } = Typography;
 const { Search } = Input;
 
 const ConversationsList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [total, setTotal] = useState(0);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+    total: 0,
+  });
   const [searchText, setSearchText] = useState("");
-
   const token = localStorage.getItem("token");
 
-  const fetchConversations = async (pageNumber = 0, size = 10, search = "") => {
+  const fetchConversations = async (
+    pageNumber = 0,
+    size = 100,
+    search = ""
+  ) => {
     setLoading(true);
     try {
       const res = await axios.get(
@@ -43,7 +39,10 @@ const ConversationsList = () => {
 
       if (res.data && res.data.content) {
         setData(res.data.content);
-        setTotal(res.data.totalElements);
+        setPagination((prev) => ({
+          ...prev,
+          total: res.data.totalElements,
+        }));
       }
     } catch (err) {
       message.error("Failed to fetch conversations");
@@ -53,22 +52,100 @@ const ConversationsList = () => {
   };
 
   useEffect(() => {
-    fetchConversations(page, pageSize, searchText);
-  }, [page, pageSize, searchText]);
+    fetchConversations(pagination.current - 1, pagination.pageSize, searchText);
+  }, [pagination.current, pagination.pageSize, searchText]);
 
   const handleSearch = (value) => {
     setSearchText(value);
-    setPage(0); // reset to first page when searching
+    setPagination((prev) => ({ ...prev, current: 1 }));
   };
+
+  const handleTableChange = (newPagination) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+      total: newPagination.total,
+    });
+  };
+
+  // Table columns
+  const columns = useMemo(
+    () => [
+      {
+        title: "S.No",
+        key: "sno",
+        align: "center",
+        render: (_text, _record, index) =>
+          (pagination.current - 1) * pagination.pageSize + index + 1,
+        width: 80,
+      },
+      {
+        title: "Agent Name",
+        dataIndex: "agentName",
+        key: "agentName",
+        align: "center",
+        render: (text) => text || "-",
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        align: "center",
+        render: (text) => (
+          <div
+            style={{
+              maxWidth: 400,
+              textAlign: "center",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {text || "No description available"}
+          </div>
+        ),
+      },
+      {
+        title: "Starter 1",
+        dataIndex: "conStarter1",
+        key: "conStarter1",
+        align: "center",
+        render: (text) => text || "-",
+      },
+      {
+        title: "Starter 2",
+        dataIndex: "conStarter2",
+        key: "conStarter2",
+        align: "center",
+        render: (text) => text || "-",
+      },
+      {
+        title: "Starter 3",
+        dataIndex: "conStarter3",
+        key: "conStarter3",
+        align: "center",
+        render: (text) => text || "-",
+      },
+      {
+        title: "Starter 4",
+        dataIndex: "conStarter4",
+        key: "conStarter4",
+        align: "center",
+        render: (text) => text || "-",
+      },
+    ],
+    [pagination.current, pagination.pageSize]
+  );
 
   return (
     <AgentsAdminLayout>
-      <div style={{ padding: "20px" }}>
+      <div style={{ padding: "24px" }}>
         {/* Header Row */}
         <Row
           justify="space-between"
           align="middle"
-          style={{ marginBottom: 20 }}
+          style={{ marginBottom: 24 }}
         >
           <Col>
             <Title level={3} style={{ margin: 0 }}>
@@ -80,59 +157,37 @@ const ConversationsList = () => {
               placeholder="Search by Agent Name"
               allowClear
               onSearch={handleSearch}
-              style={{ width: 250 }}
+              style={{ width: 260 }}
+              enterButton
             />
           </Col>
         </Row>
 
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "50px" }}>
-            <Spin size="medium" />
-          </div>
-        ) : (
-          <Row gutter={[16, 16]}>
-            {data.map((item) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={item.agentId}>
-                <Card
-                  title={item.agentName}
-                  bordered={true}
-                  hoverable
-                  style={{ borderRadius: "8px", minHeight: "250px" }}
-                >
-                  <Paragraph ellipsis={{ rows: 2, expandable: true }}>
-                    {item.description}
-                  </Paragraph>
-                  <div style={{ marginTop: "10px" }}>
-                    <Text strong>Starter 1: </Text>
-                    <Text>{item.conStarter1}</Text>
-                    <br />
-                    <Text strong>Starter 2: </Text>
-                    <Text>{item.conStarter2}</Text>
-                    <br />
-                    <Text strong>Starter 3: </Text>
-                    <Text>{item.conStarter3}</Text>
-                    <br />
-                    <Text strong>Starter 4: </Text>
-                    <Text>{item.conStarter4}</Text>
-                  </div>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
-
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
-          <Pagination
-            current={page + 1}
-            pageSize={pageSize}
-            total={total}
-            onChange={(p, size) => {
-              setPage(p - 1);
-              setPageSize(size);
-            }}
-            showSizeChanger
-          />
-        </div>
+        <Table
+          rowKey={(record) =>
+            record.agentId || Math.random().toString(36).slice(2)
+          }
+          loading={loading}
+          columns={columns}
+          dataSource={data}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ["500", "1000", "2000", "3000"],
+          }}
+          onChange={handleTableChange}
+          bordered
+          scroll={{ x: true }}
+          locale={{
+            emptyText: (
+              <div style={{ padding: "80px 0", textAlign: "center" }}>
+                <Typography.Text type="secondary">
+                  No conversations found.
+                </Typography.Text>
+              </div>
+            ),
+          }}
+        />
       </div>
     </AgentsAdminLayout>
   );

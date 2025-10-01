@@ -176,7 +176,7 @@ const GeminiUsers = () => {
         >
           <Col>
             <h1 style={{ margin: 0, fontWeight: "bold", fontSize: "20px" }}>
-              Agents Registered Users
+              Og Registered Users
             </h1>
           </Col>
           <Col>
@@ -198,7 +198,7 @@ const GeminiUsers = () => {
               height: "60vh",
             }}
           >
-            <Spin size="large" />
+            <Spin size="medium" />
           </div>
         ) : (
           <Table

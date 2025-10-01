@@ -109,6 +109,20 @@ const AgentsList = () => {
       dataIndex: "description",
       key: "description",
       align: "center",
+      render: (text) => (
+        <div
+          style={{
+            maxWidth: 400,
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {text}
+        </div>
+      ),
     },
     {
       title: "Agent Status",
@@ -127,12 +141,62 @@ const AgentsList = () => {
       dataIndex: "createdAt",
       key: "createdAt",
       align: "center",
+      render: (createdAt) => {
+        if (!createdAt) return "N/A";
+        try {
+          // Handle Unix timestamp (seconds or milliseconds) or ISO string
+          const timestamp = Number(createdAt);
+          const date = isNaN(timestamp)
+            ? new Date(createdAt) // For ISO strings
+            : timestamp < 1e12
+              ? new Date(timestamp * 1000) // Seconds
+              : new Date(timestamp); // Milliseconds
+          if (isNaN(date.getTime())) return "Invalid Date";
+          return date.toLocaleString("en-IN", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: "Asia/Kolkata",
+          });
+        } catch (error) {
+          console.error("Error parsing createdAt:", error);
+          return "Invalid Date";
+        }
+      },
     },
     {
       title: "Approved At",
       dataIndex: "approvedAt",
       key: "approvedAt",
       align: "center",
+      render: (approvedAt) => {
+        if (!approvedAt) return "N/A";
+        try {
+          // Handle Unix timestamp (seconds or milliseconds) or ISO string
+          const timestamp = Number(approvedAt);
+          const date = isNaN(timestamp)
+            ? new Date(approvedAt) // For ISO strings
+            : timestamp < 1e12
+              ? new Date(timestamp * 1000) // Seconds
+              : new Date(timestamp); // Milliseconds
+          if (isNaN(date.getTime())) return "Invalid Date";
+          return date.toLocaleString("en-IN", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: "Asia/Kolkata",
+          });
+        } catch (error) {
+          console.error("Error parsing approvedAt:", error);
+          return "Invalid Date";
+        }
+      },
     },
   ];
 

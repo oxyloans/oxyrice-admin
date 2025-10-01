@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { TeamOutlined } from "@ant-design/icons";
+import { UserOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
+import { MdLogout} from "react-icons/md";
 import { MessageOutlined } from "@ant-design/icons";
 import {
-  FaTachometerAlt,
-  FaClipboardList ,
- 
-} from "react-icons/fa";
+  DashboardOutlined,
+  FileTextOutlined,
+  FileDoneOutlined,
+
+} from "@ant-design/icons";
 
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -37,40 +39,51 @@ const AgentsAdminLayout = ({ children }) => {
       setCollapsed(false); // Expand on larger screens
     }
   }, [screens]);
- const sidebarItems = [
-   {
-     key: "agents-dashboard",
-     label: "Agents Dashboard",
-     icon: <FaTachometerAlt />,
-     link: "/admin/assistantslist",
-   },
-   {
-     key: "agent-plans",
-     label: "Agent Plans",
-     icon: <FaClipboardList />,
-     link: "/admin/agentsplanslist",
-   },
+
+const sidebarItems = [
   {
-  key: "agent-conversations",
-  label: "Agent Conversations",
-  icon: <MessageOutlined />,
-  link: "/admin/conversationlist",
-},
-
-   {
-     key: "agent-status",
-     label: "Agents Status List",
-     icon: <MdInventory />,
-     link: "/admin/agentsstatuslist",
-   },
-   {
-     key: "useragent-login",
-     label: "Agents Registered Users", // ✅ fixed label spelling
-     icon: <TeamOutlined />, // ✅ added icon
-     link: "/admin/agents-registered-users", // ✅ updated link
-   },
- ];
-
+    key: "agents-dashboard",
+    label: "Agents Dashboard",
+    icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/assistantslist",
+    style: { fontSize: "20px" }, // Custom font size for label
+  },
+  {
+    key: "agent-status",
+    label: "Agents Status List",
+    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agentsstatuslist",
+    style: { fontSize: "20px" },
+  },
+  {
+    key: "agent-plans",
+    label: "Agent Plans",
+    icon: <FileDoneOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agentsplanslist",
+    style: { fontSize: "20px" },
+  },
+  {
+    key: "agent-conversations",
+    label: "Agent Conversations",
+    icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/conversationlist",
+    style: { fontSize: "20px" },
+  },
+  {
+    key: "useragent-login",
+    label: "OG Registered Users",
+    icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agents-registered-users",
+    style: { fontSize: "20px" },
+  },
+  {
+    key: "Authorized-Users",
+    label: "Authorized-Users",
+    icon: <UserOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/authorizedusers",
+    style: { fontSize: "20px" },
+  },
+];
     
   
 

@@ -157,9 +157,9 @@ const PlansList = () => {
           columns={columns}
           dataSource={data}
           pagination={{
-            pageSize: 5,
+            pageSize: 50,
             showSizeChanger: true,
-            pageSizeOptions: ["5", "10", "20"],
+            pageSizeOptions: ["50", "100", "200", "500"],
           }}
           bordered
           scroll={{ x: true }}
