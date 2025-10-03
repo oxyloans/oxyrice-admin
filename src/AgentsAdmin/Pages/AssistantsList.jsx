@@ -47,7 +47,7 @@ const AssistantsList = () => {
 
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("APPROVED");
-const [authorizedByOptions, setAuthorizedByOptions] = useState([]);
+  const [authorizedByOptions, setAuthorizedByOptions] = useState([]);
   const [form] = Form.useForm();
   const [toolForm] = Form.useForm();
   const [selectedTools, setSelectedTools] = useState([]);
@@ -640,7 +640,7 @@ const [authorizedByOptions, setAuthorizedByOptions] = useState([]);
                   {selectedAssistant.assistantId}
                 </Descriptions.Item>
                 <Descriptions.Item label="Created Name">
-                  {selectedAssistant.createdName}
+                  {selectedAssistant.creatorName}
                 </Descriptions.Item>
                 <Descriptions.Item label="Agent ID">
                   {selectedAssistant.agentId}

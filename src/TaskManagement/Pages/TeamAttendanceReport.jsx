@@ -295,7 +295,11 @@ const TeamAttendanceReport = () => {
                   }}
                   bodyStyle={{ padding: 16 }}
                   hoverable
-                  onClick={() => navigate(`/user-task-details/${user.userid}`)}
+                  onClick={() =>
+                    navigate(`/user-task-details/${user.userid}`, {
+                      state: { selectedMonth: selectedMonth.format("YYYY-MM") },
+                    })
+                  }
                 >
                   <div style={{ lineHeight: 2 }}>
                     <div>
