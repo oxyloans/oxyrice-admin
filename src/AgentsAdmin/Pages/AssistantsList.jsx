@@ -71,15 +71,7 @@ const AssistantsList = () => {
     return [];
   };
 
-  const formatEpochOrIso = (value) => {
-    if (!value) return "-";
-    if (/^\d+$/.test(value)) {
-      const ms = Number(value) * 1000;
-      return isNaN(ms) ? value : new Date(ms).toLocaleString();
-    }
-    const d = new Date(value);
-    return isNaN(d.getTime()) ? value : d.toLocaleString();
-  };
+
 
   const renderStatusTag = (statusRaw) => {
     const s = (statusRaw || "").toString().toUpperCase().trim();
@@ -739,7 +731,7 @@ const AssistantsList = () => {
                   {selectedAssistant.similarity || ""}
                 </Descriptions.Item>
                 <Descriptions.Item label="Conversation Tone">
-                  {selectedAssistant.conversationTone || ""}
+                  {selectedAssistant.converstionTone || ""}
                 </Descriptions.Item>
                 <Descriptions.Item label="Image">
                   {selectedAssistant.imageUrl ? (

@@ -97,6 +97,7 @@ import AdminInstructions from "./TaskManagement/Pages/AdminInstructions";
 import RadhaInstructionView from "./TaskManagement/Pages/RadhaInstructionView";
 import ConversationsList from "./AgentsAdmin/Pages/ConversationsList";
 import AgentManagement from "./AgentsAdmin/Pages/AgentManagement";
+import AgentsRegisteredUsers from "./AgentsAdmin/Pages/AgentsRegisteredUsers";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -117,6 +118,10 @@ function App() {
         <Route path="/admin/agentslogin" element={<AgentsLogin />} />
         <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
+        <Route
+          path="/admin/agentsregisteredusers"
+          element={<AgentsRegisteredUsers />}
+        />
         <Route path="/admin/conversationlist" element={<ConversationsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />

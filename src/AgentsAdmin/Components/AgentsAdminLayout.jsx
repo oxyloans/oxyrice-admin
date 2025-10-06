@@ -56,6 +56,13 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
   {
+    key: "agent-registered-users",
+    label: "Agents Registered Users",
+    icon: <UserOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agentsregisteredusers",
+    style: { fontSize: "20px" },
+  },
+  {
     key: "agent-plans",
     label: "Agent Plans",
     icon: <FileDoneOutlined style={{ fontSize: "18px" }} />,
