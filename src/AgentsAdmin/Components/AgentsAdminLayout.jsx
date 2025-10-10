@@ -62,6 +62,14 @@ const sidebarItems = [
     link: "/admin/agentsregisteredusers",
     style: { fontSize: "20px" },
   },
+  // {
+  //   key: "gpt-store",
+  //   label: "GPT Store",
+  //   icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+  //   link: "/admin/agent-gptstore",
+  //   style: { fontSize: "20px" },
+  // },
+
   {
     key: "agent-plans",
     label: "Agent Plans",
@@ -136,7 +144,7 @@ const sidebarItems = [
               style={{ fontSize: 24 }}
             >
               <Link
-                to="/admin/dashboard"
+                to="/admin/assistantslist"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -158,7 +166,7 @@ const sidebarItems = [
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <Link to="/admin/agentsdashboard" style={{ textDecoration: "none" }}>
+          <Link to="/admin/assistantslist" style={{ textDecoration: "none" }}>
             <strong className="my-6 " style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Agents Admin"}
             </strong>

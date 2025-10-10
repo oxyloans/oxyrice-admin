@@ -253,15 +253,14 @@ const RadhaInstructionView = () => {
             >
               Write Message
             </Button>
+
+            <></>
           </div>
           {/* Header Section */}
           <div className=" p-4">
-           
-                <div className="text-gray-600 text-base">
-                  Manage and review Radha's instructions and team interactions
-                </div>
-              
-        
+            <div className="text-gray-600 text-base">
+              Manage and review Radha's instructions and team interactions
+            </div>
           </div>
 
           <Row gutter={[24, 24]}>
@@ -469,22 +468,38 @@ const RadhaInstructionView = () => {
               bodyStyle={{ padding: "32px" }}
             >
               <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    
-                    <div>
-                      <Title level={3} className="mb-1 text-gray-800 font-bold">
-                        Team Conversations
-                      </Title>
-                      <Text className="text-gray-500">
-                        {interactions.length} conversation
-                        {interactions.length !== 1 ? "s" : ""}
-                      </Text>
-                    </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between mb-4">
+                  <div>
+                    <Title level={3} className="mb-1 text-gray-800 font-bold">
+                      Team Conversations
+                    </Title>
+                    <Text className="text-gray-500">
+                      {interactions.length} conversation
+                      {interactions.length !== 1 ? "s" : ""}
+                    </Text>
                   </div>
 
-                  <Badge count={interactions.length} showZero color="#722ed1" />
+                  <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                    <Button
+                      icon={<MessageOutlined />}
+                      style={{
+                        backgroundColor: "#1c84c6",
+                        color: "white",
+                        borderRadius: "6px",
+                      }}
+                      onClick={() => setIsInteractionModalOpen(true)}
+                    >
+                      Write Message
+                    </Button>
+
+                    <Badge
+                      count={interactions.length}
+                      showZero
+                      color="#722ed1"
+                    />
+                  </div>
                 </div>
+
                 <Divider className="my-4" />
               </div>
 

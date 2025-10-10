@@ -64,26 +64,36 @@ const AgentManagement = () => {
     }
   }, [fetchAgents, token]);
 
-  const columns = [
-    {
-      title: "S.No",
-      key: "sno",
-      align: "center",
-      render: (_, __, index) => index + 1,
-    },
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      align: "center",
-    },
-    {
-      title: "Authorized By",
-      dataIndex: "authorizedBy",
-      key: "authorizedBy",
-      align: "center",
-    },
-  ];
+ const columns = [
+   {
+     title: "S.No",
+     key: "sno",
+     align: "center",
+     render: (_, __, index) => index + 1,
+   },
+   {
+     title: "ID",
+     dataIndex: "id",
+     key: "id",
+     align: "center",
+     render: (id) => (
+       <>
+         {id && (
+           <span style={{ color: "#008cba", fontWeight: 600 }}>
+             #{id.slice(-4)}
+           </span>
+         )}
+       </>
+     ),
+   },
+   {
+     title: "Authorized By",
+     dataIndex: "authorizedBy",
+     key: "authorizedBy",
+     align: "center",
+   },
+ ];
+
 
   return (
     <AgentsAdminLayout>

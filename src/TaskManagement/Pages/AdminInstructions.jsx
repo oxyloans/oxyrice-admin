@@ -9,6 +9,7 @@ import {
   Button,
   Upload,
   Modal,
+  Select,
 } from "antd";
 import { UploadOutlined, MessageOutlined } from "@ant-design/icons";
 import { MdModeEditOutline, MdForum } from "react-icons/md";
@@ -23,6 +24,7 @@ const AdminInstructions = () => {
   const [data, setData] = useState([]);
   const [fileList, setFileList] = useState([]);
   const navigate = useNavigate();
+const [selectedDept, setSelectedDept] = useState(null);
 
   const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
@@ -106,6 +108,8 @@ const AdminInstructions = () => {
         adminUserId,
         instructionHeader: values.instructionHeader,
         instructions: values.instructions,
+        department: values.department, // added
+        employeesName: values.employeesName, // added
       };
 
       // First save instruction
@@ -138,6 +142,8 @@ const AdminInstructions = () => {
       const payload = {
         instructionHeader: values.instructionHeader,
         instructions: values.instructions,
+        department: values.department, // added
+        employeesName: values.employeesName, // added
         radhaInstructionsId: editingRecord.radhaInstructionsId,
       };
 
@@ -192,6 +198,29 @@ const AdminInstructions = () => {
     const istDate = new Date(date.getTime() + istOffset);
     return istDate.toLocaleString("en-IN", { hour12: true });
   };
+const DEPARTMENT_EMPLOYEES = {
+  SALESTEAM: ["Ravi", "Suresh", "Jhanisha"],
+  BACKENDTEAM: [
+    "Vinod",
+    "Naveen",
+    "Sridhar",
+    "Vijay",
+    "SaiKumar",
+    "Anushak",
+    "Sudeesh",
+  ],
+  FRONTENDTEAM: [
+    "Maneiah",
+    "Gopal",
+    "HariBabu",
+    "VaraLakshmi",
+    "SaiKrishna",
+    "Sreeja",
+    "Niharika",
+  ],
+  ACCOUNTSTEAM: ["Anusha", "Subbu", "Mounika"],
+  MANAGEMENTTEAM: ["Radha", "Rama", "Narendra"],
+};
 
   const columns = [
     { title: "S.No", render: (_, __, index) => index + 1, align: "center" },
@@ -207,20 +236,53 @@ const AdminInstructions = () => {
       align: "center",
       render: (text) => (text ? `#${text.slice(-4)}` : "-"),
     },
-    { title: "Instruction Header", dataIndex: "instructionHeader", align: "center" },
-    { title: "Instructions", dataIndex: "radhaInstructions", align: "center" },
+    {
+      title: "Instruction Header",
+      dataIndex: "instructionHeader",
+      align: "center",
+    },
+    {
+      title: "Instructions",
+      dataIndex: "radhaInstructions",
+      align: "center",
+      render: (text) => (
+        <div
+          style={{
+            maxWidth: 300,
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {text}
+        </div>
+      ),
+    },
+    {
+      title: "Employees Name",
+      dataIndex: "employeesName",
+      align: "center",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      align: "center",
+    },
+
     {
       title: "Created Date",
       dataIndex: "radhaInstructeddate",
       align: "center",
       render: (text) => formatDateIST(text),
     },
-    {
-      title: "Updated Date",
-      dataIndex: "radhaUpdateDate",
-      align: "center",
-      render: (text) => formatDateIST(text),
-    },
+    // {
+    //   title: "Updated Date",
+    //   dataIndex: "radhaUpdateDate",
+    //   align: "center",
+    //   render: (text) => formatDateIST(text),
+    // },
     {
       title: "Action",
       key: "action",
@@ -232,23 +294,35 @@ const AdminInstructions = () => {
               setEditingRecord(record);
               setIsEditModalOpen(true);
             }}
-            style={{ backgroundColor: "#1AB394", color: "white", border: "none" }}
+            style={{
+              backgroundColor: "#1AB394",
+              color: "white",
+              border: "none",
+            }}
             icon={<MdModeEditOutline />}
           >
             Edit
           </Button>
-          <Button
+          {/* <Button
             onClick={() => {
               setInteractionRecord(record);
               setIsInteractionModalOpen(true);
             }}
-            style={{ backgroundColor: "#1c84c6", color: "white", border: "none" }}
+            style={{
+              backgroundColor: "#1c84c6",
+              color: "white",
+              border: "none",
+            }}
             icon={<MessageOutlined />}
           >
             Write To Us
-          </Button>
+          </Button> */}
           <Button
-            style={{ backgroundColor: "#8e44ad", color: "white", border: "none" }}
+            style={{
+              backgroundColor: "#8e44ad",
+              color: "white",
+              border: "none",
+            }}
             icon={<MdForum />}
             onClick={() =>
               navigate(`/taskmanagement/chatview/${record.radhaInstructionsId}`)
@@ -356,6 +430,41 @@ const AdminInstructions = () => {
           >
             <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
+          <Form.Item
+            label="Department"
+            name="department"
+            rules={[{ required: true, message: "Please select a department" }]}
+          >
+            <Select
+              placeholder="Select Department"
+              onChange={(value) => {
+                setSelectedDept(value);
+                formAdd.setFieldsValue({ employeesName: undefined }); // reset employee
+              }}
+            >
+              {Object.keys(DEPARTMENT_EMPLOYEES).map((dept) => (
+                <Select.Option key={dept} value={dept}>
+                  {dept.replace("TEAM", " Team")}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Employee Name"
+            name="employeesName"
+            rules={[{ required: true, message: "Please select an employee" }]}
+          >
+            <Select placeholder="Select Employee" disabled={!selectedDept}>
+              {selectedDept &&
+                DEPARTMENT_EMPLOYEES[selectedDept].map((emp) => (
+                  <Select.Option key={emp} value={emp}>
+                    {emp}
+                  </Select.Option>
+                ))}
+            </Select>
+          </Form.Item>
+
           <Form.Item label="Upload one or more documents or images (optional).">
             <Upload
               multiple
@@ -397,7 +506,12 @@ const AdminInstructions = () => {
       <Modal
         title="Edit Admin Instruction"
         open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
+        onCancel={() => {
+          setIsEditModalOpen(false);
+          formEdit.resetFields();
+          setFileList([]);
+          setSelectedDept(null);
+        }}
         footer={null}
       >
         <Form
@@ -407,6 +521,8 @@ const AdminInstructions = () => {
           initialValues={{
             instructionHeader: editingRecord?.instructionHeader,
             instructions: editingRecord?.radhaInstructions,
+            department: editingRecord?.department,
+            employeesName: editingRecord?.employeesName,
           }}
           key={editingRecord?.radhaInstructionsId}
         >
@@ -414,11 +530,12 @@ const AdminInstructions = () => {
             label="Instruction Header"
             name="instructionHeader"
             rules={[
-              { required: true, message: "Please enter instructions header" },
+              { required: true, message: "Please enter instruction header" },
             ]}
           >
             <Input />
           </Form.Item>
+
           <Form.Item
             label="Instructions"
             name="instructions"
@@ -428,6 +545,41 @@ const AdminInstructions = () => {
             ]}
           >
             <Input.TextArea rows={6} showCount maxLength={5000} />
+          </Form.Item>
+
+          <Form.Item
+            label="Department"
+            name="department"
+            rules={[{ required: true, message: "Please select a department" }]}
+          >
+            <Select
+              placeholder="Select Department"
+              onChange={(value) => {
+                setSelectedDept(value);
+                formEdit.setFieldsValue({ employeesName: undefined }); // reset employee
+              }}
+            >
+              {Object.keys(DEPARTMENT_EMPLOYEES).map((dept) => (
+                <Select.Option key={dept} value={dept}>
+                  {dept.replace("TEAM", " Team")}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Employee Name"
+            name="employeesName"
+            rules={[{ required: true, message: "Please select an employee" }]}
+          >
+            <Select placeholder="Select Employee" disabled={!selectedDept}>
+              {selectedDept &&
+                DEPARTMENT_EMPLOYEES[selectedDept].map((emp) => (
+                  <Select.Option key={emp} value={emp}>
+                    {emp}
+                  </Select.Option>
+                ))}
+            </Select>
           </Form.Item>
           <Form.Item label="Upload one or more documents or images (optional).">
             <Upload
@@ -503,3 +655,5 @@ const AdminInstructions = () => {
 };
 
 export default AdminInstructions;
+
+

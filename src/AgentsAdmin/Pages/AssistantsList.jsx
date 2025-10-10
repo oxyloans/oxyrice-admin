@@ -51,7 +51,7 @@ const AssistantsList = () => {
   const [form] = Form.useForm();
   const [toolForm] = Form.useForm();
   const [selectedTools, setSelectedTools] = useState([]);
-
+const [isSearching, setIsSearching] = useState(false);
   const accessToken = localStorage.getItem("token") || "";
   const userId = localStorage.getItem("userId") || "";
 
@@ -83,7 +83,12 @@ const AssistantsList = () => {
   };
 
   // ---------- Fetching ----------
-  const fetchAssistants = async ({ limit, after, replace = false }) => {
+  const fetchAssistants = async ({
+    limit,
+    after,
+    replace = false,
+    searchValue = "",
+  }) => {
     try {
       setLoading(true);
       const url =
@@ -105,9 +110,9 @@ const AssistantsList = () => {
       const newData = replace ? fetched : [...data, ...fetched];
       setData(newData);
 
-      const newFiltered = searchTerm.trim()
+      const newFiltered = searchValue.trim()
         ? newData.filter((item) =>
-            (item.name || "").toLowerCase().includes(searchTerm.toLowerCase())
+            (item.name || "").toLowerCase().includes(searchValue.toLowerCase())
           )
         : newData;
       setFilteredData(newFiltered);
@@ -135,49 +140,103 @@ const AssistantsList = () => {
   }, []);
 
   // ---------- Pagination change ----------
-  const handleTableChange = async (newPagination) => {
-    const goingForward = newPagination.current > pagination.current;
-    const pageSizeChanged = newPagination.pageSize !== pagination.pageSize;
+ const handleTableChange = async (newPagination) => {
+   const goingForward = newPagination.current > pagination.current;
+   const pageSizeChanged = newPagination.pageSize !== pagination.pageSize;
 
-    setPagination({
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-      total: newPagination.total,
+   setPagination({
+     current: newPagination.current,
+     pageSize: newPagination.pageSize,
+     total: newPagination.total,
+   });
+
+   if (pageSizeChanged) {
+     setCursorAfter(null);
+     setHasMore(false);
+     setLastId(null);
+     setData([]);
+     setFilteredData([]);
+     if (isSearching) {
+       await fetchSearch({
+         limit: newPagination.pageSize,
+         message: searchTerm,
+         replace: true,
+       });
+     } else {
+       await fetchAssistants({ limit: newPagination.pageSize, replace: true });
+     }
+     return;
+   }
+
+   const needRows = newPagination.current * newPagination.pageSize;
+   if (goingForward && filteredData.length < needRows && hasMore && lastId) {
+     if (isSearching) {
+       await fetchSearch({
+         limit: newPagination.pageSize,
+         after: lastId,
+         message: searchTerm,
+       });
+     } else {
+       await fetchAssistants({ limit: pagination.pageSize, after: lastId });
+     }
+   }
+ };
+const fetchSearch = async ({ limit, after, message, replace = false }) => {
+  try {
+    setLoading(true);
+    const url =
+      `${BASE_URL}/ai-service/agent/webSearchForAgent?message=${encodeURIComponent(message)}` 
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
+    if (!res.ok) throw new Error("Failed to fetch search results");
 
-    if (pageSizeChanged) {
-      setCursorAfter(null);
-      setHasMore(false);
-      setLastId(null);
-      setData([]);
-      setFilteredData([]);
-      await fetchAssistants({ limit: newPagination.pageSize, replace: true });
-      return;
-    }
+    const json = await res.json();
+    const fetched = (json && json.data) || [];
 
-    const needRows = newPagination.current * newPagination.pageSize;
-    if (goingForward && filteredData.length < needRows && hasMore && lastId) {
-      await fetchAssistants({ limit: newPagination.pageSize, after: lastId });
-    }
-  };
+    setHasMore(!!(json && json.hasMore));
+    setLastId((json && json.lastId) || null);
 
-  // ---------- Live search ----------
-  const handleSearchChange = (e) => {
-    const value = e.target.value || "";
-    setSearchTerm(value);
+    const newData = replace ? fetched : [...data, ...fetched];
+    setData(newData);
 
-    const filtered = value.trim()
-      ? data.filter((item) =>
-          (item.name || "").toLowerCase().includes(value.toLowerCase())
-        )
-      : data;
-    setFilteredData(filtered);
-    setPagination((p) => ({
-      ...p,
-      current: 1,
-      total: filtered.length + (hasMore ? p.pageSize : 0),
+    setFilteredData(newData); // Search results are already filtered
+
+    setPagination((prev) => ({
+      ...prev,
+      total: newData.length + (json.hasMore ? prev.pageSize : 0),
     }));
-  };
+  } catch (err) {
+    console.error(err);
+    message.error("Failed to load search results");
+  } finally {
+    setLoading(false);
+  }
+};
+  // ---------- Live search ----------
+const handleSearchChange = (e) => {
+  const value = e.target.value || "";
+  setSearchTerm(value);
+
+  setCursorAfter(null);
+  setHasMore(false);
+  setLastId(null);
+  setData([]);
+  setFilteredData([]);
+
+  if (value.trim()) {
+    setIsSearching(true);
+    fetchSearch({ limit: pagination.pageSize, message: value, replace: true });
+  } else {
+    setIsSearching(false);
+    fetchAssistants({
+      limit: pagination.pageSize,
+      replace: true,
+      searchValue: "",
+    }); // <-- pass empty string
+  }
+};
+
 
   // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
@@ -227,7 +286,11 @@ const AssistantsList = () => {
       setLastId(null);
       setData([]);
       setFilteredData([]);
-      await fetchAssistants({ limit: pagination.pageSize, replace: true });
+      if (isSearching) {
+        await fetchSearch({ limit: pagination.pageSize, message: searchTerm, replace: true });
+      } else {
+        await fetchAssistants({ limit: pagination.pageSize, replace: true });
+      }
     } catch (err) {
       console.error(err);
       message.error("Error updating assistant status");
@@ -475,10 +538,11 @@ const AssistantsList = () => {
         className="shadow-md rounded-lg"
         title={
           <Row justify="space-between" align="middle" style={{ width: "100%" }}>
-            <Col>
-              <h3 style={{ margin: 0, textAlign: "center" }}>
+            <Col
+            >
+              <h1 style={{ margin: 0, textAlign: "center" }}>
                 Agents Creation List
-              </h3>
+              </h1>
             </Col>
             <Col>
               <Search
@@ -500,7 +564,7 @@ const AssistantsList = () => {
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            pageSizeOptions: ["50", "100", "200", "300"],
+            pageSizeOptions: ["20", "40", "60", "80"],
           }}
           onChange={handleTableChange}
           bordered
@@ -544,30 +608,7 @@ const AssistantsList = () => {
                   Update Status
                 </Button>
               </Tooltip>
-              {/* <Tooltip title="Manage tools associated with this assistant">
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    if (!selectedAssistant) return;
-                    setPreviewVisible(false);
-                    openToolsModal(selectedAssistant);
-                  }}
-                  style={{
-                    backgroundColor: "#6a1b9a",
-                    borderColor: "#6a1b9a",
-                    color: "#fff",
-                    borderRadius: "6px",
-                    padding: "0 16px",
-                    height: "40px",
-                    fontWeight: 500,
-                  }}
-                  loading={loading}
-                  disabled={!selectedAssistant}
-                  aria-label="Manage assistant tools"
-                >
-                  Manage Tools
-                </Button>
-              </Tooltip> */}
+             
               <Tooltip title="Close the preview">
                 <Button
                   onClick={() => setPreviewVisible(false)}

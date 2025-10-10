@@ -28,12 +28,24 @@ const AgentsList = () => {
         }
       );
 
-      if (res.data) {
-        const result = Array.isArray(res.data) ? res.data : [res.data];
-        setData(result);
+      let result = Array.isArray(res.data) ? res.data : [res.data];
+
+      // ✅ Sort data based on status
+      if (statusValue === "REQUESTED") {
+        result.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0);
+          const dateB = new Date(b.createdAt || 0);
+          return dateB - dateA; // Descending (latest first)
+        });
       } else {
-        setData([]);
+        result.sort((a, b) => {
+          const dateA = new Date(a.approvedAt || 0);
+          const dateB = new Date(b.approvedAt || 0);
+          return dateB - dateA; // Descending (latest first)
+        });
       }
+
+      setData(result);
     } catch (err) {
       message.error("Failed to fetch agents");
     } finally {
@@ -225,7 +237,7 @@ const AgentsList = () => {
             total: filteredData.length,
             onChange: (page) => setCurrentPage(page),
             showSizeChanger: false,
-            position: ["bottomRight"], // ✅ Pagination now at bottom-right
+            position: ["bottomRight"], // ✅ Pagination at bottom-right
           }}
           bordered
           scroll={{ x: true }}

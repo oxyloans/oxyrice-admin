@@ -1,9 +1,10 @@
-"use client";
+
 import React, { useEffect, useMemo, useState } from "react";
-import { Row, Col, Typography, Spin, message, Table, Input } from "antd";
+import { Row, Col, Typography, message, Table, Input, Button } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -26,10 +27,16 @@ const ConversationsList = () => {
   ) => {
     setLoading(true);
     try {
+      const params = new URLSearchParams({
+        page: pageNumber.toString(),
+        size: size.toString(),
+      });
+      if (search) {
+        params.append("agentName", search.trim());
+      }
+
       const res = await axios.get(
-        `${BASE_URL}/ai-service/agent/getAllConversations?page=${pageNumber}&size=${size}${
-          search ? `&agentName=${encodeURIComponent(search)}` : ""
-        }`,
+        `${BASE_URL}/ai-service/agent/getAllConversations?${params.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -38,13 +45,19 @@ const ConversationsList = () => {
       );
 
       if (res.data && res.data.content) {
-        setData(res.data.content);
+        // Reverse data to show latest first
+        const reversedData = [...res.data.content].reverse();
+        setData(reversedData);
         setPagination((prev) => ({
           ...prev,
-          total: res.data.totalElements,
+          total: res.data.totalElements || res.data.content.length,
         }));
+      } else {
+        setData([]);
+        setPagination((prev) => ({ ...prev, total: 0 }));
       }
     } catch (err) {
+      console.error(err);
       message.error("Failed to fetch conversations");
     } finally {
       setLoading(false);
@@ -56,8 +69,10 @@ const ConversationsList = () => {
   }, [pagination.current, pagination.pageSize, searchText]);
 
   const handleSearch = (value) => {
-    setSearchText(value);
+    const trimmedValue = value.trim();
+    setSearchText(trimmedValue);
     setPagination((prev) => ({ ...prev, current: 1 }));
+    fetchConversations(0, pagination.pageSize, trimmedValue);
   };
 
   const handleTableChange = (newPagination) => {
@@ -68,7 +83,6 @@ const ConversationsList = () => {
     });
   };
 
-  // Table columns
   const columns = useMemo(
     () => [
       {
@@ -141,7 +155,7 @@ const ConversationsList = () => {
   return (
     <AgentsAdminLayout>
       <div style={{ padding: "24px" }}>
-        {/* Header Row */}
+        {/* Header */}
         <Row
           justify="space-between"
           align="middle"
@@ -158,7 +172,17 @@ const ConversationsList = () => {
               allowClear
               onSearch={handleSearch}
               style={{ width: 260 }}
-              enterButton
+              enterButton={
+                <Button
+                  type="primary"
+                  style={{
+                    backgroundColor: "#008cba",
+                    borderColor: "#008cba",
+                    color: "#fff",
+                  }}
+                  icon={<SearchOutlined />}
+                />
+              }
             />
           </Col>
         </Row>
@@ -173,7 +197,7 @@ const ConversationsList = () => {
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            pageSizeOptions: ["500", "1000", "2000", "3000"],
+            pageSizeOptions: ["100", "500", "1000", "2000"],
           }}
           onChange={handleTableChange}
           bordered

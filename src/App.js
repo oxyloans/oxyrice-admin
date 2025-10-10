@@ -99,9 +99,12 @@ import ConversationsList from "./AgentsAdmin/Pages/ConversationsList";
 import AgentManagement from "./AgentsAdmin/Pages/AgentManagement";
 import AgentsRegisteredUsers from "./AgentsAdmin/Pages/AgentsRegisteredUsers";
 
+import AgentUserProfile from "./AgentsAdmin/Pages/AgentUserProfile";
+import GPTStore from "./AgentsAdmin/Pages/GPTStore";
+
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
-  const isAuthenticated = localStorage.getItem("token") ? true : false; 
+  const isAuthenticated = localStorage.getItem("token") ? true : false;
   return isAuthenticated ? element : <Navigate to="/" />;
 };
 
@@ -121,7 +124,9 @@ function App() {
         <Route
           path="/admin/agentsregisteredusers"
           element={<AgentsRegisteredUsers />}
-        />
+        />{" "}
+        <Route path="/admin/agent-user" element={<AgentUserProfile />} />
+        <Route path="/admin/agent-gptstore" element={<GPTStore />} />
         <Route path="/admin/conversationlist" element={<ConversationsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
