@@ -62,13 +62,13 @@ const sidebarItems = [
     link: "/admin/agentsregisteredusers",
     style: { fontSize: "20px" },
   },
-  // {
-  //   key: "gpt-store",
-  //   label: "GPT Store",
-  //   icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-  //   link: "/admin/agent-gptstore",
-  //   style: { fontSize: "20px" },
-  // },
+  {
+    key: "gpt-store",
+    label: "GPT Store",
+    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agent-gptstore",
+    style: { fontSize: "20px" },
+  },
 
   {
     key: "agent-plans",

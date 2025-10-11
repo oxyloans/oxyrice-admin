@@ -220,6 +220,8 @@ const DEPARTMENT_EMPLOYEES = {
   ],
   ACCOUNTSTEAM: ["Anusha", "Subbu", "Mounika"],
   MANAGEMENTTEAM: ["Radha", "Rama", "Narendra"],
+  TESTINGTEAM: ["Guna", "Grishma", "Divya"],
+  HRTEAM: ["Ramya"],
 };
 
   const columns = [

@@ -120,6 +120,12 @@ const GPTStore = () => {
       ),
     },
     {
+      title: "Agent Category Type",
+      dataIndex: "categoryType",
+      key: "categoryType",
+      align: "center",
+    },
+    {
       title: "URL",
       dataIndex: "url",
       key: "url",
@@ -269,7 +275,13 @@ const GPTStore = () => {
             >
               <Input.TextArea rows={6} />
             </Form.Item>
-
+            <Form.Item
+              label="Agent Category Type"
+              name="categoryType"
+            
+            >
+              <Input />
+            </Form.Item>
             <Form.Item
               label="URL"
               name="url"
