@@ -5,6 +5,7 @@ import { TeamOutlined } from "@ant-design/icons";
 import { UserOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { MdLogout} from "react-icons/md";
+import { FaStore } from "react-icons/fa";
 import { MessageOutlined } from "@ant-design/icons";
 import {
   DashboardOutlined,
@@ -63,9 +64,16 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
   {
+    key: "agent-user-history",
+    label: "User Chat History",
+    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/userhistory",
+    style: { fontSize: "20px" },
+  },
+  {
     key: "gpt-store",
     label: "GPT Store",
-    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    icon: <FaStore style={{ fontSize: "18px" }} />,
     link: "/admin/agent-gptstore",
     style: { fontSize: "20px" },
   },

@@ -10,6 +10,7 @@ import {
   Upload,
   Modal,
   Select,
+  Tooltip,
 } from "antd";
 import { UploadOutlined, MessageOutlined } from "@ant-design/icons";
 import { MdModeEditOutline, MdForum } from "react-icons/md";
@@ -248,43 +249,54 @@ const DEPARTMENT_EMPLOYEES = {
       dataIndex: "radhaInstructions",
       align: "center",
       render: (text) => (
+        // <Tooltip title={text}>
         <div
           style={{
-            maxWidth: 300,
+            maxWidth: 250,
             textAlign: "center",
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+
             WebkitBoxOrient: "vertical",
-            overflow: "hidden",
+            maxHeight: 110, // limit height
+            overflowX: "auto", // horizontal scroll
           }}
         >
           {text}
         </div>
+        // </Tooltip>
       ),
     },
     {
-      title: "Employees Name",
+      title: "Employee Names",
       dataIndex: "employeesName",
       align: "center",
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      align: "center",
+      width: 160,
+      render: (text) => (
+        <Tooltip title={text}>
+          <div
+            style={{
+              maxWidth: 140,
+              maxHeight: 80, // limit height
+              overflowX: "auto", // horizontal scroll
+            }}
+          >
+            {text || "-"}
+          </div>
+        </Tooltip>
+      ),
     },
 
     {
-      title: "Created Date",
-      dataIndex: "radhaInstructeddate",
+      title: "Created/Updated",
+      dataIndex: "radhaInstructeddate", // Use one as primary dataIndex, but render will access both
       align: "center",
-      render: (text) => formatDateIST(text),
+      render: (text, record) => (
+        <div style={{ textAlign: "left" }}>
+          <div><span style={{ fontWeight: "400" }}>Created: </span>{formatDateIST(record.radhaInstructeddate)}</div>
+          <div><span style={{ fontWeight: "400" }}>Updated: </span>{formatDateIST(record.radhaUpdateDate)}</div>
+        </div>
+      ),
     },
-    // {
-    //   title: "Updated Date",
-    //   dataIndex: "radhaUpdateDate",
-    //   align: "center",
-    //   render: (text) => formatDateIST(text),
-    // },
     {
       title: "Action",
       key: "action",
@@ -396,7 +408,7 @@ const DEPARTMENT_EMPLOYEES = {
           dataSource={filteredData}
           columns={columns}
           bordered
-          pagination={{ pageSize: 50 }}
+          pagination={{ pageSize: 20 }}
           scroll={{ x: true }}
         />
       )}
@@ -433,15 +445,21 @@ const DEPARTMENT_EMPLOYEES = {
             <Input.TextArea rows={6} showCount maxLength={5000} />
           </Form.Item>
           <Form.Item
-            label="Department"
+            label="Departments"
             name="department"
-            rules={[{ required: true, message: "Please select a department" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please select at least one department",
+              },
+            ]}
           >
             <Select
-              placeholder="Select Department"
-              onChange={(value) => {
-                setSelectedDept(value);
-                formAdd.setFieldsValue({ employeesName: undefined }); // reset employee
+              mode="multiple"
+              placeholder="Select Departments"
+              onChange={(values) => {
+                setSelectedDept(values);
+                formAdd.setFieldsValue({ employeesName: undefined }); // reset employees
               }}
             >
               {Object.keys(DEPARTMENT_EMPLOYEES).map((dept) => (
@@ -453,17 +471,22 @@ const DEPARTMENT_EMPLOYEES = {
           </Form.Item>
 
           <Form.Item
-            label="Employee Name"
+            label="Employee Names"
             name="employeesName"
-            rules={[{ required: true, message: "Please select an employee" }]}
+            rules={[{ required: true, message: "Please select employees" }]}
           >
-            <Select placeholder="Select Employee" disabled={!selectedDept}>
-              {selectedDept &&
-                DEPARTMENT_EMPLOYEES[selectedDept].map((emp) => (
-                  <Select.Option key={emp} value={emp}>
+            <Select
+              mode="multiple"
+              placeholder="Select Employees"
+              disabled={!selectedDept?.length}
+            >
+              {selectedDept?.flatMap((dept) =>
+                DEPARTMENT_EMPLOYEES[dept]?.map((emp) => (
+                  <Select.Option key={`${dept}-${emp}`} value={emp}>
                     {emp}
                   </Select.Option>
-                ))}
+                ))
+              )}
             </Select>
           </Form.Item>
 
@@ -550,15 +573,21 @@ const DEPARTMENT_EMPLOYEES = {
           </Form.Item>
 
           <Form.Item
-            label="Department"
+            label="Departments"
             name="department"
-            rules={[{ required: true, message: "Please select a department" }]}
+            rules={[
+              {
+                required: true,
+                message: "Please select at least one department",
+              },
+            ]}
           >
             <Select
-              placeholder="Select Department"
-              onChange={(value) => {
-                setSelectedDept(value);
-                formEdit.setFieldsValue({ employeesName: undefined }); // reset employee
+              mode="multiple"
+              placeholder="Select Departments"
+              onChange={(values) => {
+                setSelectedDept(values);
+                formAdd.setFieldsValue({ employeesName: undefined }); // reset employees
               }}
             >
               {Object.keys(DEPARTMENT_EMPLOYEES).map((dept) => (
@@ -570,19 +599,25 @@ const DEPARTMENT_EMPLOYEES = {
           </Form.Item>
 
           <Form.Item
-            label="Employee Name"
+            label="Employee Names"
             name="employeesName"
-            rules={[{ required: true, message: "Please select an employee" }]}
+            rules={[{ required: true, message: "Please select employees" }]}
           >
-            <Select placeholder="Select Employee" disabled={!selectedDept}>
-              {selectedDept &&
-                DEPARTMENT_EMPLOYEES[selectedDept].map((emp) => (
-                  <Select.Option key={emp} value={emp}>
+            <Select
+              mode="multiple"
+              placeholder="Select Employees"
+              disabled={!selectedDept?.length}
+            >
+              {selectedDept?.flatMap((dept) =>
+                DEPARTMENT_EMPLOYEES[dept]?.map((emp) => (
+                  <Select.Option key={`${dept}-${emp}`} value={emp}>
                     {emp}
                   </Select.Option>
-                ))}
+                ))
+              )}
             </Select>
           </Form.Item>
+
           <Form.Item label="Upload one or more documents or images (optional).">
             <Upload
               multiple

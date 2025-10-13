@@ -35,7 +35,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  TeamOutlined,
+  
 } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
@@ -264,62 +264,71 @@ const RadhaInstructionView = () => {
           </div>
 
           <Row gutter={[24, 24]}>
-            {/* Left Section - Instructions */}
+            {/* LEFT SECTION - INSTRUCTIONS */}
             <Col xs={24} lg={14}>
               <Card
-                className="shadow-lg rounded-2xl border-0 h-full"
-                bodyStyle={{ padding: "32px" }}
+                className="shadow-xl rounded-2xl border-0 h-full"
+                bodyStyle={{ padding: "28px" }}
               >
                 <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Title level={3} className="mb-0 text-gray-800 font-bold">
-                      Radha Instructions
-                    </Title>
-                  </div>
+                  <Title
+                    level={3}
+                    className="text-gray-900 font-extrabold mb-0 tracking-tight"
+                  >
+                    Radha Instructions
+                  </Title>
                   <Divider className="my-4" />
                 </div>
 
                 <div className="space-y-6">
-                  {/* Header */}
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
-                    <Title
-                      level={4}
-                      className="mb-3 text-blue-800 flex items-center gap-2"
-                    >
-                      Instruction Header
-                    </Title>
+                  {/* Instruction Header */}
+                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100 hover:shadow-md transition">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <Title
+                        level={4}
+                        className="text-blue-800 mb-0 font-semibold"
+                      >
+                        Instruction Header
+                      </Title>
+                      <Tag
+                        color="blue"
+                        className="px-3 py-1 rounded-lg text-sm"
+                      >
+                        Assigned to {instructionData.employeesName}
+                      </Tag>
+                    </div>
                     <Paragraph className="text-gray-700 text-base leading-relaxed mb-0">
-                      {instructionData.instructionHeader}
+                      {instructionData.instructionHeader ||
+                        "No header available."}
                     </Paragraph>
                   </div>
 
-                  {/* Main Instructions */}
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100">
+                  {/* Detailed Instructions */}
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100 hover:shadow-md transition">
                     <Title
                       level={4}
-                      className="mb-3 text-purple-800 flex items-center gap-2"
+                      className="text-purple-800 mb-3 font-semibold flex items-center gap-2"
                     >
                       Detailed Instructions
                     </Title>
-                    <Paragraph className="text-gray-700 text-base leading-relaxed mb-0 whitespace-pre-wrap">
-                      {instructionData.radhaInstructions}
+                    <Paragraph className="text-gray-700 text-base leading-relaxed whitespace-pre-wrap mb-0">
+                      {instructionData.radhaInstructions ||
+                        "No detailed instructions available."}
                     </Paragraph>
                   </div>
 
-                  {/* Metadata */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100">
+                  {/* Timeline Info */}
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100 hover:shadow-md transition">
                     <Title
                       level={4}
-                      className="mb-4 text-green-800 flex items-center gap-2"
+                      className="text-green-800 mb-4 font-semibold flex items-center gap-2"
                     >
                       Timeline Information
                     </Title>
                     <Row gutter={[16, 16]}>
                       <Col xs={24} sm={12}>
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <CalendarOutlined className="text-blue-600" />
-                          </div>
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                         
                           <div>
                             <Text strong className="block text-gray-800">
                               Created
@@ -333,10 +342,8 @@ const RadhaInstructionView = () => {
                         </div>
                       </Col>
                       <Col xs={24} sm={12}>
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
-                          <div className="p-2 bg-green-100 rounded-lg">
-                            <EditOutlined className="text-green-600" />
-                          </div>
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
+                         
                           <div>
                             <Text strong className="block text-gray-800">
                               Last Updated
@@ -353,45 +360,44 @@ const RadhaInstructionView = () => {
               </Card>
             </Col>
 
-            {/* Right Section - Documents */}
+            {/* RIGHT SECTION - DOCUMENTS */}
             <Col xs={24} lg={10}>
               <Card
-                className="shadow-lg rounded-2xl border-0 h-full"
-                bodyStyle={{ padding: "32px" }}
+                className="shadow-xl rounded-2xl border-0 h-full"
+                bodyStyle={{ padding: "28px" }}
               >
                 <div className="mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div>
-                      <Title level={3} className="mb-1 text-gray-800 font-bold">
-                        Documents & Media
-                      </Title>
-                      <Text className="text-gray-500">
-                        {instructionData.documents?.length || 0} files attached
-                      </Text>
-                    </div>
-                  </div>
+                  <Title
+                    level={3}
+                    className="text-gray-900 font-extrabold mb-1 tracking-tight"
+                  >
+                    Documents & Media
+                  </Title>
+                  <Text className="text-gray-500">
+                    {instructionData.documents?.length || 0} files attached
+                  </Text>
                   <Divider className="my-4" />
                 </div>
 
                 {instructionData.documents?.length > 0 ? (
                   <Row gutter={[16, 16]}>
                     {instructionData.documents.map((doc, idx) => (
-                      <Col xs={12} sm={8} md={12} lg={12} key={idx}>
+                      <Col xs={24} sm={12} key={idx}>
                         <Card
                           hoverable
-                          className="h-full shadow-md hover:shadow-lg transition-all duration-300 border-0 rounded-xl overflow-hidden"
+                          className="h-full shadow-md hover:shadow-lg border border-gray-100 rounded-xl overflow-hidden transition-all duration-300"
                           bodyStyle={{ padding: "16px" }}
                           cover={
                             isImage(doc.documentUrl) ? (
-                              <div className="h-32 overflow-hidden">
+                              <div className="h-40 overflow-hidden">
                                 <Image
                                   src={doc.documentUrl}
                                   alt={doc.documentName}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-cover rounded-t-xl"
                                 />
                               </div>
                             ) : (
-                              <div className="h-32 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                              <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                                 <FileOutlined className="text-4xl text-gray-400" />
                               </div>
                             )
@@ -399,40 +405,40 @@ const RadhaInstructionView = () => {
                         >
                           <div className="text-center">
                             <Tooltip title={doc.documentName}>
-                              <Text
-                                className="text-sm font-medium text-gray-700 block"
-                                ellipsis
-                              >
+                              <Text className="text-sm font-medium text-gray-700 block truncate">
                                 {doc.documentName}
                               </Text>
                             </Tooltip>
-                            <Button
-                              type="link"
-                              size="small"
-                              icon={<DownloadOutlined />}
-                              className="mt-2 text-blue-600 hover:text-blue-800"
-                              href={doc.documentUrl}
-                              target="_blank"
-                            >
-                              View
-                            </Button>
-                            <Popconfirm
-                              title="Are you sure to delete this document?"
-                              onConfirm={() =>
-                                handleDeleteDocument(doc.documentId)
-                              }
-                              okText="Yes"
-                              cancelText="No"
-                            >
+
+                            <div className="flex justify-center gap-2 mt-3">
                               <Button
-                                danger
                                 type="link"
                                 size="small"
-                                icon={<DeleteOutlined />}
+                                icon={<DownloadOutlined />}
+                                href={doc.documentUrl}
+                                target="_blank"
+                                className="text-blue-600 hover:text-blue-800"
                               >
-                                Delete
+                                View
                               </Button>
-                            </Popconfirm>
+                              <Popconfirm
+                                title="Are you sure to delete this document?"
+                                onConfirm={() =>
+                                  handleDeleteDocument(doc.documentId)
+                                }
+                                okText="Yes"
+                                cancelText="No"
+                              >
+                                <Button
+                                  danger
+                                  type="link"
+                                  size="small"
+                                  icon={<DeleteOutlined />}
+                                >
+                                  Delete
+                                </Button>
+                              </Popconfirm>
+                            </div>
                           </div>
                         </Card>
                       </Col>
@@ -450,7 +456,7 @@ const RadhaInstructionView = () => {
                             No documents available
                           </div>
                           <Text className="text-gray-400 text-sm">
-                            Documents will appear here when uploaded
+                            Uploaded documents will appear here
                           </Text>
                         </div>
                       }
@@ -460,7 +466,6 @@ const RadhaInstructionView = () => {
               </Card>
             </Col>
           </Row>
-
           {/* Interactions Section */}
           <div className="mt-8">
             <Card

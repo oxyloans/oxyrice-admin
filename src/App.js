@@ -101,6 +101,7 @@ import AgentsRegisteredUsers from "./AgentsAdmin/Pages/AgentsRegisteredUsers";
 
 import AgentUserProfile from "./AgentsAdmin/Pages/AgentUserProfile";
 import GPTStore from "./AgentsAdmin/Pages/GPTStore";
+import UserHistoryAdmin from "./AgentsAdmin/Pages/UserHistoryAdmin";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -131,6 +132,7 @@ function App() {
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
         <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
         <Route path="/admin/authorizedusers" element={<AgentManagement />} />
+        <Route path="/admin/userhistory" element={<UserHistoryAdmin />} />
         <Route
           path="/admin/agents-registered-users"
           element={<GeminiUsers />}
