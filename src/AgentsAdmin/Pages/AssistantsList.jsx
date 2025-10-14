@@ -1662,6 +1662,14 @@ const AssistantsList = () => {
                 <Descriptions.Item label="Agent Name">
                   {selectedAssistant.name}
                 </Descriptions.Item>
+               
+                <Descriptions.Item label="Status">
+                  {selectedAssistant.activeStatus ? (
+                    <Tag color="success">Active</Tag>
+                  ) : (
+                    <Tag color="error">Inactive</Tag>
+                  )}
+                </Descriptions.Item>
                 <Descriptions.Item label="Model">
                   {selectedAssistant.model}
                 </Descriptions.Item>

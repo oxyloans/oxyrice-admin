@@ -186,7 +186,7 @@ const GPTStore = () => {
     <AgentsAdminLayout>
       <div className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-          <Title level={3}>GPT Store</Title>
+          <Title level={3}>GPT Agent Store</Title>
           <Space wrap>
             <Input
               placeholder="Search by Name or URL"

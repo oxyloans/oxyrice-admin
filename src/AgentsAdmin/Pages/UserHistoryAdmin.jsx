@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Table, Card, Input, Spin, message, Empty } from "antd";
+import { Table, Card, Input, Spin, message, Empty, Tag } from "antd";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
@@ -66,45 +66,122 @@ const UserHistoryAdmin = () => {
       dataIndex: "agentId",
       key: "agentId",
       align: "center",
-      render: (id) => <span title={id}>{id ? `#${id.slice(-4)}` : "-"}</span>,
+      render: (id) => (
+        <Tag color="#008cba" style={{ fontWeight: 500 }}>
+          {id ? `#${id.slice(-4)}` : "-"}
+        </Tag>
+      ),
     },
     {
       title: "Agent Name",
       dataIndex: "agentName",
       key: "agentName",
       align: "center",
-      render: (text) => <span title={text}>{text || "-"}</span>,
+      render: (text) => (
+        <span style={{ fontWeight: 500, color: "#333" }}>{text || "-"}</span>
+      ),
     },
-
     {
       title: "Creator Name",
       dataIndex: "creatorName",
       key: "creatorName",
+      width: 200,
       align: "center",
-      render: (text) => <span title={text}>{text || "-"}</span>,
+      render: (text) => (
+        <Tag
+          color="success"
+          style={{
+            display: "inline-block",
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            textAlign: "center",
+            lineHeight: "1.4",
+            padding: "4px 8px",
+            fontSize: 13,
+            borderRadius: 6,
+            maxWidth: 180, // ensures wrapping stays inside width
+          }}
+        >
+          {text || "-"}
+        </Tag>
+      ),
     },
 
+    // {
+    //   title: "User Messages",
+    //   key: "chatList",
+    //   align: "left",
+    //   render: (_text, record) => {
+    //     const chats = record.agentChatListList || [];
+    //     const userMessages = [];
+
+    //     chats.forEach((chat) => {
+    //       try {
+    //         const prompt = chat.prompt || "";
+    //         const regex = /\{\s*role=user,\s*content=([^}]+)\}/g;
+    //         let match;
+    //         while ((match = regex.exec(prompt)) !== null) {
+    //           const content = match[1].trim();
+    //           if (content) userMessages.push(content);
+    //         }
+    //       } catch (error) {
+    //         console.error("Error parsing prompt:", error);
+    //       }
+    //     });
+
+    //     if (userMessages.length === 0)
+    //       return <span style={{ color: "#999" }}>No user messages</span>;
+
+    //     return (
+    //       <div
+    //         style={{
+    //           maxHeight: 180,
+    //           overflowY: "auto",
+    //           backgroundColor: "#f9f9f9",
+    //           borderRadius: 6,
+    //           padding: "8px 10px",
+    //           boxShadow: "inset 0 0 3px rgba(0,0,0,0.08)",
+    //         }}
+    //       >
+    //         {userMessages.map((content, idx) => (
+    //           <div
+    //             key={idx}
+    //             style={{
+    //               borderBottom:
+    //                 idx < userMessages.length - 1 ? "1px solid #eee" : "none",
+    //               padding: "6px 0",
+    //               fontSize: 13,
+    //               color: "#333",
+    //               lineHeight: 1.4,
+    //             }}
+    //           >
+    //             {content}
+    //           </div>
+    //         ))}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       title: "User Messages",
       key: "chatList",
       align: "left",
       render: (_text, record) => {
         const chats = record.agentChatListList || [];
-
-        // Extract only role=user messages
         const userMessages = [];
 
         chats.forEach((chat) => {
           try {
             const prompt = chat.prompt || "";
-            // Match all {role=user, content=...} patterns in the prompt string
             const regex = /\{\s*role=user,\s*content=([^}]+)\}/g;
             let match;
-
             while ((match = regex.exec(prompt)) !== null) {
               const content = match[1].trim();
               if (content) {
-                userMessages.push(content);
+                userMessages.push({
+                  message: content,
+                  userId: chat.userId || "-", // attach userId with each message
+                });
               }
             }
           } catch (error) {
@@ -112,31 +189,50 @@ const UserHistoryAdmin = () => {
           }
         });
 
-        if (userMessages.length === 0) return <span>-</span>;
+        if (userMessages.length === 0)
+          return <span style={{ color: "#999" }}>No user messages</span>;
 
         return (
           <div
             style={{
-              maxHeight: 160,
+              maxHeight: 220,
               overflowY: "auto",
-              padding: "6px 8px",
-              backgroundColor: "#fafafa",
+              backgroundColor: "#f9f9f9",
               borderRadius: 6,
+              padding: "8px 10px",
+              boxShadow: "inset 0 0 3px rgba(0,0,0,0.08)",
             }}
           >
-            {userMessages.map((content, idx) => (
+            {userMessages.map((item, idx) => (
               <div
                 key={idx}
                 style={{
                   borderBottom:
                     idx < userMessages.length - 1 ? "1px solid #eee" : "none",
-                  padding: "6px 0",
+                  padding: "8px 0",
                   fontSize: 13,
                   color: "#333",
-                  wordBreak: "break-word",
+                  lineHeight: 1.4,
                 }}
               >
-                {content}
+                {/* User ID Display */}
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#008cba",
+                    fontWeight: 500,
+                    marginBottom: 3,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  User ID:{" "}
+                  <span style={{ color: "#555", fontWeight: 400 }}>
+                    {item.userId}
+                  </span>
+                </div>
+
+                {/* User Message */}
+                <div style={{ wordBreak: "break-word" }}>{item.message}</div>
               </div>
             ))}
           </div>
@@ -147,21 +243,35 @@ const UserHistoryAdmin = () => {
 
   return (
     <AgentsAdminLayout>
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 20, minHeight: "100vh" }}>
         <Card
-          title="User Chat History (Admin View)"
+          title={
+            <span style={{ fontSize: 18, fontWeight: 600, color: "#333" }}>
+              User Chat History (Admin View)
+            </span>
+          }
           extra={
             <Input.Search
               placeholder="Search by Agent Name, ID, or Creator"
               allowClear
-              enterButton
+              enterButton="Search"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onSearch={(val) => setSearchText(val)}
-              style={{ width: 350 }}
+              style={{
+                width: 350,
+                borderRadius: 8,
+                overflow: "hidden",
+              }}
+              className="custom-search"
             />
           }
           bordered={false}
+          style={{
+            borderRadius: 10,
+            boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+            background: "#fff",
+          }}
         >
           {loading ? (
             <div
@@ -172,7 +282,7 @@ const UserHistoryAdmin = () => {
                 height: "60vh",
               }}
             >
-              <Spin size="large" />
+              <Spin size="medium" />
             </div>
           ) : (
             <Table
@@ -189,9 +299,33 @@ const UserHistoryAdmin = () => {
               }}
               bordered
               scroll={{ x: true }}
+              style={{
+                borderRadius: 10,
+                overflow: "hidden",
+              }}
             />
           )}
         </Card>
+
+        <style>
+          {`
+            .ant-input-search-button {
+              background-color: #008cba !important;
+              border-color: #008cba !important;
+              color: #fff !important;
+              font-weight: 500;
+            }
+            .ant-input-search-button:hover {
+              background-color: #0078a3 !important;
+              border-color: #0078a3 !important;
+            }
+            .ant-card-head {
+              background: #f8fbfd !important;
+              border-bottom: 1px solid #e8e8e8;
+            }
+          
+          `}
+        </style>
       </div>
     </AgentsAdminLayout>
   );
