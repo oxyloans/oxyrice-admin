@@ -4,7 +4,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
-import { FaExchangeAlt } from "react-icons/fa";
+import { FaExchangeAlt, FaWhatsapp } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
 import { FaFileAlt, FaTasks } from "react-icons/fa";
 import {  FaClipboardList } from "react-icons/fa";
@@ -52,6 +52,12 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/taskmanagement/dashboard",
     },
     {
+      key: "Assigned Tasks WhatsApp",
+      label: "Assigned Tasks WhatsApp",
+      icon: <FaWhatsapp />,
+      link: "/taskmanagement/tasklists",
+    },
+    {
       key: "Radha Instructions",
 
       label: "Radha Instructions",
@@ -95,12 +101,7 @@ const TaskAdminPanelLayout = ({ children }) => {
       icon: <FaSlideshare />,
       link: "/taskmanagement/employeeleaves",
     },
-    {
-      key: "Assigned Tasks List",
-      label: "Assigned Tasks List",
-      icon: <FaUsers />,
-      link: "/taskmanagement/tasklists",
-    },
+
     {
       key: "Registered Employees",
       label: "Registered Employees",

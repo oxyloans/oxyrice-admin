@@ -102,6 +102,7 @@ import AgentsRegisteredUsers from "./AgentsAdmin/Pages/AgentsRegisteredUsers";
 import AgentUserProfile from "./AgentsAdmin/Pages/AgentUserProfile";
 import GPTStore from "./AgentsAdmin/Pages/GPTStore";
 import UserHistoryAdmin from "./AgentsAdmin/Pages/UserHistoryAdmin";
+import AdminTasks from "./TaskManagement/Pages/AdminTasks";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -150,7 +151,7 @@ function App() {
           path="/taskmanagementlayout"
           element={<TaskAdminPanelLayout />}
         />
-        <Route path="/taskmanagement/tasklists" element={<TasksList />} />
+        <Route path="/taskmanagement/tasklists" element={<AdminTasks />} />
         <Route
           path="/taskmanagement/admininstructions"
           element={<AdminInstructions />}
