@@ -10,6 +10,7 @@ import {
   Button,
   Row,
   Col,
+  Tooltip,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -36,13 +37,16 @@ const AdminTasks = () => {
             Authorization: `Bearer ${accessToken}`,
           },
         }
-        );
-         const reversedTasks = response.data.slice().reverse();
+      );
+      const reversedTasks = response.data.slice().reverse();
       setTasks(reversedTasks);
       setFilteredTasks(reversedTasks);
     } catch (error) {
       message.error("Failed to fetch tasks");
-      console.error(error);
+      console.error(
+        "Fetch error details:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -55,7 +59,6 @@ const AdminTasks = () => {
   // Search function
   const handleSearch = (value) => {
     if (!value) {
-      // If search is empty, reset filteredTasks
       setFilteredTasks(tasks);
       return;
     }
@@ -73,13 +76,19 @@ const AdminTasks = () => {
     setFilteredTasks(filtered);
   };
 
+  // Helper to render array as comma-separated string
+  const renderAssignees = (assignees) => {
+    if (!assignees || assignees.length === 0) return "-";
+    return Array.isArray(assignees) ? assignees.join(", ") : assignees;
+  };
+
   // Table columns
   const columns = [
     {
       title: "S.No",
       key: "serial",
       align: "center",
-      width: 60,
+
       render: (text, record, index) => index + 1,
     },
     {
@@ -87,7 +96,7 @@ const AdminTasks = () => {
       dataIndex: "taskAssignBy",
       key: "taskAssignBy",
       align: "center",
-      width: 150,
+      width: 160,
      
     },
     {
@@ -95,23 +104,50 @@ const AdminTasks = () => {
       dataIndex: "taskAssignTo",
       key: "taskAssignTo",
       align: "center",
-      width: 180,
-        render: (assigned) => assigned?.join(", ") || "-",
+      width: 160,
+      render: (text) => (
+        <div
+          style={{
+            maxWidth: 160,
+            maxHeight: 80, // limit height
+            overflowX: "auto", // horizontal scroll
+          }}
+        >
+          {text || "-"}
+        </div>
+      ),
     },
     {
       title: "Task Name",
       dataIndex: "taskName",
       key: "taskName",
       align: "center",
-      width: 250,
-      
+      width: 300,
+      render: (text) => (
+        <div
+          style={{
+            maxWidth: 300,
+            margin: "0 auto", // centers the box horizontally
+            whiteSpace: "normal",
+            wordBreak: "break-word",
+            textAlign: "center",
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
+            overflowX: "auto",
+            maxHeight: 120, // limit height
+          }}
+        >
+          {text || "-"}
+        </div>
+      ),
     },
+
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       align: "center",
-      width: 120,
+
       render: (status) => {
         let color = "orange";
         if (status === "assigned") color = "#008cba";
@@ -129,7 +165,7 @@ const AdminTasks = () => {
       dataIndex: "image",
       key: "image",
       align: "center",
-      width: 120,
+
       render: (url) =>
         url ? (
           <Image
@@ -185,7 +221,7 @@ const AdminTasks = () => {
               size="middle"
               onSearch={handleSearch}
               onChange={(e) => {
-                if (!e.target.value) handleSearch(""); // Reset on clear
+                if (!e.target.value) handleSearch("");
               }}
               style={{ maxWidth: 300 }}
             />
@@ -193,23 +229,23 @@ const AdminTasks = () => {
         </Row>
 
         {/* Table */}
-       {loading ? (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "300px", // adjust as needed
-    }}
-  >
-    <Spin tip="Loading tasks..." size="medium" />
-  </div>
-) : (
+        {loading ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "300px",
+            }}
+          >
+            <Spin tip="Loading tasks..." size="medium" />
+          </div>
+        ) : (
           <Table
             columns={columns}
             dataSource={filteredTasks}
-            rowKey={(record, index) => index}
-            pagination={{ pageSize: 100 }}
+            rowKey={(record, index) => record.id || index} // Use ID if available, fallback to index
+            pagination={{ pageSize: 100 }} // Lowered for better UX; adjust as needed
             bordered
             scroll={{ x: true }}
           />
