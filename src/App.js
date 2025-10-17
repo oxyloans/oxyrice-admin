@@ -103,6 +103,8 @@ import AgentUserProfile from "./AgentsAdmin/Pages/AgentUserProfile";
 import GPTStore from "./AgentsAdmin/Pages/GPTStore";
 import UserHistoryAdmin from "./AgentsAdmin/Pages/UserHistoryAdmin";
 import AdminTasks from "./TaskManagement/Pages/AdminTasks";
+import CompaniesLogin from "./Companies/Auth/CompaniesLogin";
+import CompanyList from "./Companies/Pages/CompanyList";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -121,6 +123,8 @@ function App() {
         <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
         {/* Protected Routes (Authentication Required) */}
         <Route path="/admin/agentslogin" element={<AgentsLogin />} />
+        <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
+        <Route path="/admin/companylist" element={<CompanyList />} />
         <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
         <Route
