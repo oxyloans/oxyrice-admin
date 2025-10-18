@@ -10,32 +10,39 @@ import {
   Button,
   Row,
   Col,
-  Tooltip,
+  Tag,
+  Modal,
+  Select,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, EditOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
 
 const { Text } = Typography;
-const { Search } = Input;
+const { Option } = Select;
 
 const AdminTasks = () => {
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [filteredTasks, setFilteredTasks] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null); // ✅ single select
+  const [statusFilter, setStatusFilter] = useState("All");
+
   const accessToken = localStorage.getItem("token");
 
-  // Fetch API data
+  // ✅ Fetch all tasks
   const fetchTasks = async () => {
     setLoading(true);
     try {
       const response = await axios.get(
         `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
       const reversedTasks = response.data.slice().reverse();
@@ -43,78 +50,176 @@ const AdminTasks = () => {
       setFilteredTasks(reversedTasks);
     } catch (error) {
       message.error("Failed to fetch tasks");
-      console.error(
-        "Fetch error details:",
-        error.response?.data || error.message
-      );
+      console.error("Task Fetch Error:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  // ✅ Fetch all employees
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/user-service/getAllEmployees`
+      );
+      setEmployees(response.data);
+    } catch (error) {
+      console.error("Employee Fetch Error:", error);
+      message.error("Failed to load employee list");
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
+    fetchEmployees();
   }, []);
 
-  // Search function
+  // ✅ Handle search
   const handleSearch = (value) => {
-    if (!value) {
-      setFilteredTasks(tasks);
-      return;
+    setSearchText(value);
+    applyFilters(value, statusFilter);
+  };
+
+  // ✅ Handle status filter
+  const handleStatusFilter = (value) => {
+    setStatusFilter(value);
+    applyFilters(searchText, value);
+  };
+
+  // ✅ Apply combined filters (search + status)
+  const applyFilters = (searchValue, statusValue) => {
+    let filtered = [...tasks];
+
+    if (statusValue !== "All") {
+      filtered = filtered.filter(
+        (task) => task.status?.toLowerCase() === statusValue.toLowerCase()
+      );
     }
 
-    const filtered = tasks.filter(
-      (task) =>
-        task.taskAssignBy?.toLowerCase().includes(value.toLowerCase()) ||
-        task.taskAssignTo?.some((t) =>
-          t.toLowerCase().includes(value.toLowerCase())
-        ) ||
-        task.taskName?.toLowerCase().includes(value.toLowerCase()) ||
-        task.status?.toLowerCase().includes(value.toLowerCase())
-    );
+    if (searchValue.trim()) {
+      filtered = filtered.filter(
+        (task) =>
+          task.taskAssignBy
+            ?.toLowerCase()
+            .includes(searchValue.toLowerCase()) ||
+          task.taskAssignTo?.some?.((t) =>
+            t.toLowerCase().includes(searchValue.toLowerCase())
+          ) ||
+          task.taskName?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          task.status?.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
 
     setFilteredTasks(filtered);
   };
 
-  // Helper to render array as comma-separated string
-  const renderAssignees = (assignees) => {
-    if (!assignees || assignees.length === 0) return "-";
-    return Array.isArray(assignees) ? assignees.join(", ") : assignees;
+  // ✅ Status tag renderer
+  const getStatusTag = (status) => {
+    let color, text;
+    switch (status?.toLowerCase()) {
+      case "assigned":
+        color = "blue";
+        text = "Assigned";
+        break;
+      case "completed":
+        color = "green";
+        text = "Completed";
+        break;
+      case "rejected":
+        color = "red";
+        text = "Rejected";
+        break;
+      case "deleted":
+        color = "gray";
+        text = "Deleted";
+        break;
+      default:
+        color = "gold";
+        text = "Pending";
+    }
+    return (
+      <Tag
+        color={color}
+        style={{
+          fontSize: 13,
+          fontWeight: 500,
+          textTransform: "capitalize",
+          borderRadius: 8,
+          padding: "3px 10px",
+        }}
+      >
+        {text}
+      </Tag>
+    );
   };
 
-  // Table columns
+  // ✅ Edit modal open
+  const handleEdit = (task) => {
+    setSelectedTask(task);
+    setSelectedEmployee(null);
+    setEditModalVisible(true);
+  };
+
+  const handleAssignUpdate = async () => {
+    if (!selectedTask || !selectedEmployee) {
+      message.warning("Please select one employee.");
+      return;
+    }
+
+    const emp = employees.find((e) => e.userId === selectedEmployee);
+    const selectedName = emp ? emp.name : "";
+
+    try {
+      await axios.patch(
+        `${BASE_URL}/ai-service/agent/taskAssignedToRadhaSir`,
+        null, // no request body
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: {
+            id: selectedTask.id,
+            assignedTo: selectedName,
+            userId: selectedEmployee,
+          },
+        }
+      );
+
+      message.success("Task updated successfully!");
+      setEditModalVisible(false);
+      fetchTasks();
+    } catch (error) {
+      console.error("Update Error:", error);
+      message.error("Failed to update task");
+    }
+  };
+
+  // ✅ Table columns
   const columns = [
     {
       title: "S.No",
       key: "serial",
       align: "center",
-
-      render: (text, record, index) => index + 1,
+      width: 80,
+      render: (_, __, index) => index + 1,
     },
     {
       title: "Assigned By",
       dataIndex: "taskAssignBy",
       key: "taskAssignBy",
       align: "center",
-      width: 160,
-     
+    width:120
     },
     {
       title: "Assigned To",
       dataIndex: "taskAssignTo",
       key: "taskAssignTo",
       align: "center",
-      width: 160,
       render: (text) => (
-        <div
-          style={{
-            maxWidth: 160,
-            maxHeight: 80, // limit height
-            overflowX: "auto", // horizontal scroll
-          }}
-        >
-          {text || "-"}
-        </div>
+        <Text style={{ display: "block", textAlign: "center" }}>
+          {" "}
+          {text}{" "}
+        </Text>
       ),
     },
     {
@@ -122,109 +227,104 @@ const AdminTasks = () => {
       dataIndex: "taskName",
       key: "taskName",
       align: "center",
-      width: 300,
       render: (text) => (
-        <div
-          style={{
-            maxWidth: 300,
-            margin: "0 auto", // centers the box horizontally
-            whiteSpace: "normal",
-            wordBreak: "break-word",
-            textAlign: "center",
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            overflowX: "auto",
-            maxHeight: 120, // limit height
-          }}
-        >
-          {text || "-"}
-        </div>
+        <Text style={{ display: "block", textAlign: "center" }} >
+          {" "}
+          {text}{" "}
+        </Text>
       ),
     },
-
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       align: "center",
-
-      render: (status) => {
-        let color = "orange";
-        if (status === "assigned") color = "#008cba";
-        else if (status === "completed") color = "green";
-
-        return (
-          <Text style={{ color, fontWeight: 500, textTransform: "capitalize" }}>
-            {status}
-          </Text>
-        );
-      },
+      render: (status) => getStatusTag(status),
     },
     {
       title: "Image",
       dataIndex: "image",
       key: "image",
       align: "center",
-
       render: (url) =>
         url ? (
           <Image
             width={80}
+            height={80}
             src={url}
-            style={{ cursor: "pointer" }}
-            preview={{
-              mask: <Text style={{ color: "#fff" }}>Click to Preview</Text>,
+            style={{
+              borderRadius: "4px",
+              objectFit: "cover",
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
             }}
           />
         ) : (
-          "-"
+          <Text type="secondary">No Image</Text>
         ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Button
+          icon={<EditOutlined />}
+          style={{
+            background: "#008cba",
+            color: "white",
+            border: "#008cba",
+          }}
+          size="small"
+          onClick={() => handleEdit(record)}
+        >
+          Edit
+        </Button>
+      ),
     },
   ];
 
   return (
     <TaskAdminPanelLayout>
       <div style={{ padding: 20 }}>
-        {/* Header with left text and right search */}
+        {/* Header */}
         <Row
           justify="space-between"
           align="middle"
-          style={{ marginBottom: 20 }}
+          gutter={[16, 16]}
+          style={{ marginBottom: 10 }}
         >
-          <Col xs={24} sm={12} md={12} lg={12}>
+          <Col xs={24} sm={12} md={8}>
             <Text strong style={{ fontSize: 18 }}>
               Assigned Tasks WhatsApp
             </Text>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={12}
-            lg={12}
-            style={{ textAlign: "right", marginTop: 10 }}
-          >
-            <Search
-              placeholder="Search tasks or assignees..."
+
+          <Col xs={24} sm={12} md={8} style={{ textAlign: "right" }}>
+            <Input
+              prefix={<SearchOutlined />}
+              placeholder="Search tasks..."
+              value={searchText}
+              onChange={(e) => handleSearch(e.target.value)}
               allowClear
-              enterButton={
-                <Button
-                  type="primary"
-                  style={{
-                    backgroundColor: "#008cba",
-                    borderColor: "#008cba",
-                    color: "#fff",
-                  }}
-                >
-                  <SearchOutlined style={{ color: "#fff" }} /> Search
-                </Button>
-              }
-              size="middle"
-              onSearch={handleSearch}
-              onChange={(e) => {
-                if (!e.target.value) handleSearch("");
-              }}
-              style={{ maxWidth: 300 }}
+              style={{ width: "100%", maxWidth: 280 }}
             />
+          </Col>
+        </Row>
+
+        {/* Status Filter */}
+        <Row justify="start" style={{ marginBottom: 20 }}>
+          <Col xs={24} sm={12} md={6}>
+            <Select
+              value={statusFilter}
+              style={{ width: "100%", maxWidth: 200 }}
+              onChange={handleStatusFilter}
+            >
+              <Option value="All">All</Option>
+              <Option value="assigned">Assigned</Option>
+              <Option value="completed">Completed</Option>
+              <Option value="rejected">Rejected</Option>
+              <Option value="deleted">Deleted</Option>
+            </Select>
           </Col>
         </Row>
 
@@ -244,13 +344,56 @@ const AdminTasks = () => {
           <Table
             columns={columns}
             dataSource={filteredTasks}
-            rowKey={(record, index) => record.id || index} // Use ID if available, fallback to index
-            pagination={{ pageSize: 100 }} // Lowered for better UX; adjust as needed
+            rowKey={(record, index) => record.id || index}
+            pagination={{ pageSize: 100 }}
             bordered
             scroll={{ x: true }}
           />
         )}
       </div>
+
+      {/* Edit Modal */}
+      <Modal
+        title="Edit Assigned User"
+        open={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        onOk={handleAssignUpdate}
+        okText="Update"
+       
+        okButtonProps={{
+          style: {
+            backgroundColor: "#008cba",
+            color: "white",
+            border: "none",
+            fontWeight: 500,
+          },
+        }}
+        cancelButtonProps={{
+          style: {
+            fontWeight: 500,
+          },
+        }}
+      >
+        <p style={{ marginBottom: 8, fontWeight: 500 }}>Select Employee:</p>
+        <Select
+          showSearch
+          required
+          style={{ width: "100%" }}
+          placeholder="Select employee"
+          value={selectedEmployee}
+          onChange={(value) => setSelectedEmployee(value)}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().includes(input.toLowerCase())
+          }
+        >
+          {employees.map((emp) => (
+            <Option key={emp.userId} value={emp.userId}>
+              {emp.name}
+            </Option>
+          ))}
+        </Select>
+      </Modal>
     </TaskAdminPanelLayout>
   );
 };
