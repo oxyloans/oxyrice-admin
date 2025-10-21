@@ -12,6 +12,9 @@ import {
   message,
   Row,
   Col,
+  DatePicker,
+  Select,
+  Space,
 } from "antd";
 import {
   UploadOutlined,
@@ -23,18 +26,23 @@ import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import CompaniesLayout from "../Components/CompaniesLayout";
 
+
 const { Text, Link } = Typography;
+const { Option } = Select;
+
 
 const CompanyList = () => {
   const [companies, setCompanies] = useState([]);
   const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [allCompanies, setAllCompanies] = useState([]); // for Add Job dropdown
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isJobModalVisible, setIsJobModalVisible] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [form] = Form.useForm();
   const userId = localStorage.getItem("userId");
-
+  const [jobForm] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100,
@@ -66,9 +74,20 @@ const CompanyList = () => {
     }
     setLoading(false);
   };
-
+  // ✅ Fetch companies for job dropdown
+  const fetchAllCompanies = async () => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/marketing-service/campgin/getallcompanies`
+      );
+      setAllCompanies(res.data || []);
+    } catch (error) {
+      console.error("Error fetching company list:", error);
+    }
+  };
   useEffect(() => {
     fetchCompanies(0, pagination.pageSize);
+    fetchAllCompanies();
   }, []);
 
   const handleSearch = (value) => {
@@ -90,6 +109,28 @@ const CompanyList = () => {
     form.resetFields();
     setEditingCompany(null);
     setIsModalVisible(false);
+  };
+
+  // ✅ Open Add Job modal
+  const openJobModal = () => {
+    jobForm.resetFields();
+    setIsJobModalVisible(true);
+  };
+
+  const handleCloseJobModal = () => {
+    jobForm.resetFields();
+    setIsJobModalVisible(false);
+  };
+  // ✅ Auto-fill logo & website when company selected
+  const handleCompanySelect = (value) => {
+    const selectedCompany = allCompanies.find((c) => c.id === value);
+    if (selectedCompany) {
+      jobForm.setFieldsValue({
+        companyLogo: selectedCompany.logoUrl,
+        companyWebsiteUrl: selectedCompany.websiteUrl,
+        companyName: selectedCompany.companyName,
+      });
+    }
   };
 
   const handleLogoUpload = async ({ file }) => {
@@ -143,122 +184,150 @@ const CompanyList = () => {
       message.error("Failed to save company details");
     }
   };
+  // ✅ Handle Add Job form submission
+  const handleAddJob = async () => {
+    try {
+      const values = await jobForm.validateFields();
+      const payload = {
+        ...values,
+        companyId: values.companyId,
+        companyLogo: values.companyLogo,
+        companyWebsiteUrl: values.companyWebsiteUrl,
+        companyName: values.companyName,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        jobStatus: true,
+        userId,
+      };
 
-const columns = [
-  {
-    title: "S.No",
-        key: "serial",
-    align: "center",
-    render: (_, __, index) => (
-      <div style={{ textAlign: "center" }}>
-        {" "}
-        {(pagination.current - 1) * pagination.pageSize + index + 1}{" "}
-      </div>
-    ),
-  },
-  {
-    title: "Logo",
-    dataIndex: "logoUrl",
-      key: "logo",
-    align: "center",
-    render: (url) => (
-      <div style={{ textAlign: "center" }}>
-        {" "}
-        <Image width={50} src={url} alt="company logo" />{" "}
-      </div>
-    ),
-  },
-  {
-    title: "Company Name",
-      dataIndex: "companyName",
-    align: "center",
-    key: "name",
-    render: (text) => (
-      <Text style={{ display: "block", textAlign: "center" }} strong>
-        {" "}
-        {text}{" "}
-      </Text>
-    ),
-  },
-  {
-    title: "Description",
-    dataIndex: "companyDescription",
-      key: "description",
-    align: "center",
-    render: (text) => (
-      <Text style={{ display: "block", textAlign: "center" }}>{text}</Text>
-    ),
-  },
-  {
-    title: "Locations",
-    dataIndex: "locations",
-    key: "locations",
-    align: "center",
-    render: (text) => (
-      <Text style={{ display: "block", textAlign: "center" }}>{text}</Text>
-    ),
-  },
-  {
-    title: "Website",
-    dataIndex: "websiteUrl",
-    key: "website",
-    render: (url) => (
-      <div style={{ textAlign: "center" }}>
-        {" "}
-        <Link href={url} target="_blank">
+      await axios.post(
+        `${BASE_URL}/marketing-service/campgin/postajob`,
+        payload
+      );
+
+      message.success("Job posted successfully!");
+      handleCloseJobModal();
+    } catch (error) {
+      console.error("Error posting job:", error);
+      message.error("Failed to post job");
+    }
+  };
+
+  const columns = [
+    {
+      title: "S.No",
+      key: "serial",
+      align: "center",
+      render: (_, __, index) => (
+        <div style={{ textAlign: "center" }}>
           {" "}
-          Visit{" "}
-        </Link>{" "}
-      </div>
-    ),
-  },
-  {
-    title: "LinkedIn",
-    dataIndex: "linkedinUrl",
-    key: "linkedin",
-    render: (url) => (
-      <div style={{ textAlign: "center" }}>
-        {" "}
-        {url && url !== "string" ? (
+          {(pagination.current - 1) * pagination.pageSize + index + 1}{" "}
+        </div>
+      ),
+    },
+    {
+      title: "Logo",
+      dataIndex: "logoUrl",
+      key: "logo",
+      align: "center",
+      render: (url) => (
+        <div style={{ textAlign: "center" }}>
+          {" "}
+          <Image width={50} src={url} alt="company logo" />{" "}
+        </div>
+      ),
+    },
+    {
+      title: "Company Name",
+      dataIndex: "companyName",
+      align: "center",
+      key: "name",
+      render: (text) => (
+        <Text style={{ display: "block", textAlign: "center" }} strong>
+          {" "}
+          {text}{" "}
+        </Text>
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "companyDescription",
+      key: "description",
+      align: "center",
+      render: (text) => (
+        <Text style={{ display: "block", textAlign: "center" }}>{text}</Text>
+      ),
+    },
+    {
+      title: "Locations",
+      dataIndex: "locations",
+      key: "locations",
+      align: "center",
+      render: (text) => (
+        <Text style={{ display: "block", textAlign: "center" }}>{text}</Text>
+      ),
+    },
+    {
+      title: "Website",
+      dataIndex: "websiteUrl",
+      key: "website",
+      render: (url) => (
+        <div style={{ textAlign: "center" }}>
+          {" "}
           <Link href={url} target="_blank">
             {" "}
-            View{" "}
-          </Link>
-        ) : (
-          <Text type="secondary">N/A</Text>
-        )}{" "}
-      </div>
-    ),
-  },
-  {
-    title: "Created At",
-    dataIndex: "createdAt",
-    key: "createdAt",
-    render: (timestamp) => (
-      <Text style={{ display: "block", textAlign: "center" }}>
-        {" "}
-        {formatDate(timestamp)}{" "}
-      </Text>
-    ),
-  },
-  {
-    title: "Action",
-    key: "action",
-    render: (_, record) => (
-      <div style={{ textAlign: "center" }}>
-        {" "}
-        <Button
-          icon={<EditOutlined />}
-          size="small"
-          onClick={() => openModal(record)}
-        >
+            Visit{" "}
+          </Link>{" "}
+        </div>
+      ),
+    },
+    {
+      title: "LinkedIn",
+      dataIndex: "linkedinUrl",
+      key: "linkedin",
+      render: (url) => (
+        <div style={{ textAlign: "center" }}>
           {" "}
-          Edit{" "}
-        </Button>{" "}
-      </div>
-    ),
-  },
-];
+          {url && url !== "string" ? (
+            <Link href={url} target="_blank">
+              {" "}
+              View{" "}
+            </Link>
+          ) : (
+            <Text type="secondary">N/A</Text>
+          )}{" "}
+        </div>
+      ),
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (timestamp) => (
+        <Text style={{ display: "block", textAlign: "center" }}>
+          {" "}
+          {formatDate(timestamp)}{" "}
+        </Text>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <div style={{ textAlign: "center" }}>
+          {" "}
+          <Button
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => openModal(record)}
+          >
+            {" "}
+            Edit{" "}
+          </Button>{" "}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <CompaniesLayout>
@@ -270,18 +339,32 @@ const columns = [
             </div>
           </Col>
           <Col xs={24} sm={12} style={{ textAlign: "right" }}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => openModal()}
-              style={{
-                backgroundColor: "#008cba",
-                color: "white",
-                border: "none",
-              }}
-            >
-              Add Company
-            </Button>
+            <Space>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={openModal}
+                style={{
+                  backgroundColor: "#008cba",
+                  color: "white",
+                  border: "none",
+                }}
+              >
+                Add Company
+              </Button>
+
+              <Button
+                type="primary"
+                style={{
+                  background: "#1ab394",
+                  color: "white",
+                  border: "none",
+                }}
+                onClick={openJobModal}
+              >
+                Add Job
+              </Button>
+            </Space>
           </Col>
         </Row>
 
@@ -392,6 +475,153 @@ const columns = [
                   style={{ marginTop: 10, borderRadius: 8 }}
                 />
               )}
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="Add Job"
+          open={isJobModalVisible}
+          onCancel={handleCloseJobModal}
+          onOk={handleAddJob}
+          okText="Post Job"
+          destroyOnClose
+        >
+          <Form layout="vertical" form={jobForm}>
+            <Form.Item
+              name="companyId"
+              label="Select Company"
+              rules={[{ required: true, message: "Select a company" }]}
+            >
+              <Select
+                placeholder="Select company"
+                onChange={handleCompanySelect}
+                showSearch
+                optionFilterProp="children"
+              >
+                {allCompanies.map((c) => (
+                  <Option key={c.id} value={c.id}>
+                    {c.companyName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="companyName" label="Company Name">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item name="companyLogo" label="Company Logo">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item name="companyWebsiteUrl" label="Company Website">
+              <Input disabled />
+            </Form.Item>
+
+            <Form.Item
+              name="jobTitle"
+              label="Job Title"
+              rules={[{ required: true, message: "Enter job title" }]}
+            >
+              <Input placeholder="Enter job title" />
+            </Form.Item>
+
+            <Form.Item
+              name="description"
+              label="Job Description"
+              rules={[{ required: true, message: "Enter job description" }]}
+            >
+              <Input.TextArea rows={3} />
+            </Form.Item>
+
+            <Form.Item name="applicationDeadLine" label="Application Deadline">
+              <DatePicker style={{ width: "100%" }} />
+            </Form.Item>
+
+            <Form.Item name="benefits" label="Benefits">
+              <Input.TextArea rows={2} placeholder="Enter benefits" />
+            </Form.Item>
+
+            <Form.Item name="experience" label="Experience">
+              <Input placeholder="Enter experience required" />
+            </Form.Item>
+
+            <Form.Item name="industry" label="Industry">
+              <Input placeholder="Enter industry" />
+            </Form.Item>
+
+            <Form.Item name="jobDesignation" label="Job Designation">
+              <Input placeholder="Enter job designation" />
+            </Form.Item>
+
+            <Form.Item name="jobLocations" label="Job Locations">
+              <Input placeholder="Enter job locations" />
+            </Form.Item>
+
+            <Form.Item name="jobSource" label="Job Source">
+              <Input placeholder="Enter job source" />
+            </Form.Item>
+
+            <Form.Item name="jobType" label="Job Type">
+              <Select placeholder="Select job type">
+                <Option value="full-time">Full-time</Option>
+                <Option value="part-time">Part-time</Option>
+                <Option value="contract">Contract</Option>
+                <Option value="internship">Internship</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item name="qualifications" label="Qualifications">
+              <Input placeholder="Enter qualifications" />
+            </Form.Item>
+
+            <Row gutter={8}>
+              <Col span={12}>
+                <Form.Item name="salaryMin" label="Minimum Salary">
+                  <Input type="number" placeholder="Min salary" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="salaryMax" label="Maximum Salary">
+                  <Input type="number" placeholder="Max salary" />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Form.Item name="skills" label="Skills">
+              <Input placeholder="Enter required skills" />
+            </Form.Item>
+
+            <Form.Item name="workMode" label="Work Mode">
+              <Select placeholder="Select work mode">
+                <Option value="remote">Remote</Option>
+                <Option value="onsite">Onsite</Option>
+                <Option value="hybrid">Hybrid</Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="companyLinkedinUrl" label="Company LinkedIn URL">
+              <Input placeholder="Enter LinkedIn URL" />
+            </Form.Item>
+
+            <Form.Item name="companyAddress" label="Company Address">
+              <Input placeholder="Enter company address" />
+            </Form.Item>
+
+            <Form.Item name="companyEmail" label="Company Email">
+              <Input placeholder="Enter company email" />
+            </Form.Item>
+
+            <Form.Item
+              name="companyHeadQuarterLocation"
+              label="Headquarter Location"
+            >
+              <Input placeholder="Enter headquarter location" />
+            </Form.Item>
+            <Form.Item name="countryCode" label="Country Code">
+              <Input placeholder="Enter country code" />
+            </Form.Item>
+            <Form.Item name="contactNumber" label="Contact Number">
+              <Input placeholder="Enter contact number" />
             </Form.Item>
           </Form>
         </Modal>

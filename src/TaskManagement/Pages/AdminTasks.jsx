@@ -35,26 +35,51 @@ const AdminTasks = () => {
 
   const accessToken = localStorage.getItem("token");
 
-  // ✅ Fetch all tasks
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      const reversedTasks = response.data.slice().reverse();
-      setTasks(reversedTasks);
-      setFilteredTasks(reversedTasks);
-    } catch (error) {
-      message.error("Failed to fetch tasks");
-      console.error("Task Fetch Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchTasks = async () => {
+   setLoading(true);
+   try {
+     const response = await axios.get(
+       `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
+       {
+         headers: { Authorization: `Bearer ${accessToken}` },
+       }
+     );
+
+     const reversedTasks = response.data.slice().reverse();
+
+     // ✅ Filter out invalid rows
+     const validTasks = reversedTasks.filter((task) => {
+       const assigned = task.taskAssignTo;
+       const taskName = task.taskName;
+
+       // Check for valid taskAssignTo
+       const hasValidAssignee = (() => {
+         if (!assigned) return false;
+         if (Array.isArray(assigned))
+           return assigned.some((a) => a && a.trim() !== "");
+         if (typeof assigned === "string") return assigned.trim() !== "";
+         return false;
+       })();
+
+       // Check for valid taskName
+       const hasValidTaskName =
+         typeof taskName === "string" && taskName.trim() !== "";
+
+       // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
+       return hasValidAssignee && hasValidTaskName;
+     });
+
+     setTasks(validTasks);
+     setFilteredTasks(validTasks);
+   } catch (error) {
+     message.error("Failed to fetch tasks");
+     console.error("Task Fetch Error:", error);
+   } finally {
+     setLoading(false);
+   }
+ };
+
+
 
   // ✅ Fetch all employees
   const fetchEmployees = async () => {
@@ -208,30 +233,40 @@ const AdminTasks = () => {
       dataIndex: "taskAssignBy",
       key: "taskAssignBy",
       align: "center",
-    width:120
+      width: 120,
     },
     {
       title: "Assigned To",
       dataIndex: "taskAssignTo",
       key: "taskAssignTo",
       align: "center",
-      render: (text) => (
-        <Text style={{ display: "block", textAlign: "center" }}>
-          {" "}
-          {text}{" "}
-        </Text>
-      ),
+      render: (value) => {
+        // Only display if there is a valid value
+        const hasValidAssignee =
+          Array.isArray(value) &&
+          value.length > 0 &&
+          value.some((a) => a && a.trim() !== "");
+
+        if (!hasValidAssignee) return null; // Hide cell entirely
+
+        // If valid, join and display
+        const displayText = Array.isArray(value) ? value.join(", ") : value;
+
+        return (
+          <Text style={{ display: "block", textAlign: "center" }}>
+            {displayText}
+          </Text>
+        );
+      },
     },
+
     {
       title: "Task Name",
       dataIndex: "taskName",
       key: "taskName",
       align: "center",
       render: (text) => (
-        <Text style={{ display: "block", textAlign: "center" }} >
-          {" "}
-          {text}{" "}
-        </Text>
+        <Text style={{ display: "block", textAlign: "center" }}> {text} </Text>
       ),
     },
     {

@@ -49,6 +49,13 @@ const CompaniesLayout = ({ children }) => {
       link: "/admin/companylist",
       style: { fontSize: "20px" }, // Custom font size for label
     },
+    // {
+    //   key: "Jobs Management",
+    //   label: "Jobs Management",
+    //   icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
+    //   link: "/admin/jobsmanage",
+    //   style: { fontSize: "20px" }, // Custom font size for label
+    // },
   ];
 
   const toggleCollapse = () => {
