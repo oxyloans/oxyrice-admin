@@ -184,20 +184,48 @@ const CompanyList = () => {
       message.error("Failed to save company details");
     }
   };
-  // ✅ Handle Add Job form submission
+  // ✅ UPDATED Add Job function with correct payload
   const handleAddJob = async () => {
     try {
       const values = await jobForm.validateFields();
+
       const payload = {
-        ...values,
+        applicationDeadLine: values.applicationDeadLine
+          ? values.applicationDeadLine.toISOString()
+          : null,
+        benefits: values.benefits,
+        companyAddress: values.companyAddress,
+        companyEmail: values.companyEmail,
+        companyHeadQuarterLocation: values.companyHeadQuarterLocation,
         companyId: values.companyId,
         companyLogo: values.companyLogo,
-        companyWebsiteUrl: values.companyWebsiteUrl,
         companyName: values.companyName,
+        companyWebsiteUrl: values.companyWebsiteUrl,
+        contactNumber: values.contactNumber,
+        countryCode: values.countryCode,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        description: values.description,
+        experience: values.experience,
+        industry: values.industry,
+        jobDesignation: values.jobDesignation,
+        jobLocations: values.jobLocations,
+        jobSource: values.jobSource,
         jobStatus: true,
+        jobTitle: values.jobTitle,
+        jobType:
+          values.jobType === "full-time"
+            ? "fulltime"
+            : values.jobType === "part-time"
+              ? "parttime"
+              : values.jobType,
+        qualifications: values.qualifications,
+        salaryMax: values.salaryMax,
+        salaryMin: values.salaryMin,
+        skills: values.skills,
+        updatedAt: new Date().toISOString(),
         userId,
+        workMode: values.workMode,
+        companyLinkedinUrl: values.companyLinkedinUrl,
       };
 
       await axios.post(
@@ -478,6 +506,7 @@ const CompanyList = () => {
             </Form.Item>
           </Form>
         </Modal>
+        {/* ✅ Job Modal */}
         <Modal
           title="Add Job"
           open={isJobModalVisible}
@@ -599,6 +628,7 @@ const CompanyList = () => {
                 <Option value="hybrid">Hybrid</Option>
               </Select>
             </Form.Item>
+
             <Form.Item name="companyLinkedinUrl" label="Company LinkedIn URL">
               <Input placeholder="Enter LinkedIn URL" />
             </Form.Item>
@@ -617,9 +647,11 @@ const CompanyList = () => {
             >
               <Input placeholder="Enter headquarter location" />
             </Form.Item>
+
             <Form.Item name="countryCode" label="Country Code">
               <Input placeholder="Enter country code" />
             </Form.Item>
+
             <Form.Item name="contactNumber" label="Contact Number">
               <Input placeholder="Enter contact number" />
             </Form.Item>
