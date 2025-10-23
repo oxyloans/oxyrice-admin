@@ -8,10 +8,9 @@ import { MdLogout} from "react-icons/md";
 import { FaStore } from "react-icons/fa";
 import { MessageOutlined } from "@ant-design/icons";
 import {
-  DashboardOutlined,
-  FileTextOutlined,
-  FileDoneOutlined,
-
+  ApartmentOutlined,
+  FileAddOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 
 
@@ -40,23 +39,31 @@ const CompaniesLayout = ({ children }) => {
       setCollapsed(false); // Expand on larger screens
     }
   }, [screens]);
-
-  const sidebarItems = [
-    {
-      key: "CompanyManagement",
-      label: "Company Management",
-      icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/companylist",
-      style: { fontSize: "20px" }, // Custom font size for label
-    },
-    // {
-    //   key: "Jobs Management",
-    //   label: "Jobs Management",
-    //   icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
-    //   link: "/admin/jobsmanage",
-    //   style: { fontSize: "20px" }, // Custom font size for label
-    // },
-  ];
+const sidebarItems = [
+  {
+    key: "CompanyManagement",
+    label: "Manage Companies",
+    icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/companylist",
+    style: { fontSize: "16px", fontWeight: 500 },
+  },
+  {
+    key: "JobManagement",
+    label: "Post Job",
+    icon: <FileAddOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/jobsmanage",
+    style: { fontSize: "16px", fontWeight: 500 },
+  },
+  {
+    key: "JobList",
+    label: "Jobs List",
+    icon: (
+      <UnorderedListOutlined style={{ fontSize: "18px"}} />
+    ),
+    link: "/admin/getalljobs",
+    style: { fontSize: "16px", fontWeight: 500 },
+  },
+];
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);

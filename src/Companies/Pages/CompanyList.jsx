@@ -380,7 +380,7 @@ const CompanyList = () => {
               >
                 Add Company
               </Button>
-
+{/* 
               <Button
                 type="primary"
                 style={{
@@ -391,7 +391,7 @@ const CompanyList = () => {
                 onClick={openJobModal}
               >
                 Add Job
-              </Button>
+              </Button> */}
             </Space>
           </Col>
         </Row>
