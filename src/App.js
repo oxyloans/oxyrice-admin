@@ -107,6 +107,7 @@ import CompaniesLogin from "./Companies/Auth/CompaniesLogin";
 import CompanyList from "./Companies/Pages/CompanyList";
 import JobsManagement from "./Companies/Pages/JobsManage";
 import GetAllJobs from "./Companies/Pages/GetAllJobs";
+import CampaignUpload from "./AdminPages/CampaignUpload";
 
 // Protected Route Component
 const ProtectedRoute = ({ element }) => {
@@ -128,7 +129,7 @@ function App() {
         <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
         <Route path="/admin/companylist" element={<CompanyList />} />
         <Route path="/admin/jobsmanage" element={<JobsManagement />} />
-        <Route path ="/admin/getalljobs" element={<GetAllJobs/>}/>
+        <Route path="/admin/getalljobs" element={<GetAllJobs />} />
         <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
         <Route
@@ -363,6 +364,10 @@ function App() {
         <Route
           path="/admin/category-inventory"
           element={<ProtectedRoute element={<CategoryInventory />} />}
+        />
+        <Route
+          path="/admin/campaign-inventory"
+          element={<ProtectedRoute element={<CampaignUpload />} />}
         />
         <Route
           path="/admin/delivery-boys"

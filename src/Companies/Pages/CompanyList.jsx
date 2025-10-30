@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Spin,
@@ -20,6 +21,7 @@ import {
   UploadOutlined,
   PlusOutlined,
   EditOutlined,
+  
   SearchOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
@@ -42,6 +44,7 @@ const CompanyList = () => {
   const [editingCompany, setEditingCompany] = useState(null);
   const [form] = Form.useForm();
   const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
   const [jobForm] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
@@ -111,11 +114,7 @@ const CompanyList = () => {
     setIsModalVisible(false);
   };
 
-  // ✅ Open Add Job modal
-  const openJobModal = () => {
-    jobForm.resetFields();
-    setIsJobModalVisible(true);
-  };
+
 
   const handleCloseJobModal = () => {
     jobForm.resetFields();
@@ -330,6 +329,7 @@ const CompanyList = () => {
     {
       title: "Created At",
       dataIndex: "createdAt",
+      align: "center",
       key: "createdAt",
       render: (timestamp) => (
         <Text style={{ display: "block", textAlign: "center" }}>
@@ -341,6 +341,7 @@ const CompanyList = () => {
     {
       title: "Action",
       key: "action",
+      align: "center",
       render: (_, record) => (
         <div style={{ textAlign: "center" }}>
           {" "}
@@ -352,6 +353,16 @@ const CompanyList = () => {
             {" "}
             Edit{" "}
           </Button>{" "}
+          <Button
+            icon={<PlusOutlined />}
+            size="small"
+            onClick={() =>
+              navigate("/admin/jobsmanage", { state: { company: record } })
+            }
+            style={{ marginTop: 2 }}
+          >
+            Add Jobs
+          </Button>
         </div>
       ),
     },

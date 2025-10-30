@@ -4,7 +4,7 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
-import { FaExchangeAlt } from "react-icons/fa";
+import { FaBoxes } from "react-icons/fa";
 import { FaUserGraduate } from "react-icons/fa";
 import { WalletOutlined } from "@ant-design/icons";
 import {
@@ -51,12 +51,12 @@ const AdminPanelLayoutTest = ({ children }) => {
       link: "/admin/dashboard",
     },
 
-    {
-      key: "NBFCDataList",
-      label: "NBFC Data List",
-      icon: <FaHandsHelping />,
-      link: "/admin/nbfcdatalist",
-    },
+    // {
+    //   key: "NBFCDataList",
+    //   label: "NBFC Data List",
+    //   icon: <FaHandsHelping />,
+    //   link: "/admin/nbfcdatalist",
+    // },
 
     // {
     //   key: "allreferrals",
@@ -77,6 +77,23 @@ const AdminPanelLayoutTest = ({ children }) => {
       link: "/admin/category-inventory",
     },
 
+    {
+      key: "Campaign Inventory",
+      label: "Campaign Inventory",
+      icon: <FaBoxes />,
+      dropdownItems: [
+        {
+          key: "Campaign Upload",
+          label: "Campaign Upload",
+          link: "/admin/campaign-inventory",
+        },
+        // {
+        //   key: "Student Registrations",
+        //   label: "Student Registrations",
+        //   link: "/admin/student-registrations",
+        // },
+      ],
+    },
     {
       key: "StudyAbroad Dashboard",
       label: "StudyAbroad Admin",

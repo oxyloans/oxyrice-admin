@@ -15,6 +15,7 @@ import axios from "axios";
 import CompaniesLayout from "../Components/CompaniesLayout";
 import BASE_URL from "../../AdminPages/Config";
 import "antd/dist/reset.css";
+import { useLocation } from "react-router-dom";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -26,6 +27,8 @@ const AddJobs = () => {
   const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState("+91");
   const [contactNumber, setContactNumber] = useState("");
+const location = useLocation();
+const companyFromState = location.state?.company || null;
 
   // 🏢 Fetch all companies on mount
   useEffect(() => {
@@ -35,6 +38,26 @@ const AddJobs = () => {
           `${BASE_URL}/marketing-service/campgin/getallcompanies`
         );
         setCompanies(res.data || []);
+          // ✅ Auto-select if company passed from CompanyList
+      if (companyFromState && res.data?.length) {
+        const matchedCompany = res.data.find(
+          (c) => c.id === companyFromState.id
+        );
+        if (matchedCompany) {
+          setSelectedCompany({
+            companyId: matchedCompany.id,
+            companyName: matchedCompany.companyName,
+            companyWebsiteUrl: matchedCompany.websiteUrl,
+            companyLogo: matchedCompany.logoUrl,
+          });
+
+          form.setFieldsValue({
+            companyId: matchedCompany.id,
+            companyName: matchedCompany.companyName,
+            companyWebsiteUrl: matchedCompany.websiteUrl,
+          });
+        }
+      }
       } catch (error) {
         console.error(error);
         message.error("Failed to load companies");

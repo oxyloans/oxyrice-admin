@@ -218,6 +218,26 @@ const AdminTasks = () => {
       message.error("Failed to update task");
     }
   };
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date)) return dateString; // if not a valid date
+
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      weekday: "short",
+    };
+
+    return date.toLocaleDateString("en-IN", options);
+  } catch (error) {
+    return dateString;
+  }
+};
+
 
   // ✅ Table columns
   const columns = [
@@ -227,6 +247,13 @@ const AdminTasks = () => {
       align: "center",
       width: 80,
       render: (_, __, index) => index + 1,
+    },
+    {
+      title: "Task Id",
+      key: "id",
+      dataIndex: "id",
+      align: "center",
+      render: (text) => (text ? `#${text.slice(-4)}` : "-"),
     },
     {
       title: "Assigned By",
@@ -269,6 +296,35 @@ const AdminTasks = () => {
         <Text style={{ display: "block", textAlign: "center" }}> {text} </Text>
       ),
     },
+    {
+      title: "Task Assigned Date",
+      dataIndex: "tastCreatedDate",
+      key: "tastCreatedDate",
+      align: "center",
+      render: (date) => {
+        if (!date) return <Text type="secondary">N/A</Text>;
+        return (
+          <Text style={{ color: "#1677ff", fontWeight: 500 }}>
+            {formatDate(date)}
+          </Text>
+        );
+      },
+    },
+    {
+      title: "Task Complete Date",
+      dataIndex: "taskCompleteDate",
+      key: "taskCompleteDate",
+      align: "center",
+      render: (date) => {
+        if (!date) return <Text type="secondary">Pending</Text>;
+        return (
+          <Text style={{ color: "#52c41a", fontWeight: 500 }}>
+            {formatDate(date)}
+          </Text>
+        );
+      },
+    },
+
     {
       title: "Status",
       dataIndex: "status",
