@@ -79,18 +79,20 @@ const AssistantsList = () => {
     if (s === "DELETED" || s === "DELETD") return <Tag>DELETED</Tag>;
     return <Tag>{statusRaw || "-"}</Tag>;
   };
-const renderInteractionTag = (statusRaw) => {
-  const s = (statusRaw || "").toString().toLowerCase().trim();
+
+const renderInteractionTag = (view) => {
+  const s = (view || "").toString().toLowerCase().trim();
 
   switch (s) {
-    case "chatbased":
-      return <Tag color="green">Chat Based</Tag>;
-    case "stepsbased":
-      return <Tag color="blue">Steps Based</Tag>;
+    case "public":
+      return <Tag color="green">Public</Tag>;
+    case "private":
+      return <Tag color="blue">Private</Tag>;
     default:
-      return <Tag color="default">{statusRaw || "-"}</Tag>;
+      return <Tag color="default">{view || "-"}</Tag>;
   }
 };
+
   // ---------- Fetching ----------
   const fetchAssistants = async ({
     limit,
@@ -428,13 +430,13 @@ const renderInteractionTag = (statusRaw) => {
       //   render: (id) => (id ? `#${id.slice(-4)}` : "-"),
       //   width: 120,
       // },
-      {
-        title: "Agent ID",
-        dataIndex: "agentId",
-        key: "agentId",
-        align: "center",
-        render: (id) => (id ? `#${id.slice(-4)}` : "-"),
-      },
+      // {
+      //   title: "Agent ID",
+      //   dataIndex: "agentId",
+      //   key: "agentId",
+      //   align: "center",
+      //   render: (id) => (id ? `#${id.slice(-4)}` : "-"),
+      // },
       {
         title: "Agent Name",
         dataIndex: "name",
@@ -447,18 +449,29 @@ const renderInteractionTag = (statusRaw) => {
         key: "creatorName",
         align: "center",
       },
+      // {
+      //   title: "Approved By",
+      //   dataIndex: "authorizedBy",
+      //   key: "authorizedBy",
+      //   align: "center",
+      // },
       {
-        title: "Approved By",
-        dataIndex: "authorizedBy",
-        key: "authorizedBy",
+        title: "roleUser",
+        dataIndex: "roleUser",
+        key: "roleUser",
         align: "center",
       },
       {
-        title: "Interaction Mode",
-        dataIndex: "interactionMode",
-        key: "interactionMode",
+        title: "Purpose",
+        dataIndex: "purpose",
+        key: "purpose",
         align: "center",
-        render: (interactionMode) => renderInteractionTag(interactionMode),
+      },
+      {
+        title: "Goals",
+        dataIndex: "goals",
+        key: "goals",
+        align: "center",
       },
       {
         title: "Description",
@@ -466,19 +479,28 @@ const renderInteractionTag = (statusRaw) => {
         key: "description",
         align: "center",
         render: (text) => (
-          <div
-            style={{
-              maxWidth: 300,
-              textAlign: "center",
-              display: "-webkit-box",
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {text}
-          </div>
+          <Tooltip title={text}>
+            <div
+              style={{
+                maxWidth: 400,
+                textAlign: "center",
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {text}
+            </div>
+          </Tooltip>
         ),
+      },
+      {
+        title: "View",
+        dataIndex: "view",
+        key: "view",
+        align: "center",
+        render: (view) => renderInteractionTag(view),
       },
       // {
       //   title: "Instructions",
@@ -538,7 +560,7 @@ const renderInteractionTag = (statusRaw) => {
             >
               Preview
             </Button>
-            <Button
+            {/* <Button
               type="default"
               onClick={() => openToolsModal(record)}
               style={{
@@ -548,7 +570,7 @@ const renderInteractionTag = (statusRaw) => {
               }}
             >
               Manage Tools
-            </Button>
+            </Button> */}
           </div>
         ),
       },
@@ -708,8 +730,17 @@ const renderInteractionTag = (statusRaw) => {
                 <Descriptions.Item label="Agent Name">
                   {selectedAssistant.name}
                 </Descriptions.Item>
-                <Descriptions.Item label="Interaction Mode">
-                  {selectedAssistant.interactionMode}
+                <Descriptions.Item label="Role User">
+                  {selectedAssistant.roleUser}
+                </Descriptions.Item>
+                <Descriptions.Item label="Purpose">
+                  {selectedAssistant.purpose}
+                </Descriptions.Item>
+                <Descriptions.Item label="goals">
+                  {selectedAssistant.goals}
+                </Descriptions.Item>
+                <Descriptions.Item label="View">
+                  {selectedAssistant.view}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
                   {selectedAssistant.activeStatus ? (

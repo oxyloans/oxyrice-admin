@@ -93,20 +93,20 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
 
-  {
-    key: "Authorized-Users",
-    label: "Authorized-Users",
-    icon: <UserOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/authorizedusers",
-    style: { fontSize: "20px" },
-  },
-  {
-    key: "useragent-login",
-    label: "OG Registered Users",
-    icon: <TeamOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/agents-registered-users",
-    style: { fontSize: "20px" },
-  },
+  // {
+  //   key: "Authorized-Users",
+  //   label: "Authorized-Users",
+  //   icon: <UserOutlined style={{ fontSize: "18px" }} />,
+  //   link: "/admin/authorizedusers",
+  //   style: { fontSize: "20px" },
+  // },
+  // {
+  //   key: "useragent-login",
+  //   label: "OG Registered Users",
+  //   icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+  //   link: "/admin/agents-registered-users",
+  //   style: { fontSize: "20px" },
+  // },
 ];
     
   
