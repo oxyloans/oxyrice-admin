@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { TeamOutlined } from "@ant-design/icons";
+
 import { UserOutlined } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MdLogout} from "react-icons/md";
 import { FaStore } from "react-icons/fa";
 import { MessageOutlined } from "@ant-design/icons";
@@ -19,6 +19,7 @@ const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
 
 const AgentsAdminLayout = ({ children }) => {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
@@ -57,11 +58,23 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
   {
-    key: "agent-registered-users",
-    label: "Agents Registered Users",
+    key: "agent-users",
+    label: "Agents  Users",
     icon: <UserOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/agentsregisteredusers",
+
     style: { fontSize: "20px" },
+    dropdownItems: [
+      {
+        key: "Agents Registered Users",
+        label: "Agents Registered Users",
+        link: "/admin/agentsregisteredusers",
+      },
+      {
+        key: "Agents Creation Users",
+        label: "Agents Creation Users",
+        link: "/admin/agents-creation-users",
+      },
+    ],
   },
   {
     key: "agent-user-history",
@@ -116,11 +129,12 @@ const sidebarItems = [
   };
   const handleOpenChange = (keys) =>
     setOpenKeys(keys.length ? [keys.pop()] : []);
-
+const entryPoint = localStorage.getItem("entryPoint") || "direct";
   const handleSignOut = () => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
     window.location.href = "/admin/agentslogin"; // Redirect to login
+    navigate(entryPoint);
   };
 
   const date = new Date();

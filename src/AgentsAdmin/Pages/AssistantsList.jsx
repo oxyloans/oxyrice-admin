@@ -231,14 +231,7 @@ const renderInteractionTag = (view) => {
     }
   };
 
-  // ✅ Trigger search on paste instantly
-  const handlePaste = (e) => {
-    const pastedText = e.clipboardData.getData("text").trim();
-    if (pastedText) {
-      setSearchTerm(pastedText);
-      fetchSearch(pastedText); // hit API directly for pasted text
-    }
-  };
+
   // ---------- Live search ----------
   // ✅ Handle input / paste changes (no double API calls)
   let searchTimeout = null;
@@ -277,15 +270,17 @@ const renderInteractionTag = (view) => {
         message.error("Missing assistantId");
         return;
       }
-
-      const payload = {
-        assistanId: selectedAssistant.assistantId,
-        userId,
-        status: values.status,
-        authorizedBy: values.authorizedBy,
-        freetrails:
-          values.status === "APPROVED" ? Number(values.freetrails) : 0,
-      };
+const payload = {
+  assistanId: selectedAssistant.assistantId,
+  userId,
+  adminComments:
+    values.status === "PENDING" || values.status === "REJECTED"
+      ? values.adminComments
+      : "",
+  status: values.status,
+  authorizedBy: values.authorizedBy,
+  freetrails: values.status === "APPROVED" ? Number(values.freetrails) : 0,
+};
 
       const res = await fetch(
         `${BASE_URL}/ai-service/agent/assistanceApprove`,
@@ -730,6 +725,9 @@ const renderInteractionTag = (view) => {
                 <Descriptions.Item label="Agent Name">
                   {selectedAssistant.name}
                 </Descriptions.Item>
+                <Descriptions.Item label="Interaction Mode">
+                  {selectedAssistant.interactionMode}
+                </Descriptions.Item>
                 <Descriptions.Item label="Role User">
                   {selectedAssistant.roleUser}
                 </Descriptions.Item>
@@ -741,6 +739,9 @@ const renderInteractionTag = (view) => {
                 </Descriptions.Item>
                 <Descriptions.Item label="View">
                   {selectedAssistant.view}
+                </Descriptions.Item>
+                <Descriptions.Item label="Admin Comments">
+                  {selectedAssistant.adminComments}
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
                   {selectedAssistant.activeStatus ? (
@@ -781,12 +782,12 @@ const renderInteractionTag = (view) => {
                     {selectedAssistant.instructions || ""}
                   </div>
                 </Descriptions.Item>
-                <Descriptions.Item label="Header Title">
+                {/* <Descriptions.Item label="Header Title">
                   {selectedAssistant.headerTitle || ""}
                 </Descriptions.Item>
                 <Descriptions.Item label="User Experience Summary">
                   {selectedAssistant.userExperienceSummary || ""}
-                </Descriptions.Item>{" "}
+                </Descriptions.Item>
                 <Descriptions.Item label="Domain">
                   {selectedAssistant.domain || ""}
                 </Descriptions.Item>
@@ -807,7 +808,7 @@ const renderInteractionTag = (view) => {
                 </Descriptions.Item>
                 <Descriptions.Item label="Status">
                   {renderStatusTag(selectedAssistant.status) || ""}
-                </Descriptions.Item>
+                </Descriptions.Item> */}
                 <Descriptions.Item label="Approved At">
                   {selectedAssistant.approvedAt
                     ? new Date(selectedAssistant.approvedAt).toLocaleString(
@@ -833,12 +834,12 @@ const renderInteractionTag = (view) => {
                 <Descriptions.Item label="Choose Store">
                   {selectedAssistant.chooseStore || ""}
                 </Descriptions.Item>
-                <Descriptions.Item label="Similarity">
+                {/* <Descriptions.Item label="Similarity">
                   {selectedAssistant.similarity || ""}
                 </Descriptions.Item>
                 <Descriptions.Item label="Conversation Tone">
                   {selectedAssistant.converstionTone || ""}
-                </Descriptions.Item>
+                </Descriptions.Item> */}
                 <Descriptions.Item label="Image">
                   {selectedAssistant.imageUrl ? (
                     <img
@@ -912,6 +913,7 @@ const renderInteractionTag = (view) => {
               >
                 <Option value="APPROVED">APPROVED</Option>
                 <Option value="REQUESTED">REQUESTED</Option>
+                <Option value="PENDING">PENDING</Option>
                 <Option value="REJECTED">REJECTED</Option>
                 <Option value="DELETED">DELETED</Option>
               </Select>
@@ -962,6 +964,22 @@ const renderInteractionTag = (view) => {
                   placeholder="Enter minimum 5 free trials"
                   controls={false}
                   parser={(v) => (v ? v.replace(/\D/g, "") : "")}
+                />
+              </Form.Item>
+            )}
+            {/* ADMIN COMMENTS only if PENDING or REJECTED */}
+            {(selectedStatus === "PENDING" ||
+              selectedStatus === "REJECTED") && (
+              <Form.Item
+                label="Admin Comments"
+                name="adminComments"
+                rules={[
+                  { required: true, message: "Please enter admin comments" },
+                ]}
+              >
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Enter reason for rejection or pending status"
                 />
               </Form.Item>
             )}

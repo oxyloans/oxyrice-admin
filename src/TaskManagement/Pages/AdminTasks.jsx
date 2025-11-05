@@ -14,7 +14,12 @@ import {
   Modal,
   Select,
 } from "antd";
-import { SearchOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  EditOutlined,
+  CommentOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
 import TaskAdminPanelLayout from "../Layout/AdminPanel";
@@ -29,57 +34,91 @@ const AdminTasks = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null); // ✅ single select
   const [statusFilter, setStatusFilter] = useState("All");
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 100,
+  });
+  const [commentsData, setCommentsData] = useState([]);
+  const [comments, setComments] = useState("");
+  const handleViewComments = async (task) => {
+    try {
+      setLoading(true);
+      setSelectedTask(task);
+
+      const response = await axios.get(
+        `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { taskId: task.id },
+        }
+      );
+
+      setCommentsData(response.data || []);
+      setViewModalVisible(true);
+    } catch (error) {
+      console.error("View Comments Error:", error);
+      message.error("Failed to fetch comments");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const accessToken = localStorage.getItem("token");
 
- const fetchTasks = async () => {
-   setLoading(true);
-   try {
-     const response = await axios.get(
-       `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
-       {
-         headers: { Authorization: `Bearer ${accessToken}` },
-       }
-     );
+  const fetchTasks = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
 
-     const reversedTasks = response.data.slice().reverse();
+      const reversedTasks = response.data.slice().reverse();
 
-     // ✅ Filter out invalid rows
-     const validTasks = reversedTasks.filter((task) => {
-       const assigned = task.taskAssignTo;
-       const taskName = task.taskName;
+      // ✅ Filter out invalid rows
+      const validTasks = reversedTasks.filter((task) => {
+        const assigned = task.taskAssignTo;
+        const taskName = task.taskName;
 
-       // Check for valid taskAssignTo
-       const hasValidAssignee = (() => {
-         if (!assigned) return false;
-         if (Array.isArray(assigned))
-           return assigned.some((a) => a && a.trim() !== "");
-         if (typeof assigned === "string") return assigned.trim() !== "";
-         return false;
-       })();
+        // Check for valid taskAssignTo
+        const hasValidAssignee = (() => {
+          if (!assigned) return false;
+          if (Array.isArray(assigned))
+            return assigned.some((a) => a && a.trim() !== "");
+          if (typeof assigned === "string") return assigned.trim() !== "";
+          return false;
+        })();
 
-       // Check for valid taskName
-       const hasValidTaskName =
-         typeof taskName === "string" && taskName.trim() !== "";
+        // Check for valid taskName
+        const hasValidTaskName =
+          typeof taskName === "string" && taskName.trim() !== "";
 
-       // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
-       return hasValidAssignee && hasValidTaskName;
-     });
-
-     setTasks(validTasks);
-     setFilteredTasks(validTasks);
-   } catch (error) {
-     message.error("Failed to fetch tasks");
-     console.error("Task Fetch Error:", error);
-   } finally {
-     setLoading(false);
-   }
- };
-
-
+        // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
+        return hasValidAssignee && hasValidTaskName;
+      });
+      validTasks.sort((a, b) => {
+        const dateA = new Date(a.tastCreatedDate || 0);
+        const dateB = new Date(b.tastCreatedDate || 0);
+        return dateB - dateA;
+      });
+      setTasks(validTasks);
+      setFilteredTasks(validTasks);
+      // ✅ Reset pagination to first page on initial load
+      setPagination({ current: 1, pageSize: 100 });
+    } catch (error) {
+      message.error("Failed to fetch tasks");
+      console.error("Task Fetch Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ✅ Fetch all employees
   const fetchEmployees = async () => {
@@ -102,12 +141,16 @@ const AdminTasks = () => {
   // ✅ Handle search
   const handleSearch = (value) => {
     setSearchText(value);
+    // ✅ Reset to first page on search
+    setPagination((prev) => ({ ...prev, current: 1 }));
     applyFilters(value, statusFilter);
   };
 
   // ✅ Handle status filter
   const handleStatusFilter = (value) => {
     setStatusFilter(value);
+    // ✅ Reset to first page on filter change
+    setPagination((prev) => ({ ...prev, current: 1 }));
     applyFilters(searchText, value);
   };
 
@@ -127,14 +170,26 @@ const AdminTasks = () => {
           task.taskAssignBy
             ?.toLowerCase()
             .includes(searchValue.toLowerCase()) ||
-          task.taskAssignTo?.some?.((t) =>
-            t.toLowerCase().includes(searchValue.toLowerCase())
-          ) ||
+          // ✅ Handle taskAssignTo as array or string
+          (task.taskAssignTo &&
+            (Array.isArray(task.taskAssignTo)
+              ? task.taskAssignTo.some((t) =>
+                  t?.toLowerCase().includes(searchValue.toLowerCase())
+                )
+              : typeof task.taskAssignTo === "string" &&
+                task.taskAssignTo
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()))) ||
           task.taskName?.toLowerCase().includes(searchValue.toLowerCase()) ||
           task.status?.toLowerCase().includes(searchValue.toLowerCase())
       );
     }
-
+    // ✅ Consistent field name for sorting (tastCreatedDate)
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.tastCreatedDate || 0);
+      const dateB = new Date(b.tastCreatedDate || 0);
+      return dateB - dateA; // latest first
+    });
     setFilteredTasks(filtered);
   };
 
@@ -184,6 +239,41 @@ const AdminTasks = () => {
     setSelectedEmployee(null);
     setEditModalVisible(true);
   };
+  const handleCommentsAdd = (task) => {
+    setSelectedTask(task);
+
+    setCommentsModalVisible(true);
+  };
+  const handleCommentsUpdate = async () => {
+    if (!comments.trim()) {
+      message.warning("Please enter a comment before submitting.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
+        {
+          taskId: selectedTask.id,
+          comments: comments,
+          commentsBy: "ADMIN",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      message.success("Comments added successfully!");
+      setCommentsModalVisible(false);
+      setComments(""); // clear input
+      fetchTasks();
+    } catch (error) {
+      console.error("Update Error:", error);
+      message.error("Failed to add comment");
+    }
+  };
 
   const handleAssignUpdate = async () => {
     if (!selectedTask || !selectedEmployee) {
@@ -218,26 +308,25 @@ const AdminTasks = () => {
       message.error("Failed to update task");
     }
   };
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
 
-  try {
-    const date = new Date(dateString);
-    if (isNaN(date)) return dateString; // if not a valid date
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date)) return dateString; // if not a valid date
 
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      weekday: "short",
-    };
+      const options = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        weekday: "short",
+      };
 
-    return date.toLocaleDateString("en-IN", options);
-  } catch (error) {
-    return dateString;
-  }
-};
-
+      return date.toLocaleDateString("en-IN", options);
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   // ✅ Table columns
   const columns = [
@@ -245,44 +334,59 @@ const formatDate = (dateString) => {
       title: "S.No",
       key: "serial",
       align: "center",
-      width: 80,
-      render: (_, __, index) => index + 1,
+
+      render: (_text, _record, index) =>
+        (pagination.current - 1) * pagination.pageSize + (index + 1),
     },
+
     {
-      title: "Task Id",
-      key: "id",
-      dataIndex: "id",
+      title: "Task Information",
+      key: "task_info",
       align: "center",
-      render: (text) => (text ? `#${text.slice(-4)}` : "-"),
-    },
-    {
-      title: "Assigned By",
-      dataIndex: "taskAssignBy",
-      key: "taskAssignBy",
-      align: "center",
-      width: 120,
-    },
-    {
-      title: "Assigned To",
-      dataIndex: "taskAssignTo",
-      key: "taskAssignTo",
-      align: "center",
-      render: (value) => {
-        // Only display if there is a valid value
+      render: (_, record) => {
+        // Handle assignedTo array
         const hasValidAssignee =
-          Array.isArray(value) &&
-          value.length > 0 &&
-          value.some((a) => a && a.trim() !== "");
+          Array.isArray(record.taskAssignTo) &&
+          record.taskAssignTo.length > 0 &&
+          record.taskAssignTo.some((a) => a && a.trim() !== "");
 
-        if (!hasValidAssignee) return null; // Hide cell entirely
-
-        // If valid, join and display
-        const displayText = Array.isArray(value) ? value.join(", ") : value;
+        const assignedToText = hasValidAssignee
+          ? Array.isArray(record.taskAssignTo)
+            ? record.taskAssignTo.join(", ")
+            : record.taskAssignTo
+          : "N/A";
 
         return (
-          <Text style={{ display: "block", textAlign: "center" }}>
-            {displayText}
-          </Text>
+          <div
+            style={{
+              backgroundColor: "#f9f9f9",
+              borderLeft: "4px solid #008cba",
+              borderRadius: 8,
+              padding: "8px 12px",
+              textAlign: "left",
+              display: "inline-block",
+              minWidth: 200,
+            }}
+          >
+            <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
+              Task ID:{" "}
+              <span style={{ color: "#008cba" }}>
+                {record.id ? `#${record.id.slice(-4)}` : "N/A"}
+              </span>
+            </div>
+            <div style={{ color: "#555", fontSize: 13 }}>
+              Assigned By:{" "}
+              <span style={{ fontWeight: 500, color: "#1ab394" }}>
+                {record.taskAssignBy || "N/A"}
+              </span>
+            </div>
+            <div style={{ color: "#555", fontSize: 13 }}>
+              Assigned To:{" "}
+              <span style={{ fontWeight: 500, color: "#008cba" }}>
+                {assignedToText}
+              </span>
+            </div>
+          </div>
         );
       },
     },
@@ -293,45 +397,73 @@ const formatDate = (dateString) => {
       key: "taskName",
       align: "center",
       render: (text) => (
-        <Text style={{ display: "block", textAlign: "center" }}> {text} </Text>
+        <div
+          style={{
+            width: "320px", // enforce width
+            maxWidth: "320px",
+
+            WebkitBoxOrient: "vertical",
+            display: "-webkit-box",
+            textAlign: "center",
+            margin: "0 auto",
+            maxHeight: " 11em", // approx 3 lines
+            overflowX: "auto", // horizontal scroll
+          }}
+          title={text} // show full text on hover
+        >
+          {text}
+        </div>
       ),
     },
     {
-      title: "Task Assigned Date",
-      dataIndex: "tastCreatedDate",
-      key: "tastCreatedDate",
+      title: "Task Timeline",
+      key: "task_timeline",
       align: "center",
-      render: (date) => {
-        if (!date) return <Text type="secondary">N/A</Text>;
+      render: (_, record) => {
+        const { tastCreatedDate, taskCompleteDate, status } = record;
+
         return (
-          <Text style={{ color: "#1677ff", fontWeight: 500 }}>
-            {formatDate(date)}
-          </Text>
-        );
-      },
-    },
-    {
-      title: "Task Complete Date",
-      dataIndex: "taskCompleteDate",
-      key: "taskCompleteDate",
-      align: "center",
-      render: (date) => {
-        if (!date) return <Text type="secondary">Pending</Text>;
-        return (
-          <Text style={{ color: "#52c41a", fontWeight: 500 }}>
-            {formatDate(date)}
-          </Text>
+          <div
+            style={{
+              backgroundColor: "#f9f9f9",
+
+              borderRadius: 8,
+              padding: "8px 12px",
+              textAlign: "left",
+              display: "inline-block",
+              minWidth: 170,
+            }}
+          >
+            <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
+              Task Timeline
+            </div>
+
+            <div style={{ color: "#555", fontSize: 13 }}>
+              Assigned Date:{" "}
+              <span style={{ color: "#008cba", fontWeight: 500 }}>
+                {tastCreatedDate ? formatDate(tastCreatedDate) : "N/A"}
+              </span>
+            </div>
+
+            <div style={{ color: "#555", fontSize: 13 }}>
+              Completed Date:{" "}
+              <span
+                style={{
+                  color: taskCompleteDate ? "#1ab394" : "#faad14",
+                  fontWeight: 500,
+                }}
+              >
+                {taskCompleteDate ? formatDate(taskCompleteDate) : "Pending"}
+              </span>
+            </div>
+            <div style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
+              Status: {getStatusTag(status)}
+            </div>
+          </div>
         );
       },
     },
 
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => getStatusTag(status),
-    },
     {
       title: "Image",
       dataIndex: "image",
@@ -358,18 +490,56 @@ const formatDate = (dateString) => {
       key: "action",
       align: "center",
       render: (_, record) => (
-        <Button
-          icon={<EditOutlined />}
+        <div
           style={{
-            background: "#008cba",
-            color: "white",
-            border: "#008cba",
+            display: "flex",
+            justifyContent: "center",
+            gap: "2px",
+            flexWrap: "wrap",
           }}
-          size="small"
-          onClick={() => handleEdit(record)}
         >
-          Edit
-        </Button>
+          {/* Edit Button */}
+          <Button
+            icon={<EditOutlined />}
+            style={{
+              background: "#008cba",
+              color: "white",
+              borderColor: "#008cba",
+            }}
+            size="small"
+            onClick={() => handleEdit(record)}
+          >
+            Edit
+          </Button>
+
+          {/* Add Comments Button */}
+          <Button
+            icon={<CommentOutlined />}
+            style={{
+              background: "#1ab394",
+              color: "white",
+              borderColor: "#1ab394",
+            }}
+            size="small"
+            onClick={() => handleCommentsAdd(record)}
+          >
+            Add Comments
+          </Button>
+
+          {/* View Button */}
+          <Button
+            icon={<EyeOutlined />}
+            style={{
+              background: "#351664",
+              color: "white",
+              borderColor: "#351664",
+            }}
+            size="small"
+            onClick={() => handleViewComments(record)}
+          >
+            View
+          </Button>
+        </div>
       ),
     },
   ];
@@ -436,9 +606,21 @@ const formatDate = (dateString) => {
             columns={columns}
             dataSource={filteredTasks}
             rowKey={(record, index) => record.id || index}
-            pagination={{ pageSize: 100 }}
             bordered
             scroll={{ x: true }}
+            pagination={{
+              ...pagination,
+              pageSizeOptions: ["100", "200", "500", "1000"],
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} tasks`,
+              position: ["bottomRight"],
+              onChange: (page, pageSize) => {
+                setPagination({ current: page, pageSize });
+              },
+              onShowSizeChange: (current, size) => {
+                setPagination({ current: 1, pageSize: size });
+              },
+            }}
           />
         )}
       </div>
@@ -450,7 +632,6 @@ const formatDate = (dateString) => {
         onCancel={() => setEditModalVisible(false)}
         onOk={handleAssignUpdate}
         okText="Update"
-       
         okButtonProps={{
           style: {
             backgroundColor: "#008cba",
@@ -484,6 +665,79 @@ const formatDate = (dateString) => {
             </Option>
           ))}
         </Select>
+      </Modal>
+      <Modal
+        title={`Task Comments - ${selectedTask ? `#${selectedTask.id.slice(-4)}` : ""}`}
+        open={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        {commentsData.length > 0 ? (
+          commentsData.map((comment, index) => (
+            <div
+              key={index}
+              style={{
+                background: "#f9f9f9",
+                borderLeft: "4px solid #008cba",
+                borderRadius: 6,
+                padding: "10px 12px",
+                marginBottom: 10,
+              }}
+            >
+              <p style={{ margin: 0, fontWeight: 500, color: "#351664" }}>
+                Comment By:{" "}
+                <span style={{ color: "#1ab394" }}>{comment.commentsBy}</span>
+              </p>
+              <p style={{ margin: "4px 0", color: "#333" }}>
+                {comment.comments}
+              </p>
+              <Tag
+                color={
+                  comment.status?.toLowerCase() === "completed"
+                    ? "green"
+                    : comment.status?.toLowerCase() === "rejected"
+                      ? "red"
+                      : "blue"
+                }
+              >
+                {comment.status || "N/A"}
+              </Tag>
+            </div>
+          ))
+        ) : (
+          <Text type="secondary">No comments found for this task.</Text>
+        )}
+      </Modal>
+
+      <Modal
+        title="Add Comments"
+        open={commentsModalVisible}
+        onCancel={() => setCommentsModalVisible(false)}
+        onOk={handleCommentsUpdate}
+        okText="Add Comments"
+        okButtonProps={{
+          style: {
+            backgroundColor: "#008cba",
+            color: "white",
+            border: "none",
+            fontWeight: 500,
+          },
+        }}
+        cancelButtonProps={{
+          style: {
+            fontWeight: 500,
+          },
+        }}
+      >
+        <p style={{ marginBottom: 8, fontWeight: 500 }}>Enter Comments:</p>
+        <Input.TextArea
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
+          placeholder="Enter your comments"
+          required
+          rows={4}
+        />
       </Modal>
     </TaskAdminPanelLayout>
   );

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
+// ✅ correct
+import { useNavigate } from "react-router-dom";
+
+
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { TeamOutlined } from "@ant-design/icons";
-import { UserOutlined } from "@ant-design/icons";
+
 import { Link } from "react-router-dom";
 import { MdLogout} from "react-icons/md";
-import { FaStore } from "react-icons/fa";
-import { MessageOutlined } from "@ant-design/icons";
+
 import {
   ApartmentOutlined,
   FileAddOutlined,
@@ -22,7 +24,8 @@ const CompaniesLayout = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const [isMobile, setIsMobile] = useState(false);
-
+const navigate = useNavigate();
+const entryPoint = localStorage.getItem("entryPoint") || "direct";  
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -75,6 +78,7 @@ const sidebarItems = [
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
     window.location.href = "/admin/comapanieslogin"; // Redirect to login
+    navigate(entryPoint);
   };
 
   const date = new Date();

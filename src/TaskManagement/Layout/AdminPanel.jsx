@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from "react";
+// ✅ correct
+import { useNavigate } from "react-router-dom";
+
+
+
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { useMediaQuery } from "react-responsive";
@@ -26,7 +31,7 @@ const TaskAdminPanelLayout = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const [isMobile, setIsMobile] = useState(false);
-
+const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -115,11 +120,12 @@ const TaskAdminPanelLayout = ({ children }) => {
   };
   const handleOpenChange = (keys) =>
     setOpenKeys(keys.length ? [keys.pop()] : []);
-
+ const navigate = useNavigate();
   const handleSignOut = () => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
     window.location.href = "/admin/taskmanagementlogin"; // Redirect to login
+     navigate(entryPoint);
   };
 
   return (

@@ -211,6 +211,7 @@ const AgentsList = () => {
             >
               <Option value="REQUESTED">REQUESTED</Option>
               <Option value="APPROVED">APPROVED</Option>
+              <Option value="PENDING">PENDING</Option>
               <Option value="REJECTED">REJECTED</Option>
               <Option value="DELETED">DELETED</Option>
             </Select>

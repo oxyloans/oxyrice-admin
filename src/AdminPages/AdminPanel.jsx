@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+// ✅ correct
+import { useNavigate } from "react-router-dom";
+
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 
@@ -12,7 +15,7 @@ import {
   FaSlideshare,
   FaBoxOpen,
   FaShoppingCart,
-  FaHandsHelping,
+
 } from "react-icons/fa";
 import { AppstoreOutlined } from "@ant-design/icons";
 
@@ -26,7 +29,8 @@ const AdminPanelLayoutTest = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const [isMobile, setIsMobile] = useState(false);
-
+  const navigate = useNavigate();
+  const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -246,6 +250,7 @@ const AdminPanelLayoutTest = ({ children }) => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
     window.location.href = "/"; // Redirect to login
+    navigate(entryPoint);
   };
 
   const date = new Date();

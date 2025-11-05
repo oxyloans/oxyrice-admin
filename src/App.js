@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
-  Route,
   Routes,
+  Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 
 // Authentication Components
@@ -12,7 +13,6 @@ import Register from "./Authentication/Register";
 import LoginOrRegister from "./Authentication/LoginOrRegister";
 
 // Dashboard and Other Components
-// import Dashboard from "./component/Dashboard";
 import DeliveryBoyList from "./component/DeliveryBoyList";
 import SellersList from "./component/SellersList";
 import SellerItemsList from "./component/SellerItemsList";
@@ -64,6 +64,7 @@ import AllInforMationOfBarCode from "./AdminPages/AllInformationOfBarcode";
 import LoginTest from "./AdminPages/AdminLogin";
 import CategoryInventory from "./AdminPages/CategoryInventary";
 import TimeSlots from "./AdminPages/TimeSlots";
+
 import TaskManagementLogin from "./TaskManagement/Authentication/TaskManagementLogin";
 import TaskCreation from "./TaskManagement/Pages/TaskCreation";
 import TasksList from "./TaskManagement/Pages/TasksList";
@@ -73,7 +74,9 @@ import TaskManagementByDate from "./TaskManagement/Pages/TaskManagementByDate";
 import Dashboard from "./TaskManagement/Pages/Dashboard";
 import EmployeeRegisteredUsers from "./TaskManagement/Pages/EmployeeRegisteredUsers";
 import EndOfTheDay from "./TaskManagement/Pages/EndOfTheDay";
-import TodayLeaves from "./TaskManagement/Pages/TodayLeaves ";
+// NOTE: make sure the import path has NO trailing space
+import LeaveManagement from "./TaskManagement/Pages/TodayLeaves ";
+
 import AllReferralsData from "./AdminPages/AllReferrelsData";
 import ActiveOffersList from "./AdminPages/ActiveOffersList";
 import StudentApplications from "./AdminPages/StudentApplications";
@@ -87,6 +90,7 @@ import UserTaskDetailsPage from "./TaskManagement/Pages/UserTaskDetailsPage";
 import InitiatedAmountList from "./AdminPages/InitiatedAmountList";
 import ApprovedAmountList from "./AdminPages/ApprovedAmountList";
 import WithdrawalRequests from "./AdminPages/WithdrawalUsersList";
+
 import AgentsLogin from "./AgentsAdmin/Auth/AgentsLogin";
 import AgentsAdminLayout from "./AgentsAdmin/Components/AgentsAdminLayout";
 import AssistantsList from "./AgentsAdmin/Pages/AssistantsList";
@@ -98,7 +102,6 @@ import RadhaInstructionView from "./TaskManagement/Pages/RadhaInstructionView";
 import ConversationsList from "./AgentsAdmin/Pages/ConversationsList";
 import AgentManagement from "./AgentsAdmin/Pages/AgentManagement";
 import AgentsRegisteredUsers from "./AgentsAdmin/Pages/AgentsRegisteredUsers";
-
 import AgentUserProfile from "./AgentsAdmin/Pages/AgentUserProfile";
 import GPTStore from "./AgentsAdmin/Pages/GPTStore";
 import UserHistoryAdmin from "./AgentsAdmin/Pages/UserHistoryAdmin";
@@ -108,34 +111,59 @@ import CompanyList from "./Companies/Pages/CompanyList";
 import JobsManagement from "./Companies/Pages/JobsManage";
 import GetAllJobs from "./Companies/Pages/GetAllJobs";
 import CampaignUpload from "./AdminPages/CampaignUpload";
+import AgentsCreatrionUsers from "./AgentsAdmin/Pages/AgentsCreationData";
 
-// Protected Route Component
+// ---- Protected Route (RRv6 style) ----
 const ProtectedRoute = ({ element }) => {
-  const isAuthenticated = localStorage.getItem("token") ? true : false;
-  return isAuthenticated ? element : <Navigate to="/" />;
+  const isAuthenticated = !!localStorage.getItem("token");
+  return isAuthenticated ? element : <Navigate to="/" replace />;
 };
+
+// ---- Tracker rendered INSIDE Router ----
+function EntryPointTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const validEntryPoints = [
+      "/",
+      "/admin/agentslogin",
+      "/admin/comapanieslogin",
+      "",
+    ];
+    if (validEntryPoints.includes(location.pathname)) {
+      localStorage.setItem("entryPoint", location.pathname);
+    }
+  }, [location.pathname]);
+
+  return null; // nothing to render
+}
 
 function App() {
   return (
     <Router>
+      {/* useLocation now lives inside Router context */}
+      <EntryPointTracker />
+
       <Routes>
-        {/* Public Routes (No Authentication Required) */}
-        {/* <Route path="/" element={<Login />} />
-        <Route path="/login" element={<LoginTest />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/loginwithotp" element={<LoginOrRegister />} /> */}
-        {/* Protected Routes (Authentication Required) */}
+        {/* Public */}
+        <Route path="/" element={<LoginTest />} />
         <Route path="/admin/agentslogin" element={<AgentsLogin />} />
         <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
         <Route path="/admin/companylist" element={<CompanyList />} />
         <Route path="/admin/jobsmanage" element={<JobsManagement />} />
         <Route path="/admin/getalljobs" element={<GetAllJobs />} />
+
+        {/* Agents Admin */}
         <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
         <Route
           path="/admin/agentsregisteredusers"
           element={<AgentsRegisteredUsers />}
-        />{" "}
+        />
+        <Route
+          path="/admin/agents-creation-users"
+          element={<AgentsCreatrionUsers />}
+        />
         <Route path="/admin/agent-user" element={<AgentUserProfile />} />
         <Route path="/admin/agent-gptstore" element={<GPTStore />} />
         <Route path="/admin/conversationlist" element={<ConversationsList />} />
@@ -147,6 +175,8 @@ function App() {
           path="/admin/agents-registered-users"
           element={<GeminiUsers />}
         />
+
+        {/* Task Management */}
         <Route
           path="/admin/taskmanagementlogin"
           element={<TaskManagementLogin />}
@@ -172,23 +202,20 @@ function App() {
         <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
         <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
         <Route
-          path="/taskmanagement/teamattendance"
-          element={<TeamAttendanceReport />}
-        />
-        <Route
           path="/user-task-details/:userId"
           element={<UserTaskDetailsPage />}
         />
         <Route
           path="/taskmanagement/employeeleaves"
-          element={<TodayLeaves />}
+          element={<LeaveManagement />}
         />
         <Route
           path="/taskmanagement/employee_registered_users"
           element={<EmployeeRegisteredUsers />}
         />
         <Route path="/taskmanagement/dashboard" element={<Dashboard />} />
-        <Route path="/" element={<LoginTest />} />
+
+        {/* Legacy/Other (protected) */}
         <Route
           path="/dashboard"
           element={<ProtectedRoute element={<Dashboard />} />}
@@ -237,10 +264,7 @@ function App() {
           path="/coupons/coupons_list"
           element={<ProtectedRoute element={<CouponList />} />}
         />
-        {/* <Route
-          path="/orders/orders_list"
-          element={<ProtectedRoute element={<OrdersList />} />}
-        /> */}
+        {/* <Route path="/orders/orders_list" element={<ProtectedRoute element={<OrdersList />} />} /> */}
         <Route
           path="/orders/orders_list/:id"
           element={<ProtectedRoute element={<OrdersListDetailsCustomerId />} />}
@@ -438,9 +462,10 @@ function App() {
         <Route
           path="/admin/allinformationofbarcode/:itemId"
           element={<ProtectedRoute element={<AllInforMationOfBarCode />} />}
-        />{" "}
-        {/* Catch all other routes and redirect to login */}
-        <Route path="*" element={<Navigate to="/" />} />
+        />
+
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
