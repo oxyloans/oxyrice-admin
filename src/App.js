@@ -210,6 +210,10 @@ function App() {
           element={<LeaveManagement />}
         />
         <Route
+          path="/taskmanagement/teamattendance"
+          element={<TeamAttendanceReport />}
+        />
+        <Route
           path="/taskmanagement/employee_registered_users"
           element={<EmployeeRegisteredUsers />}
         />

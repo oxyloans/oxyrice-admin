@@ -494,7 +494,7 @@ const AdminTasks = () => {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "2px",
+            gap: "3px",
             flexWrap: "wrap",
           }}
         >
@@ -509,7 +509,7 @@ const AdminTasks = () => {
             size="small"
             onClick={() => handleEdit(record)}
           >
-            Edit
+            Re Assign
           </Button>
 
           {/* Add Comments Button */}
@@ -523,7 +523,7 @@ const AdminTasks = () => {
             size="small"
             onClick={() => handleCommentsAdd(record)}
           >
-            Add Comments
+            Admin Comments
           </Button>
 
           {/* View Button */}
@@ -537,7 +537,7 @@ const AdminTasks = () => {
             size="small"
             onClick={() => handleViewComments(record)}
           >
-            View
+            View Commenst
           </Button>
         </div>
       ),
@@ -666,50 +666,76 @@ const AdminTasks = () => {
           ))}
         </Select>
       </Modal>
-      <Modal
-        title={`Task Comments - ${selectedTask ? `#${selectedTask.id.slice(-4)}` : ""}`}
-        open={viewModalVisible}
-        onCancel={() => setViewModalVisible(false)}
-        footer={null}
-        width={600}
-      >
-        {commentsData.length > 0 ? (
-          commentsData.map((comment, index) => (
-            <div
-              key={index}
-              style={{
-                background: "#f9f9f9",
-                borderLeft: "4px solid #008cba",
-                borderRadius: 6,
-                padding: "10px 12px",
-                marginBottom: 10,
-              }}
-            >
-              <p style={{ margin: 0, fontWeight: 500, color: "#351664" }}>
-                Comment By:{" "}
-                <span style={{ color: "#1ab394" }}>{comment.commentsBy}</span>
-              </p>
-              <p style={{ margin: "4px 0", color: "#333" }}>
-                {comment.comments}
-              </p>
-              <Tag
-                color={
-                  comment.status?.toLowerCase() === "completed"
-                    ? "green"
-                    : comment.status?.toLowerCase() === "rejected"
-                      ? "red"
-                      : "blue"
-                }
-              >
-                {comment.status || "N/A"}
-              </Tag>
-            </div>
-          ))
-        ) : (
-          <Text type="secondary">No comments found for this task.</Text>
-        )}
-      </Modal>
+     <Modal
+  title={`Task Comments - ${
+    selectedTask ? `#${selectedTask.id.slice(-4)}` : ""
+  }`}
+  open={viewModalVisible}
+  onCancel={() => setViewModalVisible(false)}
+  footer={null}
+  width={700}
+>
+  {commentsData.length > 0 ? (
+    <Table
+      dataSource={commentsData}
+      pagination={false}
+      bordered
+      scroll={{x:"true"}}
+      rowKey={(record, index) => index}
+      columns={[
+        {
+          title: "S.No",
+          key: "sno",
+          align: "center",
+          render: (_, __, index) => index + 1,
+          width: 70,
+         
+        },
+        {
+          title: "Comment By",
+          dataIndex: "commentsBy",
+          key: "commentsBy",
+          align: "center",
+          render: (text) => (
+            <span style={{ color: "#1ab394", fontWeight: 500 }}>{text}</span>
+          ),
+        },
+        {
+          title: "Comment",
+          dataIndex: "comments",
+          key: "comments",
+          align: "center",
+          render: (text) => (
+            <span style={{ color: "#333" }}>{text}</span>
+          ),
+        },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          align: "center" ,
+          render: (status) => {
+            let color = "blue";
+            if (status?.toLowerCase() === "completed") color = "green";
+            else if (status?.toLowerCase() === "rejected") color = "red";
 
+            return (
+              <Tag color={color} style={{ fontWeight: 500 }}>
+                {status || "N/A"}
+              </Tag>
+            );
+          },
+          width: 120,
+        },
+      ]}
+      style={{
+        marginTop: 10,
+      }}
+    />
+  ) : (
+    <Text type="secondary">No comments found for this task.</Text>
+  )}
+</Modal>
       <Modal
         title="Add Comments"
         open={commentsModalVisible}
