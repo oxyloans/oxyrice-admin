@@ -9,7 +9,7 @@ import {
   Select,
   Switch,
   message,
-  Space,
+  Input,
 } from "antd";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
@@ -22,10 +22,12 @@ const PlansList = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [currentPlan, setCurrentPlan] = useState(null);
   const [form] = Form.useForm();
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pageSize, setPageSize] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("all");
   const accessToken = localStorage.getItem("accessToken");
 
-  // Fetch Plans
   const fetchPlans = async () => {
     try {
       setLoading(true);
@@ -34,10 +36,10 @@ const PlansList = () => {
       });
       const json = await res.json();
       const normalized = Array.isArray(json) ? json : json ? [json] : [];
-      setData(normalized);
+      setData(normalized.reverse());
     } catch (err) {
       console.error("Error fetching plans:", err);
-      setData([]);
+      message.error("Failed to load plans. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -47,23 +49,20 @@ const PlansList = () => {
     fetchPlans();
   }, []);
 
-  // Open Modal for Add or Update Plan
   const openModal = (plan = null) => {
     setCurrentPlan(plan);
     form.setFieldsValue({
       planAmount: plan?.planAmount,
-      planType: plan?.planType ,
+      planType: plan?.planType,
       status: plan?.status ?? true,
     });
     setModalVisible(true);
   };
 
-  // Handle Modal Submit
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
       const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
-
       const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
         method: "PATCH",
         headers: {
@@ -72,31 +71,43 @@ const PlansList = () => {
         },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error("Failed to save plan");
-      message.success(`Plan saved successfully!`);
+      message.success("Plan saved successfully!");
       setModalVisible(false);
+      form.resetFields();
       fetchPlans();
     } catch (err) {
-      console.error(err);
-      message.error("Error saving plan");
+      message.error("Error saving plan. Please try again.");
     }
   };
 
-  // Table Columns (center-aligned)
+  const filteredData = data.filter((plan) => {
+    const matchesSearch =
+      plan.planType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.planAmount?.toString().includes(searchTerm);
+    if (activeTab === "active") return plan.status && matchesSearch;
+    if (activeTab === "inactive") return !plan.status && matchesSearch;
+    return matchesSearch;
+  });
+
+  // Calculate current page slice manually
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
   const columns = [
     {
       title: "S.No",
       key: "sno",
-      render: (_text, _record, index) => index + 1,
+      render: (_, __, index) => startIndex + index + 1,
       align: "center",
     },
     {
       title: "Plan ID",
       dataIndex: "id",
       key: "id",
-      align: "center",
       render: (id) => `#${id.slice(-4)}`,
+      align: "center",
     },
     {
       title: "Plan Amount",
@@ -117,7 +128,7 @@ const PlansList = () => {
       key: "status",
       render: (status) =>
         status ? (
-          <span style={{ color: "green", fontWeight: "bold" }}>Active</span>
+          <span style={{ color: "#008cba", fontWeight: "bold" }}>Active</span>
         ) : (
           <span style={{ color: "red", fontWeight: "bold" }}>Inactive</span>
         ),
@@ -127,48 +138,127 @@ const PlansList = () => {
 
   return (
     <AgentsAdminLayout>
-      <Card
-        className="shadow-md rounded-lg"
-        title={
-          <Space
+      <Card className="shadow-md rounded-lg">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
+          <h3 style={{ margin: 0 }}>Plans Management</h3>
+          <Button
+            type="primary"
             style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-              alignItems: "center",
+              backgroundColor: "#008cba",
+              borderColor: "#008cba",
+              borderRadius: 6,
             }}
+            onClick={() => openModal()}
           >
-            <h3 style={{ margin: 0, textAlign: "center", flex: 1 }}>
-              Available Plans
-            </h3>
-            <Button
-              type="primary"
-              style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
-              onClick={() => openModal()}
+            Add Plan
+          </Button>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 20,
+            borderBottom: "1px solid #eee",
+            marginBottom: 10,
+          }}
+        >
+          {["all", "active", "inactive"].map((tab) => (
+            <span
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                cursor: "pointer",
+                fontWeight: activeTab === tab ? "bold" : "normal",
+                color: activeTab === tab ? "#008cba" : "#555",
+                borderBottom:
+                  activeTab === tab
+                    ? "2px solid #008cba"
+                    : "2px solid transparent",
+                paddingBottom: 8,
+              }}
             >
-              Add Plan
-            </Button>
-          </Space>
-        }
-      >
+              {tab === "all"
+                ? "All Plans"
+                : tab === "active"
+                  ? "Active Plans"
+                  : "Inactive Plans"}
+            </span>
+          ))}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>Show</span>
+            <Select
+              value={pageSize}
+              onChange={(value) => {
+                setPageSize(value);
+                setCurrentPage(1); // reset to page 1
+              }}
+              style={{ width: 100 }}
+            >
+              {[5, 10, 20, 50].map((num) => (
+                <Option key={num} value={num}>
+                  {num}
+                </Option>
+              ))}
+            </Select>
+            <span>entries</span>
+          </div>
+
+          <Input
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ width: 250 }}
+          />
+        </div>
+
+        {/* Table */}
         <Table
           rowKey="id"
           loading={loading}
           columns={columns}
-          dataSource={data}
+          dataSource={paginatedData}
           pagination={{
-            pageSize: 50,
-            showSizeChanger: true,
-            pageSizeOptions: ["50", "100", "200", "500"],
+            current: currentPage,
+            pageSize,
+            total: filteredData.length,
+            onChange: (page) => setCurrentPage(page),
+            showSizeChanger: false,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} plans`,
           }}
+          scroll={{x:"true"}}
           bordered
-          scroll={{ x: true }}
           style={{ textAlign: "center" }}
         />
 
+        {/* Modal */}
         <Modal
-          visible={modalVisible}
-          onCancel={() => setModalVisible(false)}
+          title={currentPlan ? "Edit Plan" : "Add New Plan"}
+          open={modalVisible}
+          onCancel={() => {
+            setModalVisible(false);
+            form.resetFields();
+          }}
           onOk={handleSave}
           okText="Save"
           okButtonProps={{
@@ -178,13 +268,6 @@ const PlansList = () => {
               color: "#fff",
             },
           }}
-          cancelButtonProps={{
-            style: {
-              backgroundColor: "#f0f0f0",
-              borderColor: "#d9d9d9",
-              color: "#000",
-            },
-          }}
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -192,21 +275,24 @@ const PlansList = () => {
               name="planAmount"
               rules={[{ required: true, message: "Please enter plan amount" }]}
             >
-              <InputNumber min={0} style={{ width: "100%" }} />
+              <InputNumber
+                min={0}
+                style={{ width: "100%" }}
+                placeholder="Enter amount"
+              />
             </Form.Item>
-
             <Form.Item
               label="Plan Type"
               name="planType"
               rules={[{ required: true, message: "Please select plan type" }]}
             >
-              <Select>
+              <Select placeholder="Select plan type">
                 <Option value="MONTHLY">MONTHLY</Option>
                 <Option value="QUARTERLY">QUARTERLY</Option>
+                <Option value="HALF_YEARLY">HALF_YEARLY</Option>
                 <Option value="YEARLY">YEARLY</Option>
               </Select>
             </Form.Item>
-
             <Form.Item label="Status" name="status" valuePropName="checked">
               <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
             </Form.Item>
