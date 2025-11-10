@@ -7,16 +7,8 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
-import { FaBoxes } from "react-icons/fa";
-import { FaUserGraduate } from "react-icons/fa";
 import { WalletOutlined } from "@ant-design/icons";
-import {
-  FaTachometerAlt,
-  FaSlideshare,
-  FaBoxOpen,
-  FaShoppingCart,
-
-} from "react-icons/fa";
+import { FaBoxes, FaUserGraduate, FaTachometerAlt, FaSlideshare,FaGasPump, FaBoxOpen, FaShoppingCart, FaHandsHelping } from "react-icons/fa";
 import { AppstoreOutlined } from "@ant-design/icons";
 
 import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
@@ -55,12 +47,12 @@ const AdminPanelLayoutTest = ({ children }) => {
       link: "/admin/dashboard",
     },
 
-    // {
-    //   key: "NBFCDataList",
-    //   label: "NBFC Data List",
-    //   icon: <FaHandsHelping />,
-    //   link: "/admin/nbfcdatalist",
-    // },
+    {
+      key: "Fuel Expenses",
+      label: "Fuel Expenses",
+      icon: <FaGasPump />,
+      link: "/admin/fuel-expenses",
+    },
 
     // {
     //   key: "allreferrals",

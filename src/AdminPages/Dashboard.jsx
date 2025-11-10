@@ -175,14 +175,6 @@ const DashboardTest = () => {
 
   const handleFilter = () => fetchUserDetails(startDate, toDate);
 
-  const handleTableChange = (pagination) => {
-    fetchUserDetails(
-      startDate,
-      toDate,
-      pagination.current - 1,
-      pagination.pageSize
-    );
-  };
 
   const refreshAllData = () => {
     fetchCounts();

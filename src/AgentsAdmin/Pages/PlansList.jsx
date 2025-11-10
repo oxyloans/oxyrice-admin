@@ -10,7 +10,9 @@ import {
   Switch,
   message,
   Input,
+  Tooltip,
 } from "antd";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 
@@ -23,11 +25,12 @@ const PlansList = () => {
   const [currentPlan, setCurrentPlan] = useState(null);
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState("");
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
   const accessToken = localStorage.getItem("accessToken");
 
+  // Fetch Plans
   const fetchPlans = async () => {
     try {
       setLoading(true);
@@ -49,20 +52,23 @@ const PlansList = () => {
     fetchPlans();
   }, []);
 
+  // Open Modal (for Add/Edit)
   const openModal = (plan = null) => {
     setCurrentPlan(plan);
     form.setFieldsValue({
-      planAmount: plan?.planAmount,
-      planType: plan?.planType,
+      planAmount: plan?.planAmount || "",
+      planType: plan?.planType || "",
       status: plan?.status ?? true,
     });
     setModalVisible(true);
   };
 
+  // Save or Update Plan
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
       const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
+
       const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
         method: "PATCH",
         headers: {
@@ -71,16 +77,22 @@ const PlansList = () => {
         },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) throw new Error("Failed to save plan");
-      message.success("Plan saved successfully!");
+      message.success(
+        currentPlan ? "Plan updated successfully!" : "Plan added successfully!"
+      );
+
       setModalVisible(false);
       form.resetFields();
       fetchPlans();
     } catch (err) {
+      console.error("Save error:", err);
       message.error("Error saving plan. Please try again.");
     }
   };
 
+  // Filtered Data
   const filteredData = data.filter((plan) => {
     const matchesSearch =
       plan.planType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,11 +102,12 @@ const PlansList = () => {
     return matchesSearch;
   });
 
-  // Calculate current page slice manually
+  // Pagination slice
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedData = filteredData.slice(startIndex, endIndex);
 
+  // Table Columns
   const columns = [
     {
       title: "S.No",
@@ -134,11 +147,27 @@ const PlansList = () => {
         ),
       align: "center",
     },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Tooltip title="Edit Plan">
+          <Button
+            icon={<EditOutlined />}
+            type="link"
+            style={{ color: "#008cba" }}
+            onClick={() => openModal(record)}
+          />
+        </Tooltip>
+      ),
+    },
   ];
 
   return (
     <AgentsAdminLayout>
       <Card className="shadow-md rounded-lg">
+        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -147,9 +176,10 @@ const PlansList = () => {
             marginBottom: 16,
           }}
         >
-          <h3 style={{ margin: 0 }}>Plans Management</h3>
+          <h1 style={{ margin: 0, fontWeight: "600" }}>Plans Management</h1>
           <Button
             type="primary"
+            icon={<PlusOutlined />}
             style={{
               backgroundColor: "#008cba",
               borderColor: "#008cba",
@@ -161,6 +191,7 @@ const PlansList = () => {
           </Button>
         </div>
 
+        {/* Tabs */}
         <div
           style={{
             display: "flex",
@@ -193,6 +224,7 @@ const PlansList = () => {
           ))}
         </div>
 
+        {/* Search + Page Size */}
         <div
           style={{
             display: "flex",
@@ -207,11 +239,11 @@ const PlansList = () => {
               value={pageSize}
               onChange={(value) => {
                 setPageSize(value);
-                setCurrentPage(1); // reset to page 1
+                setCurrentPage(1);
               }}
               style={{ width: 100 }}
             >
-              {[5, 10, 20, 50].map((num) => (
+              {[20, 30, 40, 50].map((num) => (
                 <Option key={num} value={num}>
                   {num}
                 </Option>
@@ -246,12 +278,12 @@ const PlansList = () => {
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} plans`,
           }}
-          scroll={{x:"true"}}
           bordered
+          scroll={{ x: true }}
           style={{ textAlign: "center" }}
         />
 
-        {/* Modal */}
+        {/* Add/Edit Modal */}
         <Modal
           title={currentPlan ? "Edit Plan" : "Add New Plan"}
           open={modalVisible}

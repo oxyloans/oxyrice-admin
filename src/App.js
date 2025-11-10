@@ -112,6 +112,7 @@ import JobsManagement from "./Companies/Pages/JobsManage";
 import GetAllJobs from "./Companies/Pages/GetAllJobs";
 import CampaignUpload from "./AdminPages/CampaignUpload";
 import AgentsCreatrionUsers from "./AgentsAdmin/Pages/AgentsCreationData";
+import FuelExpenses from "./AdminPages/FuelExpenses";
 
 // ---- Protected Route (RRv6 style) ----
 const ProtectedRoute = ({ element }) => {
@@ -224,6 +225,7 @@ function App() {
           path="/dashboard"
           element={<ProtectedRoute element={<Dashboard />} />}
         />
+
         <Route
           path="/SubscriberDetails"
           element={<ProtectedRoute element={<SubscriberDetails />} />}
@@ -324,6 +326,10 @@ function App() {
         <Route
           path="/user/mobilenumber_updated"
           element={<ProtectedRoute element={<CustomerUpdationDetails />} />}
+        />
+        <Route
+          path="/admin/fuel-expenses"
+          element={<ProtectedRoute element={<FuelExpenses />} />}
         />
         <Route
           path="/admin/dashboard"
