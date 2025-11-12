@@ -17,7 +17,7 @@ import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 
 const { Option } = Select;
-
+const { Search } = Input;
 const PlansList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,34 +63,40 @@ const PlansList = () => {
     setModalVisible(true);
   };
 
-  // Save or Update Plan
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
-      const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
+const handleSave = async () => {
+  try {
+    const values = await form.validateFields();
+    const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
 
-      const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(payload),
-      });
+    const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
 
-      if (!res.ok) throw new Error("Failed to save plan");
-      message.success(
-        currentPlan ? "Plan updated successfully!" : "Plan added successfully!"
-      );
+    const result = await res.json();
 
-      setModalVisible(false);
-      form.resetFields();
-      fetchPlans();
-    } catch (err) {
-      console.error("Save error:", err);
-      message.error("Error saving plan. Please try again.");
+    if (!res.ok || result.status === "error" || result.success === false) {
+      throw new Error(result.message || "Server returned an error");
     }
-  };
+
+    message.success(
+      currentPlan ? "Plan updated successfully!" : "Plan added successfully!"
+    );
+
+    setModalVisible(false);
+    form.resetFields();
+    fetchPlans();
+  } catch (err) {
+    console.error("Save error:", err);
+    // message.error(
+    //   err.message || "Error saving plan. Please try again."
+    // );
+  }
+};
 
   // Filtered Data
   const filteredData = data.filter((plan) => {
@@ -176,7 +182,7 @@ const PlansList = () => {
             marginBottom: 16,
           }}
         >
-          <h1 style={{ margin: 0, fontWeight: "600" }}>Plans Management</h1>
+          <h1 style={{ margin: 0, fontWeight: "700" }}>Plans Management</h1>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -252,9 +258,11 @@ const PlansList = () => {
             <span>entries</span>
           </div>
 
-          <Input
-            placeholder="Search..."
+            <Search
+            placeholder="Search Plan amount or type"
             value={searchTerm}
+            allowClear
+            prefix={<i className="fas fa-search" />}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);

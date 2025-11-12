@@ -28,21 +28,29 @@ const orderStatusMap = {
   5: "Order Rejected",
   6: "Order Canceled",
 };
-
-// All employee coupon codes
+// All employee coupon codes (sorted alphabetically)
 const couponOptions = [
-  "ARUNA75",
-  "TULASI200",
-  "TULASI75",
+  "AKHILA10",
+  "ARUNA10",
   "ARUNA200",
+  "ARUNA75",
+  "DIVYA10",
+  "HEMA10",
+  "HEMA200",
+  "JYOTHI10",
+  "JYOTHI100",
+  "JYOTHI200",
+  "PRATHA150",
+  "RAMYA10",
+  "SATHYA200",
+  "SWATHI10",
   "SWATHI200",
   "SWATHI75",
-  "HEMA200",
-  "JYOTHI200",
-  "JYOTHI100",
-  "SATHYA200",
-  "PRATHA150",
+  "TULASI10",
+  "TULASI75",
+  "TULASI200",
 ];
+
 
 const OrdersByCoupon = () => {
   const [orders, setOrders] = useState([]);
@@ -149,7 +157,6 @@ const OrdersByCoupon = () => {
         </Button>
       ),
     },
-    
   ];
 
   const itemColumns = [

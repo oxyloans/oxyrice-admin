@@ -58,6 +58,13 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
   {
+    key: "agent-plans",
+    label: "Agent Plans",
+    icon: <FileDoneOutlined style={{ fontSize: "18px" }} />,
+    link: "/admin/agentsplanslist",
+    style: { fontSize: "20px" },
+  },
+  {
     key: "agent-users",
     label: "Agents  Users",
     icon: <UserOutlined style={{ fontSize: "18px" }} />,
@@ -91,13 +98,6 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
 
-  {
-    key: "agent-plans",
-    label: "Agent Plans",
-    icon: <FileDoneOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/agentsplanslist",
-    style: { fontSize: "20px" },
-  },
   {
     key: "agent-conversations",
     label: "Agent Conversations",

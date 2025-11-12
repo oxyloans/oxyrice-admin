@@ -80,18 +80,18 @@ const AssistantsList = () => {
     return <Tag>{statusRaw || "-"}</Tag>;
   };
 
-const renderInteractionTag = (view) => {
-  const s = (view || "").toString().toLowerCase().trim();
+  const renderInteractionTag = (view) => {
+    const s = (view || "").toString().toLowerCase().trim();
 
-  switch (s) {
-    case "public":
-      return <Tag color="green">Public</Tag>;
-    case "private":
-      return <Tag color="blue">Private</Tag>;
-    default:
-      return <Tag color="default">{view || "-"}</Tag>;
-  }
-};
+    switch (s) {
+      case "public":
+        return <Tag color="green">Public</Tag>;
+      case "private":
+        return <Tag color="blue">Private</Tag>;
+      default:
+        return <Tag color="default">{view || "-"}</Tag>;
+    }
+  };
 
   // ---------- Fetching ----------
   const fetchAssistants = async ({
@@ -113,7 +113,15 @@ const renderInteractionTag = (view) => {
       if (!res.ok) throw new Error("Failed to fetch assistants");
 
       const json = await res.json();
-      const fetched = (json && json.data) || [];
+     const fetched = await Promise.all(
+       ((json && json.data) || []).map(async (item) => {
+         if (item.userId) {
+           const creatorName = await fetchCreatorName(item.userId);
+           return { ...item, creatorName };
+         }
+         return { ...item, creatorName: "Unknown" };
+       })
+     );
 
       setHasMore(!!(json && json.hasMore));
       setLastId((json && json.lastId) || null);
@@ -149,6 +157,23 @@ const renderInteractionTag = (view) => {
     fetchAssistants({ limit: pagination.pageSize, replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  // Fetch user profile details based on userId
+  const fetchCreatorName = async (userId) => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/user-service/customerProfileDetails?customerId=${userId}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch user profile");
+      const json = await response.json();
+      return json?.firstName + " " + (json?.lastName)  ;
+    } catch (err) {
+      console.error("Error fetching creator name:", err);
+      return "Unknown";
+    }
+  };
 
   // ---------- Pagination change ----------
   const handleTableChange = async (newPagination) => {
@@ -231,7 +256,6 @@ const renderInteractionTag = (view) => {
     }
   };
 
-
   // ---------- Live search ----------
   // ✅ Handle input / paste changes (no double API calls)
   let searchTimeout = null;
@@ -270,17 +294,18 @@ const renderInteractionTag = (view) => {
         message.error("Missing assistantId");
         return;
       }
-const payload = {
-  assistanId: selectedAssistant.assistantId,
-  userId,
-  adminComments:
-    values.status === "PENDING" || values.status === "REJECTED"
-      ? values.adminComments
-      : "",
-  status: values.status,
-  authorizedBy: values.authorizedBy,
-  freetrails: values.status === "APPROVED" ? Number(values.freetrails) : 0,
-};
+      const payload = {
+        assistanId: selectedAssistant.assistantId,
+        userId,
+        adminComments:
+          values.status === "PENDING" || values.status === "REJECTED"
+            ? values.adminComments
+            : "",
+        status: values.status,
+        authorizedBy: values.authorizedBy,
+        freetrails:
+          values.status === "APPROVED" ? Number(values.freetrails) : 0,
+      };
 
       const res = await fetch(
         `${BASE_URL}/ai-service/agent/assistanceApprove`,
@@ -425,49 +450,42 @@ const payload = {
       //   render: (id) => (id ? `#${id.slice(-4)}` : "-"),
       //   width: 120,
       // },
-      // {
-      //   title: "Agent ID",
-      //   dataIndex: "agentId",
-      //   key: "agentId",
-      //   align: "center",
-      //   render: (id) => (id ? `#${id.slice(-4)}` : "-"),
-      // },
       {
-        title: "Agent Name",
-        dataIndex: "name",
-        key: "name",
-        align: "center",
+        title: "Agent Details",
+        key: "agentDetails",
+        align: "left",
+        
+        render: (_, record) => (
+          <div style={{ textAlign: "left", lineHeight: "1.6" }}>
+            <div>
+              <b style={{ color: "#008cba" }}>Creator Name:</b> {record.creatorName || "-"}
+            </div>
+            <div>
+              <b style={{ color: "#1ab394" }}>Agent Name:</b> {record.name || "-"}
+            </div>
+            <div>
+              <b>Agent ID:</b>{" "}
+              {record.agentId ? `#${record.agentId.slice(-4)}` : "-"}
+            </div>
+            <div>
+              <b>Role User:</b> {record.roleUser || "-"}
+            </div>
+            <div>
+              <b>Purpose:</b> {record.purpose || "-"}
+            </div>
+            <div>
+              <b>Goals:</b> {record.goals || "-"}
+            </div>
+          </div>
+        ),
       },
-      {
-        title: "Creator Name",
-        dataIndex: "creatorName",
-        key: "creatorName",
-        align: "center",
-      },
+
       // {
       //   title: "Approved By",
       //   dataIndex: "authorizedBy",
       //   key: "authorizedBy",
       //   align: "center",
       // },
-      {
-        title: "roleUser",
-        dataIndex: "roleUser",
-        key: "roleUser",
-        align: "center",
-      },
-      {
-        title: "Purpose",
-        dataIndex: "purpose",
-        key: "purpose",
-        align: "center",
-      },
-      {
-        title: "Goals",
-        dataIndex: "goals",
-        key: "goals",
-        align: "center",
-      },
       {
         title: "Description",
         dataIndex: "description",
@@ -480,7 +498,7 @@ const payload = {
                 maxWidth: 400,
                 textAlign: "center",
                 display: "-webkit-box",
-                WebkitLineClamp: 3,
+                WebkitLineClamp: 4,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
               }}
@@ -490,34 +508,33 @@ const payload = {
           </Tooltip>
         ),
       },
-      {
-        title: "View",
-        dataIndex: "view",
-        key: "view",
-        align: "center",
-        render: (view) => renderInteractionTag(view),
-      },
-      // {
-      //   title: "Instructions",
-      //   dataIndex: "instructions",
-      //   key: "instructions",
-      //   align: "center",
-      //   render: (text) => (
-      //     <div
-      //       style={{
-      //         maxWidth: 300,
-      //         textAlign: "center",
-      //         display: "-webkit-box",
-      //         WebkitLineClamp: 3,
-      //         WebkitBoxOrient: "vertical",
-      //         overflow: "hidden",
-      //       }}
-      //     >
-      //       {text}
-      //     </div>
-      //   ),
-      // },
 
+      {
+        title: "Instructions",
+        dataIndex: "instructions",
+        key: "instructions",
+        align: "center",
+        render: (text) => (
+          <div
+            style={{
+              maxWidth: 300,
+              textAlign: "center",
+              display: "-webkit-box",
+              WebkitLineClamp: 4,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {text}
+          </div>
+        ),
+      },
+      {
+        title: "Interaction Mode",
+        dataIndex: "interactionMode",
+        key: "interactionMode",
+        align: "center",
+      },
       // {
       //   title: "Tools",
       //   dataIndex: "tools",
@@ -529,6 +546,13 @@ const payload = {
       //     return list.length ? list.join(", ") : "—";
       //   },
       // },
+      {
+        title: "View",
+        dataIndex: "view",
+        key: "view",
+        align: "center",
+        render: (view) => renderInteractionTag(view),
+      },
       {
         title: "Status",
         dataIndex: "status",
@@ -740,6 +764,10 @@ const payload = {
                 <Descriptions.Item label="View">
                   {selectedAssistant.view}
                 </Descriptions.Item>
+                <Descriptions.Item label="Approved By">
+                  {selectedAssistant.approvedBy}
+                </Descriptions.Item>
+
                 <Descriptions.Item label="Admin Comments">
                   {selectedAssistant.adminComments}
                 </Descriptions.Item>
