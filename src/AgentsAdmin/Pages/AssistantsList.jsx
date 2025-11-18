@@ -16,6 +16,7 @@ import {
   Space,
   Descriptions,
   Divider,
+  Switch,
   Tooltip,
 } from "antd";
 import BASE_URL from "../../AdminPages/Config";
@@ -92,6 +93,39 @@ const AssistantsList = () => {
         return <Tag color="default">{view || "-"}</Tag>;
     }
   };
+  // ---------- Hide Agent (Name / Description) ----------
+const handleToggleHideAgent = async (record, hide) => {
+  if (!record?.agentId) {
+    message.error("Missing agentId");
+    return;
+  }
+
+  try {
+    const url = `${BASE_URL}/ai-service/agent/hideAgent?agentId=${encodeURIComponent(
+      record.agentId
+    )}&hide=${hide}`;
+
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "*/*",
+      },
+    });
+
+    if (!res.ok) throw new Error("Failed to update hide status");
+
+    message.success(
+      hide ? "Agent hidden successfully" : "Agent is now visible"
+    );
+
+    // THIS LINE FIXES THE REFRESH ISSUE
+    await fetchAssistants({ limit: pagination.pageSize, replace: true });
+  } catch (err) {
+    console.error(err);
+    message.error("Failed to update visibility");
+  }
+};
 
   // ---------- Fetching ----------
   const fetchAssistants = async ({
@@ -122,7 +156,6 @@ const AssistantsList = () => {
           return { ...item, creatorName: "Unknown" };
         })
       );
-      
 
       setHasMore(!!(json && json.hasMore));
       setLastId((json && json.lastId) || null);
@@ -517,26 +550,26 @@ const AssistantsList = () => {
         ),
       },
 
-      {
-        title: "Instructions",
-        dataIndex: "instructions",
-        key: "instructions",
-        align: "center",
-        render: (text) => (
-          <div
-            style={{
-              maxWidth: 300,
-              textAlign: "center",
-              display: "-webkit-box",
-              WebkitLineClamp: 4,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {text}
-          </div>
-        ),
-      },
+      // {
+      //   title: "Instructions",
+      //   dataIndex: "instructions",
+      //   key: "instructions",
+      //   align: "center",
+      //   render: (text) => (
+      //     <div
+      //       style={{
+      //         maxWidth: 300,
+      //         textAlign: "center",
+      //         display: "-webkit-box",
+      //         WebkitLineClamp: 4,
+      //         WebkitBoxOrient: "vertical",
+      //         overflow: "hidden",
+      //       }}
+      //     >
+      //       {text}
+      //     </div>
+      //   ),
+      // },
       {
         title: "Interaction Mode",
         dataIndex: "interactionMode",
@@ -572,32 +605,83 @@ const AssistantsList = () => {
         title: "Actions",
         key: "actions",
         align: "center",
-
+        width: 260,
         render: (_, record) => (
           <div
-            style={{ display: "flex", gap: "8px", justifyContent: "center" }}
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
           >
+            {/* Preview Button */}
             <Button
               type="primary"
+              size="middle"
               onClick={() => {
                 setSelectedAssistant(record);
                 setPreviewVisible(true);
               }}
-              style={{ backgroundColor: "#008cba", borderColor: "#008cba" }}
+              style={{
+                backgroundColor: "#008cba",
+                borderColor: "#008cba",
+                height: "36px",
+                width: "110px",
+                fontWeight: 500,
+              }}
             >
               Preview
             </Button>
-            {/* <Button
-              type="default"
-              onClick={() => openToolsModal(record)}
-              style={{
-                backgroundColor: "#6a1b9a",
-                color: "#fff",
-                borderColor: "#6a1b9a",
-              }}
+
+            {/* Hide / Show Switch – Colored Background */}
+            <Tooltip
+              title={
+                record.hideAgent
+                  ? "This agent is currently HIDDEN in Bharat AI Store"
+                  : "This agent is VISIBLE in Bharat AI Store"
+              }
             >
-              Manage Tools
-            </Button> */}
+              <div
+                style={{
+                  height: "36px",
+                  width: "110px",
+                  borderRadius: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: record.hideAgent ? "#ff4d4f" : "#1ab394", // Red = Hidden, Green = Visible
+                  transition: "all 0.3s",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                }}
+              >
+                <Switch
+                  checked={record.hideAgent === true}
+                  checkedChildren="Hidden"
+                  unCheckedChildren="Visible"
+                  style={{
+                    backgroundColor: "transparent",
+                  }}
+                  onChange={(checked) => {
+                    Modal.confirm({
+                      title: checked ? "Hide Agent?" : "Show Agent?",
+                      content: checked
+                        ? "This agent will be HIDDEN from Bharat AI Store."
+                        : "This agent will be VISIBLE in Bharat AI Store.",
+                      okText: "Yes",
+                      cancelText: "No",
+                      okButtonProps: {
+                        style: {
+                          backgroundColor: "#ff4d4f",
+                          borderColor: "#ff4d4f",
+                        },
+                      },
+                      onOk: () => handleToggleHideAgent(record, checked),
+                    });
+                  }}
+                />
+              </div>
+            </Tooltip>
           </div>
         ),
       },

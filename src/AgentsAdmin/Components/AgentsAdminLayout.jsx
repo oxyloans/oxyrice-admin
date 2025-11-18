@@ -4,16 +4,15 @@ import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 
 import { UserOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
-import { MdLogout} from "react-icons/md";
+import { MdLogout } from "react-icons/md";
 import { FaStore } from "react-icons/fa";
 import { MessageOutlined } from "@ant-design/icons";
 import {
   DashboardOutlined,
   FileTextOutlined,
   FileDoneOutlined,
-
 } from "@ant-design/icons";
-
+import { RobotOutlined } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -42,111 +41,108 @@ const AgentsAdminLayout = ({ children }) => {
     }
   }, [screens]);
 
-const sidebarItems = [
-  {
-    key: "agents-dashboard",
-    label: "Agents Dashboard",
-    icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/assistantslist",
-    style: { fontSize: "20px" }, // Custom font size for label
-  },
-  {
-    key: "agent-status",
-    label: "Agents Status List",
-    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/agentsstatuslist",
-    style: { fontSize: "20px" },
-  },
-  {
-    key: "agent-plans",
-    label: "Agent Plans",
-    icon: <FileDoneOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/agentsplanslist",
-    style: { fontSize: "20px" },
-  },
-  {
-    key: "gpt-store",
-    label: "Agent Store Management",
-    icon: <FaStore style={{ fontSize: "18px" }} />,
+  const sidebarItems = [
+    {
+      key: "agents-dashboard",
+      label: "Agents Dashboard",
+      icon: <DashboardOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/assistantslist",
+      style: { fontSize: "20px" }, // Custom font size for label
+    },
+    {
+      key: "agent-status",
+      label: "Agents Status List",
+      icon: <FileTextOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/agentsstatuslist",
+      style: { fontSize: "20px" },
+    },
+    {
+      key: "agent-plans",
+      label: "Agent Plans",
+      icon: <FileDoneOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/agentsplanslist",
+      style: { fontSize: "20px" },
+    },
+    {
+      key: "ai-store",
+      label: "Agents AI Store",
+      icon: <RobotOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/agents-aistore",
+      style: { fontSize: "20px" },
+    },
+    {
+      key: "gpt-store",
+      label: "Agents Gpt Store",
+      icon: <FaStore style={{ fontSize: "20px" }} />,
+      link: "/admin/agent-gptstore",
+      style: { fontSize: "20px" },
+    },
 
-    style: { fontSize: "20px" },
-    dropdownItems: [
-      {
-        key: "Agents Gpt Store",
-        label: "Agents Gpt Store",
-        link: "/admin/agent-gptstore",
-      },
-      {
-        key: "Agents AI Store",
-        label: "Agents AI Store",
-        link: "/admin/agents-aistore",
-      },
-    ],
-  },
-  {
-    key: "agent-users",
-    label: "Agents Users & Coins",
-    icon: <UserOutlined style={{ fontSize: "18px" }} />,
+    {
+      key: "agent-users",
+      label: "Agents Users & Coins",
+      icon: <UserOutlined style={{ fontSize: "20px" }} />,
 
-    style: { fontSize: "20px" },
-    dropdownItems: [
-      {
-        key: "Agents Registered Users",
-        label: "Agents Registered Users",
-        link: "/admin/agentsregisteredusers",
-      },
-      {
-        key: "Agents Creation Users",
-        label: "Agents Creation Users",
-        link: "/admin/agents-creation-users",
-      },
-      {
-        key: "Agent Bmv Coins Updated",
-        label: "Agent Bmv Coins Updated",
-        link: "/admin/agents-bmv-coins-updated",
-      },
-    ],
-  },
-  {
-    key: "agent-user-history",
-    label: "User Chat History",
-    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/userhistory",
-    style: { fontSize: "20px" },
-  },
+      style: { fontSize: "20px" },
+      dropdownItems: [
+        {
+          key: "Agents Registered Users",
+          label: "Agents Registered Users",
+          link: "/admin/agentsregisteredusers",
+          style: { fontSize: "20px" },
+        },
+        {
+          key: "Agents Creation Users",
+          label: "Agents Creation Users",
+          link: "/admin/agents-creation-users",
+          style: { fontSize: "20px" },
+        },
+        {
+          key: "Agent Bmv Coins Updated",
+          label: "Agent Bmv Coins Updated",
+          link: "/admin/agents-bmv-coins-updated",
+          style: { fontSize: "20px" },
+        },
+      ],
+    },
+    {
+      key: "agent-user-history",
+      label: "User Chat History",
+      icon: <FileTextOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/userhistory",
+      style: { fontSize: "20px" },
+    },
 
-  {
-    key: "agent-conversations",
-    label: "Agent Conversations",
-    icon: <MessageOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/conversationlist",
-    style: { fontSize: "20px" },
-  },
+    {
+      key: "agent-conversations",
+      label: "Agent Conversations",
+      icon: <MessageOutlined style={{ fontSize: "20px" }} />,
+      link: "/admin/conversationlist",
+      style: { fontSize: "20px" },
+    },
 
-  // {
-  //   key: "Authorized-Users",
-  //   label: "Authorized-Users",
-  //   icon: <UserOutlined style={{ fontSize: "18px" }} />,
-  //   link: "/admin/authorizedusers",
-  //   style: { fontSize: "20px" },
-  // },
-  // {
-  //   key: "useragent-login",
-  //   label: "OG Registered Users",
-  //   icon: <TeamOutlined style={{ fontSize: "18px" }} />,
-  //   link: "/admin/agents-registered-users",
-  //   style: { fontSize: "20px" },
-  // },
-];
-    
-  
+    // {
+    //   key: "Authorized-Users",
+    //   label: "Authorized-Users",
+    //   icon: <UserOutlined style={{ fontSize: "18px" }} />,
+    //   link: "/admin/authorizedusers",
+    //   style: { fontSize: "20px" },
+    // },
+    // {
+    //   key: "useragent-login",
+    //   label: "OG Registered Users",
+    //   icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+    //   link: "/admin/agents-registered-users",
+    //   style: { fontSize: "20px" },
+    // },
+  ];
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
   };
   const handleOpenChange = (keys) =>
     setOpenKeys(keys.length ? [keys.pop()] : []);
-const entryPoint = localStorage.getItem("entryPoint") || "direct";
+  const entryPoint = localStorage.getItem("entryPoint") || "direct";
   const handleSignOut = () => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
@@ -163,7 +159,7 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 220 : 260}
+        width={screens.xs ? 220 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
@@ -287,8 +283,8 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "fixed",
             top: 0,
             zIndex: 9,
@@ -322,13 +318,13 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
           style={{
             margin: screens.xs
               ? "80px 16px 16px"
-              : `80px 16px 16px ${collapsed ? "80px" : "260px"}`,
+              : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
             padding: screens.xs ? 12 : 24,
             background: "#f7f7f7",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative", // Ensure it's positioned correctly
           }}
         >
@@ -340,8 +336,8 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
+              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative", // Ensure it's positioned correctly
             bottom: 0,
           }}
@@ -350,7 +346,7 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
         </Footer>
       </Layout>
       {/* Custom scrollbar styling */}
-      <style >{`
+      <style>{`
         /* Customize scrollbar for the menu */
         .ant-menu::-webkit-scrollbar {
           width: 5px;

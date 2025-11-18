@@ -117,9 +117,24 @@ import AgentsBmvCoinsUpdated from "./AgentsAdmin/Pages/AgentsBmvCoinsUpdated";
 import AgentStoreManager from "./AgentsAdmin/Pages/AgentStoreManager";
 
 // ---- Protected Route (RRv6 style) ----
-const ProtectedRoute = ({ element }) => {
+// const ProtectedRoute = ({ element }) => {
+//   const isAuthenticated = !!localStorage.getItem("token");
+//   return isAuthenticated ? element : <Navigate to="/" replace />;
+// };
+
+const ProtectedRoute = ({ element, loginPath = "/" }) => {
   const isAuthenticated = !!localStorage.getItem("token");
-  return isAuthenticated ? element : <Navigate to="/" replace />;
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    // Save where user wanted to go
+    localStorage.setItem(
+      "redirectAfterLogin",
+      location.pathname + location.search
+    );
+    return <Navigate to={loginPath} replace />;
+  }
+  return element;
 };
 
 // ---- Tracker rendered INSIDE Router ----
@@ -131,7 +146,7 @@ function EntryPointTracker() {
       "/",
       "/admin/agentslogin",
       "/admin/comapanieslogin",
-      "",
+      "/admin/taskmanagementlogin",
     ];
     if (validEntryPoints.includes(location.pathname)) {
       localStorage.setItem("entryPoint", location.pathname);
@@ -152,75 +167,276 @@ function App() {
         <Route path="/" element={<LoginTest />} />
         <Route path="/admin/agentslogin" element={<AgentsLogin />} />
         <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
-        <Route path="/admin/companylist" element={<CompanyList />} />
-        <Route path="/admin/jobsmanage" element={<JobsManagement />} />
-        <Route path="/admin/getalljobs" element={<GetAllJobs />} />
-        {/* Agents Admin */}
-        <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
-        <Route path="/admin/assistantslist" element={<AssistantsList />} />
-        <Route
-          path="/admin/agentsregisteredusers"
-          element={<AgentsRegisteredUsers />}
-        />
-        <Route
-          path="/admin/agents-creation-users"
-          element={<AgentsCreatrionUsers />}
-        />
-        <Route path="/admin/agent-user" element={<AgentUserProfile />} />
-        <Route path="/admin/agent-gptstore" element={<GPTStore />} />
-        <Route path="/admin/agents-aistore" element={<AgentStoreManager/>}/>
-        <Route path="/admin/conversationlist" element={<ConversationsList />} />
-        <Route path="/admin/agentsplanslist" element={<PlansList />} />
-        <Route path="/admin/agentsstatuslist" element={<AgentsList />} />{" "}
-        <Route path="/admin/agents-bmv-coins-updated" element={<AgentsBmvCoinsUpdated />} />
-        <Route path="/admin/authorizedusers" element={<AgentManagement />} />
-        <Route path="/admin/userhistory" element={<UserHistoryAdmin />} />
-        <Route
-          path="/admin/agents-registered-users"
-          element={<GeminiUsers />}
-        />
-        {/* Task Management */}
         <Route
           path="/admin/taskmanagementlogin"
           element={<TaskManagementLogin />}
         />
-        <Route path="/taskmanagement/taskcreation" element={<TaskCreation />} />
+
+        {/* === COMPANIES ADMIN - PROTECTED === */}
+        <Route
+          path="/admin/companylist"
+          element={
+            <ProtectedRoute
+              element={<CompanyList />}
+              loginPath="/admin/comapanieslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/jobsmanage"
+          element={
+            <ProtectedRoute
+              element={<JobsManagement />}
+              loginPath="/admin/comapanieslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/getalljobs"
+          element={
+            <ProtectedRoute
+              element={<GetAllJobs />}
+              loginPath="/admin/comapanieslogin"
+            />
+          }
+        />
+        {/* === AGENTS ADMIN - PROTECTED === */}
+        <Route
+          path="/admin/agentsdashboard"
+          element={
+            <ProtectedRoute
+              element={<AgentsAdminLayout />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/assistantslist"
+          element={
+            <ProtectedRoute
+              element={<AssistantsList />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agents-aistore"
+          element={
+            <ProtectedRoute
+              element={<AgentStoreManager />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/conversationlist"
+          element={
+            <ProtectedRoute
+              element={<ConversationsList />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agentsplanslist"
+          element={
+            <ProtectedRoute
+              element={<PlansList />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agentsstatuslist"
+          element={
+            <ProtectedRoute
+              element={<AgentsList />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agentsregisteredusers"
+          element={
+            <ProtectedRoute
+              element={<AgentsRegisteredUsers />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agent-user"
+          element={
+            <ProtectedRoute
+              element={<AgentUserProfile />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agents-creation-users"
+          element={
+            <ProtectedRoute
+              element={<AgentsCreatrionUsers />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agent-gptstore"
+          element={
+            <ProtectedRoute
+              element={<GPTStore />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/userhistory"
+          element={
+            <ProtectedRoute
+              element={<UserHistoryAdmin />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agents-bmv-coins-updated"
+          element={
+            <ProtectedRoute
+              element={<AgentsBmvCoinsUpdated />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/authorizedusers"
+          element={
+            <ProtectedRoute
+              element={<AgentManagement />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        <Route
+          path="/admin/agents-registered-users"
+          element={
+            <ProtectedRoute
+              element={<GeminiUsers />}
+              loginPath="/admin/agentslogin"
+            />
+          }
+        />
+        {/* Task Management */}
+
+        <Route
+          path="/taskmanagement/taskcreation"
+          element={
+            <ProtectedRoute
+              element={<TaskCreation />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
+        />
+
         <Route
           path="/taskmanagementbydate"
-          element={<TaskManagementByDate />}
+          element={
+            <ProtectedRoute
+              element={<TaskManagementByDate />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
         <Route
-          path="/taskmanagementlayout"
-          element={<TaskAdminPanelLayout />}
+          path="/taskmanagement/tasklists"
+          element={
+            <ProtectedRoute
+              element={<AdminTasks />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
-        <Route path="/taskmanagement/tasklists" element={<AdminTasks />} />
         <Route
           path="/taskmanagement/admininstructions"
-          element={<AdminInstructions />}
+          element={
+            <ProtectedRoute
+              element={<AdminInstructions />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
         <Route
           path="/taskmanagement/chatview/:id"
-          element={<RadhaInstructionView />}
+          element={
+            <ProtectedRoute
+              element={<RadhaInstructionView />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
-        <Route path="/taskmanagement/planoftheday" element={<PlanOfTheDay />} />
-        <Route path="/taskmanagement/endoftheday" element={<EndOfTheDay />} />
+        <Route
+          path="/taskmanagement/planoftheday"
+          element={
+            <ProtectedRoute
+              element={<PlanOfTheDay />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
+        />
+        <Route
+          path="/taskmanagement/endoftheday"
+          element={
+            <ProtectedRoute
+              element={<EndOfTheDay />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
+        />
         <Route
           path="/user-task-details/:userId"
-          element={<UserTaskDetailsPage />}
+          element={
+            <ProtectedRoute
+              element={<UserTaskDetailsPage />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
         <Route
           path="/taskmanagement/employeeleaves"
-          element={<LeaveManagement />}
+          element={
+            <ProtectedRoute
+              element={<LeaveManagement />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
         <Route
           path="/taskmanagement/teamattendance"
-          element={<TeamAttendanceReport />}
+          element={
+            <ProtectedRoute
+              element={<TeamAttendanceReport />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
         <Route
           path="/taskmanagement/employee_registered_users"
-          element={<EmployeeRegisteredUsers />}
+          element={
+            <ProtectedRoute
+              element={<EmployeeRegisteredUsers />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
+        /><Route
+          path="/taskmanagement/dashboard"
+          element={
+            <ProtectedRoute
+              element={<Dashboard />}
+              loginPath="/admin/taskmanagementlogin"
+            />
+          }
         />
-        <Route path="/taskmanagement/dashboard" element={<Dashboard />} />
         {/* Legacy/Other (protected) */}
         <Route
           path="/dashboard"

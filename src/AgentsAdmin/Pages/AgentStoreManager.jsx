@@ -22,7 +22,7 @@ import {
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 import BASE_URL from "../../AdminPages/Config";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 const AgentStoreManager = () => {
   const [loading, setLoading] = useState(false);
@@ -34,14 +34,15 @@ const AgentStoreManager = () => {
   const [saving, setSaving] = useState(false);
   const [isStoreModal, setIsStoreModal] = useState(false);
   const [isAgentsModal, setIsAgentsModal] = useState(false);
+  const [isAgentsShowModal, setIsAgentsShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedAgents, setSelectedAgents] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [agentSearch, setAgentSearch] = useState("");
 
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("token") || "";
-  const headers = { Authorization: `Bearer ${accessToken}` };
 
   const getAuthHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -52,8 +53,11 @@ const AgentStoreManager = () => {
   const baseUrl = isSandbox
     ? "https://www.sandbox.askoxy.ai"
     : "https://www.askoxy.ai";
-  const authUrlPrefix = `${baseUrl}/main/ai-store/`;
+ 
   const noAuthUrlPrefix = `${baseUrl}/ai-store/`;
+const filteredAssistants = assistants.filter((agent) =>
+  agent.agentName?.toLowerCase().includes(agentSearch.toLowerCase())
+);
 
   // Slugify store name for clean URL
   const slugify = (text) =>
@@ -90,22 +94,6 @@ const AgentStoreManager = () => {
     document.body.removeChild(textarea);
     message.success("URL copied!");
   };
-  /** Fetch Stores */
-  //   const fetchStores = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const res = await fetch(
-  //         `${BASE_URL}/ai-service/agent/getAiStoreAllAgents`,
-  //         { headers }
-  //       );
-  //       const data = await res.json();
-  //       setStoreData([data]);
-  //     } catch (err) {
-  //       message.error("Failed to fetch store data");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
 
   const fetchStores = async () => {
     setLoading(true);
@@ -119,7 +107,7 @@ const AgentStoreManager = () => {
       const result = await res.json();
 
       // Handle both array and single object response
-      const data = Array.isArray(result)
+      const data = Array.isArray(result.reverse())
         ? result
         : result.data
           ? Array.isArray(result.data)
@@ -127,7 +115,17 @@ const AgentStoreManager = () => {
             : [result]
           : [result];
 
-      setStoreData(data.filter((store) => store && store.storeId));
+      const validStores = data.filter((store) => store && store.storeId);
+      setStoreData(validStores);
+      // 🔥 keep modal store in sync after reload
+      if (selectedStore) {
+        const updatedStore = validStores.find(
+          (s) => s.storeId === selectedStore.storeId
+        );
+        if (updatedStore) {
+          setSelectedStore(updatedStore);
+        }
+      }
     } catch (err) {
       message.error("Failed to load stores");
       setStoreData([]);
@@ -222,7 +220,8 @@ const AgentStoreManager = () => {
       if (!res.ok) throw new Error("Status update failed");
 
       message.success(`Agent status updated to ${newStatus}`);
-      fetchStores();
+      await fetchStores(); // Wait for fresh data
+      setRefreshTrigger((prev) => prev + 1);
     } catch (err) {
       message.error(err.message || "Status update failed");
     }
@@ -367,37 +366,9 @@ const AgentStoreManager = () => {
 
       align: "center",
     },
-    // {
-    //   title: <div style={{ textAlign: "center" }}>Service URL (With Auth)</div>,
-    //   align: "center",
-    //   render: (_, record) => {
-    //     const slug = slugify(record.storeName);
-    //     const url = `${authUrlPrefix}${record.storeId.slice(-4)}/${slug}`;
-    //     return (
-    //       <Space direction="vertical" size={4}>
-    //         <a
-    //           href={url}
-    //           target="_blank"
-    //           rel="noopener noreferrer"
-    //           className="text-blue-600 text-xs break-all"
-    //         >
-    //           {url}
-    //         </a>
-    //         <Button
-    //           size="small"
-    //           icon={<CopyOutlined />}
-    //           onClick={() => handleCopy(url)}
-    //         >
-    //           Copy
-    //         </Button>
-    //       </Space>
-    //     );
-    //   },
-    // },
 
-    // Without Authorization URL
     {
-      title: <div style={{ textAlign: "center" }}>Service URL (Public)</div>,
+      title: <div style={{ textAlign: "center" }}>AI Store URL (Public)</div>,
       align: "center",
       render: (_, record) => {
         const slug = slugify(record.storeName);
@@ -408,7 +379,7 @@ const AgentStoreManager = () => {
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-green-600 text-xs break-all"
+              className="text-[#008cba] text-md break-all"
             >
               {url}
             </a>
@@ -428,63 +399,40 @@ const AgentStoreManager = () => {
       key: "agents",
       align: "center",
 
-      render: (_, record) =>
-        !record.agentDetailsOnAdUser?.length ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="No Agents"
-            style={{ margin: "8px 0" }}
-          />
-        ) : (
-          <div style={{ maxHeight: "150px", overflowY: "auto" }}>
-            {record.agentDetailsOnAdUser.map((agent) => (
-              <div
-                key={agent.agentId}
-                style={{
-                  marginBottom: "8px",
-                  padding: "12px",
-                  background: "#fafafa",
-                  borderRadius: "6px",
-                  border: "1px solid #e8e8e8",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "8px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                  }}
-                >
-                  <strong style={{ fontSize: "14px" }}>
-                    {agent.agentName}
-                  </strong>
-                  <Switch
-                    checked={agent.agentStatus === "ACTIVE"}
-                    checkedChildren="Active"
-                    unCheckedChildren="Inactive"
-                    style={{
-                      background:
-                        agent.agentStatus === "ACTIVE" ? "#1ab394" : "#d9d9d9",
-                    }}
-                    onChange={() => handleStatusChange(agent, record.storeId)}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        ),
+      render: (_, record) => {
+        const agents = record.agentDetailsOnAdUser || [];
+
+        if (agents.length === 0) {
+          return (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="No Agents"
+              style={{ margin: "8px 0" }}
+            />
+          );
+        }
+
+        return (
+          <Button
+            type="link"
+            size="small"
+            style={{ color: "#008cba", fontWeight: 500 }}
+            onClick={() => {
+              setSelectedStore(record);
+              setIsAgentsShowModal(true); // Reuse your existing modal
+            }}
+          >
+            View {agents.length} Agent{agents.length > 1 ? "s" : ""}
+          </Button>
+        );
+      },
     },
     {
       title: "Actions",
       align: "center",
 
       render: (_, record) => (
-        <Space direction="vertical" size="small" style={{ width: "85%" }}>
+        <Space direction="vertical" size="small" style={{ width: "90%" }}>
           <Button
             icon={<EditOutlined />}
             style={{
@@ -650,7 +598,105 @@ const AgentStoreManager = () => {
             </Form.Item>
           </Form>
         </Modal>
+        {/* VIEW & MANAGE AGENTS MODAL - Now with Table + S.No */}
+        <Modal
+          title={
+            <span
+              style={{ fontSize: "18px", fontWeight: "600", color: "#1a1a1a" }}
+            >
+              Agents in Store:{" "}
+              <strong style={{ color: "#008cba" }}>
+                {selectedStore?.storeName}
+              </strong>
+            </span>
+          }
+          open={isAgentsShowModal}
+          onCancel={() => {
+            setIsAgentsShowModal(false);
+            setSelectedStore(null);
+          }}
+          width={800}
+          key={selectedStore?.storeId + refreshTrigger} // THIS IS THE MAIN FIX
+          bodyStyle={{ padding: "20px" }}
+          footer={null} // 🔴 no OK button, only close
+        >
+          {selectedStore && (
+            <Table
+              dataSource={selectedStore.agentDetailsOnAdUser || []}
+              rowKey="agentId"
+              pagination={false}
+              bordered
+              scroll={{ x: "true" }}
+              size="middle"
+              style={{ marginTop: 16 }}
+              columns={[
+                {
+                  title: <strong>S.No</strong>,
+                  key: "sno",
+                  width: 70,
+                  align: "center",
+                  render: (_, __, index) => (
+                    <span style={{ fontWeight: 600, color: "#008cba" }}>
+                      {index + 1}
+                    </span>
+                  ),
+                },
+                {
+                  title: <strong>Agent Id</strong>,
+                  dataIndex: "agentId",
+                  key: "agentId",
+                  align: "center",
+                  render: (text) => (
+                    <span style={{ fontWeight: 500 }}>{text.slice(-4)}</span>
+                  ),
+                },
 
+                {
+                  title: <strong>Agent Name</strong>,
+                  dataIndex: "agentName",
+                  key: "agentName",
+                  align: "center",
+                  render: (text) => (
+                    <span style={{ fontWeight: 500 }}>
+                      {text || "Unnamed Agent"}
+                    </span>
+                  ),
+                },
+                {
+                  title: <strong>Status</strong>,
+                  key: "status",
+                  width: 140,
+                  align: "center",
+
+                  render: (_, agent) => (
+                    <Switch
+                      checked={agent.agentStatus === "ACTIVE"}
+                      checkedChildren="Active"
+                      unCheckedChildren="Inactive"
+                      style={{
+                        backgroundColor:
+                          agent.agentStatus === "ACTIVE"
+                            ? "#1ab394"
+                            : "#d9d9d9",
+                      }}
+                      onChange={() =>
+                        handleStatusChange(agent, selectedStore.storeId)
+                      }
+                    />
+                  ),
+                },
+              ]}
+            />
+          )}
+
+          {(!selectedStore?.agentDetailsOnAdUser ||
+            selectedStore.agentDetailsOnAdUser.length === 0) && (
+            <Empty
+              description="No agents added to this store yet"
+              style={{ margin: "40px 0" }}
+            />
+          )}
+        </Modal>
         {/* ADD AGENTS MODAL */}
         <Modal
           title={
@@ -662,6 +708,7 @@ const AgentStoreManager = () => {
           onCancel={() => {
             setIsAgentsModal(false);
             setSelectedAgents([]);
+            setAgentSearch(""); // reset search on close
           }}
           onOk={saveAgentsToStore}
           okText={`Add ${selectedAgents.length} Agent${selectedAgents.length !== 1 ? "s" : ""}`}
@@ -678,7 +725,16 @@ const AgentStoreManager = () => {
           }}
           width={600}
         >
-          <div style={{ marginTop: "20px" }}>
+          <div style={{ marginTop: "12px" }}>
+            {/* 🔍 Search box */}
+            <Input.Search
+              allowClear
+              placeholder="Search agents by name..."
+              value={agentSearch}
+              onChange={(e) => setAgentSearch(e.target.value)}
+              style={{ marginBottom: "12px" }}
+            />
+
             <div
               style={{
                 marginBottom: "12px",
@@ -695,7 +751,7 @@ const AgentStoreManager = () => {
 
             <div
               style={{
-                maxHeight: "400px",
+                maxHeight: "300px",
                 overflowY: "auto",
                 border: "1px solid #e8e8e8",
                 padding: "12px",
@@ -707,10 +763,10 @@ const AgentStoreManager = () => {
                 <div style={{ textAlign: "center", padding: "40px" }}>
                   <Spin tip="Loading agents..." />
                 </div>
-              ) : assistants.length === 0 ? (
+              ) : filteredAssistants.length === 0 ? (
                 <Empty description="No agents available" />
               ) : (
-                assistants.map((agent) => (
+                filteredAssistants.map((agent) => (
                   <div
                     key={agent.agentId}
                     style={{
