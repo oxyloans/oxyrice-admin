@@ -113,15 +113,16 @@ const AssistantsList = () => {
       if (!res.ok) throw new Error("Failed to fetch assistants");
 
       const json = await res.json();
-     const fetched = await Promise.all(
-       ((json && json.data) || []).map(async (item) => {
-         if (item.userId) {
-           const creatorName = await fetchCreatorName(item.userId);
-           return { ...item, creatorName };
-         }
-         return { ...item, creatorName: "Unknown" };
-       })
-     );
+      const fetched = await Promise.all(
+        ((json && json.data) || []).map(async (item) => {
+          if (item.userId) {
+            const creatorName = await fetchCreatorName(item.userId);
+            return { ...item, creatorName };
+          }
+          return { ...item, creatorName: "Unknown" };
+        })
+      );
+      
 
       setHasMore(!!(json && json.hasMore));
       setLastId((json && json.lastId) || null);
@@ -168,7 +169,7 @@ const AssistantsList = () => {
       );
       if (!response.ok) throw new Error("Failed to fetch user profile");
       const json = await response.json();
-      return json?.firstName + " " + (json?.lastName)  ;
+      return json?.firstName + " " + json?.lastName;
     } catch (err) {
       console.error("Error fetching creator name:", err);
       return "Unknown";
@@ -286,6 +287,7 @@ const AssistantsList = () => {
   };
 
   const handleSaveStatus = async () => {
+    setLoading(true);
     try {
       await form.validateFields();
       const values = form.getFieldsValue();
@@ -339,7 +341,11 @@ const AssistantsList = () => {
       }
     } catch (err) {
       console.error(err);
-      message.error("Error updating assistant status");
+      // 👉 This prevents validation errors from showing your generic error
+      if (err.errorFields) return;
+      message.error(err.message || "Error updating assistant status");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -454,14 +460,16 @@ const AssistantsList = () => {
         title: "Agent Details",
         key: "agentDetails",
         align: "left",
-        
+
         render: (_, record) => (
           <div style={{ textAlign: "left", lineHeight: "1.6" }}>
             <div>
-              <b style={{ color: "#008cba" }}>Creator Name:</b> {record.creatorName || "-"}
+              <b style={{ color: "#008cba" }}>Creator Name:</b>{" "}
+              {record.creatorName || "-"}
             </div>
             <div>
-              <b style={{ color: "#1ab394" }}>Agent Name:</b> {record.name || "-"}
+              <b style={{ color: "#1ab394" }}>Agent Name:</b>{" "}
+              {record.name || "-"}
             </div>
             <div>
               <b>Agent ID:</b>{" "}
@@ -810,33 +818,7 @@ const AssistantsList = () => {
                     {selectedAssistant.instructions || ""}
                   </div>
                 </Descriptions.Item>
-                {/* <Descriptions.Item label="Header Title">
-                  {selectedAssistant.headerTitle || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="User Experience Summary">
-                  {selectedAssistant.userExperienceSummary || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Domain">
-                  {selectedAssistant.domain || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Main Problem Solved">
-                  {selectedAssistant.mainProblemSolved || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Business">
-                  {selectedAssistant.business || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Unique Solution">
-                  {selectedAssistant.uniqueSolution || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Contact Details">
-                  {selectedAssistant.contactDetails || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Approved By">
-                  {selectedAssistant.authorizedBy || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Status">
-                  {renderStatusTag(selectedAssistant.status) || ""}
-                </Descriptions.Item> */}
+
                 <Descriptions.Item label="Approved At">
                   {selectedAssistant.approvedAt
                     ? new Date(selectedAssistant.approvedAt).toLocaleString(
@@ -862,12 +844,7 @@ const AssistantsList = () => {
                 <Descriptions.Item label="Choose Store">
                   {selectedAssistant.chooseStore || ""}
                 </Descriptions.Item>
-                {/* <Descriptions.Item label="Similarity">
-                  {selectedAssistant.similarity || ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Conversation Tone">
-                  {selectedAssistant.converstionTone || ""}
-                </Descriptions.Item> */}
+
                 <Descriptions.Item label="Image">
                   {selectedAssistant.imageUrl ? (
                     <img
@@ -901,27 +878,19 @@ const AssistantsList = () => {
         </Modal>
 
         {/* Status Modal */}
+        {/* Status Update Modal - FIXED & CLEAN */}
         <Modal
           open={statusModalVisible}
-          onCancel={() => setStatusModalVisible(false)}
-          onOk={handleSaveStatus}
           title="Update Assistant Status"
-          okText="Save"
-          okButtonProps={{
-            style: {
-              backgroundColor: "#008cba",
-              borderColor: "#008cba",
-              color: "#fff",
-            },
+          onCancel={() => {
+            setStatusModalVisible(false);
+            form.resetFields();
+            setSelectedStatus("APPROVED");
           }}
-          cancelButtonProps={{
-            style: {
-              backgroundColor: "#f0f0f0",
-              borderColor: "#d9d9d9",
-              color: "#000",
-            },
-          }}
+          footer={null} // We use custom buttons below for full control
           destroyOnClose
+          width={520}
+          closeIcon={<span style={{ fontSize: 18 }}>×</span>}
         >
           <Form form={form} layout="vertical">
             <Form.Item
@@ -930,6 +899,7 @@ const AssistantsList = () => {
               rules={[{ required: true, message: "Please select status" }]}
             >
               <Select
+                placeholder="Select status"
                 onChange={(value) => {
                   setSelectedStatus(value);
                   if (value !== "APPROVED") {
@@ -946,14 +916,15 @@ const AssistantsList = () => {
                 <Option value="DELETED">DELETED</Option>
               </Select>
             </Form.Item>
+
             <Form.Item
               label="Authorized By"
               name="authorizedBy"
               rules={[
-                { required: true, message: "Please select an authorized name" },
+                { required: true, message: "Please select authorized person" },
               ]}
             >
-              <Select placeholder="Select an authorized name">
+              <Select placeholder="Select authorized name" showSearch>
                 {authorizedByOptions.map((authBy) => (
                   <Option key={authBy} value={authBy}>
                     {authBy}
@@ -961,6 +932,7 @@ const AssistantsList = () => {
                 ))}
               </Select>
             </Form.Item>
+
             {selectedStatus === "APPROVED" && (
               <Form.Item
                 label="Free Trials"
@@ -968,52 +940,76 @@ const AssistantsList = () => {
                 rules={[
                   {
                     required: true,
-                    validator: (_rule, value) => {
-                      if (value == null || value === "") {
-                        return Promise.reject(
-                          new Error("Please enter free trials (min 5)")
-                        );
-                      }
-                      if (Number(value) < 5) {
-                        return Promise.reject(
-                          new Error("Free trials must be at least 5")
-                        );
-                      }
-                      return Promise.resolve();
-                    },
+                    validator: (_, value) =>
+                      value && value >= 5
+                        ? Promise.resolve()
+                        : Promise.reject(
+                            new Error("Minimum 5 free trials required")
+                          ),
                   },
                 ]}
               >
                 <InputNumber
+                  min={5}
                   style={{ width: "100%" }}
-                  min={1}
-                  step={1}
-                  precision={0}
-                  placeholder="Enter minimum 5 free trials"
-                  controls={false}
-                  parser={(v) => (v ? v.replace(/\D/g, "") : "")}
+                  placeholder="Enter free trials (min 5)"
                 />
               </Form.Item>
             )}
-            {/* ADMIN COMMENTS only if PENDING or REJECTED */}
+
             {(selectedStatus === "PENDING" ||
               selectedStatus === "REJECTED") && (
               <Form.Item
                 label="Admin Comments"
                 name="adminComments"
                 rules={[
-                  { required: true, message: "Please enter admin comments" },
+                  { required: true, message: "Admin comments are required" },
                 ]}
               >
-                <Input.TextArea
-                  rows={3}
-                  placeholder="Enter reason for rejection or pending status"
-                />
+                <Input.TextArea rows={3} placeholder="Enter reason..." />
               </Form.Item>
             )}
           </Form>
-        </Modal>
 
+          {/* Custom Footer Buttons - With Proper Loading */}
+          <div
+            style={{
+              marginTop: 24,
+              textAlign: "right",
+              display: "flex",
+              gap: 12,
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button
+              onClick={() => {
+                setStatusModalVisible(false);
+                form.resetFields();
+                setSelectedStatus("APPROVED");
+              }}
+              style={{ height: 40, fontWeight: 500 }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="primary"
+              loading={loading}
+              disabled={loading}
+              style={{
+                backgroundColor: "#008cba",
+                borderColor: "#008cba",
+                color: "#fff",
+                height: 40,
+                fontWeight: 500,
+                minWidth: 100,
+              }}
+              onClick={handleSaveStatus}
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </Modal>
         {/* Tools Modal */}
         <Modal
           open={toolsModalVisible}

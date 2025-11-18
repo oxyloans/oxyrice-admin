@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-  <meta name="description" content="Askoxy.ai Admin">
-  <meta name="author" content="OxyRice Team">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Askoxy.ai Admin" />
+  <meta name="author" content="OxyRice Team" />
+
   <link rel="icon" href="/askoxy1.ico" />
   <link rel="apple-touch-icon" href="/askoxy1.ico" />
 
   <title>ASKOXY.AI</title>
-  
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="/assets/css/plugins.min.css" />
+
+  <!-- Your Main CSS Only -->
   <link rel="stylesheet" href="/assets/css/kaiadmin.min.css" />
 
-  <!-- WebFont -->
+  <!-- WebFont Loader (safe to keep) -->
   <script src="/assets/js/plugin/webfont/webfont.min.js"></script>
   <script>
     WebFont.load({
@@ -25,16 +24,17 @@
           "Font Awesome 5 Solid",
           "Font Awesome 5 Regular",
           "Font Awesome 5 Brands",
-          "simple-line-icons",
+          "simple-line-icons"
         ],
-        urls: ["/assets/css/fonts.min.css"],
+        urls: ["/assets/css/fonts.min.css"]
       },
       active: function () {
         sessionStorage.fonts = true;
-      },
+      }
     });
   </script>
 </head>
+
 <body>
   <noscript>
     <div style="padding: 20px; text-align: center; color: #fff; background: #f44336;">
@@ -42,24 +42,10 @@
     </div>
   </noscript>
 
-  <!-- Root Div for React or Main App -->
+  <!-- React Root -->
   <div id="root"></div>
 
-  <!-- JavaScript Files -->
-  <script src="/assets/js/core/jquery-3.7.1.min.js"></script>
-  <script src="/assets/js/core/popper.min.js"></script>
-  <script src="/assets/js/core/bootstrap.min.js"></script>
-  <script src="/assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
-  <script src="/assets/js/plugin/chart.js/chart.min.js"></script>
-  <script src="/assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
-  <script src="/assets/js/plugin/chart-circle/circles.min.js"></script>
-  <script src="/assets/js/plugin/datatables/datatables.min.js"></script>
-  <script src="/assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js"></script>
-  <script src="/assets/js/plugin/jsvectormap/jsvectormap.min.js"></script>
-  <script src="/assets/js/plugin/jsvectormap/world.js"></script>
-  <script src="/assets/js/plugin/sweetalert/sweetalert.min.js"></script>
-  <script src="/assets/js/kaiadmin.min.js"></script>
-  <script src="/assets/js/setting-demo.js"></script>
-  <script src="/assets/js/demo.js"></script>
+  <!-- ❌ All external JS removed (causing errors) -->
+  <!-- React will inject scripts automatically -->
 </body>
 </html>

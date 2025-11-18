@@ -113,6 +113,8 @@ import GetAllJobs from "./Companies/Pages/GetAllJobs";
 import CampaignUpload from "./AdminPages/CampaignUpload";
 import AgentsCreatrionUsers from "./AgentsAdmin/Pages/AgentsCreationData";
 import FuelExpenses from "./AdminPages/FuelExpenses";
+import AgentsBmvCoinsUpdated from "./AgentsAdmin/Pages/AgentsBmvCoinsUpdated";
+import AgentStoreManager from "./AgentsAdmin/Pages/AgentStoreManager";
 
 // ---- Protected Route (RRv6 style) ----
 const ProtectedRoute = ({ element }) => {
@@ -153,7 +155,6 @@ function App() {
         <Route path="/admin/companylist" element={<CompanyList />} />
         <Route path="/admin/jobsmanage" element={<JobsManagement />} />
         <Route path="/admin/getalljobs" element={<GetAllJobs />} />
-
         {/* Agents Admin */}
         <Route path="/admin/agentsdashboard" element={<AgentsAdminLayout />} />
         <Route path="/admin/assistantslist" element={<AssistantsList />} />
@@ -167,16 +168,17 @@ function App() {
         />
         <Route path="/admin/agent-user" element={<AgentUserProfile />} />
         <Route path="/admin/agent-gptstore" element={<GPTStore />} />
+        <Route path="/admin/agents-aistore" element={<AgentStoreManager/>}/>
         <Route path="/admin/conversationlist" element={<ConversationsList />} />
         <Route path="/admin/agentsplanslist" element={<PlansList />} />
-        <Route path="/admin/agentsstatuslist" element={<AgentsList />} />
+        <Route path="/admin/agentsstatuslist" element={<AgentsList />} />{" "}
+        <Route path="/admin/agents-bmv-coins-updated" element={<AgentsBmvCoinsUpdated />} />
         <Route path="/admin/authorizedusers" element={<AgentManagement />} />
         <Route path="/admin/userhistory" element={<UserHistoryAdmin />} />
         <Route
           path="/admin/agents-registered-users"
           element={<GeminiUsers />}
         />
-
         {/* Task Management */}
         <Route
           path="/admin/taskmanagementlogin"
@@ -219,13 +221,11 @@ function App() {
           element={<EmployeeRegisteredUsers />}
         />
         <Route path="/taskmanagement/dashboard" element={<Dashboard />} />
-
         {/* Legacy/Other (protected) */}
         <Route
           path="/dashboard"
           element={<ProtectedRoute element={<Dashboard />} />}
         />
-
         <Route
           path="/SubscriberDetails"
           element={<ProtectedRoute element={<SubscriberDetails />} />}
@@ -473,7 +473,6 @@ function App() {
           path="/admin/allinformationofbarcode/:itemId"
           element={<ProtectedRoute element={<AllInforMationOfBarCode />} />}
         />
-
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -361,7 +361,7 @@ function AdminLogin() {
       </div>
 
       {/* CSS for animations */}
-      <style jsx>{`
+      <style >{`
         .shake-animation {
           animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }

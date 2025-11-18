@@ -277,7 +277,7 @@ const sidebarItems = [
         </Footer>
       </Layout>
       {/* Custom scrollbar styling */}
-      <style jsx>{`
+      <style >{`
         /* Customize scrollbar for the menu */
         .ant-menu::-webkit-scrollbar {
           width: 5px;

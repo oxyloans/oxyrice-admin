@@ -551,7 +551,7 @@ const LeaveManagement = () => {
         </div>
       </Modal>
 
-      <style jsx global>{`
+      <style  global>{`
         .leave-tabs .ant-tabs-nav {
           margin-bottom: 16px;
           background: #ffffff;

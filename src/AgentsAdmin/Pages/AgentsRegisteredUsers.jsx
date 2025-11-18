@@ -187,6 +187,7 @@ const AgentsRegisteredUsers = () => {
         style={{
           flexWrap: "wrap",
           marginBottom: 16,
+          backgroundColor: "white",
         }}
       >
         <Col xs={24} sm={12} md={8}>

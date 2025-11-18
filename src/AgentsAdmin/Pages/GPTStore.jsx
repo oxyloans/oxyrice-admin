@@ -37,14 +37,14 @@ const GPTStore = () => {
     setLoading(true);
     try {
       const response = await axios.get(API_GET, { headers });
-      if (Array.isArray(response.data)) {
-        setData(response.data);
-        setFilteredData(response.data);
+      if (Array.isArray(response.data.reverse())) {
+        setData(response.data.reverse());
+        setFilteredData(response.data.reverse());
       } else {
         message.warning("Unexpected response format from API");
       }
     } catch (err) {
-      message.error("Failed to fetch data");
+      message.error( err.message ||"Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -184,7 +184,7 @@ const GPTStore = () => {
 
   return (
     <AgentsAdminLayout>
-      <div className="p-4">
+      <div className="p-4 bg-white">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
           <Title level={3}>GPT Agent Store</Title>
           <Space wrap>

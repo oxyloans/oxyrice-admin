@@ -767,7 +767,7 @@ const TaskCreation = () => {
         </Card>
       </div>
 
-      <style jsx>{`
+      <style >{`
         .ant-form-item-label > label {
           font-weight: 500;
           color: #374151;

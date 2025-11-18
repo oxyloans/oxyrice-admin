@@ -65,8 +65,27 @@ const sidebarItems = [
     style: { fontSize: "20px" },
   },
   {
+    key: "gpt-store",
+    label: "Agent Store Management",
+    icon: <FaStore style={{ fontSize: "18px" }} />,
+
+    style: { fontSize: "20px" },
+    dropdownItems: [
+      {
+        key: "Agents Gpt Store",
+        label: "Agents Gpt Store",
+        link: "/admin/agent-gptstore",
+      },
+      {
+        key: "Agents AI Store",
+        label: "Agents AI Store",
+        link: "/admin/agents-aistore",
+      },
+    ],
+  },
+  {
     key: "agent-users",
-    label: "Agents  Users",
+    label: "Agents Users & Coins",
     icon: <UserOutlined style={{ fontSize: "18px" }} />,
 
     style: { fontSize: "20px" },
@@ -81,6 +100,11 @@ const sidebarItems = [
         label: "Agents Creation Users",
         link: "/admin/agents-creation-users",
       },
+      {
+        key: "Agent Bmv Coins Updated",
+        label: "Agent Bmv Coins Updated",
+        link: "/admin/agents-bmv-coins-updated",
+      },
     ],
   },
   {
@@ -88,13 +112,6 @@ const sidebarItems = [
     label: "User Chat History",
     icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
     link: "/admin/userhistory",
-    style: { fontSize: "20px" },
-  },
-  {
-    key: "gpt-store",
-    label: "GPT Agent Store",
-    icon: <FaStore style={{ fontSize: "18px" }} />,
-    link: "/admin/agent-gptstore",
     style: { fontSize: "20px" },
   },
 
@@ -146,7 +163,7 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 200 : 240}
+        width={screens.xs ? 220 : 260}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
@@ -270,8 +287,8 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
             boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
+              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
             position: "fixed",
             top: 0,
             zIndex: 9,
@@ -305,13 +322,13 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
           style={{
             margin: screens.xs
               ? "80px 16px 16px"
-              : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
+              : `80px 16px 16px ${collapsed ? "80px" : "260px"}`,
             padding: screens.xs ? 12 : 24,
-            background: "#fff",
+            background: "#f7f7f7",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
+              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
             position: "relative", // Ensure it's positioned correctly
           }}
         >
@@ -323,8 +340,8 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
             background: "#fff",
             width: screens.xs
               ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
+              : `calc(100% - ${collapsed ? "80px" : "260px"})`,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "260px",
             position: "relative", // Ensure it's positioned correctly
             bottom: 0,
           }}
@@ -333,7 +350,7 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
         </Footer>
       </Layout>
       {/* Custom scrollbar styling */}
-      <style jsx>{`
+      <style >{`
         /* Customize scrollbar for the menu */
         .ant-menu::-webkit-scrollbar {
           width: 5px;
