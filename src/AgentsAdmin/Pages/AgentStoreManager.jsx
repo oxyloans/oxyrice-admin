@@ -53,7 +53,7 @@
 //   const baseUrl = isSandbox
 //     ? "https://www.sandbox.askoxy.ai"
 //     : "https://www.askoxy.ai";
- 
+
 //   const noAuthUrlPrefix = `${baseUrl}/ai-store/`;
 // const filteredAssistants = assistants.filter((agent) =>
 //   agent.agentName?.toLowerCase().includes(agentSearch.toLowerCase())
@@ -842,9 +842,6 @@
 
 // export default AgentStoreManager;
 
-
-
-
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -859,6 +856,7 @@ import {
   Tag,
   Empty,
   Spin,
+  Image,
 } from "antd";
 import {
   EditOutlined,
@@ -982,6 +980,16 @@ const AgentStoreManager = () => {
       setLoading(false);
     }
   };
+  // FIXED: Validation first → then confirmation
+  const handleSaveStoreClick = async () => {
+    try {
+      await form.validateFields(); // This will trigger validation
+      setIsStoreConfirm(true); // Only open confirmation if valid
+    } catch (errorInfo) {
+      // Validation failed → do nothing, errors already shown
+      console.log("Validation Failed:", errorInfo);
+    }
+  };
 
   /** Load Assistants (cursor based) */
   const fetchAssistants = async (page = 1, append = false) => {
@@ -1006,8 +1014,12 @@ const AgentStoreManager = () => {
 
       const mapped = rawList.map((item) => ({
         agentId: item.agentId || item.assistantId,
+        assistantId: item.assistantId || item.agentId, // keep both if needed
         agentName: item.name || "Untitled Agent",
+        imageUrl: item.imageUrl || null, // ← THIS IS THE KEY ADDITION
         agentStatus: item.agentStatus || "INACTIVE",
+        agentCreatorName: item.agentCreatorName || null,
+        // Add any other fields your backend expects in agentDetailsOnAdUser
       }));
 
       setAssistants((prev) => (append ? [...prev, ...mapped] : mapped));
@@ -1100,6 +1112,7 @@ const AgentStoreManager = () => {
             storeName: values.storeName,
             description: values.description,
             storeCreatedBy: "ADMIN",
+            storeImageUrl: values.storeImageUrl,
           };
 
       const res = await fetch(
@@ -1142,6 +1155,7 @@ const AgentStoreManager = () => {
     const payload = {
       storeId: selectedStore.storeId,
       storeName: selectedStore.storeName,
+      storeImageUrl: selectedStore.storeImageUrl,
       agentDetailsOnAdUser: selectedAgents,
     };
 
@@ -1417,7 +1431,7 @@ const AgentStoreManager = () => {
               key="confirm"
               type="primary"
               style={{ background: "#1ab394", borderColor: "#1ab394" }}
-              onClick={() => setIsStoreConfirm(true)}
+              onClick={handleSaveStoreClick} // ← Now validates first
             >
               {isEditMode ? "Update Store" : "Create Store"}
             </Button>,
@@ -1464,6 +1478,18 @@ const AgentStoreManager = () => {
                 maxLength={500}
               />
             </Form.Item>
+            <Form.Item
+              name="storeImageUrl"
+              label="Store Image URL"
+              // rules={[
+              //   !isEditMode && {
+              //     required: true,
+              //     message: "Please enter image URL",
+              //   },
+              // ]}
+            >
+              <Input placeholder="Enter store image URL" size="large" />
+            </Form.Item>
           </Form>
         </Modal>
         {/* STORE CONFIRMATION */}
@@ -1489,12 +1515,27 @@ const AgentStoreManager = () => {
             </Button>,
           ]}
         >
-          <p>
-            <strong>Store Name:</strong> {form.getFieldValue("storeName")}
-          </p>
-          <p>
-            <strong>Description:</strong> {form.getFieldValue("description")}
-          </p>
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <p>
+              <strong>Store Name:</strong> {form.getFieldValue("storeName")}
+            </p>
+            <p>
+              <strong>Description:</strong> {form.getFieldValue("description")}
+            </p>
+            {form.getFieldValue("storeImageUrl") && (
+              <div>
+                <strong>Store Image:</strong>
+                <br />
+                <Image
+                  width={120}
+                  src={form.getFieldValue("storeImageUrl")}
+                  alt="Store preview"
+                  style={{ marginTop: 8, borderRadius: 8 }}
+                  fallback="https://via.placeholder.com/120?text=No+Image"
+                />
+              </div>
+            )}
+          </Space>
         </Modal>
 
         {/* VIEW & MANAGE AGENTS MODAL - Now with Table + S.No */}
@@ -1561,6 +1602,19 @@ const AgentStoreManager = () => {
                     </span>
                   ),
                 },
+                {
+                  title: <strong>Agent Image</strong>,
+                  dataIndex: "imageUrl",
+                  key: "imageUrl",
+                  align: "center",
+                  render: (url) => (
+                    <div style={{ textAlign: "center" }}>
+                      {" "}
+                      <Image width={50} src={url} alt="company logo" />{" "}
+                    </div>
+                  ),
+                },
+
                 {
                   title: <strong>Status</strong>,
                   key: "status",
@@ -1731,9 +1785,46 @@ const AgentStoreManager = () => {
                         }
                       }}
                     />
-                    <span style={{ fontWeight: "500", fontSize: "14px" }}>
-                      {agent.agentName}
-                    </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        flex: 1,
+                      }}
+                    >
+                      {agent.imageUrl ? (
+                        <img
+                          src={agent.imageUrl}
+                          alt={agent.agentName}
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            background: "#ddd",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "12px",
+                            color: "#999",
+                          }}
+                        >
+                          {agent.agentName?.[0]?.toUpperCase() || "?"}
+                        </div>
+                      )}
+                      <span style={{ fontWeight: "500", fontSize: "14px" }}>
+                        {agent.agentName}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}
