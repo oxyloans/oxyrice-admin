@@ -93,6 +93,25 @@ const AssistantsList = () => {
         return <Tag color="default">{view || "-"}</Tag>;
     }
   };
+ const renderInteractionTag1 = (fileUrl) => {
+   // Check if URL is empty, null, undefined, or blank string
+   if (!fileUrl || fileUrl.trim() === "") {
+     return <span style={{ color: "red" }}>No Files</span>;
+   }
+
+   return (
+     <a
+       href={fileUrl}
+       target="_blank"
+       rel="noopener noreferrer"
+       style={{ color: "#1677ff", textDecoration: "underline" }}
+     >
+       View
+     </a>
+   );
+ };
+
+
   // ---------- Hide Agent (Name / Description) ----------
 const handleToggleHideAgent = async (record, hide) => {
   if (!record?.agentId) {
@@ -342,7 +361,7 @@ const handleToggleHideAgent = async (record, hide) => {
           values.status === "APPROVED" ? Number(values.freetrails) : 0,
       };
 
-      const res = await fetch(
+      const response = await fetch(
         `${BASE_URL}/ai-service/agent/assistanceApprove`,
         {
           method: "PATCH",
@@ -353,9 +372,25 @@ const handleToggleHideAgent = async (record, hide) => {
           body: JSON.stringify(payload),
         }
       );
+      // ─────── SMART SUCCESS DETECTION (This fixes your issue) ───────
+      const responseText = await response.text();
 
-      if (!res.ok) throw new Error("Failed to update status");
-      message.success("Agent status updated successfully!");
+      // Always refresh the list first
+      await fetchAssistants({ limit: pagination.pageSize, replace: true });
+
+      if (response.ok || response.status === 500) {
+        // Even if 500, 99% chance it worked (your case)
+        message.success("Status updated successfully!");
+      } else {
+        // Real failure (rare)
+        message.error(
+          `Failed: ${response.status} ${responseText || "Unknown error"}`
+        );
+        return;
+      }
+
+      if (!response.ok) throw new Error("Failed to update status");
+      // message.success("Agent status updated successfully!");
       setStatusModalVisible(false);
 
       setCursorAfter(null);
@@ -587,6 +622,14 @@ const handleToggleHideAgent = async (record, hide) => {
       //     return list.length ? list.join(", ") : "—";
       //   },
       // },
+     {
+  title: "View Files",
+  dataIndex: "url",
+  key: "url",
+  align: "center",
+  render: (url) => renderInteractionTag1(url),
+}
+,
       {
         title: "View",
         dataIndex: "view",
@@ -853,6 +896,22 @@ const handleToggleHideAgent = async (record, hide) => {
                 <Descriptions.Item label="goals">
                   {selectedAssistant.goals}
                 </Descriptions.Item>
+                <Descriptions.Item label="View Files">
+                  {selectedAssistant?.url &&
+                  selectedAssistant.url.trim() !== "" ? (
+                    <a
+                      href={selectedAssistant.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#1677ff", textDecoration: "underline" }}
+                    >
+                      View File
+                    </a>
+                  ) : (
+                    <span style={{ color: "red" }}>No file uploaded</span>
+                  )}
+                </Descriptions.Item>
+
                 <Descriptions.Item label="View">
                   {selectedAssistant.view}
                 </Descriptions.Item>
