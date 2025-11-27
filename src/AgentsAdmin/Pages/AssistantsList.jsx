@@ -375,22 +375,23 @@ const handleToggleHideAgent = async (record, hide) => {
       // ─────── SMART SUCCESS DETECTION (This fixes your issue) ───────
       const responseText = await response.text();
 
+      
       // Always refresh the list first
       await fetchAssistants({ limit: pagination.pageSize, replace: true });
 
-      if (response.ok || response.status === 500) {
-        // Even if 500, 99% chance it worked (your case)
-        message.success("Status updated successfully!");
-      } else {
-        // Real failure (rare)
-        message.error(
-          `Failed: ${response.status} ${responseText || "Unknown error"}`
-        );
-        return;
-      }
+      // if (response.ok || response.status === 500) {
+      //   // Even if 500, 99% chance it worked (your case)
+      //   message.success("Status updated successfully!");
+      // } else {
+      //   // Real failure (rare)
+      //   message.error(
+      //     `Failed: ${response.status} ${responseText || "Unknown error"}`
+      //   );
+      //   return;
+      // }
 
       if (!response.ok) throw new Error("Failed to update status");
-      // message.success("Agent status updated successfully!");
+      message.success("Agent status updated successfully!");
       setStatusModalVisible(false);
 
       setCursorAfter(null);

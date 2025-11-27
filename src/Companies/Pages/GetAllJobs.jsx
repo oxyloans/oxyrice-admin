@@ -25,27 +25,40 @@ const { confirm } = Modal;
 
 const GetAllJobs = () => {
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+ 
+ const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(null);
+ // Pagination
+ const [page, setPage] = useState(0);
+ const [pageSize, setPageSize] = useState(10);
+ const [totalElements, setTotalElements] = useState(0);
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
 
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(
-        `${BASE_URL}/marketing-service/campgin/getalljobsbyuserid`
-      );
-      setJobs(res.data || []);
-    } catch (error) {
-      console.error(error);
-      message.error("Failed to load jobs");
-    } finally {
-      setLoading(false);
-    }
-  };
+useEffect(() => {
+  fetchJobs(page, pageSize);
+}, [page, pageSize]);
+const fetchJobs = async (pg = 0, size = 10) => {
+  try {
+    setLoading(true);
+
+    const res = await axios.get(
+      `${BASE_URL}/marketing-service/campgin/getuserandallusersappliedjobs?page=${pg}&size=${size}`
+    );
+
+    const data = res.data;
+
+    setJobs(data.content || []);
+    setTotalElements(data.totalElements || 0);
+    setPage(data.number || 0);
+    setPageSize(data.size || 10);
+  } catch (error) {
+    console.error(error);
+    message.error("Failed to load jobs");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // ✅ Salary Format
   const formatSalary = (min, max) => {
@@ -120,133 +133,91 @@ const GetAllJobs = () => {
     {
       title: "S.No.",
       key: "serial",
-      width: 70,
-      render: (_, __, index) => index + 1,
+      align: "center",
+      width: 80,
+      render: (_text, _record, index) => page * pageSize + index + 1,
+     
     },
     {
-      title: "Company",
-      dataIndex: "companyLogo",
-      key: "company",
-      width: 220,
-      render: (logo, record) => (
-        <div className="flex items-center space-x-2">
-          <Avatar
-            src={logo || undefined}
-            alt={record.companyName || "Unknown"}
-            size={40}
+      title: "Job Title",
+      dataIndex: "jobTitle",
+      key: "jobTitle",
+      align: "center",
+      render: (jobTitle) => jobTitle || "N/A",
+    },
+
+    {
+      title: "Cover Letter",
+      dataIndex: "coverLetter",
+      key: "coverLetter",
+      align: "center",
+      width: 200,
+      render: (text) => (
+        <div className="text-sm max-w-[200px] max-h-[120px] overflow-y-auto bg-gray-50 p-2 rounded">
+          {text || "N/A"}
+        </div>
+      ),
+    },
+
+    {
+      title: "Notice Period",
+      dataIndex: "noticePeriod",
+      key: "noticePeriod",
+      align: "center",
+      render: (text) => text || "N/A",
+    },
+
+    {
+      title: "Resume",
+      dataIndex: "resumeUrl",
+      key: "resumeUrl",
+      align: "center",
+      render: (url) =>
+        url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 underline"
           >
-            {(record.companyName || "U")[0].toUpperCase()}
-          </Avatar>
-          <div className="hidden md:block">
-            <div className="font-medium text-sm">
-              {record.companyName || "N/A"}
-            </div>
-            <div className="text-sm text-gray-500">
-              {record.industry || "N/A"}
-            </div>
-          </div>
-        </div>
-      ),
+            View Resume
+          </a>
+        ) : (
+          "N/A"
+        ),
     },
+
     {
-      title: "Position",
-      key: "position",
-      width: 200,
-      render: (_, record) => (
-        <div>
-          <div className="font-medium text-sm mb-1">
-            {record.jobTitle || "N/A"}
-          </div>
-          <div className="text-sm text-gray-600 mb-1">
-            {record.jobDesignation || "N/A"}
-          </div>
-          <div className="flex flex-wrap gap-1">
-            <Tag color="blue">{record.jobType || "N/A"}</Tag>
-            <Tag color="green">{record.workMode || "N/A"}</Tag>
-          </div>
-        </div>
-      ),
+      title: "Applied Date",
+      dataIndex: "appliedAt",
+      key: "appliedAt",
+      align: "center",
+      render: (date) => formatDate(date),
     },
+
     {
-      title: "Details",
-      key: "details",
-      width: 180,
-      render: (_, record) => (
-        <div className="text-sm space-y-1 break-words whitespace-normal">
-          <div>
-            <strong>Location:</strong> {record.jobLocations || "N/A"}
-          </div>
-          <div>
-            <strong>Salary:</strong>{" "}
-            {formatSalary(record.salaryMin, record.salaryMax)}
-          </div>
-          <div>
-            <strong>Experience:</strong> {record.experience || "N/A"}
-          </div>
-        </div>
-      ),
+      title: "Updated At",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      align: "center",
+      render: (date) => formatDate(date),
     },
+
     {
-      title: "Skills",
-      dataIndex: "skills",
-      key: "skills",
-      width: 200,
-      render: (skills) => (
-        <div
-          className="text-sm max-w-[200px] max-h-[100px] overflow-y-auto text-gray-700 p-2 bg-gray-50 rounded"
-          title={skills || ""}
-        >
-          {skills || "N/A"}
-        </div>
-      ),
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (val) =>
+        val ? <Tag color="green">Active</Tag> : <Tag color="red">InActive</Tag>,
     },
-    {
-      title: "Company Details",
-      key: "job_details",
-      width: 240,
-      render: (record) => (
-        <div className="text-sm flex flex-col space-y-1 text-gray-700">
-          {record.applicationDeadLine && (
-            <div>
-              <span className="font-semibold text-gray-900">Deadline: </span>
-              {formatDate(record.applicationDeadLine)}
-            </div>
-          )}
-          {record.companyEmail && (
-            <div>
-              <span className="font-semibold text-gray-900">Email: </span>
-              {record.companyEmail}
-            </div>
-          )}
-          {record.jobSource && (
-            <div>
-              <span className="font-semibold text-gray-900">Source: </span>
-              {record.jobSource}
-            </div>
-          )}
-          {(record.countryCode || record.contactNumber) && (
-            <div>
-              <span className="font-semibold text-gray-900">Contact: </span>
-              {record.countryCode || ""} {record.contactNumber || "N/A"}
-            </div>
-          )}
-        </div>
-      ),
-    },
+
     {
       title: "Actions",
       key: "actions",
       width: 140,
       render: (_, record) => (
         <div className="flex flex-col gap-2">
-          {/* <Button
-            type="primary"
-            size="small"
-            className="bg-[#008cba] hover:bg-[#007a9f] text-white rounded-md"
-            icon={<EditOutlined />}
-          >
-            Update
-          </Button> */}
           <Button
             size="small"
             loading={updateLoading === record.id}
@@ -295,8 +266,20 @@ const GetAllJobs = () => {
             columns={columns}
             dataSource={jobs}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
-            scroll={{ x: 1200 }}
+            loading={loading}
+            pagination={{
+              current: page + 1,
+              pageSize: pageSize,
+              total: totalElements,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} jobs`,
+              onChange: (newPage, newSize) => {
+                setPage(newPage - 1); // convert to 0-based for backend
+                setPageSize(newSize);
+              },
+            }}
+            scroll={{ x: true }}
             bordered
             className="max-w-7xl mx-auto"
           />

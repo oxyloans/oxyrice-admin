@@ -83,11 +83,11 @@ const AdminPanelLayoutTest = ({ children }) => {
           label: "Campaign Upload",
           link: "/admin/campaign-inventory",
         },
-        // {
-        //   key: "Student Registrations",
-        //   label: "Student Registrations",
-        //   link: "/admin/student-registrations",
-        // },
+        {
+          key: "Bulk Invites",
+          label: "Bulk Invites",
+          link: "/admin/bulkinvites",
+        },
       ],
     },
     {

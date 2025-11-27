@@ -115,6 +115,7 @@ import AgentsCreatrionUsers from "./AgentsAdmin/Pages/AgentsCreationData";
 import FuelExpenses from "./AdminPages/FuelExpenses";
 import AgentsBmvCoinsUpdated from "./AgentsAdmin/Pages/AgentsBmvCoinsUpdated";
 import AgentStoreManager from "./AgentsAdmin/Pages/AgentStoreManager";
+import BulkInviteCampaign from "./AdminPages/BulkInviteCampaign";
 
 // ---- Protected Route (RRv6 style) ----
 // const ProtectedRoute = ({ element }) => {
@@ -428,7 +429,8 @@ function App() {
               loginPath="/admin/taskmanagementlogin"
             />
           }
-        /><Route
+        />
+        <Route
           path="/taskmanagement/dashboard"
           element={
             <ProtectedRoute
@@ -562,6 +564,10 @@ function App() {
         <Route
           path="/admin/timeslots"
           element={<ProtectedRoute element={<TimeSlots />} />}
+        />
+        <Route
+          path="/admin/bulkinvites"
+          element={<ProtectedRoute element={<BulkInviteCampaign />} />}
         />
         <Route
           path="/admin/categories"
