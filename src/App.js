@@ -67,8 +67,7 @@ import TimeSlots from "./AdminPages/TimeSlots";
 
 import TaskManagementLogin from "./TaskManagement/Authentication/TaskManagementLogin";
 import TaskCreation from "./TaskManagement/Pages/TaskCreation";
-import TasksList from "./TaskManagement/Pages/TasksList";
-import TaskAdminPanelLayout from "./TaskManagement/Layout/AdminPanel";
+
 import PlanOfTheDay from "./TaskManagement/Pages/PlanOfTheDay";
 import TaskManagementByDate from "./TaskManagement/Pages/TaskManagementByDate";
 import Dashboard from "./TaskManagement/Pages/Dashboard";
@@ -116,12 +115,6 @@ import FuelExpenses from "./AdminPages/FuelExpenses";
 import AgentsBmvCoinsUpdated from "./AgentsAdmin/Pages/AgentsBmvCoinsUpdated";
 import AgentStoreManager from "./AgentsAdmin/Pages/AgentStoreManager";
 import BulkInviteCampaign from "./AdminPages/BulkInviteCampaign";
-
-// ---- Protected Route (RRv6 style) ----
-// const ProtectedRoute = ({ element }) => {
-//   const isAuthenticated = !!localStorage.getItem("token");
-//   return isAuthenticated ? element : <Navigate to="/" replace />;
-// };
 
 const ProtectedRoute = ({ element, loginPath = "/" }) => {
   const isAuthenticated = !!localStorage.getItem("token");

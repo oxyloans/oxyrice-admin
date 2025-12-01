@@ -1094,6 +1094,8 @@ const AgentStoreManager = () => {
     setCurrentPage(nextPage);
     fetchAssistants(nextPage, true);
   };
+  // 🔥 Add this function ABOVE the Modal
+
 
   /** Save Store (Create or Update) */
   const saveStore = async () => {
@@ -1107,12 +1109,13 @@ const AgentStoreManager = () => {
             storeName: values.storeName,
             description: values.description,
             storeCreatedBy: "ADMIN",
+            storeImageUrl: values.storeImageUrl, // ← added for update as well
           }
         : {
             storeName: values.storeName,
             description: values.description,
             storeCreatedBy: "ADMIN",
-            storeImageUrl: values.storeImageUrl,
+            storeImageUrl: values.storeImageUrl, // ← from upload API
           };
 
       const res = await fetch(
@@ -1311,6 +1314,7 @@ const AgentStoreManager = () => {
               form.setFieldsValue({
                 storeName: record.storeName,
                 description: record.description,
+                storeImageUrl: record.storeImageUrl, // ← ADD THIS
               });
               setIsStoreModal(true);
             }}
@@ -1416,7 +1420,6 @@ const AgentStoreManager = () => {
             form.resetFields();
           }}
           confirmLoading={saving}
-          onOk={saveStore}
           footer={[
             <Button
               key="cancel"
@@ -1427,28 +1430,20 @@ const AgentStoreManager = () => {
             >
               Cancel
             </Button>,
+
             <Button
               key="confirm"
               type="primary"
               style={{ background: "#1ab394", borderColor: "#1ab394" }}
-              onClick={handleSaveStoreClick} // ← Now validates first
+              onClick={handleSaveStoreClick} // 🔥 IMPORTANT
             >
               {isEditMode ? "Update Store" : "Create Store"}
             </Button>,
           ]}
-          okButtonProps={{
-            style: {
-              background: "#1ab394",
-              borderColor: "#1ab394",
-              height: "38px",
-            },
-          }}
-          cancelButtonProps={{
-            style: { height: "38px" },
-          }}
           width={500}
         >
           <Form layout="vertical" form={form} style={{ marginTop: "20px" }}>
+            {/* Store Name */}
             <Form.Item
               name="storeName"
               label="Store Name"
@@ -1460,6 +1455,7 @@ const AgentStoreManager = () => {
               <Input placeholder="Enter store name" size="large" />
             </Form.Item>
 
+            {/* Description */}
             <Form.Item
               name="description"
               label="Description"
@@ -1471,27 +1467,97 @@ const AgentStoreManager = () => {
                 },
               ]}
             >
-              <Input.TextArea
-                rows={4}
-                placeholder="Enter store description"
-                showCount
-                maxLength={500}
-              />
+              <Input.TextArea rows={4} showCount maxLength={500} />
             </Form.Item>
+
+            {/* STORE IMAGE */}
+            <Form.Item
+              label="Store Image"
+              name="storeImageUrl"
+              rules={[
+                {
+                  required: !isEditMode, // required only in create mode
+                  message: "Please upload an image",
+                },
+              ]}
+            >
+              <div>
+                {/* Image Preview */}
+                {form.getFieldValue("storeImageUrl") && (
+                  <>
+                    <p>
+                      <strong>Image Preview:</strong>
+                    </p>
+                    <img
+                      src={form.getFieldValue("storeImageUrl")}
+                      alt="store"
+                      style={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: 8,
+                        objectFit: "cover",
+                        border: "1px solid #ddd",
+                        marginBottom: 10,
+                      }}
+                    />
+                  </>
+                )}
+
+                {/* File upload */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const accessToken = localStorage.getItem("token");
+                    const uploadUrl = `${BASE_URL}/upload-service/upload?id=45880e62-acaf-4645-a83e-d1c8498e923e&fileType=aadhar`;
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+
+                    try {
+                      const res = await fetch(uploadUrl, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                        body: formData,
+                      });
+
+                      const json = await res.json();
+                      if (!json.documentPath) {
+                        return message.error("Upload failed");
+                      }
+
+                      // Save uploaded image URL into form
+                      form.setFieldsValue({ storeImageUrl: json.documentPath });
+
+                      // Trigger AntD error to clear
+                      form.validateFields(["storeImageUrl"]);
+                    } catch {
+                      message.error("Upload failed");
+                    }
+                  }}
+                />
+              </div>
+            </Form.Item>
+
+            {/* HIDDEN FIELD (MANDATORY IN CREATE MODE) */}
             <Form.Item
               name="storeImageUrl"
-              label="Store Image URL"
-              // rules={[
-              //   !isEditMode && {
-              //     required: true,
-              //     message: "Please enter image URL",
-              //   },
-              // ]}
+              hidden
+              rules={[
+                {
+                  required: !isEditMode,
+                  message: "Please upload an image",
+                },
+              ]}
             >
-              <Input placeholder="Enter store image URL" size="large" />
+              <Input />
             </Form.Item>
           </Form>
         </Modal>
+
         {/* STORE CONFIRMATION */}
         <Modal
           open={isStoreConfirm}
