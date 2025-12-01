@@ -1797,103 +1797,111 @@ const AgentStoreManager = () => {
                 background: "#fafafa",
               }}
             >
-              {loading && assistants.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px" }}>
-                  <Spin tip="Loading agents..." />
-                </div>
-              ) : filteredAssistants.length === 0 ? (
-                <Empty description="No agents available" />
-              ) : (
-                filteredAssistants.map((agent) => (
-                  <div
-                    key={agent.agentId}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      marginBottom: "10px",
-                      padding: "10px 12px",
-                      background: "#fff",
-                      borderRadius: "6px",
-                      border: "1px solid #e8e8e8",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "#1ab394";
-                      e.currentTarget.style.boxShadow =
-                        "0 2px 8px rgba(26,179,148,0.15)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = "#e8e8e8";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                    onClick={() => {
-                      const checkbox = document.getElementById(
-                        `agent-${agent.agentId}`
-                      );
-                      if (checkbox) checkbox.click();
-                    }}
-                  >
-                    <Checkbox
-                      id={`agent-${agent.agentId}`}
-                      checked={selectedAgents.some(
-                        (x) => x.agentId === agent.agentId
-                      )}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        if (e.target.checked) {
-                          setSelectedAgents((p) => [...p, agent]);
-                        } else {
-                          setSelectedAgents((p) =>
-                            p.filter((x) => x.agentId !== agent.agentId)
-                          );
-                        }
-                      }}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        flex: 1,
-                      }}
-                    >
-                      {agent.imageUrl ? (
-                        <img
-                          src={agent.imageUrl}
-                          alt={agent.agentName}
-                          style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%",
-                            background: "#ddd",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "12px",
-                            color: "#999",
-                          }}
-                        >
-                          {agent.agentName?.[0]?.toUpperCase() || "?"}
-                        </div>
-                      )}
-                      <span style={{ fontWeight: "500", fontSize: "14px" }}>
-                        {agent.agentName}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
+            {loading && assistants.length === 0 ? (
+  <div style={{ textAlign: "center", padding: "40px" }}>
+    <Spin tip="Loading agents..." />
+  </div>
+) : filteredAssistants.length === 0 ? (
+  <Empty description="No agents available" />
+) : (
+  filteredAssistants.map((agent) => {
+    const isSelected = selectedAgents.some(
+      (x) => x.agentId === agent.agentId
+    );
+    return (
+      <div
+        key={agent.agentId}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "10px",
+          padding: "10px 12px",
+          background: "#fff",
+          borderRadius: "6px",
+          border: `1px solid ${isSelected ? "#1ab394" : "#e8e8e8"}`,
+          cursor: "pointer",
+          transition: "all 0.2s",
+          ...(isSelected && { background: "#f0f9f4" }), // Optional: highlight selected row
+        }}
+        onClick={(e) => {
+          // Toggle only if not clicking the checkbox (prevents double-trigger)
+          if (e.target.tagName !== "INPUT") {
+            setSelectedAgents((prev) =>
+              isSelected
+                ? prev.filter((x) => x.agentId !== agent.agentId)
+                : [...prev, agent]
+            );
+          }
+        }}
+        onMouseEnter={(e) => {
+          if (!isSelected) {
+            e.currentTarget.style.borderColor = "#1ab394";
+            e.currentTarget.style.boxShadow = "0 2px 8px rgba(26,179,148,0.15)";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isSelected) {
+            e.currentTarget.style.borderColor = "#e8e8e8";
+            e.currentTarget.style.boxShadow = "none";
+          }
+        }}
+      >
+        <Checkbox
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation(); // Prevent bubble to div onClick
+            setSelectedAgents((prev) =>
+              isSelected
+                ? prev.filter((x) => x.agentId !== agent.agentId)
+                : [...prev, agent]
+            );
+          }}
+        />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flex: 1,
+          }}
+        >
+          {agent.imageUrl ? (
+            <img
+              src={agent.imageUrl}
+              alt={agent.agentName}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                background: "#ddd",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+                color: "#999",
+              }}
+            >
+              {agent.agentName?.[0]?.toUpperCase() || "?"}
+            </div>
+          )}
+          <span style={{ fontWeight: "500", fontSize: "14px" }}>
+            {agent.agentName}
+          </span>
+        </div>
+      </div>
+    );
+  })
+)}
             </div>
 
             {hasMore && (
