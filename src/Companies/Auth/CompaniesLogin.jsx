@@ -159,8 +159,8 @@ function CompaniesLogin() {
       {/* Logo and branding */}
       <div className="text-center mb-8 transform hover:scale-105 transition-transform duration-300">
         <h1 className="text-5xl font-bold tracking-tight">
-          <span className="text-emerald-600">ASKOXY</span>
-          <span className="text-orange-500">.AI</span>
+          <span className="text-emerald-600">JOBS</span>
+          <span className="text-orange-500"> ADMIN  </span>
         </h1>
         <p className="text-gray-600 mt-2">Admin Control Panel</p>
       </div>

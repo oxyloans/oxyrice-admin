@@ -512,6 +512,14 @@ const AgentStoreManager = () => {
       },
     },
     {
+      title: "AI Store Status",
+      dataIndex: "aiStoreStatus",
+      key: "aiStoreStatus",
+
+      align: "center",
+      render: (text) => <strong>{text || "-"}</strong>,
+    },
+    {
       title: "Actions",
       align: "center",
 
