@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+
+
 import { DeleteOutlined } from "@ant-design/icons";
 import {
   Table,
@@ -39,7 +44,7 @@ const Coupons = () => {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(25);
-  const [activeTab, setActiveTab] = useState("PUBLIC");
+  const [activeTab, setActiveTab] = useState("PRIVATE");
   const [items, setItems] = useState([]); // <-- Add this line
   const [deleteLoading, setDeleteLoading] = useState(false);
 
@@ -173,7 +178,6 @@ const Coupons = () => {
       render: (text, record, index) =>
         index + 1 + (currentPage - 1) * entriesPerPage,
       align: "center",
-    
     },
     {
       title: "Coupon Code",
@@ -287,10 +291,7 @@ const Coupons = () => {
       key: "startDateTime",
       align: "center",
       className: "text-1xl",
-      render: (date) =>
-        date
-          ? dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A")
-          : "",
+      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD hh:mm A") : ""),
     },
     {
       title: "End Date",
@@ -298,11 +299,9 @@ const Coupons = () => {
       key: "endDateTime",
       align: "center",
       className: "text-1xl",
-      render: (date) =>
-        date
-          ? dayjs.utc(date).tz("Asia/Kolkata").format("YYYY-MM-DD hh:mm A")
-          : "",
+      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD hh:mm A") : ""),
     },
+
     {
       title: "Applicable",
       dataIndex: "couponApplicable",
@@ -608,8 +607,9 @@ const Coupons = () => {
           ) : (
             <>
               <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
-                <TabPane tab="Public Coupons" key="PUBLIC" />
                 <TabPane tab="Private Coupons" key="PRIVATE" />
+                <TabPane tab="Public Coupons" key="PUBLIC" />
+
               </Tabs>
 
               <Table

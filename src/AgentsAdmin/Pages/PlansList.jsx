@@ -11,10 +11,15 @@ import {
   message,
   Input,
   Tooltip,
+  Col,
+  Row,
 } from "antd";
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import dayjs from "dayjs";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -28,25 +33,37 @@ const PlansList = () => {
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem("token");
 
-  // Fetch Plans
-  const fetchPlans = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${BASE_URL}/ai-service/agent/getAllPlans`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      const json = await res.json();
-      const normalized = Array.isArray(json) ? json : json ? [json] : [];
-      setData(normalized.reverse());
-    } catch (err) {
-      console.error("Error fetching plans:", err);
-      message.error("Failed to load plans. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+// Fetch Plans
+const fetchPlans = async () => {
+  try {
+    setLoading(true);
+    const res = await fetch(`${BASE_URL}/ai-service/agent/getAllPlans`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    const json = await res.json();
+    const normalized = Array.isArray(json) ? json : json ? [json] : [];
+
+    // 🔽 Sort by createdDate (latest first)
+    const sorted = [...normalized].sort((a, b) => {
+      const da = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+      const db = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+      return db - da; // latest first
+    });
+
+    setData(sorted);
+  } catch (err) {
+    console.error("Fetch plans error:", err);
+    message.error(err?.message || "Error fetching plans. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchPlans();
@@ -59,13 +76,20 @@ const PlansList = () => {
       planAmount: plan?.planAmount || "",
       planType: plan?.planType || "",
       status: plan?.status ?? true,
+      plan: plan?.plan || "",
+      fileUploads: plan?.fileUploads || "",
+      imageGeneration: plan?.imageGeneration || "",
+      aiAgents: plan?.aiAgents || "",
+      messages: plan?.messages || "",
+      voiceChats: plan?.voiceChats || "",
     });
     setModalVisible(true);
   };
 
-const handleSave = async () => {
+ const handleSave = async () => {
   try {
     const values = await form.validateFields();
+
     const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
 
     const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
@@ -80,7 +104,7 @@ const handleSave = async () => {
     const result = await res.json();
 
     if (!res.ok || result.status === "error" || result.success === false) {
-      throw new Error(result.message || "Server returned an error");
+      throw new Error(result.message);
     }
 
     message.success(
@@ -91,10 +115,14 @@ const handleSave = async () => {
     form.resetFields();
     fetchPlans();
   } catch (err) {
+    // ❗ If it's a form validation error, DON'T show toast
+    if (err?.errorFields) {
+      // AntD validation error – fields already show messages
+      return;
+    }
+
     console.error("Save error:", err);
-    // message.error(
-    //   err.message || "Error saving plan. Please try again."
-    // );
+    message.error(err?.message || "Error saving plan. Please try again.");
   }
 };
 
@@ -129,6 +157,12 @@ const handleSave = async () => {
       align: "center",
     },
     {
+      title: "Plan",
+      dataIndex: "plan",
+      key: "plan",
+      align: "center",
+    },
+    {
       title: "Plan Amount",
       dataIndex: "planAmount",
       key: "planAmount",
@@ -142,17 +176,49 @@ const handleSave = async () => {
       align: "center",
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) =>
-        status ? (
-          <span style={{ color: "#008cba", fontWeight: "bold" }}>Active</span>
-        ) : (
-          <span style={{ color: "red", fontWeight: "bold" }}>Inactive</span>
-        ),
+      title: "Image Generation",
+      dataIndex: "imageGeneration",
+      key: "imageGeneration",
       align: "center",
     },
+    {
+      title: "Voice Chats",
+      dataIndex: "voiceChats",
+      key: "voiceChats",
+      align: "center",
+    },
+    // {
+    //   title: "File Uploads",
+    //   dataIndex: "fileUploads",
+    //   key: "fileUploads",
+    //   align: "center",
+    // },
+    {
+      title: "AI Agents",
+      dataIndex: "aiAgents",
+      key: "aiAgents",
+      align: "center",
+    },
+    {
+      title: "Created Date",
+      dataIndex: "createdDate",
+      key: "createdDate",
+      align: "center",
+      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "-"),
+    },
+
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) =>
+    //     status ? (
+    //       <span style={{ color: "#008cba", fontWeight: "bold" }}>Active</span>
+    //     ) : (
+    //       <span style={{ color: "red", fontWeight: "bold" }}>Inactive</span>
+    //     ),
+    //   align: "center",
+    // },
     {
       title: "Action",
       key: "action",
@@ -164,7 +230,8 @@ const handleSave = async () => {
             type="link"
             style={{ color: "#008cba" }}
             onClick={() => openModal(record)}
-          />
+          >
+            Edit</Button>
         </Tooltip>
       ),
     },
@@ -258,7 +325,7 @@ const handleSave = async () => {
             <span>entries</span>
           </div>
 
-            <Search
+          <Search
             placeholder="Search Plan amount or type"
             value={searchTerm}
             allowClear
@@ -310,32 +377,164 @@ const handleSave = async () => {
           }}
         >
           <Form form={form} layout="vertical">
-            <Form.Item
-              label="Plan Amount"
-              name="planAmount"
-              rules={[{ required: true, message: "Please enter plan amount" }]}
-            >
-              <InputNumber
-                min={0}
-                style={{ width: "100%" }}
-                placeholder="Enter amount"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Plan Type"
-              name="planType"
-              rules={[{ required: true, message: "Please select plan type" }]}
-            >
-              <Select placeholder="Select plan type">
-                <Option value="MONTHLY">MONTHLY</Option>
-                <Option value="QUARTERLY">QUARTERLY</Option>
-                <Option value="HALF_YEARLY">HALF_YEARLY</Option>
-                <Option value="YEARLY">YEARLY</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item label="Status" name="status" valuePropName="checked">
-              <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Plan Amount"
+                  name="planAmount"
+                  rules={[
+                    { required: true, message: "Please enter plan amount" },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter amount"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Plan"
+                  name="plan"
+                  rules={[{ required: true, message: "Please enter plan" }]}
+                >
+                  <Select placeholder="Select plan">
+                    <Option value="Starter">Starter</Option>
+                    <Option value="Growth">Growth</Option>
+                    <Option value="Scale">Scale</Option>
+                    <Option value="ENTERPRISE">Enterprise</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="File Upload Limit"
+                  name="fileUploads"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //     message: "Please enter file upload limit",
+                  //   },
+                  // ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter limit"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Image Generation Limit"
+                  name="imageGeneration"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter image generation limit",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter limit"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="AI Agents Limit"
+                  name="aiAgents"
+                  rules={[
+                    { required: true, message: "Please enter AI agents limit" },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter limit"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Messages Limit"
+                  name="messages"
+                  rules={[
+                    { required: true, message: "Please enter message limit" },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter limit"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Voice Chats Limit"
+                  name="voiceChats"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter voice chat limit",
+                    },
+                  ]}
+                >
+                  <InputNumber
+                    min={0}
+                    style={{ width: "100%" }}
+                    placeholder="Enter limit"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Plan Type"
+                  name="planType"
+                  rules={[
+                    { required: true, message: "Please select plan type" },
+                  ]}
+                >
+                  <Select placeholder="Select plan type">
+                    <Option value="MONTHLY">MONTHLY</Option>
+                    <Option value="QUARTERLY">QUARTERLY</Option>
+                    <Option value="HALF_YEARLY">HALF_YEARLY</Option>
+                    <Option value="YEARLY">YEARLY</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item label="Status" name="status" valuePropName="checked">
+                  <Switch
+                    checkedChildren="Active"
+                    unCheckedChildren="Inactive"
+                    style={{
+                      backgroundColor:
+                        (form.getFieldValue("status") ??
+                        currentPlan?.status ??
+                        true)
+                          ? "#0089c4"
+                          : "#ff4d4f", // ON / OFF colors
+                    }}
+                    handleStyle={{
+                      backgroundColor: "#ffffff",
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           </Form>
         </Modal>
       </Card>
