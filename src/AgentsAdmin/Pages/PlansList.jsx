@@ -35,35 +35,35 @@ const PlansList = () => {
   const [activeTab, setActiveTab] = useState("all");
   const accessToken = localStorage.getItem("token");
 
-// Fetch Plans
-const fetchPlans = async () => {
-  try {
-    setLoading(true);
-    const res = await fetch(`${BASE_URL}/ai-service/agent/getAllPlans`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+  // Fetch Plans
+  const fetchPlans = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${BASE_URL}/ai-service/agent/getAllPlans`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-    const json = await res.json();
-    const normalized = Array.isArray(json) ? json : json ? [json] : [];
+      const json = await res.json();
+      const normalized = Array.isArray(json) ? json : json ? [json] : [];
 
-    // 🔽 Sort by createdDate (latest first)
-    const sorted = [...normalized].sort((a, b) => {
-      const da = a.createdDate ? new Date(a.createdDate).getTime() : 0;
-      const db = b.createdDate ? new Date(b.createdDate).getTime() : 0;
-      return db - da; // latest first
-    });
+      // 🔽 Sort by createdDate (latest first)
+      const sorted = [...normalized].sort((a, b) => {
+        const da = a.createdDate ? new Date(a.createdDate).getTime() : 0;
+        const db = b.createdDate ? new Date(b.createdDate).getTime() : 0;
+        return db - da; // latest first
+      });
 
-    setData(sorted);
-  } catch (err) {
-    console.error("Fetch plans error:", err);
-    message.error(err?.message || "Error fetching plans. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+      setData(sorted);
+    } catch (err) {
+      console.error("Fetch plans error:", err);
+      message.error(err?.message || "Error fetching plans. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchPlans();
@@ -86,45 +86,45 @@ const fetchPlans = async () => {
     setModalVisible(true);
   };
 
- const handleSave = async () => {
-  try {
-    const values = await form.validateFields();
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
 
-    const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
+      const payload = currentPlan ? { id: currentPlan.id, ...values } : values;
 
-    const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(payload),
-    });
+      const res = await fetch(`${BASE_URL}/ai-service/agent/promptPlan`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const result = await res.json();
+      const result = await res.json();
 
-    if (!res.ok || result.status === "error" || result.success === false) {
-      throw new Error(result.message);
+      if (!res.ok || result.status === "error" || result.success === false) {
+        throw new Error(result.message);
+      }
+
+      message.success(
+        currentPlan ? "Plan updated successfully!" : "Plan added successfully!"
+      );
+
+      setModalVisible(false);
+      form.resetFields();
+      fetchPlans();
+    } catch (err) {
+      // ❗ If it's a form validation error, DON'T show toast
+      if (err?.errorFields) {
+        // AntD validation error – fields already show messages
+        return;
+      }
+
+      console.error("Save error:", err);
+      message.error(err?.message || "Error saving plan. Please try again.");
     }
-
-    message.success(
-      currentPlan ? "Plan updated successfully!" : "Plan added successfully!"
-    );
-
-    setModalVisible(false);
-    form.resetFields();
-    fetchPlans();
-  } catch (err) {
-    // ❗ If it's a form validation error, DON'T show toast
-    if (err?.errorFields) {
-      // AntD validation error – fields already show messages
-      return;
-    }
-
-    console.error("Save error:", err);
-    message.error(err?.message || "Error saving plan. Please try again.");
-  }
-};
+  };
 
   // Filtered Data
   const filteredData = data.filter((plan) => {
@@ -231,7 +231,8 @@ const fetchPlans = async () => {
             style={{ color: "#008cba" }}
             onClick={() => openModal(record)}
           >
-            Edit</Button>
+            Edit
+          </Button>
         </Tooltip>
       ),
     },
@@ -515,23 +516,32 @@ const fetchPlans = async () => {
                 </Form.Item>
               </Col>
 
-              <Col span={12}>
-                <Form.Item label="Status" name="status" valuePropName="checked">
-                  <Switch
-                    checkedChildren="Active"
-                    unCheckedChildren="Inactive"
-                    style={{
-                      backgroundColor:
-                        (form.getFieldValue("status") ??
-                        currentPlan?.status ??
-                        true)
-                          ? "#0089c4"
-                          : "#ff4d4f", // ON / OFF colors
+              <Col span={12} style={{ display: "flex", alignItems: "center" }}>
+                <Form.Item
+                  label="Status"
+                  name="status"
+                  valuePropName="checked"
+                  initialValue={currentPlan?.status ?? true}
+                  style={{ marginBottom: 0 }}
+                >
+                  <Form.Item shouldUpdate noStyle>
+                    {() => {
+                      const checked = form.getFieldValue("status");
+                      return (
+                        <Switch
+                          checkedChildren="Active"
+                          unCheckedChildren="Inactive"
+                          checked={checked}
+                          style={{
+                            backgroundColor: checked ? "#0089c4" : "#ff4d4f",
+                          }}
+                          onChange={(val) =>
+                            form.setFieldsValue({ status: val })
+                          }
+                        />
+                      );
                     }}
-                    handleStyle={{
-                      backgroundColor: "#ffffff",
-                    }}
-                  />
+                  </Form.Item>
                 </Form.Item>
               </Col>
             </Row>

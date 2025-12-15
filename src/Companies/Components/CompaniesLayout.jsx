@@ -2,19 +2,18 @@ import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
 
-
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
-import { MdLogout} from "react-icons/md";
+import { MdLogout } from "react-icons/md";
 
 import {
   ApartmentOutlined,
   FileAddOutlined,
   UnorderedListOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
-
 
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -24,8 +23,8 @@ const CompaniesLayout = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const [isMobile, setIsMobile] = useState(false);
-const navigate = useNavigate();
-const entryPoint = localStorage.getItem("entryPoint") || "direct";  
+  const navigate = useNavigate();
+  const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -42,31 +41,36 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
       setCollapsed(false); // Expand on larger screens
     }
   }, [screens]);
-const sidebarItems = [
-  {
-    key: "CompanyManagement",
-    label: "Manage Companies",
-    icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/companylist",
-    style: { fontSize: "16px", fontWeight: 500 },
-  },
-  {
-    key: "JobManagement",
-    label: "Post Job",
-    icon: <FileAddOutlined style={{ fontSize: "18px" }} />,
-    link: "/admin/jobsmanage",
-    style: { fontSize: "16px", fontWeight: 500 },
-  },
-  {
-    key: "JobList",
-    label: "Jobs List",
-    icon: (
-      <UnorderedListOutlined style={{ fontSize: "18px"}} />
-    ),
-    link: "/admin/getalljobs",
-    style: { fontSize: "16px", fontWeight: 500 },
-  },
-];
+  const sidebarItems = [
+    {
+      key: "CompanyManagement",
+      label: "Manage Companies",
+      icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/companylist",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+    {
+      key: "JobManagement",
+      label: "Post Job",
+      icon: <FileAddOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/jobsmanage",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+    {
+      key: "JobList",
+      label: "Jobs List",
+      icon: <UnorderedListOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/getalljobs",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+    {
+      key: "WeAreHiring",
+      label: "We Are Hiring",
+      icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/wearehiring",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+  ];
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
@@ -277,7 +281,7 @@ const sidebarItems = [
         </Footer>
       </Layout>
       {/* Custom scrollbar styling */}
-      <style >{`
+      <style>{`
         /* Customize scrollbar for the menu */
         .ant-menu::-webkit-scrollbar {
           width: 5px;

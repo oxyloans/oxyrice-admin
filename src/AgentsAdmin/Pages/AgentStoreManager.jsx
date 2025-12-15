@@ -6,6 +6,7 @@ import {
   Input,
   Form,
   message,
+  Select,
   Switch,
   Checkbox,
   Space,
@@ -573,18 +574,63 @@ const AgentStoreManager = () => {
             }
             style={{
               background:
-                record.aiStoreStatus === "ACTIVE" ? "#EF4444" : "#00999999",
+                record.aiStoreStatus === "ACTIVE"
+                  ? "#22C14E" // Red for Inactive
+                  : "#ef4444", // Green for Active
+              borderColor:
+                record.aiStoreStatus === "ACTIVE" ? "#22C15E" : "#ef4444",
               color: "#fff",
+              fontWeight: 600,
+              letterSpacing: 0.5,
             }}
           >
-            {record.aiStoreStatus === "ACTIVE"
-              ? "Make Inactive"
-              : "Make Active"}
+            {record.aiStoreStatus === "ACTIVE" ? "Active" : "Inactive"}
           </Button>
         </Space>
       ),
     },
   ];
+
+  // Multi-Agent Upload Handler
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm] = Form.useForm();
+  const userId = localStorage.getItem("userId") || "";
+
+  const handleMultiAgentUpload = async (values) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("storeId", values.storeId);
+      formData.append("userId", userId);
+      formData.append("view", values.view);
+      if (values.file && values.file.file) {
+        formData.append("file", values.file.file);
+      } else {
+        message.error("Please select a file to upload.");
+        setUploading(false);
+        return;
+      }
+
+      const res = await fetch(
+        `${BASE_URL}/ai-service/agent/uploadMultiAgents1`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+      if (!res.ok) throw new Error("Failed to upload agents");
+      message.success("Agents uploaded successfully!");
+      uploadForm.resetFields();
+      fetchStores();
+    } catch (err) {
+      message.error(err.message || "Failed to upload agents");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <AgentsAdminLayout>
@@ -629,6 +675,93 @@ const AgentStoreManager = () => {
             Add AI Store
           </Button>
         </div>
+
+        {/* Multi-Agent Upload Form */}
+        {/* <div
+          style={{
+            marginBottom: 32,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        >
+          <h1 style={{ marginBottom: 16 }}>Bulk Upload Agents</h1>
+
+          <Form
+            form={uploadForm}
+            layout="vertical"
+            onFinish={handleMultiAgentUpload}
+            initialValues={{ view: "public" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "nowrap", // ✅ always one line
+                gap: 16,
+                alignItems: "flex-end",
+                overflowX: "auto",
+                paddingBottom: 6,
+              }}
+            >
+             
+              <div style={{ width: 260 }}>
+                <Form.Item
+                  name="storeId"
+                  label="Store"
+                  rules={[{ required: true, message: "Please select a store" }]}
+                >
+                  <Select placeholder="Select Store" showSearch />
+                </Form.Item>
+              </div>
+
+              <div style={{ width: 260 }}>
+                <Form.Item
+                  name="view"
+                  label="View"
+                  rules={[{ required: true, message: "Please select view" }]}
+                >
+                  <Select>
+                    <Select.Option value="public">Public</Select.Option>
+                    <Select.Option value="private">Private</Select.Option>
+                  </Select>
+                </Form.Item>
+              </div>
+
+              
+              <div style={{ width: 260 }}>
+                <Form.Item
+                  name="file"
+                  label="File"
+                  valuePropName="fileList"
+                  getValueFromEvent={(e) =>
+                    Array.isArray(e) ? e : e && e.fileList
+                  }
+                  rules={[{ required: true, message: "Please upload a file" }]}
+                >
+                  <Input type="file" accept=".csv,.xlsx,.xls,.json" />
+                </Form.Item>
+              </div>
+
+         
+              <div style={{ width: 260 }}>
+                <Form.Item label=" ">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={uploading}
+                    style={{
+                      width: "100%", // ✅ SAME WIDTH
+                      height: 40, // ✅ SAME HEIGHT
+                      background: "#0089c4",
+                      borderColor: "#0089c4",
+                    }}
+                  >
+                    Upload
+                  </Button>
+                </Form.Item>
+              </div>
+            </div>
+          </Form>
+        </div> */}
 
         <Table
           columns={columns}

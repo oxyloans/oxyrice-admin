@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -15,41 +16,75 @@ import LoginOrRegister from "./Authentication/LoginOrRegister";
 const LoginTest = lazy(() => import("./AdminPages/AdminLogin"));
 const AgentsLogin = lazy(() => import("./AgentsAdmin/Auth/AgentsLogin"));
 const CompaniesLogin = lazy(() => import("./Companies/Auth/CompaniesLogin"));
-const TaskManagementLogin = lazy(() => import("./TaskManagement/Authentication/TaskManagementLogin"));
+const TaskManagementLogin = lazy(
+  () => import("./TaskManagement/Authentication/TaskManagementLogin")
+);
 
 // Companies Admin
 const CompanyList = lazy(() => import("./Companies/Pages/CompanyList"));
 const JobsManagement = lazy(() => import("./Companies/Pages/JobsManage"));
 const GetAllJobs = lazy(() => import("./Companies/Pages/GetAllJobs"));
-
+const WeHiringPage = lazy(() => import("./Companies/Pages/WeHiringPage"));
 // Agents Admin
-const AgentsAdminLayout = lazy(() => import("./AgentsAdmin/Components/AgentsAdminLayout"));
+const AgentsAdminLayout = lazy(
+  () => import("./AgentsAdmin/Components/AgentsAdminLayout")
+);
 const AssistantsList = lazy(() => import("./AgentsAdmin/Pages/AssistantsList"));
 const PlansList = lazy(() => import("./AgentsAdmin/Pages/PlansList"));
 const AgentsList = lazy(() => import("./AgentsAdmin/Pages/AgentStatusList"));
 const GeminiUsers = lazy(() => import("./AgentsAdmin/Pages/GeminiUsers"));
-const ConversationsList = lazy(() => import("./AgentsAdmin/Pages/ConversationsList"));
-const AgentManagement = lazy(() => import("./AgentsAdmin/Pages/AgentManagement"));
-const AgentsRegisteredUsers = lazy(() => import("./AgentsAdmin/Pages/AgentsRegisteredUsers"));
-const AgentUserProfile = lazy(() => import("./AgentsAdmin/Pages/AgentUserProfile"));
+const ConversationsList = lazy(
+  () => import("./AgentsAdmin/Pages/ConversationsList")
+);
+const AgentManagement = lazy(
+  () => import("./AgentsAdmin/Pages/AgentManagement")
+);
+const AgentsRegisteredUsers = lazy(
+  () => import("./AgentsAdmin/Pages/AgentsRegisteredUsers")
+);
+const AgentUserProfile = lazy(
+  () => import("./AgentsAdmin/Pages/AgentUserProfile")
+);
 const GPTStore = lazy(() => import("./AgentsAdmin/Pages/GPTStore"));
-const UserHistoryAdmin = lazy(() => import("./AgentsAdmin/Pages/UserHistoryAdmin"));
-const AgentsCreatrionUsers = lazy(() => import("./AgentsAdmin/Pages/AgentsCreationData"));
-const AgentsBmvCoinsUpdated = lazy(() => import("./AgentsAdmin/Pages/AgentsBmvCoinsUpdated"));
-const AgentStoreManager = lazy(() => import("./AgentsAdmin/Pages/AgentStoreManager"));
+const UserHistoryAdmin = lazy(
+  () => import("./AgentsAdmin/Pages/UserHistoryAdmin")
+);
+const AgentsCreatrionUsers = lazy(
+  () => import("./AgentsAdmin/Pages/AgentsCreationData")
+);
+const AgentsBmvCoinsUpdated = lazy(
+  () => import("./AgentsAdmin/Pages/AgentsBmvCoinsUpdated")
+);
+const AgentStoreManager = lazy(
+  () => import("./AgentsAdmin/Pages/AgentStoreManager")
+);
 
 // Task Management
 const TaskCreation = lazy(() => import("./TaskManagement/Pages/TaskCreation"));
-const TaskManagementByDate = lazy(() => import("./TaskManagement/Pages/TaskManagementByDate"));
+const TaskManagementByDate = lazy(
+  () => import("./TaskManagement/Pages/TaskManagementByDate")
+);
 const AdminTasks = lazy(() => import("./TaskManagement/Pages/AdminTasks"));
-const AdminInstructions = lazy(() => import("./TaskManagement/Pages/AdminInstructions"));
-const RadhaInstructionView = lazy(() => import("./TaskManagement/Pages/RadhaInstructionView"));
+const AdminInstructions = lazy(
+  () => import("./TaskManagement/Pages/AdminInstructions")
+);
+const RadhaInstructionView = lazy(
+  () => import("./TaskManagement/Pages/RadhaInstructionView")
+);
 const PlanOfTheDay = lazy(() => import("./TaskManagement/Pages/PlanOfTheDay"));
 const EndOfTheDay = lazy(() => import("./TaskManagement/Pages/EndOfTheDay"));
-const UserTaskDetailsPage = lazy(() => import("./TaskManagement/Pages/UserTaskDetailsPage"));
-const LeaveManagement = lazy(() => import("./TaskManagement/Pages/TodayLeaves "));
-const TeamAttendanceReport = lazy(() => import("./TaskManagement/Pages/TeamAttendanceReport"));
-const EmployeeRegisteredUsers = lazy(() => import("./TaskManagement/Pages/EmployeeRegisteredUsers"));
+const UserTaskDetailsPage = lazy(
+  () => import("./TaskManagement/Pages/UserTaskDetailsPage")
+);
+const LeaveManagement = lazy(
+  () => import("./TaskManagement/Pages/TodayLeaves ")
+);
+const TeamAttendanceReport = lazy(
+  () => import("./TaskManagement/Pages/TeamAttendanceReport")
+);
+const EmployeeRegisteredUsers = lazy(
+  () => import("./TaskManagement/Pages/EmployeeRegisteredUsers")
+);
 const Dashboard = lazy(() => import("./TaskManagement/Pages/Dashboard"));
 
 // AdminPages (New Structure)
@@ -57,38 +92,62 @@ const AllQueries = lazy(() => import("./AdminPages/AllQueriesForAdmin"));
 const Categories = lazy(() => import("./AdminPages/CategoryList"));
 const Coupons = lazy(() => import("./AdminPages/CouponList"));
 const Customers = lazy(() => import("./AdminPages/CustomerList"));
-const CustomerUpdation = lazy(() => import("./AdminPages/CustomerUpdationDetails"));
+const CustomerUpdation = lazy(
+  () => import("./AdminPages/CustomerUpdationDetails")
+);
 const DashboardTest = lazy(() => import("./AdminPages/Dashboard"));
 const DeliveryBoys = lazy(() => import("./AdminPages/DeliveryBoyList"));
 const ExchangeOrders = lazy(() => import("./AdminPages/ExchangeOrderList"));
 const ItemList = lazy(() => import("./AdminPages/ItemsLists"));
 const ItemsLists = lazy(() => import("./AdminPages/ItemRequiremnet"));
 const Ordersdetails = lazy(() => import("./AdminPages/OrdersList"));
-const OrdersDetailsCustomerId = lazy(() => import("./AdminPages/OrdersListbyCustomerId"));
+const OrdersDetailsCustomerId = lazy(
+  () => import("./AdminPages/OrdersListbyCustomerId")
+);
 const OrdersPending = lazy(() => import("./AdminPages/PendingOrders"));
 const SellerItems = lazy(() => import("./AdminPages/SellerItemsList"));
 const Sellers = lazy(() => import("./AdminPages/SellersList"));
 const Settings = lazy(() => import("./AdminPages/SettingsForm"));
-const SubscriptionPlanListustomerId = lazy(() => import("./AdminPages/SubscriptionListByCustomerId"));
-const SubscriberDetailslist = lazy(() => import("./AdminPages/SubscriberDetails"));
+const SubscriptionPlanListustomerId = lazy(
+  () => import("./AdminPages/SubscriptionListByCustomerId")
+);
+const SubscriberDetailslist = lazy(
+  () => import("./AdminPages/SubscriberDetails")
+);
 const Subscribers = lazy(() => import("./AdminPages/SubscribersList"));
-const SubscriptionPlansList = lazy(() => import("./AdminPages/SubscriptionPlanList"));
-const AllInforMationOfBarCode = lazy(() => import("./AdminPages/AllInformationOfBarcode"));
+const SubscriptionPlansList = lazy(
+  () => import("./AdminPages/SubscriptionPlanList")
+);
+const AllInforMationOfBarCode = lazy(
+  () => import("./AdminPages/AllInformationOfBarcode")
+);
 const CategoryInventory = lazy(() => import("./AdminPages/CategoryInventary"));
 const TimeSlots = lazy(() => import("./AdminPages/TimeSlots"));
 const AllReferralsData = lazy(() => import("./AdminPages/AllReferrelsData"));
 const ActiveOffersList = lazy(() => import("./AdminPages/ActiveOffersList"));
-const StudentApplications = lazy(() => import("./AdminPages/StudentApplications"));
+const StudentApplications = lazy(
+  () => import("./AdminPages/StudentApplications")
+);
 const Services = lazy(() => import("./AdminPages/ServicesList"));
 const ServiceList = lazy(() => import("./AdminPages/ServiceList"));
 const OrdersByCoupon = lazy(() => import("./AdminPages/OrdersByCoupon"));
 const NBFCDataList = lazy(() => import("./AdminPages/NBFCDataList"));
-const StudentRegistrations = lazy(() => import("./AdminPages/StudentRegistrations"));
-const InitiatedAmountList = lazy(() => import("./AdminPages/InitiatedAmountList"));
-const ApprovedAmountList = lazy(() => import("./AdminPages/ApprovedAmountList"));
-const WithdrawalRequests = lazy(() => import("./AdminPages/WithdrawalUsersList"));
+const StudentRegistrations = lazy(
+  () => import("./AdminPages/StudentRegistrations")
+);
+const InitiatedAmountList = lazy(
+  () => import("./AdminPages/InitiatedAmountList")
+);
+const ApprovedAmountList = lazy(
+  () => import("./AdminPages/ApprovedAmountList")
+);
+const WithdrawalRequests = lazy(
+  () => import("./AdminPages/WithdrawalUsersList")
+);
 const FuelExpenses = lazy(() => import("./AdminPages/FuelExpenses"));
-const BulkInviteCampaign = lazy(() => import("./AdminPages/BulkInviteCampaign"));
+const BulkInviteCampaign = lazy(
+  () => import("./AdminPages/BulkInviteCampaign")
+);
 const CampaignUpload = lazy(() => import("./AdminPages/CampaignUpload"));
 
 // Legacy Components (Old Folder)
@@ -98,7 +157,9 @@ const SellerItemsList = lazy(() => import("./component/SellerItemsList"));
 const ItemsList = lazy(() => import("./component/ItemsLists"));
 const PendingOrders = lazy(() => import("./component/PendingOrders"));
 const CouponList = lazy(() => import("./component/CouponList"));
-const OrdersListDetailsCustomerId = lazy(() => import("./component/OrdersListbyCustomerId"));
+const OrdersListDetailsCustomerId = lazy(
+  () => import("./component/OrdersListbyCustomerId")
+);
 const RepliedList = lazy(() => import("./component/RepliedListOrders"));
 const SlidesList = lazy(() => import("./component/SlidesList"));
 const ItemRequirements = lazy(() => import("./component/ItemRequiremnet"));
@@ -107,15 +168,21 @@ const OrdersReport = lazy(() => import("./component/OrdersReport"));
 const ChangePassword = lazy(() => import("./component/ChangePassword"));
 const SettingsForm = lazy(() => import("./component/SettingsForm"));
 const CategoryList = lazy(() => import("./component/CategoryList"));
-const SubscriptionPlans = lazy(() => import("./component/SubscriptionPlanList"));
+const SubscriptionPlans = lazy(
+  () => import("./component/SubscriptionPlanList")
+);
 const SubscribersList = lazy(() => import("./component/SubscribersList"));
 const CustomerList = lazy(() => import("./component/CustomerList"));
 const SellerAdd = lazy(() => import("./component/SellerAdd"));
 const ExchangeOrderList = lazy(() => import("./component/ExchangeOrderList"));
 const AllQueriesForAdmin = lazy(() => import("./component/AllQueriesForAdmin"));
 const SubscriberDetails = lazy(() => import("./component/SubscriberDetails"));
-const CustomerUpdationDetails = lazy(() => import("./component/CustomerUpdationDetails"));
-const SubscriptionPlanListDetailsCustomerId = lazy(() => import("./component/SubscriptionListByCustomerId"));
+const CustomerUpdationDetails = lazy(
+  () => import("./component/CustomerUpdationDetails")
+);
+const SubscriptionPlanListDetailsCustomerId = lazy(
+  () => import("./component/SubscriptionListByCustomerId")
+);
 const LoadingSpinner = () => (
   <div
     style={{
@@ -201,7 +268,6 @@ function App() {
             path="/admin/taskmanagementlogin"
             element={<TaskManagementLogin />}
           />
-
           {/* === COMPANIES ADMIN - PROTECTED === */}
           <Route
             path="/admin/companylist"
@@ -221,6 +287,16 @@ function App() {
               />
             }
           />
+          <Route
+            path="/admin/wearehiring"
+            element={
+              <ProtectedRoute
+                element={<WeHiringPage />}
+                loginPath="/admin/comapanieslogin"
+              />
+            }
+          />
+          
           <Route
             path="/admin/getalljobs"
             element={
@@ -358,7 +434,6 @@ function App() {
             }
           />
           {/* Task Management */}
-
           <Route
             path="/taskmanagement/taskcreation"
             element={
@@ -368,7 +443,6 @@ function App() {
               />
             }
           />
-
           <Route
             path="/taskmanagementbydate"
             element={

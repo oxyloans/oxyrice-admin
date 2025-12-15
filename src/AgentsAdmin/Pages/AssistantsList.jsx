@@ -93,58 +93,57 @@ const AssistantsList = () => {
         return <Tag color="default">{view || "-"}</Tag>;
     }
   };
- const renderInteractionTag1 = (fileUrl) => {
-   // Check if URL is empty, null, undefined, or blank string
-   if (!fileUrl || fileUrl.trim() === "") {
-     return <span style={{ color: "red" }}>No Files</span>;
-   }
+  const renderInteractionTag1 = (fileUrl) => {
+    // Check if URL is empty, null, undefined, or blank string
+    if (!fileUrl || fileUrl.trim() === "") {
+      return <span style={{ color: "red" }}>No Files</span>;
+    }
 
-   return (
-     <a
-       href={fileUrl}
-       target="_blank"
-       rel="noopener noreferrer"
-       style={{ color: "#1677ff", textDecoration: "underline" }}
-     >
-       View
-     </a>
-   );
- };
-
+    return (
+      <a
+        href={fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ color: "#1677ff", textDecoration: "underline" }}
+      >
+        View
+      </a>
+    );
+  };
 
   // ---------- Hide Agent (Name / Description) ----------
-const handleToggleHideAgent = async (record, hide) => {
-  if (!record?.agentId) {
-    message.error("Missing agentId");
-    return;
-  }
+  const handleToggleHideAgent = async (record, hide) => {
+    if (!record?.agentId) {
+      message.error("Missing agentId");
+      return;
+    }
 
-  try {
-    const url = `${BASE_URL}/ai-service/agent/hideAgent?agentId=${encodeURIComponent(
-      record.agentId
-    )}&hide=${hide}`;
+    try {
+      const url = `${BASE_URL}/ai-service/agent/hideAgent?agentId=${encodeURIComponent(
+        record.agentId
+      )}&hide=${hide}`;
 
-    const res = await fetch(url, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "*/*",
-      },
-    });
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "*/*",
+        },
+      });
 
-    if (!res.ok) throw new Error("Failed to update hide status");
+      if (!res.ok) throw new Error("Failed to update hide status");
 
-    message.success(
-      hide ? "Agent hidden successfully" : "Agent is now visible"
-    );
+      message.success(
+        hide ? "Agent hidden successfully" : "Agent is now visible"
+      );
 
-    // THIS LINE FIXES THE REFRESH ISSUE
-    await fetchAssistants({ limit: pagination.pageSize, replace: true });
-  } catch (err) {
-    console.error(err);
-    message.error("Failed to update visibility");
-  }
-};
+      // THIS LINE FIXES THE REFRESH ISSUE
+      await fetchAssistants({ limit: pagination.pageSize, replace: true });
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to update visibility");
+    }
+  };
 
   // ---------- Fetching ----------
   const fetchAssistants = async ({
@@ -375,7 +374,6 @@ const handleToggleHideAgent = async (record, hide) => {
       // ─────── SMART SUCCESS DETECTION (This fixes your issue) ───────
       const responseText = await response.text();
 
-      
       // Always refresh the list first
       await fetchAssistants({ limit: pagination.pageSize, replace: true });
 
@@ -391,7 +389,19 @@ const handleToggleHideAgent = async (record, hide) => {
       // }
 
       if (!response.ok) throw new Error("Failed to update status");
-      message.success("Agent status updated successfully!");
+      if (values.status === "APPROVED") {
+        message.success("Agent approved successfully!");
+      } else if (values.status === "REJECTED") {
+        message.success("Agent rejected successfully!");
+      } else if (values.status === "PENDING") {
+        message.success("Agent marked as pending!");
+      } else if (values.status === "REQUESTED") {
+        message.success("Agent marked as requested!");
+      } else if (values.status === "DELETED") {
+        message.success("Agent deleted successfully!");
+      } else {
+        message.success("Agent status updated successfully!");
+      }
       setStatusModalVisible(false);
 
       setCursorAfter(null);
@@ -623,14 +633,13 @@ const handleToggleHideAgent = async (record, hide) => {
       //     return list.length ? list.join(", ") : "—";
       //   },
       // },
-     {
-  title: "View Files",
-  dataIndex: "url",
-  key: "url",
-  align: "center",
-  render: (url) => renderInteractionTag1(url),
-}
-,
+      {
+        title: "View Files",
+        dataIndex: "url",
+        key: "url",
+        align: "center",
+        render: (url) => renderInteractionTag1(url),
+      },
       {
         title: "View",
         dataIndex: "view",
