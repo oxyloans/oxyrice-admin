@@ -592,45 +592,55 @@ const AgentStoreManager = () => {
   ];
 
   // Multi-Agent Upload Handler
-  const [uploading, setUploading] = useState(false);
-  const [uploadForm] = Form.useForm();
-  const userId = localStorage.getItem("userId") || "";
+   const [uploading, setUploading] = useState(false);
+   const [uploadFileList, setUploadFileList] = useState([]);
+   const [selectedFile, setSelectedFile] = useState(null);
+   const [uploadForm] = Form.useForm();
+  const userId = localStorage.getItem("userId") || "admin-user-id";
 
-  const handleMultiAgentUpload = async (values) => {
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("storeId", values.storeId);
-      formData.append("userId", userId);
-      formData.append("view", values.view);
-      if (values.file && values.file.file) {
-        formData.append("file", values.file.file);
-      } else {
-        message.error("Please select a file to upload.");
-        setUploading(false);
-        return;
-      }
+ const handleMultiAgentUpload = async (values) => {
+   setUploading(true);
+   try {
+     if (!selectedFile) {
+       message.error("Please select a file to upload.");
+       setUploading(false);
+       return;
+     }
 
-      const res = await fetch(
-        `${BASE_URL}/ai-service/agent/uploadMultiAgents1`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: formData,
-        }
-      );
-      if (!res.ok) throw new Error("Failed to upload agents");
-      message.success("Agents uploaded successfully!");
-      uploadForm.resetFields();
-      fetchStores();
-    } catch (err) {
-      message.error(err.message || "Failed to upload agents");
-    } finally {
-      setUploading(false);
-    }
-  };
+     const formData = new FormData();
+     formData.append("view", values.view);
+     formData.append("file", selectedFile);
+     formData.append("storeId", values.storeId);
+     formData.append("userId", userId);
+
+     const res = await fetch(
+       `${BASE_URL}/ai-service/agent/uploadMultiAgents1`,
+       {
+         method: "POST",
+         headers: {
+           Authorization: `Bearer ${accessToken}`,
+         },
+         body: formData,
+       }
+     );
+
+     if (!res.ok) throw new Error("Failed to upload agents");
+
+     message.success("Agents uploaded successfully!");
+
+     // ✅ reset UI
+     uploadForm.resetFields();
+     setUploadFileList([]);
+     setSelectedFile(null);
+
+     fetchStores();
+   } catch (err) {
+     console.error(err);
+     message.error(err.message || "Failed to upload agents");
+   } finally {
+     setUploading(false);
+   }
+ };
 
   return (
     <AgentsAdminLayout>
@@ -702,14 +712,39 @@ const AgentStoreManager = () => {
                 paddingBottom: 6,
               }}
             >
-             
               <div style={{ width: 260 }}>
                 <Form.Item
                   name="storeId"
                   label="Store"
                   rules={[{ required: true, message: "Please select a store" }]}
                 >
-                  <Select placeholder="Select Store" showSearch />
+                  <Select
+                    placeholder="Select Store"
+                    showSearch
+                    optionFilterProp="label"
+                    loading={loading}
+                    allowClear
+                    filterOption={(input, option) =>
+                      (option?.label ?? "")
+                        .toLowerCase()
+                        .includes(input.toLowerCase())
+                    }
+                  >
+                    {storeData
+                      ?.filter((s) => s?.storeId)
+                      .map((store) => (
+                        <Select.Option
+                          key={store.storeId}
+                          value={store.storeId}
+                          label={store.storeName}
+                        >
+                          {store.storeName}
+                          {store.aiStoreStatus
+                            ? ` (${store.aiStoreStatus})`
+                            : ""}
+                        </Select.Option>
+                      ))}
+                  </Select>
                 </Form.Item>
               </div>
 
@@ -726,22 +761,24 @@ const AgentStoreManager = () => {
                 </Form.Item>
               </div>
 
-              
               <div style={{ width: 260 }}>
                 <Form.Item
-                  name="file"
                   label="File"
-                  valuePropName="fileList"
-                  getValueFromEvent={(e) =>
-                    Array.isArray(e) ? e : e && e.fileList
-                  }
-                  rules={[{ required: true, message: "Please upload a file" }]}
+                  required
+                  validateStatus={!selectedFile ? "error" : ""}
+                  help={!selectedFile ? "Please upload a file" : ""}
                 >
-                  <Input type="file" accept=".csv,.xlsx,.xls,.json" />
+                  <input
+                    type="file"
+                    accept=".csv,.xlsx,.xls,.json"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setSelectedFile(file);
+                    }}
+                  />
                 </Form.Item>
               </div>
 
-         
               <div style={{ width: 260 }}>
                 <Form.Item label=" ">
                   <Button

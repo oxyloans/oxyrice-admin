@@ -212,27 +212,27 @@ const fetchJobs = async (pg = 0, size = 10) => {
         val ? <Tag color="green">Active</Tag> : <Tag color="red">InActive</Tag>,
     },
 
-    {
-      title: "Actions",
-      key: "actions",
-      width: 140,
-      render: (_, record) => (
-        <div className="flex flex-col gap-2">
-          <Button
-            size="small"
-            loading={updateLoading === record.id}
-            onClick={() => handleStatusToggle(record.id, record.jobStatus)}
-            className={`rounded-md text-white ${
-              record.jobStatus
-                ? "bg-[#1ab394] hover:bg-[#008cba]"
-                : "bg-red-600 hover:bg-red-700"
-            }`}
-          >
-            {record.jobStatus ? "Active" : "Inactive"}
-          </Button>
-        </div>
-      ),
-    },
+    // {
+    //   title: "Actions",
+    //   key: "actions",
+    //   width: 140,
+    //   render: (_, record) => (
+    //     <div className="flex flex-col gap-2">
+    //       <Button
+    //         size="small"
+    //         loading={updateLoading === record.id}
+    //         onClick={() => handleStatusToggle(record.id, record.jobStatus)}
+    //         className={`rounded-md text-white ${
+    //           record.jobStatus
+    //             ? "bg-[#1ab394] hover:bg-[#008cba]"
+    //             : "bg-red-600 hover:bg-red-700"
+    //         }`}
+    //       >
+    //         {record.jobStatus ? "Active" : "Inactive"}
+    //       </Button>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (

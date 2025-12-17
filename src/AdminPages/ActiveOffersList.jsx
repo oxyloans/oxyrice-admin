@@ -18,6 +18,7 @@ import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
 import { SearchOutlined } from "@ant-design/icons";
+import { data } from "autoprefixer";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -138,6 +139,7 @@ const ActiveOffersList = () => {
   };
 
   const toggleComboStatus = async (comboId) => {
+    console.log("Toggling combo status for:", comboId);
     setUpdatingId(comboId);
     try {
       await axios.patch(
@@ -148,6 +150,27 @@ const ActiveOffersList = () => {
     } catch (error) {
       message.error(
         "Failed to update combo status: " +
+          (error.response?.data?.message || error.message)
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+  const deactivateItem = async (comboId, itemId) => {
+    const key = `${comboId}-${itemId}`;
+    setUpdatingId(key);
+    console.log("Deactivating item:", comboId, itemId);
+    try {
+      await axios.patch(
+        `${BASE_URL}/product-service/updateItem/${comboId}/${itemId}`
+      );
+      if (data.status === 200) {
+        message.success("Item inactive successfully");
+      }
+      await fetchComboOffers(comboPage, comboPageSize);
+    } catch (error) {
+      message.error(
+        "Failed to deactivate item: " +
           (error.response?.data?.message || error.message)
       );
     } finally {
@@ -251,11 +274,7 @@ const ActiveOffersList = () => {
       dataIndex: "comboItemName",
       key: "comboItemName",
       align: "center",
-      render: (text) => (
-        <div style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
-          {text}
-        </div>
-      ),
+      render: (text) => <div style={{ whiteSpace: "normal" }}>{text}</div>,
     },
     {
       title: <div style={{ textAlign: "center" }}>Combo Image</div>,
@@ -309,12 +328,41 @@ const ActiveOffersList = () => {
             key: "itemPrice",
             align: "center",
           },
-        ];
+          {
+            title: "Action",
+            key: "action",
+            align: "center",
+            render: (_, item) => {
+              const comboId = record.comboItemId;
+              const itemId = item.individualItemId;
+              const updateKey = `${comboId}-${itemId}`;
 
+              return (
+                <Popconfirm
+                  title="Are you sure you want to deactivate this item?"
+                  onConfirm={() => deactivateItem(comboId, itemId)}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button
+                    danger
+                    size="small"
+                    loading={updatingId === updateKey}
+                  >
+                    Inactive
+                  </Button>
+                </Popconfirm>
+              );
+            },
+          },
+        ];
+        const activeItems = (record.items || []).filter(
+          (it) => it?.status === true
+        );
         return (
           <Table
             columns={itemColumns}
-            dataSource={record.items}
+            dataSource={activeItems}
             rowKey={(item, index) => index}
             pagination={false}
             scroll={{ x: true }}
@@ -344,7 +392,7 @@ const ActiveOffersList = () => {
               border: "none",
             }}
           >
-            Update Status
+            All Items Inactive
           </Button>
         </Popconfirm>
       ),
