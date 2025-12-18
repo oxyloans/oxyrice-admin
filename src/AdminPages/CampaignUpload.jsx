@@ -10,6 +10,7 @@ import {
   Card,
   Typography,
   Modal,
+  DatePicker,
   Spin,
 } from "antd";
 import {
@@ -454,6 +455,38 @@ const [offers, setOffers] = useState([]);
                 )}
                 {whatsappInviteType === "askOxyCustomers" && (
                   <Form.Item
+                    label="Start Date"
+                    name="startDate"
+                    rules={[
+                      { required: true, message: "Please select start date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select start date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
+
+                {whatsappInviteType === "askOxyCustomers" && (
+                  <Form.Item
+                    label="End Date"
+                    name="endDate"
+                    rules={[
+                      { required: true, message: "Please select end date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select end date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
+
+                {whatsappInviteType === "askOxyCustomers" && (
+                  <Form.Item
                     label="Order Count"
                     name="orderCount"
                     rules={[
@@ -464,7 +497,18 @@ const [offers, setOffers] = useState([]);
                     <Input placeholder="Enter order count" />
                   </Form.Item>
                 )}
-
+                {whatsappInviteType === "askOxyCustomers" && (
+                  <Form.Item
+                    label="Limit "
+                    name="limit"
+                    rules={[
+                      { required: true, message: "Please enter limit" },
+                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                    ]}
+                  >
+                    <Input placeholder="Enter limit" />
+                  </Form.Item>
+                )}
                 <Form.Item label="Upload Image" required>
                   <Upload
                     fileList={whatsappImageList}
