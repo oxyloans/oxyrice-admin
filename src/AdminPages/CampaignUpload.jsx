@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Form,
@@ -24,16 +23,15 @@ import AdminPanelLayoutTest from "./AdminPanel";
 
 const { Option } = Select;
 const { Title } = Typography;
-const OFFERS_API =
-  `${BASE_URL}/cart-service/cart/activeOffers`;
+const OFFERS_API = `${BASE_URL}/cart-service/cart/activeOffers`;
 const CampaignUpload = () => {
   const [excelLoading, setExcelLoading] = useState(false);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewData, setPreviewData] = useState({});
   const [currentFormType, setCurrentFormType] = useState("");
-const [excelImageList, setExcelImageList] = useState([]);
-const [whatsappImageList, setWhatsappImageList] = useState([]);
+  const [excelImageList, setExcelImageList] = useState([]);
+  const [whatsappImageList, setWhatsappImageList] = useState([]);
 
   const [excelForm] = Form.useForm();
   const [whatsappForm] = Form.useForm();
@@ -44,10 +42,9 @@ const [whatsappImageList, setWhatsappImageList] = useState([]);
 
   const [whatsappImage, setWhatsappImage] = useState(null);
   const [whatsappInviteType, setWhatsappInviteType] = useState("");
- 
 
-const [offersLoading, setOffersLoading] = useState(false);
-const [offers, setOffers] = useState([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [offers, setOffers] = useState([]);
   const [selectedOfferName, setSelectedOfferName] = useState("");
   const fetchOffers = async () => {
     try {
@@ -76,7 +73,6 @@ const [offers, setOffers] = useState([]);
   useEffect(() => {
     fetchOffers();
   }, []);
-
 
   const handleExcelPreview = (values) => {
     if (!excelImage || !values.message || !excelInviteType) {
@@ -118,7 +114,6 @@ const [offers, setOffers] = useState([]);
       );
       return;
     }
-  
 
     setPreviewData({
       ...values,
@@ -138,7 +133,7 @@ const [offers, setOffers] = useState([]);
 
     if (currentFormType === "excel") {
       if (values.file) formData.append("file", values.file);
-  const isReferral = values.type === "referral";
+      const isReferral = values.type === "referral";
       const params = {
         inviteType: values.inviteType,
         message: values.message,
@@ -175,9 +170,16 @@ const [offers, setOffers] = useState([]);
       const params = {
         inviteType: values.inviteType,
         message: values.message,
-      
+
         ...(values.mobileNumber && { mobileNumber: values.mobileNumber }),
+        ...(values.campaignName && { campaignName: values.campaignName }),
         ...(values.orderCount && { orderCount: values.orderCount }),
+        ...(values.limit && { limit: values.limit }),
+
+        ...(values.startDate && {
+          startDate: values.startDate.format("YYYY-MM-DD"),
+        }),
+        ...(values.endDate && { endDate: values.endDate.format("YYYY-MM-DD") }),
       };
 
       try {
@@ -428,9 +430,56 @@ const [offers, setOffers] = useState([]);
                   >
                     <Option value="sampleMessage">Sample Message</Option>
                     <Option value="askOxyCustomers">AskOxy Customers</Option>
+                    <Option value="kukatpallyCustomer">
+                      kukatpallyCustomer
+                    </Option>
                     <Option value="agents">Agents</Option>
                   </Select>
                 </Form.Item>
+                {whatsappInviteType === "sampleMessage" && (
+                  <Form.Item
+                    label="Campaign Name"
+                    name="campaignName"
+                    rules={[
+                      { required: true, message: "Please enter message" },
+                    ]}
+                  >
+                    <Input placeholder="Enter campaign name" />
+                  </Form.Item>
+                )}
+                {whatsappInviteType === "agents" && (
+                  <Form.Item
+                    label="Campaign Name"
+                    name="campaignName"
+                    rules={[
+                      { required: true, message: "Please enter message" },
+                    ]}
+                  >
+                    <Input placeholder="Enter campaign name" />
+                  </Form.Item>
+                )}
+                {whatsappInviteType === "kukatpallyCustomer" && (
+                  <Form.Item
+                    label="Campaign Name"
+                    name="campaignName"
+                    rules={[
+                      { required: true, message: "Please enter message" },
+                    ]}
+                  >
+                    <Input placeholder="Enter campaign name" />
+                  </Form.Item>
+                )}
+                {whatsappInviteType === "askOxyCustomers" && (
+                  <Form.Item
+                    label="Campaign Name"
+                    name="campaignName"
+                    rules={[
+                      { required: true, message: "Please enter message" },
+                    ]}
+                  >
+                    <Input placeholder="Enter campaign name" />
+                  </Form.Item>
+                )}
                 <Form.Item
                   label="Message"
                   name="message"
@@ -446,7 +495,6 @@ const [offers, setOffers] = useState([]);
                     label="Mobile Number"
                     name="mobileNumber"
                     rules={[
-                      { required: true, message: "Please enter mobile number" },
                       { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
                     ]}
                   >
@@ -484,13 +532,77 @@ const [offers, setOffers] = useState([]);
                     />
                   </Form.Item>
                 )}
+                {whatsappInviteType === "agents" && (
+                  <Form.Item
+                    label="Start Date"
+                    name="startDate"
+                    rules={[
+                      { required: true, message: "Please select start date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select start date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
 
+                {whatsappInviteType === "agents" && (
+                  <Form.Item
+                    label="End Date"
+                    name="endDate"
+                    rules={[
+                      { required: true, message: "Please select end date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select end date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
+                {/* {whatsappInviteType === "sampleMessage" && (
+                  <Form.Item
+                    label="Order Count"
+                    name="orderCount"
+                    rules={[
+                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                    ]}
+                  >
+                    <Input placeholder="Enter order count" />
+                  </Form.Item>
+                )} */}
+                {whatsappInviteType === "agents" && (
+                  <Form.Item
+                    label="Limit "
+                    name="limit"
+                    rules={[
+                      { required: true, message: "Please enter limit" },
+                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                    ]}
+                  >
+                    <Input placeholder="Enter limit" />
+                  </Form.Item>
+                )}
+                {whatsappInviteType === "kukatpallyCustomer" && (
+                  <Form.Item
+                    label="Limit "
+                    name="limit"
+                    rules={[
+                      { required: true, message: "Please enter limit" },
+                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                    ]}
+                  >
+                    <Input placeholder="Enter limit" />
+                  </Form.Item>
+                )}
                 {whatsappInviteType === "askOxyCustomers" && (
                   <Form.Item
                     label="Order Count"
                     name="orderCount"
                     rules={[
-                      { required: true, message: "Please enter order count" },
                       { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
                     ]}
                   >
@@ -572,6 +684,27 @@ const [offers, setOffers] = useState([]);
           </p>
           <p>
             <strong>Message:</strong> {previewData.message}
+            {previewData.startDate && (
+              <p>
+                <strong>Start Date:</strong>{" "}
+                {previewData.startDate.format
+                  ? previewData.startDate.format("YYYY-MM-DD")
+                  : previewData.startDate}
+              </p>
+            )}
+            {previewData.endDate && (
+              <p>
+                <strong>End Date:</strong>{" "}
+                {previewData.endDate.format
+                  ? previewData.endDate.format("YYYY-MM-DD")
+                  : previewData.endDate}
+              </p>
+            )}
+            {previewData.limit && (
+              <p>
+                <strong>Limit:</strong> {previewData.limit}
+              </p>
+            )}
           </p>
           {previewData.mobileNumber && (
             <p>

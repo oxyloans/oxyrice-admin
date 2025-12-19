@@ -3,7 +3,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Layout, Menu, Row, Grid } from "antd";
-import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
+import {
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  FileTextOutlined,
+} from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
@@ -68,6 +72,13 @@ const CompaniesLayout = ({ children }) => {
       label: "We Are Hiring",
       icon: <TeamOutlined style={{ fontSize: "18px" }} />,
       link: "/admin/wearehiring",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+    {
+      key: "News Papers",
+      label: "News Papers",
+      icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/news-papers",
       style: { fontSize: "16px", fontWeight: 500 },
     },
   ];

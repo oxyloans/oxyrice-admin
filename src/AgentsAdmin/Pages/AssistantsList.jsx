@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo,useRef, useState } from "react";
 import {
   Table,
   Card,
@@ -40,6 +40,7 @@ const AssistantsList = () => {
   const [cursorAfter, setCursorAfter] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [lastId, setLastId] = useState(null);
+const searchTimeoutRef = useRef(null);
 
   // Forms / Modals
   const [statusModalVisible, setStatusModalVisible] = useState(false);
@@ -229,46 +230,52 @@ const AssistantsList = () => {
 
   // ---------- Pagination change ----------
   const handleTableChange = async (newPagination) => {
-    const goingForward = newPagination.current > pagination.current;
-    const pageSizeChanged = newPagination.pageSize !== pagination.pageSize;
+    const nextCurrent = newPagination.current || 1;
+    const nextPageSize = newPagination.pageSize || 20;
+    const pageSizeChanged = nextPageSize !== pagination.pageSize;
+    const goingForward = nextCurrent > pagination.current;
 
-    setPagination({
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
-      total: newPagination.total,
-    });
-
+    // ✅ If page size changed -> always reset to page 1
     if (pageSizeChanged) {
+      setPagination((prev) => ({
+        ...prev,
+        current: 1,
+        pageSize: nextPageSize,
+        total: prev.total,
+      }));
+
       setCursorAfter(null);
       setHasMore(false);
       setLastId(null);
       setData([]);
       setFilteredData([]);
-      if (isSearching) {
-        await fetchSearch({
-          limit: newPagination.pageSize,
-          message: searchTerm,
-          replace: true,
-        });
+
+      if (isSearching && searchTerm) {
+        await fetchSearch(searchTerm);
       } else {
-        await fetchAssistants({ limit: newPagination.pageSize, replace: true });
+        await fetchAssistants({ limit: nextPageSize, replace: true });
       }
       return;
     }
 
-    const needRows = newPagination.current * newPagination.pageSize;
+    setPagination((prev) => ({
+      ...prev,
+      current: nextCurrent,
+      pageSize: nextPageSize,
+    }));
+
+    // ✅ If user goes forward and we don't have enough rows loaded, load more from server
+    const needRows = nextCurrent * nextPageSize;
     if (goingForward && filteredData.length < needRows && hasMore && lastId) {
-      if (isSearching) {
-        await fetchSearch({
-          limit: newPagination.pageSize,
-          after: lastId,
-          message: searchTerm,
-        });
+      if (isSearching && searchTerm) {
+        // search API returns full list; no cursor paging needed
+        await fetchSearch(searchTerm);
       } else {
-        await fetchAssistants({ limit: pagination.pageSize, after: lastId });
+        await fetchAssistants({ limit: nextPageSize, after: lastId });
       }
     }
   };
+
   const fetchSearch = async (searchValue) => {
     try {
       setLoading(true);
@@ -308,26 +315,33 @@ const AssistantsList = () => {
     }
   };
 
-  // ---------- Live search ----------
-  // ✅ Handle input / paste changes (no double API calls)
-  let searchTimeout = null;
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value?.trim() || "";
-    setSearchTerm(value);
-    clearTimeout(searchTimeout);
 
-    if (!value) {
-      // Reset to full list when search is cleared
-      fetchAssistants({ limit: pagination.pageSize, replace: true });
-      return;
-    }
+const handleSearchChange = (e) => {
+  const value = e.target.value?.trim() || "";
+  setSearchTerm(value);
 
-    // ✅ Debounce to prevent double calls
-    searchTimeout = setTimeout(() => {
-      fetchSearch(value);
-    }, 400);
-  };
+  if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+  if (!value) {
+    setIsSearching(false);
+    setPagination((p) => ({ ...p, current: 1 }));
+    fetchAssistants({
+      limit: pagination.pageSize,
+      replace: true,
+      searchValue: "",
+    });
+    return;
+  }
+
+  setIsSearching(true);
+
+  searchTimeoutRef.current = setTimeout(() => {
+    setPagination((p) => ({ ...p, current: 1 }));
+    fetchSearch(value);
+  }, 400);
+};
+
 
   // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
@@ -404,20 +418,21 @@ const AssistantsList = () => {
       }
       setStatusModalVisible(false);
 
-      setCursorAfter(null);
-      setHasMore(false);
-      setLastId(null);
-      setData([]);
-      setFilteredData([]);
-      if (isSearching) {
-        await fetchSearch({
-          limit: pagination.pageSize,
-          message: searchTerm,
-          replace: true,
-        });
-      } else {
-        await fetchAssistants({ limit: pagination.pageSize, replace: true });
-      }
+      
+     setCursorAfter(null);
+     setHasMore(false);
+     setLastId(null);
+     setData([]);
+     setFilteredData([]);
+     if (isSearching) {
+       await fetchSearch({
+         limit: pagination.pageSize,
+         message: searchTerm,
+         replace: true,
+       });
+     } else {
+       await fetchAssistants({ limit: pagination.pageSize, replace: true });
+     }
     } catch (err) {
       console.error(err);
       // 👉 This prevents validation errors from showing your generic error
@@ -767,7 +782,7 @@ const AssistantsList = () => {
         }
       >
         <Table
-          rowKey={(r) => r.assistantId || Math.random().toString(36).slice(2)}
+          rowKey={(r) => r.agentId || r.assistantId}
           loading={loading}
           columns={columns}
           dataSource={filteredData}

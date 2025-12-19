@@ -105,6 +105,7 @@ const OrdersDetailsCustomerId = lazy(
   () => import("./AdminPages/OrdersListbyCustomerId")
 );
 const OrdersPending = lazy(() => import("./AdminPages/PendingOrders"));
+const NewsPapers = lazy(() => import("./Companies/Pages/NewsPapers"));
 const SellerItems = lazy(() => import("./AdminPages/SellerItemsList"));
 const Sellers = lazy(() => import("./AdminPages/SellersList"));
 const Settings = lazy(() => import("./AdminPages/SettingsForm"));
@@ -279,6 +280,15 @@ function App() {
             }
           />
           <Route
+            path="/admin/news-papers"
+            element={
+              <ProtectedRoute
+                element={<NewsPapers />}
+                loginPath="/admin/comapanieslogin"
+              />
+            }
+          />
+          <Route
             path="/admin/jobsmanage"
             element={
               <ProtectedRoute
@@ -296,7 +306,7 @@ function App() {
               />
             }
           />
-          
+
           <Route
             path="/admin/getalljobs"
             element={
