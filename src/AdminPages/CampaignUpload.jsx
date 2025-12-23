@@ -480,6 +480,7 @@ const CampaignUpload = () => {
                     <Input placeholder="Enter campaign name" />
                   </Form.Item>
                 )}
+
                 <Form.Item
                   label="Message"
                   name="message"
@@ -490,6 +491,37 @@ const CampaignUpload = () => {
                     placeholder="Enter your message..."
                   />
                 </Form.Item>
+                {whatsappInviteType === "sampleMessage" && (
+                  <Form.Item
+                    label="Start Date"
+                    name="startDate"
+                    rules={[
+                      { required: true, message: "Please select start date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select start date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
+
+                {whatsappInviteType === "sampleMessage" && (
+                  <Form.Item
+                    label="End Date"
+                    name="endDate"
+                    rules={[
+                      { required: true, message: "Please select end date" },
+                    ]}
+                  >
+                    <DatePicker
+                      style={{ width: "100%" }}
+                      placeholder="Select end date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+                )}
                 {whatsappInviteType === "sampleMessage" && (
                   <Form.Item
                     label="Mobile Number"
@@ -575,6 +607,17 @@ const CampaignUpload = () => {
                   </Form.Item>
                 )} */}
                 {whatsappInviteType === "agents" && (
+                  <Form.Item
+                    label="Limit "
+                    name="limit"
+                    rules={[
+                      { required: true, message: "Please enter limit" },
+                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                    ]}
+                  >
+                    <Input placeholder="Enter limit" />
+                  </Form.Item>
+                )} {whatsappInviteType === "sampleMessage" && (
                   <Form.Item
                     label="Limit "
                     name="limit"

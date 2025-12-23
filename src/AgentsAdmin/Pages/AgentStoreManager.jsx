@@ -25,6 +25,8 @@ import {
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 import BASE_URL from "../../AdminPages/Config";
 
+const { Option } = Select;
+
 const PAGE_SIZE = 100;
 
 const AgentStoreManager = () => {
@@ -33,7 +35,7 @@ const AgentStoreManager = () => {
   const [assistants, setAssistants] = useState([]);
   const [lastId, setLastId] = useState(null);
   const [hasMore, setHasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+
   const [saving, setSaving] = useState(false);
   const [isStoreModal, setIsStoreModal] = useState(false);
   const [isAgentsModal, setIsAgentsModal] = useState(false);
@@ -45,6 +47,12 @@ const AgentStoreManager = () => {
   const [agentSearch, setAgentSearch] = useState("");
   const [isStoreConfirm, setIsStoreConfirm] = useState(false);
   const [isAgentsConfirm, setIsAgentsConfirm] = useState(false);
+  const [tablePage, setTablePage] = useState(1);
+  const [tablePageSize, setTablePageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+
+  const [searchText, setSearchText] = useState("");
 
   const [form] = Form.useForm();
   const accessToken = localStorage.getItem("token") || "";
@@ -88,6 +96,39 @@ const AgentStoreManager = () => {
     } else {
       fallbackCopy(text);
     }
+  };
+  const [filteredStoreData, setFilteredStoreData] = useState([]);
+
+  useEffect(() => {
+    setFilteredStoreData(storeData || []);
+  }, [storeData]);
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setTablePage(1); // or setCurrentPage(1) based on your state name
+
+    if (!value) {
+      setFilteredStoreData(storeData || []);
+      return;
+    }
+
+    const v = value.toLowerCase();
+
+    const filtered = (storeData || []).filter((item) => {
+      return (
+        String(item?.storeName || "")
+          .toLowerCase()
+          .includes(v) ||
+        String(item?.storeId || "")
+          .toLowerCase()
+          .includes(v) ||
+        String(item?.storeSlug || "")
+          .toLowerCase()
+          .includes(v)
+      );
+    });
+
+    setFilteredStoreData(filtered);
   };
 
   const fallbackCopy = (text) => {
@@ -412,7 +453,7 @@ const AgentStoreManager = () => {
       key: "sno",
       align: "center",
 
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (tablePage - 1) * tablePageSize + (index + 1),
     },
     {
       title: "Store Name",
@@ -592,55 +633,55 @@ const AgentStoreManager = () => {
   ];
 
   // Multi-Agent Upload Handler
-   const [uploading, setUploading] = useState(false);
-   const [uploadFileList, setUploadFileList] = useState([]);
-   const [selectedFile, setSelectedFile] = useState(null);
-   const [uploadForm] = Form.useForm();
+  const [uploading, setUploading] = useState(false);
+  const [uploadFileList, setUploadFileList] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadForm] = Form.useForm();
   const userId = localStorage.getItem("userId") || "admin-user-id";
 
- const handleMultiAgentUpload = async (values) => {
-   setUploading(true);
-   try {
-     if (!selectedFile) {
-       message.error("Please select a file to upload.");
-       setUploading(false);
-       return;
-     }
+  const handleMultiAgentUpload = async (values) => {
+    setUploading(true);
+    try {
+      if (!selectedFile) {
+        message.error("Please select a file to upload.");
+        setUploading(false);
+        return;
+      }
 
-     const formData = new FormData();
-     formData.append("view", values.view);
-     formData.append("file", selectedFile);
-     formData.append("storeId", values.storeId);
-     formData.append("userId", userId);
+      const formData = new FormData();
+      formData.append("view", values.view);
+      formData.append("file", selectedFile);
+      formData.append("storeId", values.storeId);
+      formData.append("userId", userId);
 
-     const res = await fetch(
-       `${BASE_URL}/ai-service/agent/uploadMultiAgents1`,
-       {
-         method: "POST",
-         headers: {
-           Authorization: `Bearer ${accessToken}`,
-         },
-         body: formData,
-       }
-     );
+      const res = await fetch(
+        `${BASE_URL}/ai-service/agent/uploadMultiAgents1`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
 
-     if (!res.ok) throw new Error("Failed to upload agents");
+      if (!res.ok) throw new Error("Failed to upload agents");
 
-     message.success("Agents uploaded successfully!");
+      message.success("Agents uploaded successfully!");
 
-     // ✅ reset UI
-     uploadForm.resetFields();
-     setUploadFileList([]);
-     setSelectedFile(null);
+      // ✅ reset UI
+      uploadForm.resetFields();
+      setUploadFileList([]);
+      setSelectedFile(null);
 
-     fetchStores();
-   } catch (err) {
-     console.error(err);
-     message.error(err.message || "Failed to upload agents");
-   } finally {
-     setUploading(false);
-   }
- };
+      fetchStores();
+    } catch (err) {
+      console.error(err);
+      message.error(err.message || "Failed to upload agents");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <AgentsAdminLayout>
@@ -684,6 +725,58 @@ const AgentStoreManager = () => {
           >
             Add AI Store
           </Button>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>Show</span>
+            <Select
+              value={tablePageSize}
+              onChange={(value) => {
+                setTablePageSize(value);
+                setTablePage(1); // reset to page 1
+              }}
+              style={{ width: 110 }}
+            >
+              {[10, 20, 30, 40, 50, 100].map((num) => (
+                <Option key={num} value={num}>
+                  {num}
+                </Option>
+              ))}
+            </Select>
+            <span>entries</span>
+          </div>
+
+          <Input.Search
+            placeholder="Search store name"
+            value={searchText}
+            allowClear
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearchText(value);
+              setTablePage(1); // use your pagination page state name
+
+              const v = value.toLowerCase();
+              const filtered = !value
+                ? storeData
+                : storeData.filter((item) =>
+                    String(item?.storeName || "")
+                      .toLowerCase()
+                      .includes(v)
+                  );
+
+              setFilteredStoreData(filtered);
+            }}
+            style={{ width: 280, maxWidth: "100%" }}
+          />
         </div>
 
         {/* Multi-Agent Upload Form */}
@@ -802,17 +895,20 @@ const AgentStoreManager = () => {
 
         <Table
           columns={columns}
-          dataSource={storeData}
+          dataSource={filteredStoreData}
           loading={loading}
           rowKey={(rec) => rec.storeId}
           pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
+            current: tablePage,
+            pageSize: tablePageSize,
+            total: filteredStoreData.length,
+            showSizeChanger: false, // ✅ Select handles size
             showQuickJumper: true,
             showTotal: (total) => `Total ${total} stores`,
+            onChange: (page) => setTablePage(page),
           }}
           bordered
-          scroll={{ x: "true" }}
+          scroll={{ x: true }}
           style={{
             background: "#fff",
             borderRadius: "8px",

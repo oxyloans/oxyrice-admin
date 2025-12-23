@@ -184,11 +184,7 @@ const AgentsRegisteredUsers = () => {
         justify="space-between"
         align="middle"
         gutter={[16, 16]}
-        style={{
-          flexWrap: "wrap",
-          marginBottom: 16,
-          backgroundColor: "white",
-        }}
+       
       >
         <Col xs={24} sm={12} md={8}>
           <Title

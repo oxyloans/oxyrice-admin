@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Table, Card, Spin, message, Input, Row, Col } from "antd";
+import { Table, Card, Spin, message, Input, Row, Col, Select } from "antd";
+
 import CompaniesLayout from "../Components/CompaniesLayout";
 import BASE_URL from "../../AdminPages/Config";
 import dayjs from "dayjs";
@@ -9,6 +10,7 @@ const getMaskedUserId = (userId) => {
   const str = String(userId);
   return `#${str.slice(-4).padStart(4, "0")}`;
 };
+const { Option } = Select;
 
 const WeHiringPage = () => {
   const [data, setData] = useState([]);
@@ -112,7 +114,7 @@ const WeHiringPage = () => {
       key: "createdAt",
       align: "center",
       width: 180,
-      render: (createdAt) => dayjs(createdAt).format("YYYY-MM-DD HH:mm"),
+      render: (createdAt) => dayjs(createdAt).format("YYYY-MM-DD"),
       sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
       defaultSortOrder: "descend",
     },
@@ -121,44 +123,59 @@ const WeHiringPage = () => {
   return (
     <CompaniesLayout>
       <Card style={{ margin: 24 }} bodyStyle={{ padding: 0 }}>
+        <Row style={{ padding: 16, paddingBottom: 8 }}>
+          <Col xs={24}>
+            <div style={{ fontWeight: 600, fontSize: 18 }}>
+              We Are Hiring - Interested Users
+            </div>
+          </Col>
+        </Row>
+
         <Row
           align="middle"
           justify="space-between"
-          style={{ padding: 16, flexWrap: "wrap" }}
+          style={{ padding: 16, paddingTop: 0 }}
         >
-          <Col
-            xs={24}
-            sm={12}
-            md={12}
-            lg={12}
-            xl={12}
-            style={{
-              textAlign: "left",
-              fontWeight: 600,
-              fontSize: 18,
-              marginBottom: 8,
-            }}
-          >
-            We Are Hiring - Interested Users
+          {/* ✅ LEFT: Show entries */}
+          <Col xs={24} sm={12}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span>Show</span>
+              <Select
+                value={pagination.pageSize}
+                onChange={(value) =>
+                  setPagination({ current: 1, pageSize: value })
+                }
+                style={{ width: 120 }}
+              >
+                {[20, 30, 40, 50, 100].map((num) => (
+                  <Option key={num} value={num}>
+                    {num}
+                  </Option>
+                ))}
+              </Select>
+              <span>entries</span>
+            </div>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={12}
-            lg={12}
-            xl={12}
-            style={{ textAlign: "right", marginBottom: 8 }}
-          >
-            <Input.Search
-              placeholder="Search by Mobile Number"
-              allowClear
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ maxWidth: 260, width: "100%" }}
-              size="large"
-            />
+
+          {/* ✅ RIGHT: Search */}
+          <Col xs={24} sm={12}>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <Input.Search
+                placeholder="Search by Mobile Number"
+                allowClear
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPagination((p) => ({ ...p, current: 1 }));
+                }}
+                style={{ maxWidth: 260, width: "100%" }}
+                size="large"
+              />
+            </div>
           </Col>
         </Row>
+
+        {/* ✅ Table stays same */}
         <Spin spinning={loading} tip="Loading...">
           <div style={{ width: "100%", overflowX: "auto" }}>
             <Table
@@ -169,9 +186,9 @@ const WeHiringPage = () => {
                 current: pagination.current,
                 pageSize: pagination.pageSize,
                 total: filteredData.length,
-                showSizeChanger: false,
-                onChange: (page, pageSize) =>
-                  setPagination({ current: page, pageSize }),
+                showSizeChanger: false, // Select controls size
+                onChange: (page) =>
+                  setPagination((p) => ({ ...p, current: page })),
               }}
               scroll={{ x: true }}
               bordered

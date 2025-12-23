@@ -146,7 +146,8 @@ const PlansList = () => {
     {
       title: "S.No",
       key: "sno",
-      render: (_, __, index) => startIndex + index + 1,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
+
       align: "center",
     },
     {
@@ -204,7 +205,9 @@ const PlansList = () => {
       dataIndex: "createdDate",
       key: "createdDate",
       align: "center",
-      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "-"),
+      render: (createdAt) => dayjs(createdAt).format("YYYY-MM-DD"),
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      defaultSortOrder: "descend",
     },
 
     // {
@@ -344,19 +347,26 @@ const PlansList = () => {
           rowKey="id"
           loading={loading}
           columns={columns}
-          dataSource={paginatedData}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total: filteredData.length,
-            onChange: (page) => setCurrentPage(page),
-            showSizeChanger: false,
-            showQuickJumper: true,
-            showTotal: (total) => `Total ${total} plans`,
-          }}
+          dataSource={filteredData}
           bordered
           scroll={{ x: true }}
-          style={{ textAlign: "center" }}
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            total: filteredData.length,
+            showSizeChanger: false,
+            pageSizeOptions: ["10", "20", "30", "40", "50", "100"],
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} plans`,
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            },
+            onShowSizeChange: (_, size) => {
+              setCurrentPage(1);
+              setPageSize(size);
+            },
+          }}
         />
 
         {/* Add/Edit Modal */}

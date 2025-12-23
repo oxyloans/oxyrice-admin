@@ -13,7 +13,8 @@ const AgentsList = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(25);
+const [pageSize, setPageSize] = useState(25);
+
 
   // Fetch agents by status
   const fetchAgents = async (statusValue) => {
@@ -68,11 +69,7 @@ const AgentsList = () => {
     );
   });
 
-  // Pagination logic
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+
 
   // Status colors
   const statusColors = {
@@ -202,8 +199,8 @@ const AgentsList = () => {
   return (
     <AgentsAdminLayout>
       <Card title="Agents Status List" bordered={false}>
-        <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={8}>
+        <Row gutter={16} style={{ marginBottom: 16, alignItems: "center" }}>
+          <Col xs={24} sm={24} md={8}>
             <Select
               value={status}
               onChange={(val) => setStatus(val)}
@@ -216,19 +213,44 @@ const AgentsList = () => {
               <Option value="DELETED">DELETED</Option>
             </Select>
           </Col>
-          <Col xs={24} sm={12} md={8} offset={8} style={{ textAlign: "right" }}>
+
+          <Col xs={24} sm={12} md={8}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span>Show</span>
+              <Select
+                value={pageSize}
+                onChange={(val) => {
+                  setPageSize(val);
+                  setCurrentPage(1);
+                }}
+                style={{ width: 120 }}
+              >
+                {[20, 25, 30, 40, 50, 100].map((num) => (
+                  <Option key={num} value={num}>
+                    {num}
+                  </Option>
+                ))}
+              </Select>
+              <span>entries</span>
+            </div>
+          </Col>
+
+          <Col xs={24} sm={12} md={8} style={{ textAlign: "right" }}>
             <Search
               placeholder="Search by User ID, Agent Name, Agent ID"
               allowClear
-              onSearch={(val) => setSearchText(val)}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ maxWidth: 300, width: "100%" }}
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{ maxWidth: 320, width: "100%" }}
             />
           </Col>
         </Row>
 
         <Table
-          dataSource={paginatedData}
+          dataSource={filteredData}
           columns={columns}
           rowKey="agentId"
           loading={loading}
@@ -236,9 +258,11 @@ const AgentsList = () => {
             current: currentPage,
             pageSize,
             total: filteredData.length,
+            showSizeChanger: false, // ✅ because we use our own Select
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} agents`,
             onChange: (page) => setCurrentPage(page),
-            showSizeChanger: false,
-            position: ["bottomRight"], // ✅ Pagination at bottom-right
+            position: ["bottomRight"],
           }}
           bordered
           scroll={{ x: true }}

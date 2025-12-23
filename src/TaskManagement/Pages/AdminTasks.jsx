@@ -365,7 +365,7 @@ const AdminTasks = () => {
               padding: "8px 12px",
               textAlign: "left",
               display: "inline-block",
-              minWidth: 200,
+              minWidth: 180,
             }}
           >
             <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
@@ -543,6 +543,25 @@ const AdminTasks = () => {
       ),
     },
   ];
+<>
+  <style>
+    {`
+      .task-mobile-meta {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .task-mobile-meta {
+          display: block;
+        }
+      }
+    `}
+  </style>
+
+  {/* Your Table or component here */}
+</>;
+
+
 
   return (
     <TaskAdminPanelLayout>

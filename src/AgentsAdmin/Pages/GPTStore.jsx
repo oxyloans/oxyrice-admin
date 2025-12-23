@@ -14,6 +14,8 @@ import axios from "axios";
 import { PlusOutlined, SearchOutlined, EditOutlined } from "@ant-design/icons";
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
+import { Select } from "antd";
+const { Option } = Select;
 
 const { Title } = Typography;
 
@@ -25,7 +27,11 @@ const GPTStore = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const [tablePage, setTablePage] = useState(1);
+  const [tablePageSize, setTablePageSize] = useState(50);
   const [form] = Form.useForm();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20); // default 20
 
   const accessToken = localStorage.getItem("token") || "";
   const headers = { Authorization: `Bearer ${accessToken}` };
@@ -44,7 +50,7 @@ const GPTStore = () => {
         message.warning("Unexpected response format from API");
       }
     } catch (err) {
-      message.error( err.message ||"Failed to fetch data");
+      message.error(err.message || "Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -81,7 +87,7 @@ const GPTStore = () => {
   const columns = [
     {
       title: "S.No",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (tablePage - 1) * tablePageSize + (index + 1),
       align: "center",
       width: 70,
       responsive: ["sm"],
@@ -170,6 +176,7 @@ const GPTStore = () => {
 
   const handleSearch = (value) => {
     setSearchText(value);
+    setTablePage(1);
     if (!value) {
       setFilteredData(data);
       return;
@@ -188,14 +195,14 @@ const GPTStore = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
           <Title level={3}>GPT Agent Store</Title>
           <Space wrap>
-            <Input
+            {/* <Input
               placeholder="Search by Name or URL"
               value={searchText}
               prefix={<SearchOutlined />}
               onChange={(e) => handleSearch(e.target.value)}
               style={{ width: 250 }}
               allowClear
-            />
+            /> */}
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -214,6 +221,46 @@ const GPTStore = () => {
             </Button>
           </Space>
         </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span>Show</span>
+            <Select
+              value={pageSize}
+              onChange={(value) => {
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
+              style={{ width: 110 }}
+            >
+              {[20, 30, 40, 50].map((num) => (
+                <Option key={num} value={num}>
+                  {num}
+                </Option>
+              ))}
+            </Select>
+            <span>entries</span>
+          </div>
+
+          <Input.Search
+            placeholder="Search by Name or URL"
+            value={searchText}
+            allowClear
+            onChange={(e) => {
+              handleSearch(e.target.value); // keep your existing filter logic
+              setCurrentPage(1);
+            }}
+            style={{ width: 280, maxWidth: "100%" }}
+          />
+        </div>
 
         {loading ? (
           <div className="flex justify-center items-center h-[200px]">
@@ -226,7 +273,16 @@ const GPTStore = () => {
             columns={columns}
             bordered
             scroll={{ x: true }}
-            pagination={{ pageSize: 50 }}
+            // ✅ FIXED pagination (20/30 will work)
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: filteredData.length,
+              showSizeChanger: false, // ✅ because your Select is the page size changer
+              showQuickJumper: true,
+              showTotal: (total) => `Total ${total} agents`,
+              onChange: (page) => setCurrentPage(page),
+            }}
           />
         )}
 
@@ -275,11 +331,7 @@ const GPTStore = () => {
             >
               <Input.TextArea rows={6} />
             </Form.Item>
-            <Form.Item
-              label="Agent Category Type"
-              name="categoryType"
-            
-            >
+            <Form.Item label="Agent Category Type" name="categoryType">
               <Input />
             </Form.Item>
             <Form.Item

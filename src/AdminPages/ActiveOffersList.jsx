@@ -17,7 +17,7 @@ import {
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
-import { SearchOutlined } from "@ant-design/icons";
+
 import { data } from "autoprefixer";
 
 const { Title } = Typography;
@@ -309,6 +309,27 @@ const ActiveOffersList = () => {
             align: "center",
             key: "itemName",
             render: (text) => <strong>{text?.trim()}</strong>,
+          },
+          {
+            title: <div style={{ textAlign: "center" }}>Combo Image</div>,
+            dataIndex: "imageUrl",
+            key: "Image",
+            align: "center", // center the content horizontally
+            render: (url) => (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  src={url}
+                  alt="Combo"
+                  style={{ maxWidth: 100, maxHeight: 60, objectFit: "contain" }}
+                />
+              </div>
+            ),
           },
           {
             title: "Quantity",

@@ -216,13 +216,13 @@ const FuelExpenses = () => {
       render: (t) => formatIST(t),
       align: "center",
     },
-    {
-      title: "Updated At (IST)",
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      render: (t) => formatIST(t),
-      align: "center",
-    },
+    // {
+    //   title: "Updated At (IST)",
+    //   dataIndex: "updatedAt",
+    //   key: "updatedAt",
+    //   render: (t) => formatIST(t),
+    //   align: "center",
+    // },
     {
       title: "Status",
       dataIndex: "status",
@@ -344,29 +344,28 @@ const FuelExpenses = () => {
 
         {/* Search */}
         {/* Search */}
-<Row style={{ margin: "16px 0" }}>
-  <Col xs={24} sm={12} md={8}>
-    <Input
-      placeholder="Search by User Name"
-      allowClear
-      onChange={(e) => {
-        const value = e.target.value.toLowerCase();
-        if (!value) {
-          // Reset full data when search is cleared
-          fetchFuelStats();
-        } else {
-          setData((prev) =>
-            prev.filter((item) =>
-              item.user_name.toLowerCase().includes(value)
-            )
-          );
-        }
-      }}
-      style={{ width: "100%" }}
-    />
-  </Col>
-</Row>
-
+        <Row style={{ margin: "16px 0" }}>
+          <Col xs={24} sm={12} md={8}>
+            <Input
+              placeholder="Search by User Name"
+              allowClear
+              onChange={(e) => {
+                const value = e.target.value.toLowerCase();
+                if (!value) {
+                  // Reset full data when search is cleared
+                  fetchFuelStats();
+                } else {
+                  setData((prev) =>
+                    prev.filter((item) =>
+                      item.user_name.toLowerCase().includes(value)
+                    )
+                  );
+                }
+              }}
+              style={{ width: "100%" }}
+            />
+          </Col>
+        </Row>
 
         {/* Summary Table */}
         {loading ? (
@@ -418,7 +417,7 @@ const FuelExpenses = () => {
                 showQuickJumper: true,
                 pageSizeOptions: ["5", "10", "20", "50"],
               }}
-              scroll={{ x: true }}
+              scroll={{ x: true, y: 400 }}
             />
           )}
         </Modal>

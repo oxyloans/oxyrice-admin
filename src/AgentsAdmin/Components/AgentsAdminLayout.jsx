@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-
+import { MessageOutlined } from "@ant-design/icons";
 import { UserOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
 import { FaStore } from "react-icons/fa";
-import { MessageOutlined } from "@ant-design/icons";
+
 import {
   DashboardOutlined,
   FileTextOutlined,
@@ -63,21 +63,30 @@ const AgentsAdminLayout = ({ children }) => {
       link: "/admin/agentsplanslist",
       style: { fontSize: "20px" },
     },
-    {
-      key: "ai-store",
-      label: "Agents AI Store",
-      icon: <RobotOutlined style={{ fontSize: "20px" }} />,
-      link: "/admin/agents-aistore",
-      style: { fontSize: "20px" },
-    },
-    {
-      key: "gpt-store",
-      label: "Agents Gpt Store",
-      icon: <FaStore style={{ fontSize: "20px" }} />,
-      link: "/admin/agent-gptstore",
-      style: { fontSize: "20px" },
-    },
 
+    {
+      key: "Store Management",
+      label: "Store Management",
+      icon: <FaStore style={{ fontSize: "20px" }} />,
+
+      style: { fontSize: "20px" },
+      dropdownItems: [
+        {
+          key: "ai-store",
+          label: "Agents AI Store",
+
+          link: "/admin/agents-aistore",
+          style: { fontSize: "20px" },
+        },
+        {
+          key: "gpt-store",
+          label: "Agents Gpt Store",
+
+          link: "/admin/agent-gptstore",
+          style: { fontSize: "20px" },
+        },
+      ],
+    },
     {
       key: "agent-users",
       label: "Agents Users & Coins",
@@ -105,20 +114,29 @@ const AgentsAdminLayout = ({ children }) => {
         },
       ],
     },
+   
     {
-      key: "agent-user-history",
-      label: "User Chat History",
-      icon: <FileTextOutlined style={{ fontSize: "20px" }} />,
-      link: "/admin/userhistory",
-      style: { fontSize: "20px" },
-    },
-
-    {
-      key: "agent-conversations",
-      label: "Agent Conversations",
+      key: "Conversations & Chats",
+      label: "Conversations & Chats",
       icon: <MessageOutlined style={{ fontSize: "20px" }} />,
-      link: "/admin/conversationlist",
+
       style: { fontSize: "20px" },
+      dropdownItems: [
+        {
+          key: "agent-user-history",
+          label: "User Chat History",
+
+          link: "/admin/userhistory",
+          style: { fontSize: "20px" },
+        },
+        {
+          key: "agent-conversations",
+          label: "Agent Conversations",
+
+          link: "/admin/conversationlist",
+          style: { fontSize: "20px" },
+        },
+      ],
     },
 
     // {
@@ -320,7 +338,7 @@ const AgentsAdminLayout = ({ children }) => {
               ? "80px 16px 16px"
               : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
             padding: screens.xs ? 12 : 24,
-            background: "#f7f7f7",
+          
             width: screens.xs
               ? "100%"
               : `calc(100% - ${collapsed ? "80px" : "240px"})`,

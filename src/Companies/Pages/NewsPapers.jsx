@@ -1,45 +1,42 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Table, Spin, Empty, Image, Typography, message } from "antd";
+import {
+  Table,
+  Spin,
+  Empty,
+  Image,
+  Typography,
+  message,
+  Row,
+  Col,
+  Select,
+  Input,
+} from "antd";
 import axios from "axios";
 import CompaniesLayout from "../Components/CompaniesLayout";
 import BASE_URL from "../../AdminPages/Config";
+import dayjs from "dayjs";
+
 const { Title } = Typography;
+const { Option } = Select;
 
-const API_URL =
-  `${BASE_URL}/ai-service/agent/getNewsPapaerJobsPaoting`;
-
-// ✅ date formatter (supports "YYYY-MM-DD HH:mm:ss.SSS")
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-
-  // Convert "2025-12-19 11:38:30.539" -> "2025-12-19T11:38:30.539"
-  const iso = String(dateString).replace(" ", "T");
-  const d = new Date(iso);
-
-  if (Number.isNaN(d.getTime())) return dateString; // fallback raw
-
-  return d.toLocaleString("en-IN", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+const API_URL = `${BASE_URL}/ai-service/agent/getNewsPapaerJobsPaoting`;
 
 const NewsPapers = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ client-side pagination
-  const [page, setPage] = useState(1); // antd is 1-based
-  const [pageSize, setPageSize] = useState(20);
+  // ✅ toolbar states
+  const [search, setSearch] = useState("");
+
+  // ✅ table pagination states (antd is 1-based)
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 20 });
 
   useEffect(() => {
     const fetch = async () => {
       try {
         setLoading(true);
-const accessToken = localStorage.getItem("accessToken") || "";
+
+        const accessToken = localStorage.getItem("accessToken") || "";
         const res = await axios.get(API_URL, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -47,19 +44,18 @@ const accessToken = localStorage.getItem("accessToken") || "";
           },
         });
 
-      const data = Array.isArray(res.data) ? res.data : [];
+        const data = Array.isArray(res.data) ? res.data : [];
 
-      // ✅ sort by date (latest first)
-      const sorted = [...data].sort((a, b) => {
-        const da =
-          new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
-        const db =
-          new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
-        return db - da; // latest first
-      });
+        // ✅ sort by date (latest first)
+        const sorted = [...data].sort((a, b) => {
+          const da =
+            new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
+          const db =
+            new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
+          return db - da;
+        });
 
-      setRows(sorted);
-
+        setRows(sorted);
       } catch (err) {
         console.error(err);
         message.error("Failed to load News Paper Job Postings");
@@ -72,13 +68,19 @@ const accessToken = localStorage.getItem("accessToken") || "";
     fetch();
   }, []);
 
-  const total = rows.length;
+  // ✅ filter (client-side)
+  const filteredRows = useMemo(() => {
+    const val = (search || "").trim().toLowerCase();
+    if (!val) return rows;
 
-  const pagedRows = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    return rows.slice(start, end);
-  }, [rows, page, pageSize]);
+    return rows.filter((r) =>
+      String(r?.name || "")
+        .toLowerCase()
+        .includes(val)
+    );
+  }, [rows, search]);
+
+  const total = filteredRows.length;
 
   const columns = [
     {
@@ -86,9 +88,9 @@ const accessToken = localStorage.getItem("accessToken") || "";
       key: "serial",
       align: "center",
       width: 90,
-      render: (_text, _record, index) => (page - 1) * pageSize + index + 1,
+      render: (_text, _record, index) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-
     {
       title: "Name",
       dataIndex: "name",
@@ -97,15 +99,14 @@ const accessToken = localStorage.getItem("accessToken") || "";
       render: (val) => val || "N/A",
     },
     {
-      title: "New Paper Image",
+      title: "News Paper Image",
       dataIndex: "image",
       key: "image",
       align: "center",
       width: 110,
       render: (url) => (
         <div style={{ textAlign: "center" }}>
-          {" "}
-          <Image width={100} src={url} alt="company logo" />{" "}
+          <Image width={100} src={url} alt="news paper" />
         </div>
       ),
     },
@@ -114,18 +115,65 @@ const accessToken = localStorage.getItem("accessToken") || "";
       dataIndex: "date",
       key: "date",
       align: "center",
-      render: (val) => formatDate(val),
+      render: (createdAt) =>
+        createdAt ? dayjs(createdAt).format("YYYY-MM-DD") : "N/A",
+      sorter: (a, b) =>
+        new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime(),
+      defaultSortOrder: "descend",
     },
   ];
 
   return (
     <CompaniesLayout>
       <div className="p-4 sm:p-6 md:p-8 min-h-screen">
-        <div className="flex justify-between items-center mb-4 max-w-7xl mx-auto">
+        {/* ✅ Heading */}
+        <div className="flex justify-between items-center mb-2 max-w-7xl mx-auto">
           <Title level={3} className="!m-0">
             News Paper Job Postings
           </Title>
         </div>
+
+        {/* ✅ ONE ROW: Show entries (left) + Search (right) */}
+        <Row
+          align="middle"
+          justify="space-between"
+          style={{
+            marginBottom: 12,
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+          className="max-w-7xl mx-auto"
+        >
+          {/* LEFT */}
+          <Col xs={24} sm={12}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                flexWrap: "wrap",
+              }}
+            >
+              <span>Show</span>
+              <Select
+                value={pagination.pageSize}
+                onChange={(value) =>
+                  setPagination({ current: 1, pageSize: value })
+                }
+                style={{ width: 120 }}
+              >
+                {[20, 30, 40, 50, 100].map((num) => (
+                  <Option key={num} value={num}>
+                    {num}
+                  </Option>
+                ))}
+              </Select>
+              <span>entries</span>
+            </div>
+          </Col>
+
+         
+        </Row>
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
@@ -138,19 +186,18 @@ const accessToken = localStorage.getItem("accessToken") || "";
         ) : (
           <Table
             columns={columns}
-            dataSource={pagedRows}
+            dataSource={filteredRows}
             rowKey={(record, idx) => `${idx}-${record?.name || "row"}`}
             pagination={{
-              current: page,
-              pageSize,
+              current: pagination.current,
+              pageSize: pagination.pageSize,
               total,
-              showSizeChanger: true,
+              showSizeChanger: false, // ✅ Select controls it
+              showQuickJumper: true,
               showTotal: (t, range) =>
                 `${range[0]}-${range[1]} of ${t} records`,
-              onChange: (newPage, newSize) => {
-                setPage(newPage);
-                setPageSize(newSize || 10);
-              },
+              onChange: (page) =>
+                setPagination((p) => ({ ...p, current: page })),
             }}
             scroll={{ x: true }}
             bordered

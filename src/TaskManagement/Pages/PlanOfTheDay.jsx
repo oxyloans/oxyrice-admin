@@ -186,7 +186,7 @@ const PlanOfTheDay = () => {
         },
         {
           headers: {
-            accept: "*/*",
+            
             "Content-Type": "application/json",
           },
         }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo,useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Table,
   Card,
@@ -19,6 +19,8 @@ import {
   Switch,
   Tooltip,
 } from "antd";
+import { Tabs } from "antd";
+
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
 
@@ -30,17 +32,18 @@ const AssistantsList = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 20,
+    pageSize: 30,
     total: 0,
   });
   const [cursorAfter, setCursorAfter] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [lastId, setLastId] = useState(null);
-const searchTimeoutRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
 
   // Forms / Modals
   const [statusModalVisible, setStatusModalVisible] = useState(false);
@@ -315,33 +318,30 @@ const searchTimeoutRef = useRef(null);
     }
   };
 
+  const handleSearchChange = (e) => {
+    const value = e.target.value?.trim() || "";
+    setSearchTerm(value);
 
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
-const handleSearchChange = (e) => {
-  const value = e.target.value?.trim() || "";
-  setSearchTerm(value);
+    if (!value) {
+      setIsSearching(false);
+      setPagination((p) => ({ ...p, current: 1 }));
+      fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: "",
+      });
+      return;
+    }
 
-  if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    setIsSearching(true);
 
-  if (!value) {
-    setIsSearching(false);
-    setPagination((p) => ({ ...p, current: 1 }));
-    fetchAssistants({
-      limit: pagination.pageSize,
-      replace: true,
-      searchValue: "",
-    });
-    return;
-  }
-
-  setIsSearching(true);
-
-  searchTimeoutRef.current = setTimeout(() => {
-    setPagination((p) => ({ ...p, current: 1 }));
-    fetchSearch(value);
-  }, 400);
-};
-
+    searchTimeoutRef.current = setTimeout(() => {
+      setPagination((p) => ({ ...p, current: 1 }));
+      fetchSearch(value);
+    }, 400);
+  };
 
   // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
@@ -418,21 +418,20 @@ const handleSearchChange = (e) => {
       }
       setStatusModalVisible(false);
 
-      
-     setCursorAfter(null);
-     setHasMore(false);
-     setLastId(null);
-     setData([]);
-     setFilteredData([]);
-     if (isSearching) {
-       await fetchSearch({
-         limit: pagination.pageSize,
-         message: searchTerm,
-         replace: true,
-       });
-     } else {
-       await fetchAssistants({ limit: pagination.pageSize, replace: true });
-     }
+      setCursorAfter(null);
+      setHasMore(false);
+      setLastId(null);
+      setData([]);
+      setFilteredData([]);
+      if (isSearching) {
+        await fetchSearch({
+          limit: pagination.pageSize,
+          message: searchTerm,
+          replace: true,
+        });
+      } else {
+        await fetchAssistants({ limit: pagination.pageSize, replace: true });
+      }
     } catch (err) {
       console.error(err);
       // 👉 This prevents validation errors from showing your generic error
@@ -451,7 +450,7 @@ const handleSearchChange = (e) => {
         {
           method: "GET",
           headers: {
-            Accept: "*/*",
+            
             Authorization: `Bearer ${accessToken}`,
           },
         }
@@ -471,7 +470,7 @@ const handleSearchChange = (e) => {
   useEffect(() => {
     fetchAuthorizedByOptions();
   }, []);
-  // ---------- Tools Update ----------
+  
   const openToolsModal = (assistant) => {
     setSelectedAssistant(assistant);
     setSelectedTools([]); // Reset selected tools when opening the modal
@@ -578,6 +577,22 @@ const handleSearchChange = (e) => {
             <div>
               <b>Goals:</b> {record.goals || "-"}
             </div>
+            <div>
+              <b>View Files:</b>{" "}
+              {record.url ? renderInteractionTag1(record.url) : "-"}
+            </div>
+
+            <div>
+              <b>View:</b>{" "}
+              {record.view ? renderInteractionTag(record.view) : "-"}
+            </div>
+
+            <div>
+              <b>Interaction Mode:</b>{" "}
+              {record.interactionMode
+                ? renderInteractionTag(record.interactionMode)
+                : "-"}
+            </div>
           </div>
         ),
       },
@@ -594,21 +609,26 @@ const handleSearchChange = (e) => {
         key: "description",
         align: "center",
         render: (text) => (
-          <Tooltip title={text}>
-            <div
-              style={{
-                maxWidth: 400,
-                textAlign: "center",
-                display: "-webkit-box",
-                WebkitLineClamp: 4,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {text}
-            </div>
-          </Tooltip>
+          <div
+            style={{
+              textAlign: "center",
+              display: "-webkit-box",
+              maxWidth: 300,
+              WebkitBoxOrient: "vertical",
+              maxHeight: 120, // limit height
+              overflowX: "auto", // horizontal scroll
+            }}
+          >
+            {text}
+          </div>
         ),
+      },
+      {
+        title: "Agent Status",
+        dataIndex: "status",
+        key: "status",
+        align: "center",
+        render: (status) => renderStatusTag(status),
       },
 
       // {
@@ -631,12 +651,12 @@ const handleSearchChange = (e) => {
       //     </div>
       //   ),
       // },
-      {
-        title: "Interaction Mode",
-        dataIndex: "interactionMode",
-        key: "interactionMode",
-        align: "center",
-      },
+      // {
+      //   title: "Interaction Mode",
+      //   dataIndex: "interactionMode",
+      //   key: "interactionMode",
+      //   align: "center",
+      // },
       // {
       //   title: "Tools",
       //   dataIndex: "tools",
@@ -648,32 +668,33 @@ const handleSearchChange = (e) => {
       //     return list.length ? list.join(", ") : "—";
       //   },
       // },
-      {
-        title: "View Files",
-        dataIndex: "url",
-        key: "url",
-        align: "center",
-        render: (url) => renderInteractionTag1(url),
-      },
-      {
-        title: "View",
-        dataIndex: "view",
-        key: "view",
-        align: "center",
-        render: (view) => renderInteractionTag(view),
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        render: (status) => renderStatusTag(status),
-      },
+      // {
+      //   title: "View Files",
+      //   dataIndex: "url",
+      //   key: "url",
+      //   align: "center",
+      //   render: (url) => renderInteractionTag1(url),
+      // },
+      // {
+      //   title: "View",
+      //   dataIndex: "view",
+      //   key: "view",
+      //   align: "center",
+      //   render: (view) => renderInteractionTag(view),
+      // },
+      // {
+      //   title: "Status",
+      // dataIndex: "status",
+      // key: "status",
+      // align: "center",
+      // render: (status) => renderStatusTag(status),
+      // },
+
       {
         title: "Actions",
         key: "actions",
         align: "center",
-        width: 260,
+
         render: (_, record) => (
           <div
             style={{
@@ -781,15 +802,40 @@ const handleSearchChange = (e) => {
           </Row>
         }
       >
+        <Tabs
+          activeKey={statusFilter}
+          onChange={(key) => {
+            setStatusFilter(key);
+            setPagination((p) => ({ ...p, current: 1 }));
+          }}
+          style={{ marginBottom: 16 }}
+          items={[
+            { key: "ALL", label: "All" },
+            { key: "REQUESTED", label: "REQUESTED" },
+            { key: "APPROVED", label: "APPROVED" },
+            { key: "PENDING", label: "PENDING" },
+            { key: "REJECTED", label: "REJECTED" },
+            { key: "DELETED", label: "DELETED" },
+          ]}
+        />
+
         <Table
           rowKey={(r) => r.agentId || r.assistantId}
           loading={loading}
           columns={columns}
-          dataSource={filteredData}
+          dataSource={
+            statusFilter === "ALL"
+              ? filteredData
+              : filteredData.filter(
+                  (item) =>
+                    (item.status || "").toString().toUpperCase().trim() ===
+                    statusFilter
+                )
+          }
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            pageSizeOptions: ["20", "40", "60", "80"],
+            pageSizeOptions: ["50", "60", "90", "100"],
           }}
           onChange={handleTableChange}
           bordered

@@ -391,7 +391,7 @@ const CompanyList = () => {
               >
                 Add Company
               </Button>
-{/* 
+              {/* 
               <Button
                 type="primary"
                 style={{
@@ -407,14 +407,49 @@ const CompanyList = () => {
           </Col>
         </Row>
 
-        <Row gutter={[8, 8]} className="mt-4 mb-3">
-          <Col xs={24} sm={8}>
+        <Row
+          gutter={[8, 8]}
+          className="mt-4 mb-3"
+          align="middle"
+          justify="space-between"
+        >
+          <Col xs={24} sm={12} md={10}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span>Show</span>
+              <Select
+                value={pagination.pageSize}
+                onChange={(value) => {
+                  // ✅ server-side: refetch page 0 with new size
+                  fetchCompanies(0, value);
+                }}
+                style={{ width: 120 }}
+              >
+                {[50, 100, 200, 250].map((num) => (
+                  <Option key={num} value={num}>
+                    {num}
+                  </Option>
+                ))}
+              </Select>
+              <span>entries</span>
+            </div>
+          </Col>
+
+          <Col xs={24} sm={12} md={8}>
             <Input
               prefix={<SearchOutlined />}
               placeholder="Search by company name..."
               value={searchText}
-              onChange={(e) => handleSearch(e.target.value)}
               allowClear
+              onChange={(e) => {
+                const val = e.target.value;
+                setSearchText(val);
+
+                // ✅ This only filters current page results you already loaded:
+                const filtered = companies.filter((item) =>
+                  item.companyName?.toLowerCase().includes(val.toLowerCase())
+                );
+                setFilteredCompanies(filtered);
+              }}
             />
           </Col>
         </Row>
@@ -429,10 +464,12 @@ const CompanyList = () => {
             columns={columns}
             rowKey="id"
             pagination={{
+              showTotal: (t, range) =>
+                `${range[0]}-${range[1]} of ${t} records`,
               current: pagination.current,
               pageSize: pagination.pageSize,
               total: pagination.total,
-              showSizeChanger: true,
+              showSizeChanger: false,
               pageSizeOptions: ["50", "100", "200", "250"],
             }}
             bordered
