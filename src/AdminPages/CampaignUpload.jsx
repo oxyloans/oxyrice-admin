@@ -162,7 +162,26 @@ const CampaignUpload = () => {
         setSelectedOfferName("");
       } catch (error) {
         console.error("Excel Upload failed:", error);
-        antdMessage.error("❌ Excel Campaign submission failed.");
+        const errorMessage =
+          error.response?.data?.message || error.message || "";
+        if (
+          errorMessage.includes("Maximum upload size exceeded") ||
+          errorMessage.includes("FileSizeLimitExceededException") ||
+          errorMessage.includes("exceeds its maximum permitted size")
+        ) {
+          // Check if it's an image or Excel file error
+          if (errorMessage.includes("image")) {
+            antdMessage.error(
+              "Please upload an image below 1MB. The uploaded image exceeds the size limit."
+            );
+          } else {
+            antdMessage.error(
+              "Please upload an Excel file below 5MB. The uploaded file exceeds the size limit."
+            );
+          }
+        } else {
+          antdMessage.error("Excel Campaign submission failed.");
+        }
       } finally {
         setExcelLoading(false);
       }
@@ -199,7 +218,19 @@ const CampaignUpload = () => {
         setWhatsappInviteType("");
       } catch (error) {
         console.error("WhatsApp Upload failed:", error);
-        antdMessage.error("WhatsApp Campaign submission failed.");
+        const errorMessage =
+          error.response?.data?.message || error.message || "";
+        if (
+          errorMessage.includes("Maximum upload size exceeded") ||
+          errorMessage.includes("FileSizeLimitExceededException") ||
+          errorMessage.includes("exceeds its maximum permitted size")
+        ) {
+          antdMessage.error(
+            "Please upload an image below 1MB. The uploaded image exceeds the size limit."
+          );
+        } else {
+          antdMessage.error("WhatsApp Campaign submission failed.");
+        }
       } finally {
         setWhatsappLoading(false);
       }
@@ -348,6 +379,14 @@ const CampaignUpload = () => {
                   <Form.Item label="Upload Excel File (Optional)">
                     <Upload
                       beforeUpload={(file) => {
+                        // Check file size (5MB = 5242880 bytes)
+                        const maxSize = 5242880; // 5MB
+                        if (file.size > maxSize) {
+                          antdMessage.error(
+                            `Please upload an Excel file below 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
+                          );
+                          return false;
+                        }
                         setExcelFile(file);
                         return false;
                       }}
@@ -365,6 +404,14 @@ const CampaignUpload = () => {
                   <Upload
                     fileList={excelImageList}
                     beforeUpload={(file) => {
+                      // Check file size (1MB = 1048576 bytes)
+                      const maxSize = 1048576; // 1MB
+                      if (file.size > maxSize) {
+                        antdMessage.error(
+                          `Please upload an image below 1MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
+                        );
+                        return false;
+                      }
                       setExcelImage(file);
                       setExcelImageList([file]); // ✅ control file
                       return false;
@@ -436,50 +483,14 @@ const CampaignUpload = () => {
                     <Option value="agents">Agents</Option>
                   </Select>
                 </Form.Item>
-                {whatsappInviteType === "sampleMessage" && (
-                  <Form.Item
-                    label="Campaign Name"
-                    name="campaignName"
-                    rules={[
-                      { required: true, message: "Please enter message" },
-                    ]}
-                  >
-                    <Input placeholder="Enter campaign name" />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "agents" && (
-                  <Form.Item
-                    label="Campaign Name"
-                    name="campaignName"
-                    rules={[
-                      { required: true, message: "Please enter message" },
-                    ]}
-                  >
-                    <Input placeholder="Enter campaign name" />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "kukatpallyCustomer" && (
-                  <Form.Item
-                    label="Campaign Name"
-                    name="campaignName"
-                    rules={[
-                      { required: true, message: "Please enter message" },
-                    ]}
-                  >
-                    <Input placeholder="Enter campaign name" />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "askOxyCustomers" && (
-                  <Form.Item
-                    label="Campaign Name"
-                    name="campaignName"
-                    rules={[
-                      { required: true, message: "Please enter message" },
-                    ]}
-                  >
-                    <Input placeholder="Enter campaign name" />
-                  </Form.Item>
-                )}
+
+                <Form.Item
+                  label="Campaign Name"
+                  name="campaignName"
+                  rules={[{ required: true, message: "Please enter message" }]}
+                >
+                  <Input placeholder="Enter campaign name" />
+                </Form.Item>
 
                 <Form.Item
                   label="Message"
@@ -506,7 +517,6 @@ const CampaignUpload = () => {
                     />
                   </Form.Item>
                 )}
-
                 {whatsappInviteType === "sampleMessage" && (
                   <Form.Item
                     label="End Date"
@@ -548,7 +558,6 @@ const CampaignUpload = () => {
                     />
                   </Form.Item>
                 )}
-
                 {whatsappInviteType === "askOxyCustomers" && (
                   <Form.Item
                     label="End Date"
@@ -579,7 +588,6 @@ const CampaignUpload = () => {
                     />
                   </Form.Item>
                 )}
-
                 {whatsappInviteType === "agents" && (
                   <Form.Item
                     label="End Date"
@@ -606,41 +614,18 @@ const CampaignUpload = () => {
                     <Input placeholder="Enter order count" />
                   </Form.Item>
                 )} */}
-                {whatsappInviteType === "agents" && (
-                  <Form.Item
-                    label="Limit "
-                    name="limit"
-                    rules={[
-                      { required: true, message: "Please enter limit" },
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter limit" />
-                  </Form.Item>
-                )} {whatsappInviteType === "sampleMessage" && (
-                  <Form.Item
-                    label="Limit "
-                    name="limit"
-                    rules={[
-                      { required: true, message: "Please enter limit" },
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter limit" />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "kukatpallyCustomer" && (
-                  <Form.Item
-                    label="Limit "
-                    name="limit"
-                    rules={[
-                      { required: true, message: "Please enter limit" },
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter limit" />
-                  </Form.Item>
-                )}
+
+                <Form.Item
+                  label="Limit "
+                  name="limit"
+                  rules={[
+                    { required: true, message: "Please enter limit" },
+                    { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                  ]}
+                >
+                  <Input placeholder="Enter limit" />
+                </Form.Item>
+
                 {whatsappInviteType === "askOxyCustomers" && (
                   <Form.Item
                     label="Order Count"
@@ -652,22 +637,21 @@ const CampaignUpload = () => {
                     <Input placeholder="Enter order count" />
                   </Form.Item>
                 )}
-                {whatsappInviteType === "askOxyCustomers" && (
-                  <Form.Item
-                    label="Limit "
-                    name="limit"
-                    rules={[
-                      { required: true, message: "Please enter limit" },
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter limit" />
-                  </Form.Item>
-                )}
+
                 <Form.Item label="Upload Image" required>
                   <Upload
                     fileList={whatsappImageList}
                     beforeUpload={(file) => {
+                      // Check file size (1MB = 1048576 bytes)
+                      const maxSize = 1048576; // 1MB
+                      if (file.size > maxSize) {
+                        antdMessage.error({
+                          title: "Image Size Error",
+                          content: `Please upload an image below 1MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
+                          okText: "OK",
+                        });
+                        return false;
+                      }
                       setWhatsappImage(file);
                       setWhatsappImageList([file]);
                       return false;

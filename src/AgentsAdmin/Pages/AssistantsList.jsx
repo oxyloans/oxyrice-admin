@@ -23,6 +23,7 @@ import { Tabs } from "antd";
 
 import BASE_URL from "../../AdminPages/Config";
 import AgentsAdminLayout from "../Components/AgentsAdminLayout";
+import axios from "axios";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -33,7 +34,8 @@ const AssistantsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState("ALL");
-
+  const [showBusinessCardModal, setShowBusinessCardModal] = useState(false);
+  const [businessCardData, setBusinessCardData] = useState(null);
   // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
@@ -142,7 +144,12 @@ const AssistantsList = () => {
       );
 
       // THIS LINE FIXES THE REFRESH ISSUE
-      await fetchAssistants({ limit: pagination.pageSize, replace: true });
+      await fetchAssistants({ 
+        limit: pagination.pageSize, 
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter
+      });
     } catch (err) {
       console.error(err);
       message.error("Failed to update visibility");
@@ -152,16 +159,28 @@ const AssistantsList = () => {
   // ---------- Fetching ----------
   const fetchAssistants = async ({
     limit,
-    after,
+    after = null,
     replace = false,
     searchValue = "",
+    status = "ALL"
   }) => {
     try {
       setLoading(true);
-      const url =
-        `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${encodeURIComponent(
-          String(limit)
-        )}` + (after ? `&after=${encodeURIComponent(after)}` : "");
+      let url = `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${encodeURIComponent(
+        String(limit)
+      )}`;
+      
+      if (after) {
+        url += `&after=${encodeURIComponent(after)}`;
+      }
+      
+      if (status !== "ALL") {
+        url += `&status=${encodeURIComponent(status)}`;
+      }
+      
+      if (searchValue) {
+        url += `&search=${encodeURIComponent(searchValue)}`;
+      }
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -169,6 +188,7 @@ const AssistantsList = () => {
       if (!res.ok) throw new Error("Failed to fetch assistants");
 
       const json = await res.json();
+      console.log('API Response:', json); // Debug log
       const fetched = await Promise.all(
         ((json && json.data) || []).map(async (item) => {
           if (item.userId) {
@@ -179,22 +199,21 @@ const AssistantsList = () => {
         })
       );
 
+      console.log('Processed data:', fetched); // Debug log
       setHasMore(!!(json && json.hasMore));
-      setLastId((json && json.lastId) || null);
+      setLastId(fetched.length > 0 ? fetched[fetched.length - 1].assistantId : null);
 
-      const newData = replace ? fetched : [...data, ...fetched];
-      setData(newData);
-
-      const newFiltered = searchValue.trim()
-        ? newData.filter((item) =>
-            (item.name || "").toLowerCase().includes(searchValue.toLowerCase())
-          )
-        : newData;
-      setFilteredData(newFiltered);
+      if (replace) {
+        setData(fetched);
+        setFilteredData(fetched);
+      } else {
+        setData(prev => [...prev, ...fetched]);
+        setFilteredData(prev => [...prev, ...fetched]);
+      }
 
       setPagination((prev) => ({
         ...prev,
-        total: newFiltered.length + (json.hasMore ? prev.pageSize : 0),
+        total: json.total || (replace ? fetched.length : prev.total + fetched.length),
       }));
     } catch (err) {
       console.error(err);
@@ -205,14 +224,17 @@ const AssistantsList = () => {
   };
 
   useEffect(() => {
-    setCursorAfter(null);
-    setHasMore(false);
-    setLastId(null);
     setData([]);
     setFilteredData([]);
-    fetchAssistants({ limit: pagination.pageSize, replace: true });
+    setLastId(null);
+    setHasMore(false);
+    fetchAssistants({ 
+      limit: pagination.pageSize, 
+      replace: true,
+      status: statusFilter 
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [statusFilter]);
   // Fetch user profile details based on userId
   const fetchCreatorName = async (userId) => {
     try {
@@ -231,53 +253,36 @@ const AssistantsList = () => {
     }
   };
 
-  // ---------- Pagination change ----------
-  const handleTableChange = async (newPagination) => {
-    const nextCurrent = newPagination.current || 1;
-    const nextPageSize = newPagination.pageSize || 20;
-    const pageSizeChanged = nextPageSize !== pagination.pageSize;
-    const goingForward = nextCurrent > pagination.current;
-
-    // ✅ If page size changed -> always reset to page 1
-    if (pageSizeChanged) {
-      setPagination((prev) => ({
-        ...prev,
-        current: 1,
-        pageSize: nextPageSize,
-        total: prev.total,
-      }));
-
-      setCursorAfter(null);
-      setHasMore(false);
-      setLastId(null);
-      setData([]);
-      setFilteredData([]);
-
-      if (isSearching && searchTerm) {
-        await fetchSearch(searchTerm);
-      } else {
-        await fetchAssistants({ limit: nextPageSize, replace: true });
-      }
-      return;
-    }
-
-    setPagination((prev) => ({
-      ...prev,
-      current: nextCurrent,
-      pageSize: nextPageSize,
-    }));
-
-    // ✅ If user goes forward and we don't have enough rows loaded, load more from server
-    const needRows = nextCurrent * nextPageSize;
-    if (goingForward && filteredData.length < needRows && hasMore && lastId) {
-      if (isSearching && searchTerm) {
-        // search API returns full list; no cursor paging needed
-        await fetchSearch(searchTerm);
-      } else {
-        await fetchAssistants({ limit: nextPageSize, after: lastId });
-      }
+  const handleNextPage = async () => {
+    if (hasMore && lastId) {
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        after: lastId,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter
+      });
+      setPagination(prev => ({ ...prev, current: prev.current + 1 }));
     }
   };
+
+  const handlePrevPage = async () => {
+    if (pagination.current > 1) {
+      setData([]);
+      setFilteredData([]);
+      setLastId(null);
+      setHasMore(false);
+      setPagination(prev => ({ ...prev, current: prev.current - 1 }));
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter
+      });
+    }
+  };
+
+
 
   const fetchSearch = async (searchValue) => {
     try {
@@ -318,30 +323,25 @@ const AssistantsList = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    const value = e.target.value?.trim() || "";
-    setSearchTerm(value);
+const handleSearchChange = (e) => {
+  const value = e.target.value?.trim() || "";
+  setSearchTerm(value);
 
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+  if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
+  searchTimeoutRef.current = setTimeout(() => {
     if (!value) {
-      setIsSearching(false);
-      setPagination((p) => ({ ...p, current: 1 }));
-      fetchAssistants({
-        limit: pagination.pageSize,
-        replace: true,
-        searchValue: "",
-      });
-      return;
+      setFilteredData(data);
+    } else {
+      const filtered = data.filter((item) =>
+        (item.name || "").toLowerCase().includes(value.toLowerCase()) ||
+        (item.creatorName || "").toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredData(filtered);
     }
+  }, 300);
+};
 
-    setIsSearching(true);
-
-    searchTimeoutRef.current = setTimeout(() => {
-      setPagination((p) => ({ ...p, current: 1 }));
-      fetchSearch(value);
-    }, 400);
-  };
 
   // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
@@ -389,7 +389,12 @@ const AssistantsList = () => {
       const responseText = await response.text();
 
       // Always refresh the list first
-      await fetchAssistants({ limit: pagination.pageSize, replace: true });
+      await fetchAssistants({ 
+        limit: pagination.pageSize, 
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter
+      });
 
       // if (response.ok || response.status === 500) {
       //   // Even if 500, 99% chance it worked (your case)
@@ -450,7 +455,6 @@ const AssistantsList = () => {
         {
           method: "GET",
           headers: {
-            
             Authorization: `Bearer ${accessToken}`,
           },
         }
@@ -470,7 +474,7 @@ const AssistantsList = () => {
   useEffect(() => {
     fetchAuthorizedByOptions();
   }, []);
-  
+
   const openToolsModal = (assistant) => {
     setSelectedAssistant(assistant);
     setSelectedTools([]); // Reset selected tools when opening the modal
@@ -531,6 +535,30 @@ const AssistantsList = () => {
     }
   };
 
+  const ViewBusinessCardFunc = (businessCardId) => {
+    console.log("Business Card ID:", businessCardId);
+    if (businessCardId) {
+      axios
+        .get(`${BASE_URL}/ai-service/agent/getBusinessCardById/${businessCardId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        })
+        .then((response) => {
+          console.log("Business Card Details", response.data);
+          setBusinessCardData(response.data.data);
+          setShowBusinessCardModal(true)
+        })
+        .catch((error) => {
+          console.log("Error fetching business card details", error);
+          message.error(
+            error.response.data.error || "Error fetching business card details"
+          );
+        });
+    }
+  };
+
   // ---------- Columns ----------
   const columns = useMemo(
     () => [
@@ -538,6 +566,7 @@ const AssistantsList = () => {
         title: "S.No",
         key: "sno",
         align: "center",
+        width: 70,
         render: (_text, _record, index) =>
           (pagination.current - 1) * pagination.pageSize + index + 1,
       },
@@ -552,7 +581,7 @@ const AssistantsList = () => {
       {
         title: "Agent Details",
         key: "agentDetails",
-        align: "left",
+        align: "center",
 
         render: (_, record) => (
           <div style={{ textAlign: "left", lineHeight: "1.6" }}>
@@ -587,12 +616,55 @@ const AssistantsList = () => {
               {record.view ? renderInteractionTag(record.view) : "-"}
             </div>
 
-            <div>
+            {/* <div
+              className={record.interactionMode=="BusinessCard" ? "cursor-pointer" : null}
+              onClick={() => ViewBusinessCardFunc(record?.businessCardId)}
+            >
               <b>Interaction Mode:</b>{" "}
               {record.interactionMode
                 ? renderInteractionTag(record.interactionMode)
                 : "-"}
-            </div>
+            </div> */}
+
+            <div
+  onClick={
+    record.interactionMode === "BusinessCard"
+      ? () => ViewBusinessCardFunc(record?.businessCardId)
+      : undefined
+  }
+  style={{
+    cursor:
+      record.interactionMode === "BusinessCard" ? "pointer" : "default",
+    padding:
+      record.interactionMode === "BusinessCard" ? "6px 10px" : "0",
+    borderRadius: "6px",
+    background:
+      record.interactionMode === "BusinessCard"
+        ? "#e6f7ff"
+        : "transparent",
+    border:
+      record.interactionMode === "BusinessCard"
+        ? "1px dashed #1890ff"
+        : "none",
+    display: "inline-block",
+    marginTop:
+      record.interactionMode === "BusinessCard" ? "5px" : "0",
+  }}
+>
+  <b>Interaction Mode:</b>{" "}
+  {record.interactionMode ? (
+    record.interactionMode === "BusinessCard" ? (
+      <span style={{ color: "#1890ff", fontWeight: 600 }}>
+        {renderInteractionTag(record.interactionMode)} (View Card)
+      </span>
+    ) : (
+      renderInteractionTag(record.interactionMode)
+    )
+  ) : (
+    "-"
+  )}
+</div>
+
           </div>
         ),
       },
@@ -623,13 +695,13 @@ const AssistantsList = () => {
           </div>
         ),
       },
-      {
-        title: "Agent Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        render: (status) => renderStatusTag(status),
-      },
+      // {
+      //   title: "Agent Status",
+      //   dataIndex: "status",
+      //   key: "status",
+      //   align: "center",
+      //   render: (status) => renderStatusTag(status),
+      // },
 
       // {
       //   title: "Instructions",
@@ -695,84 +767,77 @@ const AssistantsList = () => {
         key: "actions",
         align: "center",
 
-        render: (_, record) => (
-          <div
-            style={{
-              display: "flex",
-              gap: "12px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {/* Preview Button */}
-            <Button
-              type="primary"
-              size="middle"
-              onClick={() => {
-                setSelectedAssistant(record);
-                setPreviewVisible(true);
-              }}
-              style={{
-                backgroundColor: "#008cba",
-                borderColor: "#008cba",
-                height: "36px",
-                width: "110px",
-                fontWeight: 500,
-              }}
-            >
-              Preview
-            </Button>
+      render: (_, record) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: "8px"
+    }}
+  >
+    {/* Status */}
+    <div>
+      {renderStatusTag(record.status)}
+    </div>
+    
+    {/* Preview Button */}
+    <Button
+      type="primary"
+      size="small"
+      onClick={() => {
+        setSelectedAssistant(record);
+        setPreviewVisible(true);
+      }}
+      style={{
+        backgroundColor: "#008cba",
+        borderColor: "#008cba",
+        height: "32px",
+        width: "100px",
+        fontWeight: 500,
+      }}
+    >
+      Preview
+    </Button>
 
-            {/* Hide / Show Switch – Colored Background */}
-            <Tooltip
-              title={
-                record.hideAgent
-                  ? "This agent is currently HIDDEN in Bharat AI Store"
-                  : "This agent is VISIBLE in Bharat AI Store"
-              }
-            >
-              <div
-                style={{
-                  height: "36px",
-                  width: "110px",
-                  borderRadius: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: record.hideAgent ? "#ff4d4f" : "#1ab394", // Red = Hidden, Green = Visible
-                  transition: "all 0.3s",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                }}
-              >
-                <Switch
-                  checked={record.hideAgent === true}
-                  checkedChildren="Hidden"
-                  unCheckedChildren="Visible"
-                  style={{
-                    backgroundColor: "transparent",
-                  }}
-                  onChange={(checked) => {
-                    Modal.confirm({
-                      title: checked ? "Hide Agent?" : "Show Agent?",
-                      content: checked
-                        ? "This agent will be HIDDEN from Bharat AI Store."
-                        : "This agent will be VISIBLE in Bharat AI Store.",
-                      okText: "Yes",
-                      cancelText: "No",
-                      okButtonProps: {
-                        style: {
-                          backgroundColor: "#ff4d4f",
-                          borderColor: "#ff4d4f",
-                        },
-                      },
-                      onOk: () => handleToggleHideAgent(record, checked),
-                    });
-                  }}
-                />
-              </div>
-            </Tooltip>
-          </div>
-        ),
+    {/* Hide / Show Switch */}
+    <Tooltip
+      title={
+        record.hideAgent
+          ? "This agent is currently HIDDEN in Bharat AI Store"
+          : "This agent is VISIBLE in Bharat AI Store"
+      }
+    >
+      <Button
+        size="small"
+        style={{
+          backgroundColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
+          borderColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
+          color: "white",
+          height: "32px",
+          width: "100px",
+          fontWeight: 500,
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          Modal.confirm({
+            title: record.hideAgent ? "Show Agent?" : "Hide Agent?",
+            content: record.hideAgent
+              ? "This agent will be VISIBLE in Bharat AI Store."
+              : "This agent will be HIDDEN from Bharat AI Store.",
+            okText: "Yes",
+            cancelText: "No",
+            onOk: () => handleToggleHideAgent(record, !record.hideAgent),
+          });
+        }}
+      >
+        {record.hideAgent ? "Hidden" : "Visible"}
+      </Button>
+    </Tooltip>
+  </div>
+),
+
       },
     ],
     [pagination.current, pagination.pageSize]
@@ -783,25 +848,80 @@ const AssistantsList = () => {
     <AgentsAdminLayout>
       <Card
         className="shadow-md rounded-lg"
-        title={
-          <Row justify="space-between" align="middle" style={{ width: "100%" }}>
-            <Col>
-              <h1 style={{ margin: 0, textAlign: "center" }}>
-                Agents Creation List
-              </h1>
-            </Col>
-            <Col>
-              <Search
-                placeholder="Search by Agent Name"
-                allowClear
-                value={searchTerm}
-                onChange={handleSearchChange}
-                style={{ width: 300 }}
-              />
-            </Col>
-          </Row>
-        }
       >
+        {/* Title and Search Row */}
+        <Row justify="space-between" align="middle" style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #d9d9d9' }}>
+          <Col>
+            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
+              Agents Creation List
+            </h1>
+          </Col>
+          <Col>
+            <Search
+              placeholder="Search by Agent Name"
+              allowClear
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={{ width: 300 }}
+            />
+          </Col>
+        </Row>
+
+        {/* Items per page and Pagination Row */}
+        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+          <Col>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <span style={{ fontWeight: 500 }}>Items per page:</span>
+              <Select
+                value={pagination.pageSize}
+                onChange={(value) => {
+                  setPagination(prev => ({ ...prev, pageSize: value, current: 1 }));
+                  fetchAssistants({ 
+                    limit: value, 
+                    replace: true,
+                    searchValue: searchTerm,
+                    status: statusFilter
+                  });
+                }}
+                style={{ width: 80 }}
+              >
+                <Option value={30}>30</Option>
+                <Option value={50}>50</Option>
+                <Option value={100}>100</Option>
+              </Select>
+            </div>
+          </Col>
+          <Col>
+            <div style={{ 
+              padding: '12px 16px', 
+              background: '#fafafa', 
+              borderRadius: '6px',
+              border: '1px solid #d9d9d9'
+            }}>
+              <Button.Group>
+                <Button 
+                  disabled={pagination.current === 1}
+                  onClick={handlePrevPage}
+                >
+                  Previous
+                </Button>
+                <Button disabled>
+                  Page {pagination.current}
+                </Button>
+                <Button 
+                  disabled={!hasMore || filteredData.length === 0}
+                  onClick={handleNextPage}
+                >
+                  Next
+                </Button>
+              </Button.Group>
+              <span style={{ marginLeft: 16 }}>
+                {filteredData.length === 0 ? "No data found" : `Showing ${filteredData.length} items`}
+              </span>
+            </div>
+          </Col>
+        </Row>
+
         <Tabs
           activeKey={statusFilter}
           onChange={(key) => {
@@ -813,9 +933,6 @@ const AssistantsList = () => {
             { key: "ALL", label: "All" },
             { key: "REQUESTED", label: "REQUESTED" },
             { key: "APPROVED", label: "APPROVED" },
-            { key: "PENDING", label: "PENDING" },
-            { key: "REJECTED", label: "REJECTED" },
-            { key: "DELETED", label: "DELETED" },
           ]}
         />
 
@@ -823,23 +940,10 @@ const AssistantsList = () => {
           rowKey={(r) => r.agentId || r.assistantId}
           loading={loading}
           columns={columns}
-          dataSource={
-            statusFilter === "ALL"
-              ? filteredData
-              : filteredData.filter(
-                  (item) =>
-                    (item.status || "").toString().toUpperCase().trim() ===
-                    statusFilter
-                )
-          }
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            pageSizeOptions: ["50", "60", "90", "100"],
-          }}
-          onChange={handleTableChange}
+          dataSource={filteredData.filter(item => item.agentId !== null && item.agentId !== undefined)}
+          pagination={false}
           bordered
-          scroll={{ x: true }}
+          scroll={{ x: true, y: '500px' }}
         />
 
         {/* Preview Modal */}
@@ -1271,6 +1375,35 @@ const AssistantsList = () => {
               />
             </Form.Item>
           </Form>
+        </Modal>
+
+        {/* Display and edit Buisness card details Modal */}
+        <Modal
+          title="Business Card Details"
+          open={showBusinessCardModal}
+          onCancel={() => setShowBusinessCardModal(false)}
+          footer={[
+            <Button key="cancel" onClick={() => setShowBusinessCardModal(false)}>Ok</Button>,
+            
+          ]}
+          width={600}
+        >
+          <div>
+            {businessCardData?.imagePath !== null ? (
+              <div>
+                <div>
+                  <strong>Business Card Image:</strong>
+                </div>
+                <img
+                  src={businessCardData?.imagePath}
+                  alt="Business Card"
+                  style={{ maxWidth: "100%", marginTop: 8 }}
+                />
+              </div>
+            ) : (
+              <div>No Business Card Image Available</div>
+            )}
+          </div>
         </Modal>
       </Card>
     </AgentsAdminLayout>

@@ -12,7 +12,6 @@ import {
   FileTextOutlined,
   FileDoneOutlined,
 } from "@ant-design/icons";
-import { RobotOutlined } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -22,7 +21,7 @@ const AgentsAdminLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
-  const [isMobile, setIsMobile] = useState(false);
+  const [, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -403,6 +402,40 @@ const AgentsAdminLayout = ({ children }) => {
         .ant-layout-sider {
           scrollbar-width: thin;
           scrollbar-color: #4a5568 #1a202c;
+        }
+
+        /* Menu hover + active colors to keep text visible */
+        .ant-menu-dark,
+        .ant-menu-dark .ant-menu-sub,
+        .ant-layout-sider .ant-menu {
+          background: #1a202c;
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item,
+        .ant-layout-sider .ant-menu-submenu-title {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item a,
+        .ant-layout-sider .ant-menu-submenu-title span {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover,
+        .ant-layout-sider .ant-menu-item-active,
+        .ant-layout-sider .ant-menu-submenu-title:hover,
+        .ant-layout-sider .ant-menu-submenu-open,
+        .ant-layout-sider .ant-menu-item-selected {
+          background-color: #2d3748 !important;
+          color: #ffffff !important;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover a,
+        .ant-layout-sider .ant-menu-item-active a,
+        .ant-layout-sider .ant-menu-item-selected a,
+        .ant-layout-sider .ant-menu-submenu-title:hover span {
+          color: #ffffff !important;
         }
       `}</style>
     </Layout>

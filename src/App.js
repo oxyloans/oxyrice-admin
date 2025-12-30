@@ -1,17 +1,18 @@
-
-import React, { Suspense, lazy, useEffect } from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import EntryPointTracker from "./routes/EntryPointTracker";
+import LoadingSpinner from "./components/LoadingSpinner";
+import PincodesData from "./AdminPages/PincodesData";
+import StudentSalesData from "./Companies/Pages/StudentSalesData";
 
 // Authentication Components
-import Login from "./Authentication/Login";
-import Register from "./Authentication/Register";
-import LoginOrRegister from "./Authentication/LoginOrRegister";
+// (Legacy auth components imported elsewhere if needed)
 // Authentication
 const LoginTest = lazy(() => import("./AdminPages/AdminLogin"));
 const AgentsLogin = lazy(() => import("./AgentsAdmin/Auth/AgentsLogin"));
@@ -184,75 +185,119 @@ const CustomerUpdationDetails = lazy(
 const SubscriptionPlanListDetailsCustomerId = lazy(
   () => import("./component/SubscriptionListByCustomerId")
 );
-const LoadingSpinner = () => (
-  <div
-    style={{
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "#f9fafb",
-      fontFamily: "system-ui, sans-serif",
-    }}
-  >
-    <div
-      style={{
-        width: "50px",
-        height: "50px",
-        border: "5px solid #f3f3f3",
-        borderTop: "5px solid #8b5cf6",
-        borderRadius: "50%",
-        animation: "spin 1s linear infinite",
-        marginBottom: "20px",
-      }}
-    />
-    <p style={{ color: "#4c1d95", fontSize: "18px" }}>Loading...</p>
-  </div>
-);
+// Route configuration arrays for cleaner structure
+const companyAdminRoutes = [
+  {
+    path: "/admin/companylist",
+    element: <CompanyList />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/studentsalesdata",
+    element: <StudentSalesData />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/news-papers",
+    element: <NewsPapers />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/jobsmanage",
+    element: <JobsManagement />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/wearehiring",
+    element: <WeHiringPage />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/getalljobs",
+    element: <GetAllJobs />,
+    loginPath: "/admin/comapanieslogin",
+  },
+];
 
-// Add this to your global CSS (index.css or App.css)
-const styleTag = document.createElement("style");
-styleTag.innerHTML = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(styleTag);
-const ProtectedRoute = ({ element, loginPath = "/" }) => {
-  const isAuthenticated = !!localStorage.getItem("token");
-  const location = useLocation();
+const agentsAdminRoutes = [
+  {
+    path: "/admin/agentsdashboard",
+    element: <AgentsAdminLayout />,
+  },
+  { path: "/admin/assistantslist", element: <AssistantsList /> },
+  { path: "/admin/agents-aistore", element: <AgentStoreManager /> },
+  { path: "/admin/conversationlist", element: <ConversationsList /> },
+  { path: "/admin/agentsplanslist", element: <PlansList /> },
+  { path: "/admin/agentsstatuslist", element: <AgentsList /> },
+  { path: "/admin/agentsregisteredusers", element: <AgentsRegisteredUsers /> },
+  { path: "/admin/agent-user", element: <AgentUserProfile /> },
+  { path: "/admin/agents-creation-users", element: <AgentsCreatrionUsers /> },
+  { path: "/admin/agent-gptstore", element: <GPTStore /> },
+  { path: "/admin/userhistory", element: <UserHistoryAdmin /> },
+  {
+    path: "/admin/agents-bmv-coins-updated",
+    element: <AgentsBmvCoinsUpdated />,
+  },
+  { path: "/admin/authorizedusers", element: <AgentManagement /> },
+  { path: "/admin/agents-registered-users", element: <GeminiUsers /> },
+].map((route) => ({
+  loginPath: "/admin/agentslogin",
+  ...route,
+}));
 
-  if (!isAuthenticated) {
-    // Save where user wanted to go
-    localStorage.setItem(
-      "redirectAfterLogin",
-      location.pathname + location.search
-    );
-    return <Navigate to={loginPath} replace />;
-  }
-  return element;
-};
-
-// ---- Tracker rendered INSIDE Router ----
-function EntryPointTracker() {
-  const location = useLocation();
-
-  useEffect(() => {
-    const validEntryPoints = [
-      "/",
-      "/admin/agentslogin",
-      "/admin/comapanieslogin",
-      "/admin/taskmanagementlogin",
-    ];
-    if (validEntryPoints.includes(location.pathname)) {
-      localStorage.setItem("entryPoint", location.pathname);
-    }
-  }, [location.pathname]);
-
-  return null; // nothing to render
-}
+const taskManagementRoutes = [
+  {
+    path: "/taskmanagement/taskcreation",
+    element: <TaskCreation />,
+  },
+  {
+    path: "/taskmanagementbydate",
+    element: <TaskManagementByDate />,
+  },
+  {
+    path: "/taskmanagement/tasklists",
+    element: <AdminTasks />,
+  },
+  {
+    path: "/taskmanagement/admininstructions",
+    element: <AdminInstructions />,
+  },
+  {
+    path: "/taskmanagement/chatview/:id",
+    element: <RadhaInstructionView />,
+  },
+  {
+    path: "/taskmanagement/planoftheday",
+    element: <PlanOfTheDay />,
+  },
+  {
+    path: "/taskmanagement/endoftheday",
+    element: <EndOfTheDay />,
+  },
+  {
+    path: "/user-task-details/:userId",
+    element: <UserTaskDetailsPage />,
+  },
+  {
+    path: "/taskmanagement/employeeleaves",
+    element: <LeaveManagement />,
+  },
+  {
+    path: "/taskmanagement/teamattendance",
+    element: <TeamAttendanceReport />,
+  },
+  {
+    path: "/taskmanagement/employee_registered_users",
+    element: <EmployeeRegisteredUsers />,
+  },
+  {
+    path: "/taskmanagement/dashboard",
+    element: <Dashboard />,
+  },
+].map((route) => ({
+  loginPath: "/admin/taskmanagementlogin",
+  ...route,
+}));
 
 function App() {
   return (
@@ -270,288 +315,35 @@ function App() {
             element={<TaskManagementLogin />}
           />
           {/* === COMPANIES ADMIN - PROTECTED === */}
-          <Route
-            path="/admin/companylist"
-            element={
-              <ProtectedRoute
-                element={<CompanyList />}
-                loginPath="/admin/comapanieslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/news-papers"
-            element={
-              <ProtectedRoute
-                element={<NewsPapers />}
-                loginPath="/admin/comapanieslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/jobsmanage"
-            element={
-              <ProtectedRoute
-                element={<JobsManagement />}
-                loginPath="/admin/comapanieslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/wearehiring"
-            element={
-              <ProtectedRoute
-                element={<WeHiringPage />}
-                loginPath="/admin/comapanieslogin"
-              />
-            }
-          />
-
-          <Route
-            path="/admin/getalljobs"
-            element={
-              <ProtectedRoute
-                element={<GetAllJobs />}
-                loginPath="/admin/comapanieslogin"
-              />
-            }
-          />
+          {companyAdminRoutes.map(({ path, element, loginPath }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute element={element} loginPath={loginPath} />
+              }
+            />
+          ))}
           {/* === AGENTS ADMIN - PROTECTED === */}
-          <Route
-            path="/admin/agentsdashboard"
-            element={
-              <ProtectedRoute
-                element={<AgentsAdminLayout />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/assistantslist"
-            element={
-              <ProtectedRoute
-                element={<AssistantsList />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agents-aistore"
-            element={
-              <ProtectedRoute
-                element={<AgentStoreManager />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/conversationlist"
-            element={
-              <ProtectedRoute
-                element={<ConversationsList />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agentsplanslist"
-            element={
-              <ProtectedRoute
-                element={<PlansList />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agentsstatuslist"
-            element={
-              <ProtectedRoute
-                element={<AgentsList />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agentsregisteredusers"
-            element={
-              <ProtectedRoute
-                element={<AgentsRegisteredUsers />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agent-user"
-            element={
-              <ProtectedRoute
-                element={<AgentUserProfile />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agents-creation-users"
-            element={
-              <ProtectedRoute
-                element={<AgentsCreatrionUsers />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agent-gptstore"
-            element={
-              <ProtectedRoute
-                element={<GPTStore />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/userhistory"
-            element={
-              <ProtectedRoute
-                element={<UserHistoryAdmin />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agents-bmv-coins-updated"
-            element={
-              <ProtectedRoute
-                element={<AgentsBmvCoinsUpdated />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/authorizedusers"
-            element={
-              <ProtectedRoute
-                element={<AgentManagement />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
-          <Route
-            path="/admin/agents-registered-users"
-            element={
-              <ProtectedRoute
-                element={<GeminiUsers />}
-                loginPath="/admin/agentslogin"
-              />
-            }
-          />
+          {agentsAdminRoutes.map(({ path, element, loginPath }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute element={element} loginPath={loginPath} />
+              }
+            />
+          ))}
           {/* Task Management */}
-          <Route
-            path="/taskmanagement/taskcreation"
-            element={
-              <ProtectedRoute
-                element={<TaskCreation />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagementbydate"
-            element={
-              <ProtectedRoute
-                element={<TaskManagementByDate />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/tasklists"
-            element={
-              <ProtectedRoute
-                element={<AdminTasks />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/admininstructions"
-            element={
-              <ProtectedRoute
-                element={<AdminInstructions />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/chatview/:id"
-            element={
-              <ProtectedRoute
-                element={<RadhaInstructionView />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/planoftheday"
-            element={
-              <ProtectedRoute
-                element={<PlanOfTheDay />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/endoftheday"
-            element={
-              <ProtectedRoute
-                element={<EndOfTheDay />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/user-task-details/:userId"
-            element={
-              <ProtectedRoute
-                element={<UserTaskDetailsPage />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/employeeleaves"
-            element={
-              <ProtectedRoute
-                element={<LeaveManagement />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/teamattendance"
-            element={
-              <ProtectedRoute
-                element={<TeamAttendanceReport />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/employee_registered_users"
-            element={
-              <ProtectedRoute
-                element={<EmployeeRegisteredUsers />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
-          <Route
-            path="/taskmanagement/dashboard"
-            element={
-              <ProtectedRoute
-                element={<Dashboard />}
-                loginPath="/admin/taskmanagementlogin"
-              />
-            }
-          />
+          {taskManagementRoutes.map(({ path, element, loginPath }) => (
+            <Route
+              key={path}
+              path={path}
+              element={
+                <ProtectedRoute element={element} loginPath={loginPath} />
+              }
+            />
+          ))}
           {/* Legacy/Other (protected) */}
           <Route
             path="/dashboard"
@@ -684,10 +476,16 @@ function App() {
             path="/admin/bulkinvites"
             element={<ProtectedRoute element={<BulkInviteCampaign />} />}
           />
+
           <Route
             path="/admin/categories"
             element={<ProtectedRoute element={<Categories />} />}
           />
+          <Route
+            path="/admin/pincodesdata"
+            element={<ProtectedRoute element={<PincodesData />} />}
+          />
+         
           <Route
             path="/admin/initiatedamountlist"
             element={<ProtectedRoute element={<InitiatedAmountList />} />}

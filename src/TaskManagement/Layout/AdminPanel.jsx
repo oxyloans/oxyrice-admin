@@ -6,13 +6,11 @@ import { useNavigate } from "react-router-dom";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
-import { useMediaQuery } from "react-responsive";
 import { Link } from "react-router-dom";
-import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
+import { MdLogout } from "react-icons/md";
 import { FaExchangeAlt, FaWhatsapp } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
-import { FaFileAlt, FaTasks } from "react-icons/fa";
-import {  FaClipboardList } from "react-icons/fa";
+import { FaClipboardList } from "react-icons/fa";
 import {
   FaTachometerAlt,
   FaUsers,
@@ -21,7 +19,6 @@ import {
   FaHandsHelping,
 } from "react-icons/fa";
 // import { Link } from "react-router-dom";
-import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -29,9 +26,9 @@ const { useBreakpoint } = Grid;
 const TaskAdminPanelLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
-  const screens = useBreakpoint();
   const [isMobile, setIsMobile] = useState(false);
-const entryPoint = localStorage.getItem("entryPoint") || "direct";
+  const screens = useBreakpoint();
+  const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -134,7 +131,7 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 200 : 240}
+        width={screens.xs ? 220 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
@@ -323,6 +320,41 @@ const entryPoint = localStorage.getItem("entryPoint") || "direct";
           Task Management Admin ©2025 Created by ASKOXY.AI Company
         </Footer>
       </Layout>
+      {/* Sidebar menu colors */}
+      <style>{`
+        .ant-menu-dark,
+        .ant-menu-dark .ant-menu-sub,
+        .ant-layout-sider .ant-menu {
+          background: #1a202c;
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item,
+        .ant-layout-sider .ant-menu-submenu-title {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item a,
+        .ant-layout-sider .ant-menu-submenu-title span {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover,
+        .ant-layout-sider .ant-menu-item-active,
+        .ant-layout-sider .ant-menu-submenu-title:hover,
+        .ant-layout-sider .ant-menu-submenu-open,
+        .ant-layout-sider .ant-menu-item-selected {
+          background-color: #2d3748 !important;
+          color: #ffffff !important;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover a,
+        .ant-layout-sider .ant-menu-item-active a,
+        .ant-layout-sider .ant-menu-item-selected a,
+        .ant-layout-sider .ant-menu-submenu-title:hover span {
+          color: #ffffff !important;
+        }
+      `}</style>
     </Layout>
   );
 };

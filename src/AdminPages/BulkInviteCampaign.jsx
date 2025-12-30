@@ -7,7 +7,7 @@ import {
   Button,
   Card,
   Row,
-    Col,
+  Col,
   Modal,
   message as AntMessage,
 } from "antd";
@@ -24,8 +24,8 @@ const BulkInviteCampaign = () => {
 
   const [inviteType, setInviteType] = useState("non sample");
   const [loading, setLoading] = useState(false);
-const [previewVisible, setPreviewVisible] = useState(false);
-const [previewData, setPreviewData] = useState({});
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewData, setPreviewData] = useState({});
 
   const handleInviteTypeChange = (value) => {
     setInviteType(value);
@@ -38,73 +38,92 @@ const [previewData, setPreviewData] = useState({});
     }
   };
 
-const onFinish = (values) => {
-  // Prepare preview data before sending
-  const fileName =
-    inviteType === "non sample"
-      ? values.multiPart?.[0]?.name || "No file selected"
-      : "No file (Sample Invite)";
+  const onFinish = (values) => {
+    // Prepare preview data before sending
+    const fileName =
+      inviteType === "non sample"
+        ? values.multiPart?.[0]?.name || "No file selected"
+        : "No file (Sample Invite)";
 
-  setPreviewData({
-    inviteType,
-    sampleEmail: values.sampleEmail || "",
-    mailSubject: values.mailSubject,
-    mailDispalyName: values.mailDispalyName,
-    message: values.message,
-    fileName,
-  });
+    setPreviewData({
+      inviteType,
+      sampleEmail: values.sampleEmail || "",
+      mailSubject: values.mailSubject,
+      mailDispalyName: values.mailDispalyName,
+      message: values.message,
 
-  setPreviewVisible(true); // open preview modal
-    };
-    const submitFinal = async () => {
-      setPreviewVisible(false);
-      setLoading(true);
+      fileName,
+    });
 
-      try {
-        const values = form.getFieldsValue();
-        const formData = new FormData();
+    setPreviewVisible(true); // open preview modal
+  };
+  const submitFinal = async () => {
+    setPreviewVisible(false);
+    setLoading(true);
 
-        if (inviteType === "non sample") {
-          const fileObj = values.multiPart?.[0]?.originFileObj;
-          formData.append("multiPart", fileObj);
-        } else {
-          const emptyFile = new Blob([], { type: "application/octet-stream" });
-          formData.append("multiPart", emptyFile, "");
-        }
+    try {
+      const values = form.getFieldsValue();
+      const userId = localStorage.getItem("userId");
 
-        formData.append("inviteType", inviteType);
-        formData.append("mailSubject", values.mailSubject);
-        formData.append("mailDispalyName", values.mailDispalyName);
-        formData.append("message", values.message);
-
-        const sampleEmailToSend =
-          inviteType === "sample" ? values.sampleEmail || "" : "";
-        formData.append("sampleEmail", sampleEmailToSend);
-
-        formData.append("userType", "");
-
-        const url = `${BASE_URL}/user-service/excelInvite`;
-
-        await axios.post(url, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            accept: "*/*",
-          },
-        });
-
-        AntMessage.success("Bulk invite triggered successfully.");
-        form.resetFields();
-        setInviteType("non sample");
-      } catch (error) {
-        AntMessage.error(
-          error?.response?.data?.message ||
-            "Something went wrong while sending the bulk invite."
-        );
-      } finally {
-        setLoading(false);
+      if (!userId) {
+        AntMessage.error("User ID not found. Please login again.");
+        return;
       }
-    };
 
+      const formData = new FormData();
+
+      if (inviteType === "non sample") {
+        const fileObj = values.multiPart?.[0]?.originFileObj;
+        if (!fileObj) {
+          AntMessage.error("Please select an Excel file to upload.");
+          return;
+        }
+        formData.append("multiPart", fileObj);
+      } else {
+        const emptyFile = new Blob([], { type: "application/octet-stream" });
+        formData.append("multiPart", emptyFile, "");
+      }
+
+      // Validate required fields
+      if (!values.mailSubject || !values.mailDispalyName || !values.message) {
+        AntMessage.error("Please fill in all required fields.");
+        return;
+      }
+
+      formData.append("inviteType", inviteType);
+      formData.append("mailSubject", values.mailSubject);
+      formData.append("mailDispalyName", values.mailDispalyName);
+      formData.append("message", values.message);
+
+      const sampleEmailToSend =
+        inviteType === "sample" ? values.sampleEmail || "" : "";
+      formData.append("sampleEmail", sampleEmailToSend);
+
+      formData.append("userId", userId);
+
+      const url = `${BASE_URL}/user-service/excelInvite`;
+
+      await axios.post(url, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          accept: "*/*",
+        },
+      });
+
+      AntMessage.success("Bulk invite triggered successfully.");
+      form.resetFields();
+      setInviteType("non sample");
+    } catch (error) {
+      console.error("Bulk invite error:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong while sending the bulk invite.";
+      AntMessage.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const normFile = (e) => {
     if (Array.isArray(e)) {

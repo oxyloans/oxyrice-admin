@@ -115,7 +115,7 @@ const WithdrawalRequests = () => {
               okText="Yes"
               cancelText="No"
             >
-              <Button type="primary" size="small">
+              <Button type="primary" style={{backgroundColor:"#008cba" ,border:"#008cba",color:"f7f7f7"}} size="small">
                 Approve
               </Button>
             </Popconfirm>

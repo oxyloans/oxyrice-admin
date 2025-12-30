@@ -17,6 +17,7 @@ import {
   FileAddOutlined,
   UnorderedListOutlined,
   TeamOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -26,7 +27,7 @@ const CompaniesLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
-  const [isMobile, setIsMobile] = useState(false);
+  const [, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
@@ -81,6 +82,13 @@ const CompaniesLayout = ({ children }) => {
       link: "/admin/news-papers",
       style: { fontSize: "16px", fontWeight: 500 },
     },
+    {
+      key: "StudentSalesData",
+      label: "Student Sales Data",
+      icon: <UserOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/studentsalesdata",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
   ];
 
   const toggleCollapse = () => {
@@ -105,7 +113,7 @@ const CompaniesLayout = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 200 : 240}
+        width={screens.xs ? 220 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
@@ -331,6 +339,40 @@ const CompaniesLayout = ({ children }) => {
         .ant-layout-sider {
           scrollbar-width: thin;
           scrollbar-color: #4a5568 #1a202c;
+        }
+
+        /* Menu hover + active colors to keep text visible */
+        .ant-menu-dark,
+        .ant-menu-dark .ant-menu-sub,
+        .ant-layout-sider .ant-menu {
+          background: #1a202c;
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item,
+        .ant-layout-sider .ant-menu-submenu-title {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item a,
+        .ant-layout-sider .ant-menu-submenu-title span {
+          color: #e2e8f0;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover,
+        .ant-layout-sider .ant-menu-item-active,
+        .ant-layout-sider .ant-menu-submenu-title:hover,
+        .ant-layout-sider .ant-menu-submenu-open,
+        .ant-layout-sider .ant-menu-item-selected {
+          background-color: #2d3748 !important;
+          color: #ffffff !important;
+        }
+
+        .ant-layout-sider .ant-menu-item:hover a,
+        .ant-layout-sider .ant-menu-item-active a,
+        .ant-layout-sider .ant-menu-item-selected a,
+        .ant-layout-sider .ant-menu-submenu-title:hover span {
+          color: #ffffff !important;
         }
       `}</style>
     </Layout>
