@@ -13,7 +13,7 @@ const AgentsList = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-const [pageSize, setPageSize] = useState(25);
+const [pageSize, setPageSize] = useState(50);
 
 
   // Fetch agents by status
@@ -34,14 +34,14 @@ const [pageSize, setPageSize] = useState(25);
       // ✅ Sort data based on status
       if (statusValue === "REQUESTED") {
         result.sort((a, b) => {
-          const dateA = new Date(a.createdAt || 0);
-          const dateB = new Date(b.createdAt || 0);
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt );
           return dateB - dateA; // Descending (latest first)
         });
       } else {
         result.sort((a, b) => {
-          const dateA = new Date(a.approvedAt || 0);
-          const dateB = new Date(b.approvedAt || 0);
+          const dateA = new Date(a.approvedAt );
+          const dateB = new Date(b.approvedAt );
           return dateB - dateA; // Descending (latest first)
         });
       }
@@ -81,7 +81,7 @@ const [pageSize, setPageSize] = useState(25);
 
   // Date formatting helper
   const formatDate = (value) => {
-    if (!value) return "N/A";
+    if (!value) return;
     try {
       const timestamp = Number(value);
       const date = isNaN(timestamp)
@@ -94,9 +94,7 @@ const [pageSize, setPageSize] = useState(25);
         year: "numeric",
         month: "short",
         day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
+      
         timeZone: "Asia/Kolkata",
       });
     } catch {
@@ -164,16 +162,11 @@ const [pageSize, setPageSize] = useState(25);
             overflow: "hidden",
           }}
         >
-          {text || "N/A"}
+          {text}
         </div>
       ),
     },
-    {
-      title: "Agent Status",
-      dataIndex: "agentStatus",
-      key: "agentStatus",
-      align: "center",
-    },
+   
     {
       title: "Free Trials",
       dataIndex: "freeTrails",
@@ -225,7 +218,7 @@ const [pageSize, setPageSize] = useState(25);
                 }}
                 style={{ width: 120 }}
               >
-                {[20, 25, 30, 40, 50, 100].map((num) => (
+                {[50, 60, 70, 80, 90, 100].map((num) => (
                   <Option key={num} value={num}>
                     {num}
                   </Option>

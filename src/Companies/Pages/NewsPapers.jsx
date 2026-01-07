@@ -29,7 +29,7 @@ const NewsPapers = () => {
   const [search, setSearch] = useState("");
 
   // ✅ table pagination states (antd is 1-based)
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 20 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize:50 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -87,7 +87,7 @@ const NewsPapers = () => {
       title: "S.No.",
       key: "serial",
       align: "center",
-      width: 90,
+     
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
@@ -96,14 +96,14 @@ const NewsPapers = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
-      render: (val) => val || "N/A",
+    
     },
     {
       title: "News Paper Image",
       dataIndex: "image",
       key: "image",
       align: "center",
-      width: 110,
+    
       render: (url) => (
         <div style={{ textAlign: "center" }}>
           <Image width={100} src={url} alt="news paper" />
@@ -162,7 +162,7 @@ const NewsPapers = () => {
                 }
                 style={{ width: 120 }}
               >
-                {[20, 30, 40, 50, 100].map((num) => (
+                {[50, 70, 80, 90, 100].map((num) => (
                   <Option key={num} value={num}>
                     {num}
                   </Option>
@@ -171,17 +171,11 @@ const NewsPapers = () => {
               <span>entries</span>
             </div>
           </Col>
-
-         
         </Row>
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Spin size="large" tip="Loading..." />
-          </div>
-        ) : total === 0 ? (
-          <div className="max-w-7xl mx-auto">
-            <Empty description="No postings found." />
+            <Spin size="medium" tip="Loading NewsPapaer JobsPosting..." />
           </div>
         ) : (
           <Table

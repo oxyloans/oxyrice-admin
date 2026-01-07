@@ -50,7 +50,6 @@ const AgentStoreManager = () => {
   const [tablePage, setTablePage] = useState(1);
   const [tablePageSize, setTablePageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  
 
   const [searchText, setSearchText] = useState("");
 
@@ -308,12 +307,14 @@ const AgentStoreManager = () => {
             storeName: values.storeName,
             description: values.description,
             storeCreatedBy: "ADMIN",
+            userId: userId,
             storeImageUrl: values.storeImageUrl, // ← added for update as well
           }
         : {
             storeName: values.storeName,
             description: values.description,
             storeCreatedBy: "ADMIN",
+            userId: userId,
             storeImageUrl: values.storeImageUrl, // ← from upload API
           };
 
@@ -568,12 +569,14 @@ const AgentStoreManager = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small" style={{ width: "90%" }}>
           <Button
+            size="small"
             icon={<EditOutlined />}
             style={{
               background: "#1ab394",
               color: "#fff",
               border: "none",
               width: "100%",
+              height: "30px",
             }}
             onClick={() => {
               setIsEditMode(true);
@@ -591,11 +594,13 @@ const AgentStoreManager = () => {
 
           <Button
             icon={<UsergroupAddOutlined />}
+            size="small"
             style={{
               background: "#008cba",
               color: "#fff",
               border: "none",
               width: "100%",
+              height: "30px",
             }}
             onClick={() => {
               setSelectedStore(record);
@@ -606,6 +611,7 @@ const AgentStoreManager = () => {
             Add Agents
           </Button>
           <Button
+                size="small"
             onClick={() =>
               toggleStoreStatus(
                 record.storeId,
@@ -623,6 +629,8 @@ const AgentStoreManager = () => {
               color: "#fff",
               fontWeight: 600,
               letterSpacing: 0.5,
+              width: "100%",
+              height: "30px",
             }}
           >
             {record.aiStoreStatus === "ACTIVE" ? "Active" : "Inactive"}

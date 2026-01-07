@@ -485,7 +485,7 @@ function App() {
             path="/admin/pincodesdata"
             element={<ProtectedRoute element={<PincodesData />} />}
           />
-         
+
           <Route
             path="/admin/initiatedamountlist"
             element={<ProtectedRoute element={<InitiatedAmountList />} />}

@@ -10,7 +10,11 @@ import { FaStore } from "react-icons/fa";
 import {
   DashboardOutlined,
   FileTextOutlined,
-  FileDoneOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  ShopOutlined,
+  TeamOutlined,
+  
 } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -44,96 +48,82 @@ const AgentsAdminLayout = ({ children }) => {
     {
       key: "agents-dashboard",
       label: "Agents Dashboard",
-      icon: <DashboardOutlined style={{ fontSize: "20px" }} />,
+      icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
       link: "/admin/assistantslist",
-      style: { fontSize: "20px" }, // Custom font size for label
+      style: { fontSize: "16px", fontWeight: 500 },
     },
     {
       key: "agent-status",
       label: "Agents Status List",
-      icon: <FileTextOutlined style={{ fontSize: "20px" }} />,
+      icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
       link: "/admin/agentsstatuslist",
-      style: { fontSize: "20px" },
+      style: { fontSize: "16px", fontWeight: 500 },
     },
     {
       key: "agent-plans",
       label: "Agent Plans",
-      icon: <FileDoneOutlined style={{ fontSize: "20px" }} />,
+      icon: <SettingOutlined style={{ fontSize: "18px" }} />,
       link: "/admin/agentsplanslist",
-      style: { fontSize: "20px" },
+      style: { fontSize: "16px", fontWeight: 500 },
     },
 
     {
       key: "Store Management",
       label: "Store Management",
-      icon: <FaStore style={{ fontSize: "20px" }} />,
-
-      style: { fontSize: "20px" },
+      icon: <ShopOutlined style={{ fontSize: "18px" }} />,
+      style: { fontSize: "16px", fontWeight: 500 },
       dropdownItems: [
         {
           key: "ai-store",
           label: "Agents AI Store",
-
           link: "/admin/agents-aistore",
-          style: { fontSize: "20px" },
         },
         {
           key: "gpt-store",
-          label: "Agents Gpt Store",
-
+          label: "Agents GPT Store",
           link: "/admin/agent-gptstore",
-          style: { fontSize: "20px" },
         },
       ],
     },
     {
       key: "agent-users",
       label: "Agents Users & Coins",
-      icon: <UserOutlined style={{ fontSize: "20px" }} />,
-
-      style: { fontSize: "20px" },
+      icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+      style: { fontSize: "16px", fontWeight: 500 },
       dropdownItems: [
         {
           key: "Agents Registered Users",
           label: "Agents Registered Users",
           link: "/admin/agentsregisteredusers",
-          style: { fontSize: "20px" },
         },
         {
           key: "Agents Creation Users",
           label: "Agents Creation Users",
           link: "/admin/agents-creation-users",
-          style: { fontSize: "20px" },
         },
         {
           key: "Agent Bmv Coins Updated",
-          label: "Agent Bmv Coins Updated",
+          label: "Agent BMV Coins Updated",
           link: "/admin/agents-bmv-coins-updated",
-          style: { fontSize: "20px" },
         },
       ],
     },
-   
+
     {
       key: "Conversations & Chats",
       label: "Conversations & Chats",
-      icon: <MessageOutlined style={{ fontSize: "20px" }} />,
-
-      style: { fontSize: "20px" },
+      icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+      style: { fontSize: "16px", fontWeight: 500 },
       dropdownItems: [
         {
           key: "agent-user-history",
           label: "User Chat History",
-
           link: "/admin/userhistory",
-          style: { fontSize: "20px" },
         },
         {
           key: "agent-conversations",
           label: "Agent Conversations",
-
           link: "/admin/conversationlist",
-          style: { fontSize: "20px" },
         },
       ],
     },
@@ -337,7 +327,7 @@ const AgentsAdminLayout = ({ children }) => {
               ? "80px 16px 16px"
               : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
             padding: screens.xs ? 12 : 24,
-          
+
             width: screens.xs
               ? "100%"
               : `calc(100% - ${collapsed ? "80px" : "240px"})`,

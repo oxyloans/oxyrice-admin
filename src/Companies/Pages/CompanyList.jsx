@@ -53,9 +53,9 @@ const CompanyList = () => {
   });
 
   const formatDate = (timestamp) => {
-    if (!timestamp) return "N/A";
+    if (!timestamp) return;
     const date = new Date(timestamp);
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+    return date.toLocaleDateString();
   };
 
   const fetchCompanies = async (page = 0, size = 10) => {
@@ -348,6 +348,11 @@ const CompanyList = () => {
           <Button
             icon={<EditOutlined />}
             size="small"
+            style={{
+              backgroundColor: "#008cba",
+              color: "white",
+              border: "none",
+            }}
             onClick={() => openModal(record)}
           >
             {" "}
@@ -356,10 +361,16 @@ const CompanyList = () => {
           <Button
             icon={<PlusOutlined />}
             size="small"
+            style={{
+              backgroundColor: "#1ab394",
+              color: "white",
+              border: "none",
+              marginTop: 2,
+            }}
             onClick={() =>
               navigate("/admin/jobsmanage", { state: { company: record } })
             }
-            style={{ marginTop: 2 }}
+           
           >
             Add Jobs
           </Button>

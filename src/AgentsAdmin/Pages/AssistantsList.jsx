@@ -39,19 +39,16 @@ const AssistantsList = () => {
   // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 30,
+    pageSize: 50,
     total: 0,
   });
   const [cursorAfter, setCursorAfter] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [lastId, setLastId] = useState(null);
   const searchTimeoutRef = useRef(null);
-
-  // Forms / Modals
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
-
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("APPROVED");
   const [authorizedByOptions, setAuthorizedByOptions] = useState([]);
@@ -144,15 +141,52 @@ const AssistantsList = () => {
       );
 
       // THIS LINE FIXES THE REFRESH ISSUE
-      await fetchAssistants({ 
-        limit: pagination.pageSize, 
+      await fetchAssistants({
+        limit: pagination.pageSize,
         replace: true,
         searchValue: searchTerm,
-        status: statusFilter
+        status: statusFilter,
       });
     } catch (err) {
       console.error(err);
       message.error("Failed to update visibility");
+    }
+  };
+
+  // ---------- Delete Agent ----------
+  const handleDeleteAgent = async (record) => {
+    if (!record?.assistantId) {
+      message.error("Missing assistantId");
+      return;
+    }
+
+    try {
+      const url = `${BASE_URL}/ai-service/agent/delete/${encodeURIComponent(
+        record.assistantId
+      )}`;
+
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "*/*",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete agent");
+
+      message.success("Agent deleted successfully");
+
+      // Refresh the list after deletion
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter,
+      });
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete agent");
     }
   };
 
@@ -162,22 +196,22 @@ const AssistantsList = () => {
     after = null,
     replace = false,
     searchValue = "",
-    status = "ALL"
+    status = "ALL",
   }) => {
     try {
       setLoading(true);
       let url = `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${encodeURIComponent(
         String(limit)
       )}`;
-      
+
       if (after) {
         url += `&after=${encodeURIComponent(after)}`;
       }
-      
+
       if (status !== "ALL") {
         url += `&status=${encodeURIComponent(status)}`;
       }
-      
+
       if (searchValue) {
         url += `&search=${encodeURIComponent(searchValue)}`;
       }
@@ -188,7 +222,7 @@ const AssistantsList = () => {
       if (!res.ok) throw new Error("Failed to fetch assistants");
 
       const json = await res.json();
-      console.log('API Response:', json); // Debug log
+      console.log("API Response:", json); // Debug log
       const fetched = await Promise.all(
         ((json && json.data) || []).map(async (item) => {
           if (item.userId) {
@@ -199,21 +233,37 @@ const AssistantsList = () => {
         })
       );
 
-      console.log('Processed data:', fetched); // Debug log
+      console.log("Processed data:", fetched); // Debug log
       setHasMore(!!(json && json.hasMore));
-      setLastId(fetched.length > 0 ? fetched[fetched.length - 1].assistantId : null);
+      setLastId(
+        fetched.length > 0 ? fetched[fetched.length - 1].assistantId : null
+      );
 
       if (replace) {
         setData(fetched);
-        setFilteredData(fetched);
+        // Don't apply additional filters if we have search results (they're already filtered by API)
+        if (isSearching) {
+          setFilteredData(fetched);
+        } else {
+          // Apply status filter to the new data (only for non-search requests)
+          let filtered = fetched;
+          if (status !== "ALL") {
+            filtered = filtered.filter(
+              (item) => item.status?.toUpperCase() === status
+            );
+          }
+          setFilteredData(filtered);
+        }
       } else {
-        setData(prev => [...prev, ...fetched]);
-        setFilteredData(prev => [...prev, ...fetched]);
+        setData((prev) => [...prev, ...fetched]);
+        setFilteredData((prev) => [...prev, ...fetched]);
       }
 
       setPagination((prev) => ({
         ...prev,
-        total: json.total || (replace ? fetched.length : prev.total + fetched.length),
+        total:
+          json.total ||
+          (replace ? fetched.length : prev.total + fetched.length),
       }));
     } catch (err) {
       console.error(err);
@@ -228,10 +278,11 @@ const AssistantsList = () => {
     setFilteredData([]);
     setLastId(null);
     setHasMore(false);
-    fetchAssistants({ 
-      limit: pagination.pageSize, 
+    setPagination((prev) => ({ ...prev, current: 1 })); // Reset to first page
+    fetchAssistants({
+      limit: pagination.pageSize,
       replace: true,
-      status: statusFilter 
+      status: statusFilter,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
@@ -260,9 +311,9 @@ const AssistantsList = () => {
         after: lastId,
         replace: true,
         searchValue: searchTerm,
-        status: statusFilter
+        status: statusFilter,
       });
-      setPagination(prev => ({ ...prev, current: prev.current + 1 }));
+      setPagination((prev) => ({ ...prev, current: prev.current + 1 }));
     }
   };
 
@@ -272,20 +323,19 @@ const AssistantsList = () => {
       setFilteredData([]);
       setLastId(null);
       setHasMore(false);
-      setPagination(prev => ({ ...prev, current: prev.current - 1 }));
+      setPagination((prev) => ({ ...prev, current: prev.current - 1 }));
       await fetchAssistants({
         limit: pagination.pageSize,
         replace: true,
         searchValue: searchTerm,
-        status: statusFilter
+        status: statusFilter,
       });
     }
   };
 
-
-
   const fetchSearch = async (searchValue) => {
     try {
+      setIsSearching(true);
       setLoading(true);
       const res = await fetch(
         `${BASE_URL}/ai-service/agent/webSearchForAgent?message=${encodeURIComponent(searchValue)}`,
@@ -314,34 +364,40 @@ const AssistantsList = () => {
       setPagination((prev) => ({
         ...prev,
         total: filteredResults.length,
+        current: 1, // Reset to first page for search results
       }));
+
+      console.log("Search results loaded:", filteredResults.length, "items");
     } catch (error) {
-      console.error(error);
+      console.error("Search error:", error);
       message.error("Failed to load search results");
     } finally {
       setLoading(false);
+      setIsSearching(false);
     }
   };
 
-const handleSearchChange = (e) => {
-  const value = e.target.value?.trim() || "";
-  setSearchTerm(value);
+  const handleSearchChange = (e) => {
+    const value = e.target.value?.trim() || "";
+    setSearchTerm(value);
 
-  if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
-  searchTimeoutRef.current = setTimeout(() => {
-    if (!value) {
-      setFilteredData(data);
-    } else {
-      const filtered = data.filter((item) =>
-        (item.name || "").toLowerCase().includes(value.toLowerCase()) ||
-        (item.creatorName || "").toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredData(filtered);
-    }
-  }, 300);
-};
-
+    searchTimeoutRef.current = setTimeout(() => {
+      if (!value) {
+        // If no search term, fetch all data again (respecting current status filter)
+        setIsSearching(false);
+        fetchAssistants({
+          limit: pagination.pageSize,
+          replace: true,
+          status: statusFilter,
+        });
+      } else {
+        // Hit API with search term
+        fetchSearch(value);
+      }
+    }, 500); // Increased timeout for API call
+  };
 
   // ---------- Status Update ----------
   const openStatusModal = (assistant) => {
@@ -389,23 +445,12 @@ const handleSearchChange = (e) => {
       const responseText = await response.text();
 
       // Always refresh the list first
-      await fetchAssistants({ 
-        limit: pagination.pageSize, 
+      await fetchAssistants({
+        limit: pagination.pageSize,
         replace: true,
         searchValue: searchTerm,
-        status: statusFilter
+        status: statusFilter,
       });
-
-      // if (response.ok || response.status === 500) {
-      //   // Even if 500, 99% chance it worked (your case)
-      //   message.success("Status updated successfully!");
-      // } else {
-      //   // Real failure (rare)
-      //   message.error(
-      //     `Failed: ${response.status} ${responseText || "Unknown error"}`
-      //   );
-      //   return;
-      // }
 
       if (!response.ok) throw new Error("Failed to update status");
       if (values.status === "APPROVED") {
@@ -428,18 +473,15 @@ const handleSearchChange = (e) => {
       setLastId(null);
       setData([]);
       setFilteredData([]);
-      if (isSearching) {
-        await fetchSearch({
-          limit: pagination.pageSize,
-          message: searchTerm,
-          replace: true,
-        });
-      } else {
-        await fetchAssistants({ limit: pagination.pageSize, replace: true });
-      }
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter,
+      });
     } catch (err) {
       console.error(err);
-      // 👉 This prevents validation errors from showing your generic error
+     
       if (err.errorFields) return;
       message.error(err.message || "Error updating assistant status");
     } finally {
@@ -539,16 +581,19 @@ const handleSearchChange = (e) => {
     console.log("Business Card ID:", businessCardId);
     if (businessCardId) {
       axios
-        .get(`${BASE_URL}/ai-service/agent/getBusinessCardById/${businessCardId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        })
+        .get(
+          `${BASE_URL}/ai-service/agent/getBusinessCardById/${businessCardId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
         .then((response) => {
           console.log("Business Card Details", response.data);
           setBusinessCardData(response.data.data);
-          setShowBusinessCardModal(true)
+          setShowBusinessCardModal(true);
         })
         .catch((error) => {
           console.log("Error fetching business card details", error);
@@ -627,44 +672,45 @@ const handleSearchChange = (e) => {
             </div> */}
 
             <div
-  onClick={
-    record.interactionMode === "BusinessCard"
-      ? () => ViewBusinessCardFunc(record?.businessCardId)
-      : undefined
-  }
-  style={{
-    cursor:
-      record.interactionMode === "BusinessCard" ? "pointer" : "default",
-    padding:
-      record.interactionMode === "BusinessCard" ? "6px 10px" : "0",
-    borderRadius: "6px",
-    background:
-      record.interactionMode === "BusinessCard"
-        ? "#e6f7ff"
-        : "transparent",
-    border:
-      record.interactionMode === "BusinessCard"
-        ? "1px dashed #1890ff"
-        : "none",
-    display: "inline-block",
-    marginTop:
-      record.interactionMode === "BusinessCard" ? "5px" : "0",
-  }}
->
-  <b>Interaction Mode:</b>{" "}
-  {record.interactionMode ? (
-    record.interactionMode === "BusinessCard" ? (
-      <span style={{ color: "#1890ff", fontWeight: 600 }}>
-        {renderInteractionTag(record.interactionMode)} (View Card)
-      </span>
-    ) : (
-      renderInteractionTag(record.interactionMode)
-    )
-  ) : (
-    "-"
-  )}
-</div>
-
+              onClick={
+                record.interactionMode === "BusinessCard"
+                  ? () => ViewBusinessCardFunc(record?.businessCardId)
+                  : undefined
+              }
+              style={{
+                cursor:
+                  record.interactionMode === "BusinessCard"
+                    ? "pointer"
+                    : "default",
+                padding:
+                  record.interactionMode === "BusinessCard" ? "6px 10px" : "0",
+                borderRadius: "6px",
+                background:
+                  record.interactionMode === "BusinessCard"
+                    ? "#e6f7ff"
+                    : "transparent",
+                border:
+                  record.interactionMode === "BusinessCard"
+                    ? "1px dashed #1890ff"
+                    : "none",
+                display: "inline-block",
+                marginTop:
+                  record.interactionMode === "BusinessCard" ? "5px" : "0",
+              }}
+            >
+              <b>Interaction Mode:</b>{" "}
+              {record.interactionMode ? (
+                record.interactionMode === "BusinessCard" ? (
+                  <span style={{ color: "#1890ff", fontWeight: 600 }}>
+                    {renderInteractionTag(record.interactionMode)} (View Card)
+                  </span>
+                ) : (
+                  renderInteractionTag(record.interactionMode)
+                )
+              ) : (
+                "-"
+              )}
+            </div>
           </div>
         ),
       },
@@ -754,90 +800,115 @@ const handleSearchChange = (e) => {
       //   align: "center",
       //   render: (view) => renderInteractionTag(view),
       // },
-      // {
-      //   title: "Status",
-      // dataIndex: "status",
-      // key: "status",
-      // align: "center",
-      // render: (status) => renderStatusTag(status),
-      // },
+      {
+        title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => renderStatusTag(status),
+      },
 
       {
         title: "Actions",
         key: "actions",
         align: "center",
 
-      render: (_, record) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      gap: "8px"
-    }}
-  >
-    {/* Status */}
-    <div>
-      {renderStatusTag(record.status)}
-    </div>
-    
-    {/* Preview Button */}
-    <Button
-      type="primary"
-      size="small"
-      onClick={() => {
-        setSelectedAssistant(record);
-        setPreviewVisible(true);
-      }}
-      style={{
-        backgroundColor: "#008cba",
-        borderColor: "#008cba",
-        height: "32px",
-        width: "100px",
-        fontWeight: 500,
-      }}
-    >
-      Preview
-    </Button>
+        render: (_, record) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            {/* Status */}
+            {/* <div>{renderStatusTag(record.status)}</div> */}
 
-    {/* Hide / Show Switch */}
-    <Tooltip
-      title={
-        record.hideAgent
-          ? "This agent is currently HIDDEN in Bharat AI Store"
-          : "This agent is VISIBLE in Bharat AI Store"
-      }
-    >
-      <Button
-        size="small"
-        style={{
-          backgroundColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
-          borderColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
-          color: "white",
-          height: "32px",
-          width: "100px",
-          fontWeight: 500,
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          Modal.confirm({
-            title: record.hideAgent ? "Show Agent?" : "Hide Agent?",
-            content: record.hideAgent
-              ? "This agent will be VISIBLE in Bharat AI Store."
-              : "This agent will be HIDDEN from Bharat AI Store.",
-            okText: "Yes",
-            cancelText: "No",
-            onOk: () => handleToggleHideAgent(record, !record.hideAgent),
-          });
-        }}
-      >
-        {record.hideAgent ? "Hidden" : "Visible"}
-      </Button>
-    </Tooltip>
-  </div>
-),
+            {/* Preview Button */}
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => {
+                setSelectedAssistant(record);
+                setPreviewVisible(true);
+              }}
+              style={{
+                backgroundColor: "#008cba",
+                borderColor: "#008cba",
+                height: "32px",
+                width: "100px",
+                fontWeight: 500,
+              }}
+            >
+              Preview
+            </Button>
 
+            {/* Hide / Show Switch */}
+            <Tooltip
+              title={
+                record.hideAgent
+                  ? "This agent is currently HIDDEN in Bharat AI Store"
+                  : "This agent is VISIBLE in Bharat AI Store"
+              }
+            >
+              <Button
+                size="small"
+                style={{
+                  backgroundColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
+                  borderColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
+                  color: "white",
+                  height: "32px",
+                  width: "100px",
+                  fontWeight: 500,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  Modal.confirm({
+                    title: record.hideAgent ? "Show Agent?" : "Hide Agent?",
+                    content: record.hideAgent
+                      ? "This agent will be VISIBLE in Bharat AI Store."
+                      : "This agent will be HIDDEN from Bharat AI Store.",
+                    okText: "Yes",
+                    cancelText: "No",
+                    onOk: () =>
+                      handleToggleHideAgent(record, !record.hideAgent),
+                  });
+                }}
+              >
+                {record.hideAgent ? "Hidden" : "Visible"}
+              </Button>
+            </Tooltip>
+
+            {/* Delete Button */}
+            <Tooltip title="Permanently delete this agent">
+              <Button
+                size="small"
+                danger
+                style={{
+                  height: "32px",
+                  width: "100px",
+                  fontWeight: 500,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  Modal.confirm({
+                    title: "Delete Agent?",
+                    content:
+                      "This action cannot be undone. The agent will be permanently deleted.",
+                    okText: "Delete",
+                    okType: "danger",
+                    cancelText: "Cancel",
+                    onOk: () => handleDeleteAgent(record),
+                  });
+                }}
+              >
+                Delete
+              </Button>
+            </Tooltip>
+          </div>
+        ),
       },
     ],
     [pagination.current, pagination.pageSize]
@@ -846,11 +917,16 @@ const handleSearchChange = (e) => {
   // ---------- Render ----------
   return (
     <AgentsAdminLayout>
-      <Card
-        className="shadow-md rounded-lg"
-      >
+      <Card>
         {/* Title and Search Row */}
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #d9d9d9' }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{
+            marginBottom: 16,
+            paddingBottom: 16,
+          }}
+        >
           <Col>
             <h1 style={{ margin: 0, fontSize: "24px", fontWeight: 600 }}>
               Agents Creation List
@@ -868,64 +944,69 @@ const handleSearchChange = (e) => {
         </Row>
 
         {/* Items per page and Pagination Row */}
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
           <Col>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span style={{ fontWeight: 500 }}>Items per page:</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <span>Show</span>
               <Select
                 value={pagination.pageSize}
                 onChange={(value) => {
-                  setPagination(prev => ({ ...prev, pageSize: value, current: 1 }));
-                  fetchAssistants({ 
-                    limit: value, 
+                  setPagination((prev) => ({
+                    ...prev,
+                    pageSize: value,
+                    current: 1,
+                  }));
+                  fetchAssistants({
+                    limit: value,
                     replace: true,
                     searchValue: searchTerm,
-                    status: statusFilter
+                    status: statusFilter,
                   });
                 }}
                 style={{ width: 80 }}
               >
-                <Option value={30}>30</Option>
                 <Option value={50}>50</Option>
+                <Option value={80}>80</Option>
                 <Option value={100}>100</Option>
               </Select>
+              <span>entries</span>
             </div>
           </Col>
           <Col>
-            <div style={{ 
-              padding: '12px 16px', 
-              background: '#fafafa', 
-              borderRadius: '6px',
-              border: '1px solid #d9d9d9'
-            }}>
+            <div
+              style={{
+                padding: "12px 16px",
+              }}
+            >
               <Button.Group>
-                <Button 
+                <Button
                   disabled={pagination.current === 1}
                   onClick={handlePrevPage}
                 >
                   Previous
                 </Button>
-                <Button disabled>
-                  Page {pagination.current}
-                </Button>
-                <Button 
+                <Button disabled>Page {pagination.current}</Button>
+                <Button
                   disabled={!hasMore || filteredData.length === 0}
                   onClick={handleNextPage}
                 >
                   Next
                 </Button>
               </Button.Group>
-              <span style={{ marginLeft: 16 }}>
-                {filteredData.length === 0 ? "No data found" : `Showing ${filteredData.length} items`}
-              </span>
             </div>
           </Col>
         </Row>
 
-        <Tabs
+        {/* <Tabs
           activeKey={statusFilter}
           onChange={(key) => {
             setStatusFilter(key);
+            setSearchTerm(""); // Clear search when changing tabs
+            setIsSearching(false); // Reset search state
             setPagination((p) => ({ ...p, current: 1 }));
           }}
           style={{ marginBottom: 16 }}
@@ -934,16 +1015,16 @@ const handleSearchChange = (e) => {
             { key: "REQUESTED", label: "REQUESTED" },
             { key: "APPROVED", label: "APPROVED" },
           ]}
-        />
+        /> */}
 
         <Table
           rowKey={(r) => r.agentId || r.assistantId}
           loading={loading}
           columns={columns}
-          dataSource={filteredData.filter(item => item.agentId !== null && item.agentId !== undefined)}
+          dataSource={filteredData}
           pagination={false}
           bordered
-          scroll={{ x: true, y: '500px' }}
+          scroll={{ x: true, y: "500px" }}
         />
 
         {/* Preview Modal */}
@@ -1383,8 +1464,12 @@ const handleSearchChange = (e) => {
           open={showBusinessCardModal}
           onCancel={() => setShowBusinessCardModal(false)}
           footer={[
-            <Button key="cancel" onClick={() => setShowBusinessCardModal(false)}>Ok</Button>,
-            
+            <Button
+              key="cancel"
+              onClick={() => setShowBusinessCardModal(false)}
+            >
+              Ok
+            </Button>,
           ]}
           width={600}
         >

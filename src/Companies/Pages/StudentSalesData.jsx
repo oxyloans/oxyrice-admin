@@ -31,7 +31,7 @@ const StudentSalesData = () => {
   const [search, setSearch] = useState("");
 
   // pagination (antd is 1-based)
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,7 +42,6 @@ const StudentSalesData = () => {
         const res = await axios.get(API_URL, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            accept: "*/*",
           },
         });
 
@@ -88,7 +87,7 @@ const StudentSalesData = () => {
       title: "S.No.",
       key: "serial",
       align: "center",
-     
+
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
@@ -106,7 +105,7 @@ const StudentSalesData = () => {
       dataIndex: "image",
       key: "image",
       align: "center",
-    
+
       render: (image) =>
         image ? (
           <Image
@@ -142,7 +141,7 @@ const StudentSalesData = () => {
       dataIndex: "date",
       key: "date",
       align: "center",
-     
+
       render: (date) => (date ? dayjs(date).format("YYYY-MM-DD HH:mm") : "N/A"),
       sorter: (a, b) =>
         new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime(),
@@ -182,7 +181,7 @@ const StudentSalesData = () => {
                   }
                   style={{ width: 120 }}
                 >
-                  {[10, 20, 30, 50].map((num) => (
+                  {[50, 70, 80, 100].map((num) => (
                     <Option key={num} value={num}>
                       {num}
                     </Option>
@@ -220,30 +219,29 @@ const StudentSalesData = () => {
               padding: "60px 0",
             }}
           >
-            <Spin size="large" tip="Loading student sales data..." />
+            <Spin size="medium" tip="Loading student sales data..." />
           </div>
         ) : (
           <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-            <Card>
-              <Table
-                columns={columns}
-                dataSource={filteredRows}
-                rowKey={(record, idx) => record?.name + idx || idx}
-                pagination={{
-                  current: pagination.current,
-                  pageSize: pagination.pageSize,
-                  total,
-                  showSizeChanger: false, // Select controls it
-                  showQuickJumper: true,
-                  showTotal: (t, range) =>
-                    `${range[0]}-${range[1]} of ${t} records`,
-                  onChange: (page) =>
-                    setPagination((p) => ({ ...p, current: page })),
-                }}
-                scroll={{ x: true }} // responsive table
-                bordered
-              />
-            </Card>
+            <Table
+              columns={columns}
+              dataSource={filteredRows}
+              rowKey={(record, idx) => record?.name + idx || idx}
+              pagination={{
+                current: pagination.current,
+                pageSize: pagination.pageSize,
+                total,
+                showSizeChanger: false, // Select controls it
+                showQuickJumper: true,
+                showTotal: (t, range) =>
+                  `${range[0]}-${range[1]} of ${t} records`,
+                onChange: (page) =>
+                  setPagination((p) => ({ ...p, current: page })),
+              }}
+              scroll={{ x: true }} // responsive table
+              bordered
+              className="max-w-7xl mx-auto"
+            />
           </div>
         )}
       </div>

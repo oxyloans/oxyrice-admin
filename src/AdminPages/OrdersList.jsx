@@ -71,21 +71,9 @@ const Ordersdetails = () => {
     setOrderStatus(value);
   };
 
-  // Separate function to apply all filters (status, search) on the data
-  const applyFilters = (data, status, search) => {
+  // Separate function to apply only search filter (status is already filtered by API)
+  const applyFilters = (data, search) => {
     let filtered = [...data];
-
-    // Apply status filter if not "All"
-    if (status !== "All") {
-      filtered = filtered.filter(
-        (order) =>
-          // Handle both string and number status comparison
-          order.orderStatus === status ||
-          order.orderStatus === parseInt(status) ||
-          // Handle special case for "PickedUp"
-          (status === "PickedUp" && order.orderStatus === "PickedUp")
-      );
-    }
 
     // Apply search filter if there's a search term
     if (search && search.trim() !== "") {
@@ -147,8 +135,8 @@ const Ordersdetails = () => {
     const value = e.target.value.toLowerCase().trim();
     setSearchTerm(value);
 
-    // Apply all filters when search changes
-    setFilteredItems(applyFilters(orderData, orderStatus, value));
+    // Apply search filter when search changes
+    setFilteredItems(applyFilters(orderData, value));
   };
 
   // Handle "View" button click
@@ -321,8 +309,6 @@ const Ordersdetails = () => {
     const startDate = fromDate.format("YYYY-MM-DD");
     const endDate = toDate.format("YYYY-MM-DD");
 
-    // IMPORTANT CHANGE: We'll always fetch data without status filter
-    // and then apply status filtering client-side for more flexibility
     try {
       setLoading(true);
       const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
@@ -344,8 +330,8 @@ const Ordersdetails = () => {
         // Store all orders in orderData
         setOrderData(orders);
 
-        // Apply filters to get updated filtered items
-        const filtered = applyFilters(orders, orderStatus, searchTerm);
+        // Apply search filter to get updated filtered items (status already filtered by API)
+        const filtered = applyFilters(orders, searchTerm);
         setFilteredItems(filtered);
 
         message.success("Data fetched successfully");
@@ -412,7 +398,7 @@ const Ordersdetails = () => {
       title: "S.NO",
       key: "serialNo",
       render: (text, record, index) =>
-        index + 1 + (currentPage - 1) * entriesPerPage,
+        (currentPage - 1) * entriesPerPage + index + 1,
       align: "center",
       responsive: ["md"],
     },
@@ -592,7 +578,7 @@ const Ordersdetails = () => {
             >
               <Button
                 className="text-white w-full sm:w-auto"
-                style={{ backgroundColor: "#1AB394",color: "white" }}
+                style={{ backgroundColor: "#1AB394", color: "white" }}
                 onClick={fetchOrderDetails}
                 loading={loading}
               >
@@ -600,7 +586,7 @@ const Ordersdetails = () => {
               </Button>
               <Button
                 className="text-white w-full sm:w-auto flex items-center justify-center gap-2"
-                style={{ backgroundColor: "#1c84c6",color: "white" }}
+                style={{ backgroundColor: "#1c84c6", color: "white" }}
                 onClick={() => handleDownloadExcel(filteredItems)} // Use filteredItems for download
               >
                 <AiOutlineDownload className="text-lg" />
@@ -648,8 +634,15 @@ const Ordersdetails = () => {
           bordered
           scroll={{ x: "100%" }}
           pagination={{
+            current: currentPage,
             pageSize: entriesPerPage,
-            onChange: (page) => setCurrentPage(page),
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+            },
+            showSizeChanger: false,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
           }}
         />
 

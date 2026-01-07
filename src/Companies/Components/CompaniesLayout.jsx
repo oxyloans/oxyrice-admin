@@ -7,18 +7,16 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   FileTextOutlined,
-} from "@ant-design/icons";
-
-import { Link } from "react-router-dom";
-import { MdLogout } from "react-icons/md";
-
-import {
-  ApartmentOutlined,
+  BankOutlined,
   FileAddOutlined,
   UnorderedListOutlined,
   TeamOutlined,
   UserOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
+
+import { Link } from "react-router-dom";
+import { MdLogout } from "react-icons/md";
 
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
@@ -48,46 +46,58 @@ const CompaniesLayout = ({ children }) => {
   }, [screens]);
   const sidebarItems = [
     {
-      key: "CompanyManagement",
-      label: "Manage Companies",
-      icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/companylist",
+      key: "Company Management",
+      label: "Company Management",
+      icon: <BankOutlined style={{ fontSize: "18px" }} />,
       style: { fontSize: "16px", fontWeight: 500 },
+      dropdownItems: [
+        {
+          key: "ManageCompanies",
+          label: "Manage Companies",
+          link: "/admin/companylist",
+        },
+      ],
     },
     {
-      key: "JobManagement",
-      label: "Post Job",
-      icon: <FileAddOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/jobsmanage",
+      key: "Job Management",
+      label: "Job Management",
+      icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
       style: { fontSize: "16px", fontWeight: 500 },
+      dropdownItems: [
+        {
+          key: "PostJob",
+          label: "Post Job",
+          link: "/admin/jobsmanage",
+        },
+        {
+          key: "JobsList",
+          label: "Jobs List",
+          link: "/admin/getalljobs",
+        },
+        {
+          key: "WeAreHiring",
+          label: "We Are Hiring",
+          link: "/admin/wearehiring",
+        },
+      ],
     },
     {
-      key: "JobList",
-      label: "Jobs List",
-      icon: <UnorderedListOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/getalljobs",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "WeAreHiring",
-      label: "We Are Hiring",
-      icon: <TeamOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/wearehiring",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "News Papers",
-      label: "News Papers",
+      key: "Content Management",
+      label: "Content Management",
       icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/news-papers",
       style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "StudentSalesData",
-      label: "Student Sales Data",
-      icon: <UserOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/studentsalesdata",
-      style: { fontSize: "16px", fontWeight: 500 },
+      dropdownItems: [
+        {
+          key: "NewsPapers",
+          label: "News Papers",
+          link: "/admin/news-papers",
+        },
+        {
+          key: "StudentSalesData",
+          label: "Student Sales Data",
+          link: "/admin/studentsalesdata",
+        },
+      ],
     },
   ];
 

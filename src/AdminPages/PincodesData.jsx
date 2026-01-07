@@ -33,7 +33,7 @@ const PincodesData = () => {
   const [search, setSearch] = useState("");
 
   // pagination (antd is 1-based)
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 5 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
   // Modal and Form states
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -354,7 +354,7 @@ const PincodesData = () => {
                   }
                   style={{ width: 120 }}
                 >
-                  {[5, 10, 15, 20, 25].map((num) => (
+                  {[10, 20, 30, 40, 50].map((num) => (
                     <Option key={num} value={num}>
                       {num}
                     </Option>
