@@ -10,6 +10,9 @@ import EntryPointTracker from "./routes/EntryPointTracker";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PincodesData from "./AdminPages/PincodesData";
 import StudentSalesData from "./Companies/Pages/StudentSalesData";
+import CampaignForm from "./AdminPages/CampaignForm";
+import EmployeeDailyPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
+import Email from "./AdminPages/Emailcampaign";
 
 // Authentication Components
 // (Legacy auth components imported elsewhere if needed)
@@ -255,6 +258,10 @@ const taskManagementRoutes = [
     element: <TaskManagementByDate />,
   },
   {
+    path: "/employeeplanofday",
+    element: <EmployeeDailyPlans />,
+  },
+  {
     path: "/taskmanagement/tasklists",
     element: <AdminTasks />,
   },
@@ -465,6 +472,10 @@ function App() {
             element={<ProtectedRoute element={<AllReferralsData />} />}
           />
           <Route
+            path="/admin/emailcampaign"
+            element={<ProtectedRoute element={<CampaignForm />} />}
+          />
+          <Route
             path="/admin/nbfcdatalist"
             element={<ProtectedRoute element={<NBFCDataList />} />}
           />
@@ -573,6 +584,10 @@ function App() {
           <Route
             path="/admin/sellers-items/:sellerId"
             element={<ProtectedRoute element={<SellerItems />} />}
+          />
+          <Route
+            path="/emailcampaignexcel"
+            element={ <Email /> }
           />
           <Route
             path="/admin/sellers"

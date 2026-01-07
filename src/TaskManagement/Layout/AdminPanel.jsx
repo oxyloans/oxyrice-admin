@@ -60,6 +60,13 @@ const TaskAdminPanelLayout = ({ children }) => {
       link: "/taskmanagement/tasklists",
     },
     {
+      key: "Employee Daily Plans",
+
+      label: " Employee Daily Plans",
+      icon: <FaClipboardList />,
+      link: "/employeeplanofday",
+    },
+    {
       key: "Radha Instructions",
 
       label: "Radha Instructions",

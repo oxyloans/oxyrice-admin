@@ -94,6 +94,11 @@ const AdminPanelLayoutTest = ({ children }) => {
           label: "Bulk Invites",
           link: "/admin/bulkinvites",
         },
+        {
+          key: "Email Campaign",
+          label: "Email Campaign",
+          link:"/admin/emailcampaign"
+        }
       ],
     },
     {
