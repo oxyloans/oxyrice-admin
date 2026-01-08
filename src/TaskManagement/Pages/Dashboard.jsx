@@ -227,7 +227,7 @@ export default function Dashboard() {
     <TaskAdminPanelLayout>
       <div className="p-2 sm:p-4 md:p-6 max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className="bg-white rounded-lg shadow-sm p-2 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className=" p-2 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
               Employee Admin Dashboard
@@ -240,7 +240,7 @@ export default function Dashboard() {
           <button
             onClick={refreshAllData}
             disabled={isRefreshing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-all duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[#008cba] text-white rounded-lg hover:bg-[#0077a0] flex items-center gap-2 transition-all duration-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
             aria-label={
               isRefreshing ? "Refreshing dashboard" : "Refresh dashboard"
             }
@@ -259,7 +259,7 @@ export default function Dashboard() {
             onClick={() =>
               navigate("/taskmanagement/employee_registered_users")
             }
-            className="group bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-600 hover:shadow-md transition-all duration-300 cursor-pointer"
+            className="group bg-white p-6 rounded-lg shadow-sm border-l-4 border-[#008cba] hover:shadow-md transition-all duration-300 cursor-pointer"
             role="button"
             tabIndex={0}
             onKeyDown={(e) =>
@@ -278,11 +278,11 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="bg-blue-50 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                <UserCheck className="w-8 h-8 text-blue-600" />
+                <UserCheck className="w-8 h-8 text-[#008cba]" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm text-gray-600">
-              <TrendingUp className="w-4 h-4 text-blue-500 mr-1" />
+              <TrendingUp className="w-4 h-4 text-[#008cba] mr-1" />
               <span>View all users</span>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function Dashboard() {
           {/* POD Completion */}
           <div
             onClick={() => navigate("/taskmanagement/planoftheday")}
-            className="group bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-600 hover:shadow-md transition-all duration-300 cursor-pointer"
+            className="group bg-white p-6 rounded-lg shadow-sm border-l-4 border-[#1ab394] hover:shadow-md transition-all duration-300 cursor-pointer"
             role="button"
             tabIndex={0}
             onKeyDown={(e) =>
@@ -338,7 +338,7 @@ export default function Dashboard() {
                 </p>
               </div>
               <div className="bg-green-50 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                <Calendar className="w-8 h-8 text-green-600" />
+                <Calendar className="w-8 h-8 text-[#1ab394]" />
               </div>
             </div>
             <div className="mt-3">
@@ -350,7 +350,7 @@ export default function Dashboard() {
               </div>
               <div className="bg-gray-200 h-2 rounded-full overflow-hidden">
                 <div
-                  className="bg-green-600 h-full rounded-full transition-all duration-500"
+                  className="bg-[#1ab394] h-full rounded-full transition-all duration-500"
                   style={{ width: `${podPercentage}%` }}
                 ></div>
               </div>
@@ -401,10 +401,10 @@ export default function Dashboard() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* POD vs EOD Bar Chart */}
-          <div className="lg:col-span-3 bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="lg:col-span-3 bg-white rounded-sm overflow-hidden">
             <div className="border-b border-gray-200 p-6">
               <h3 className="font-semibold text-gray-900 text-lg flex items-center">
-                <BarChartIcon className="w-5 h-5 text-blue-600 mr-2" />
+                <BarChartIcon className="w-5 h-5 text-[#008cba] mr-2" />
                 POD vs EOD Completion Overview
               </h3>
             </div>
@@ -422,13 +422,13 @@ export default function Dashboard() {
                     dataKey="completed"
                     name="Completed"
                     stackId="a"
-                    fill="#10b981"
+                    fill="#1ab394d4"
                   />
                   <Bar
                     dataKey="remaining"
                     name="Remaining"
                     stackId="a"
-                    fill="#ef4444"
+                    fill="#ef4444d4"
                   />
                 </RechartsBarChart>
               </ResponsiveContainer>

@@ -207,7 +207,7 @@ const TeamAttendanceReport = () => {
             />
             <Button
               icon={<FileExcelOutlined />}
-              type="primary"
+              style={{ backgroundColor: "#008cba", borderColor: "#008cba",color: "#fff"  }}
               onClick={exportToExcel}
             >
               Download Excel

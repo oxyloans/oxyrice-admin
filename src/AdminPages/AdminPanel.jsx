@@ -16,7 +16,7 @@ import {
   FaGasPump,
   FaBoxOpen,
   FaShoppingCart,
-  FaMapMarkerAlt,
+  
 } from "react-icons/fa";
 import { AppstoreOutlined } from "@ant-design/icons";
 
@@ -39,6 +39,217 @@ const AdminPanelLayoutTest = ({ children }) => {
       setCollapsed(false); // Expand on medium and larger screens
     }
   }, [screens]);
+  // const sidebarItems = [
+  //   {
+  //     key: "dashboard",
+  //     label: "Dashboard",
+  //     icon: <FaTachometerAlt />,
+  //     link: "/admin/dashboard",
+  //   },
+
+  //   {
+  //     key: "Fuel Expenses",
+  //     label: "Fuel Expenses",
+  //     icon: <FaGasPump />,
+  //     link: "/admin/fuel-expenses",
+  //   },
+  //   // {
+  //   //   key: "PinCodes Data",
+  //   //   label: "PinCodes Data",
+  //   //   icon: <FaMapMarkerAlt />,
+  //   //   link: "/admin/pincodesdata",
+  //   // },
+
+  //   // {
+  //   //   key: "allreferrals",
+  //   //   label: "All Referrals",
+  //   //   icon: <FaExchangeAlt />,
+  //   //   link: "/admin/all-referrals",
+  //   // },
+  //   {
+  //     key: "allitemsofferLists",
+  //     label: "Items Offer Lists",
+  //     icon: <FaSlideshare />,
+  //     link: "/admin/items-offerlists",
+  //   },
+  //   {
+  //     key: "Category inventory",
+  //     label: "Category Inventory",
+  //     icon: <MdInventory />,
+  //     link: "/admin/category-inventory",
+  //   },
+
+  //   {
+  //     key: "Campaign Inventory",
+  //     label: "Campaign Inventory",
+  //     icon: <FaBoxes />,
+  //     dropdownItems: [
+  //       {
+  //         key: "Campaign Upload",
+  //         label: "Campaign Upload",
+  //         link: "/admin/campaign-inventory",
+  //       },
+  //       {
+  //         key: "Bulk Invites",
+  //         label: "Bulk Invites",
+  //         link: "/admin/bulkinvites",
+  //       },
+  //       {
+  //         key: "Email Campaign",
+  //         label: "Email Campaign",
+  //         link:"/admin/emailcampaign"
+  //       }
+  //     ],
+  //   },
+  //   {
+  //     key: "StudyAbroad Dashboard",
+  //     label: "StudyAbroad Admin",
+  //     icon: <FaUserGraduate />,
+  //     dropdownItems: [
+  //       {
+  //         key: "Student Applications",
+  //         label: "Student Applications",
+  //         link: "/admin/studentapplications",
+  //       },
+  //       {
+  //         key: "Student Registrations",
+  //         label: "Student Registrations",
+  //         link: "/admin/student-registrations",
+  //       },
+  //     ],
+  //   },
+  //   // {
+  //   //   key: "Update User Details",
+  //   //   label: "Update User Details",
+  //   //   icon: <FaUserCircle />,
+  //   //   link: "/admin/category-inventory",
+  //   // },
+
+  //   {
+  //     key: "Customer Wallet",
+  //     label: "Customer Wallet",
+  //     icon: <WalletOutlined />,
+  //     dropdownItems: [
+  //       {
+  //         key: "Withdrawal User List",
+  //         label: "Withdrawal User List", // ✅ Correct
+  //         link: "/admin/withdrawaluserlist",
+  //       },
+  //       {
+  //         key: "Initiated Amounts",
+  //         label: "Initiated Amounts", // ✅ Correct
+  //         link: "/admin/initiatedamountlist",
+  //       },
+
+  //       {
+  //         key: "Approved Amounts", // 🔹 Fix spelling + plural consistency
+  //         label: "Approved Amounts",
+  //         link: "/admin/approvedamountlist",
+  //       },
+  //     ],
+  //   },
+
+  //   {
+  //     key: "categories",
+  //     label: "Categories",
+  //     icon: <BiSolidCategory />,
+  //     dropdownItems: [
+  //       {
+  //         key: "categoryList",
+  //         label: "Category List",
+  //         link: "/admin/categories",
+  //       },
+  //     ],
+  //   },
+
+  //   {
+  //     key: "subscriptionPlans",
+  //     label: "Subscription Plans",
+  //     icon: <MdSubscriptions />,
+  //     dropdownItems: [
+  //       {
+  //         key: "plansList",
+  //         label: "Subscription Plans List",
+  //         link: "/admin/subscription-plans-list",
+  //       },
+  //     ],
+  //   },
+
+  //   {
+  //     key: "items",
+  //     label: "Items",
+  //     icon: <FaBoxOpen />,
+  //     dropdownItems: [
+  //       { key: "listItems", label: "List Items", link: "/admin/items" },
+  //     ],
+  //   },
+
+  //   {
+  //     key: "coupons",
+  //     label: "Coupons",
+  //     icon: <BiSolidCoupon />,
+  //     dropdownItems: [
+  //       {
+  //         key: "couponsList",
+  //         label: "Coupons List",
+  //         link: "/admin/coupons",
+  //       },
+  //       {
+  //         key: "ordersByCoupon",
+  //         label: "OrdersByCoupon",
+  //         link: "/admin/ordersByCoupon",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     key: "orders & locations ",
+  //     label: "Orders & Locations",
+  //     icon: <FaShoppingCart />,
+  //     dropdownItems: [
+  //       {
+  //         key: "ordersList",
+  //         label: "Orders List",
+  //         link: "/admin/orders-details",
+  //       },
+  //       {
+  //         key: "Pincode-wise Orders",
+  //         label: "Pincode-wise Orders",
+
+  //         link: "/admin/pincodesdata",
+  //       },
+  //       {
+  //         key: "returnPendingList",
+  //         label: "Return Pending List",
+  //         link: "/admin/orders-pending",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     key: "Services",
+  //     label: "Services",
+  //     icon: <AppstoreOutlined />,
+  //     dropdownItems: [
+  //       {
+  //         key: "Category List",
+  //         label: "Category List",
+  //         link: "/admin/services",
+  //       },
+  //       {
+  //         key: "Items List",
+  //         label: "Items List",
+  //         link: "/admin/serviceslist",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     key: "Time Slots",
+  //     label: "Time Slots",
+  //     icon: <MdInventory />,
+  //     link: "/admin/timeslots",
+  //   },
+  // ];
+
+
   const sidebarItems = [
     {
       key: "dashboard",
@@ -48,101 +259,84 @@ const AdminPanelLayoutTest = ({ children }) => {
     },
 
     {
-      key: "Fuel Expenses",
+      key: "fuelExpenses",
       label: "Fuel Expenses",
       icon: <FaGasPump />,
       link: "/admin/fuel-expenses",
     },
-    // {
-    //   key: "PinCodes Data",
-    //   label: "PinCodes Data",
-    //   icon: <FaMapMarkerAlt />,
-    //   link: "/admin/pincodesdata",
-    // },
 
-    // {
-    //   key: "allreferrals",
-    //   label: "All Referrals",
-    //   icon: <FaExchangeAlt />,
-    //   link: "/admin/all-referrals",
-    // },
     {
-      key: "allitemsofferLists",
-      label: "Items Offer Lists",
+      key: "itemsOffers",
+      label: "Item Offer Lists",
       icon: <FaSlideshare />,
       link: "/admin/items-offerlists",
     },
+
     {
-      key: "Category inventory",
+      key: "categoryInventory",
       label: "Category Inventory",
       icon: <MdInventory />,
       link: "/admin/category-inventory",
     },
 
     {
-      key: "Campaign Inventory",
+      key: "campaignInventory",
       label: "Campaign Inventory",
       icon: <FaBoxes />,
       dropdownItems: [
         {
-          key: "Campaign Upload",
+          key: "campaignUpload",
           label: "Campaign Upload",
           link: "/admin/campaign-inventory",
         },
         {
-          key: "Bulk Invites",
+          key: "bulkInvites",
           label: "Bulk Invites",
           link: "/admin/bulkinvites",
         },
         {
-          key: "Email Campaign",
+          key: "emailCampaign",
           label: "Email Campaign",
-          link:"/admin/emailcampaign"
-        }
+          link: "/admin/emailcampaign",
+        },
       ],
     },
+
     {
-      key: "StudyAbroad Dashboard",
-      label: "StudyAbroad Admin",
+      key: "studyAbroadAdmin",
+      label: "Study Abroad Admin",
       icon: <FaUserGraduate />,
       dropdownItems: [
         {
-          key: "Student Applications",
+          key: "studentApplications",
           label: "Student Applications",
           link: "/admin/studentapplications",
         },
         {
-          key: "Student Registrations",
+          key: "studentRegistrations",
           label: "Student Registrations",
           link: "/admin/student-registrations",
         },
       ],
     },
-    // {
-    //   key: "Update User Details",
-    //   label: "Update User Details",
-    //   icon: <FaUserCircle />,
-    //   link: "/admin/category-inventory",
-    // },
 
     {
-      key: "Customer Wallet",
+      key: "customerWallet",
       label: "Customer Wallet",
       icon: <WalletOutlined />,
       dropdownItems: [
         {
-          key: "Withdrawal User List",
-          label: "Withdrawal User List", // ✅ Correct
+          key: "withdrawalUsers",
+          label: "Withdrawal Users",
           link: "/admin/withdrawaluserlist",
         },
         {
-          key: "Initiated Amounts",
-          label: "Initiated Amounts", // ✅ Correct
+          key: "initiatedAmounts",
+          label: "Initiated Amounts",
           link: "/admin/initiatedamountlist",
         },
-
         {
-          key: "Approved Amounts", // 🔹 Fix spelling + plural consistency
+          key: "approvedAmounts",
           label: "Approved Amounts",
           link: "/admin/approvedamountlist",
         },
@@ -168,7 +362,7 @@ const AdminPanelLayoutTest = ({ children }) => {
       icon: <MdSubscriptions />,
       dropdownItems: [
         {
-          key: "plansList",
+          key: "subscriptionPlansList",
           label: "Subscription Plans List",
           link: "/admin/subscription-plans-list",
         },
@@ -180,7 +374,11 @@ const AdminPanelLayoutTest = ({ children }) => {
       label: "Items",
       icon: <FaBoxOpen />,
       dropdownItems: [
-        { key: "listItems", label: "List Items", link: "/admin/items" },
+        {
+          key: "itemsList",
+          label: "Items List",
+          link: "/admin/items",
+        },
       ],
     },
 
@@ -196,13 +394,14 @@ const AdminPanelLayoutTest = ({ children }) => {
         },
         {
           key: "ordersByCoupon",
-          label: "OrdersByCoupon",
+          label: "Orders by Coupon",
           link: "/admin/ordersByCoupon",
         },
       ],
     },
+
     {
-      key: "orders & locations ",
+      key: "ordersAndLocations",
       label: "Orders & Locations",
       icon: <FaShoppingCart />,
       dropdownItems: [
@@ -212,37 +411,38 @@ const AdminPanelLayoutTest = ({ children }) => {
           link: "/admin/orders-details",
         },
         {
-          key: "Pincode-wise Orders",
+          key: "pincodeOrders",
           label: "Pincode-wise Orders",
-
           link: "/admin/pincodesdata",
         },
         {
-          key: "returnPendingList",
-          label: "Return Pending List",
+          key: "returnPending",
+          label: "Return Pending",
           link: "/admin/orders-pending",
         },
       ],
     },
+
     {
-      key: "Services",
+      key: "services",
       label: "Services",
       icon: <AppstoreOutlined />,
       dropdownItems: [
         {
-          key: "Category List",
-          label: "Category List",
+          key: "serviceCategories",
+          label: "Service Categories",
           link: "/admin/services",
         },
         {
-          key: "Items List",
-          label: "Items List",
+          key: "serviceItems",
+          label: "Service Items",
           link: "/admin/serviceslist",
         },
       ],
     },
+
     {
-      key: "Time Slots",
+      key: "timeSlots",
       label: "Time Slots",
       icon: <MdInventory />,
       link: "/admin/timeslots",

@@ -703,7 +703,7 @@ const PlanOfTheDay = () => {
         <Button
           icon={<ReloadOutlined />}
           size="small"
-          type="primary"
+        style={{backgroundColor: "#008CBA", color: "white"}}
           onClick={fetchTasksByDate}
           className="text-xs sm:text-sm" // Responsive button text
         >

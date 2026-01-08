@@ -362,7 +362,7 @@ const LeaveManagement = () => {
           pageSizeOptions: ["5", "10", "20"],
         }}
         className="mt-4 rounded-lg shadow-sm"
-        scroll={{ x: 1000 }}
+        scroll={{ x: true, y: 600 }}
         bordered
         rowClassName={(record, index) =>
           index % 2 === 0
@@ -408,7 +408,7 @@ const LeaveManagement = () => {
   return (
     <TaskAdminPanelLayout>
       <Card
-        className="shadow-md rounded-xl bg-white"
+        className="bg-white"
         title={
           <Row
             justify="space-between"
@@ -421,7 +421,7 @@ const LeaveManagement = () => {
                 level={4}
                 className="mb-0 text-lg sm:text-xl md:text-2xl text-gray-800 font-bold"
               >
-                <CalendarOutlined className="mr-2 text-blue-600" />
+   
                 Leave Management
               </Title>
             </Col>
@@ -434,8 +434,8 @@ const LeaveManagement = () => {
                   <Button
                     icon={<ReloadOutlined />}
                     onClick={handleRefresh}
-                    type="primary"
-                    className="w-full bg-[#008CBA] hover:bg-[#008CBA] transition-colors duration-200 rounded-lg"
+                  
+                    className="w-full bg-[#008CBA] hover:bg-[#008CBA] text-white transition-colors duration-200 rounded-lg"
                     aria-label="Refresh leave data"
                   >
                     Refresh
@@ -459,13 +459,13 @@ const LeaveManagement = () => {
               <span className="flex items-center">
                 <FileTextOutlined />
                 <span className="ml-1">All Leaves</span>
-                {getPendingCount() > 0 && (
+                {/* {getPendingCount() > 0 && (
                   <Badge
                     count={getPendingCount()}
                     offset={[10, -5]}
                     size="small"
                   />
-                )}
+                )} */}
               </span>
             }
             key="all"
@@ -477,13 +477,13 @@ const LeaveManagement = () => {
               <span className="flex items-center">
                 <CalendarOutlined />
                 <span className="ml-1">By Date</span>
-                {getPendingCount() > 0 && (
+                {/* {getPendingCount() > 0 && (
                   <Badge
                     count={getPendingCount()}
                     offset={[10, -5]}
                     size="small"
                   />
-                )}
+                )} */}
               </span>
             }
             key="byDate"

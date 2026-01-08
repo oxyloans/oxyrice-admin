@@ -8,10 +8,7 @@ import {
   MenuFoldOutlined,
   FileTextOutlined,
   BankOutlined,
-  FileAddOutlined,
-  UnorderedListOutlined,
-  TeamOutlined,
-  UserOutlined,
+ MessageOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
 
@@ -96,6 +93,19 @@ const CompaniesLayout = ({ children }) => {
           key: "StudentSalesData",
           label: "Student Sales Data",
           link: "/admin/studentsalesdata",
+        },
+      ],
+    },
+    {
+      key: "campaign-moderation",
+      label: "Campaign Moderation",
+      icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+      style: { fontSize: "16px", fontWeight: 500 },
+      dropdownItems: [
+        {
+          key: "campaign-comments",
+          label: "Comments & Likes",
+          link: "/admin/campaignwithcomments",
         },
       ],
     },

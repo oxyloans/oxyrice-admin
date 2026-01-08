@@ -558,7 +558,7 @@ const AdminTasks = () => {
     `}
   </style>
 
-  {/* Your Table or component here */}
+ 
 </>;
 
 
@@ -571,7 +571,7 @@ const AdminTasks = () => {
           justify="space-between"
           align="middle"
           gutter={[16, 16]}
-          style={{ marginBottom: 10 }}
+          style={{ marginBottom: 6 }}
         >
           <Col xs={24} sm={12} md={8}>
             <Text strong style={{ fontSize: 18 }}>
@@ -592,7 +592,7 @@ const AdminTasks = () => {
         </Row>
 
         {/* Status Filter */}
-        <Row justify="start" style={{ marginBottom: 20 }}>
+        <Row justify="start" style={{ marginBottom: 10 }}>
           <Col xs={24} sm={12} md={6}>
             <Select
               value={statusFilter}
@@ -626,7 +626,7 @@ const AdminTasks = () => {
             dataSource={filteredTasks}
             rowKey={(record, index) => record.id || index}
             bordered
-            scroll={{ x: true }}
+            scroll={{ x: true, y: 600 }}
             pagination={{
               ...pagination,
               pageSizeOptions: ["100", "200", "500", "1000"],

@@ -74,10 +74,11 @@ const CompanyList = () => {
       });
     } catch (error) {
       console.error("Error fetching companies:", error);
+      message.error(error.message);
     }
     setLoading(false);
   };
-  // ✅ Fetch companies for job dropdown
+  
   const fetchAllCompanies = async () => {
     try {
       const res = await axios.get(
@@ -85,7 +86,8 @@ const CompanyList = () => {
       );
       setAllCompanies(res.data || []);
     } catch (error) {
-      console.error("Error fetching company list:", error);
+
+      message.error(error.message );
     }
   };
   useEffect(() => {

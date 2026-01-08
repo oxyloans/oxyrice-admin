@@ -13,6 +13,7 @@ import StudentSalesData from "./Companies/Pages/StudentSalesData";
 import CampaignForm from "./AdminPages/CampaignForm";
 import EmployeeDailyPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
 import Email from "./AdminPages/Emailcampaign";
+import CampaignsWithComments from "./Companies/Pages/CampaignsWithComments";
 
 // Authentication Components
 // (Legacy auth components imported elsewhere if needed)
@@ -218,6 +219,11 @@ const companyAdminRoutes = [
   {
     path: "/admin/getalljobs",
     element: <GetAllJobs />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/campaignwithcomments",
+    element: <CampaignsWithComments />,
     loginPath: "/admin/comapanieslogin",
   },
 ];
