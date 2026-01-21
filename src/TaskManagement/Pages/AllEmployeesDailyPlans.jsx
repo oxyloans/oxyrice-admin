@@ -74,7 +74,7 @@ const AllEmployeesDailyPlans = () => {
         
       },
       {
-        title: "Daily Work Plan",
+        title: "Plan Of the Day",
         dataIndex: "plan",
         key: "plan",
         width: planWidth,
@@ -85,7 +85,7 @@ const AllEmployeesDailyPlans = () => {
         ),
       },
       {
-        title: "Daily Work Summary",
+        title: "End Of the Day",
         dataIndex: "end",
         key: "end",
         width: endWidth,
