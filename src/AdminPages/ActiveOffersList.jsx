@@ -36,7 +36,7 @@ const ActiveOffersList = () => {
   const [activeTab, setActiveTab] = useState("active");
   const [currentPage, setCurrentPage] = useState(1);
   const [comboPage, setComboPage] = useState(1);
-  const [comboPageSize, setComboPageSize] = useState(25);
+  const [comboPageSize, setComboPageSize] = useState(20);
   const [comboTotal, setComboTotal] = useState(0);
 
   const pageSize = 20;
@@ -190,7 +190,7 @@ const ActiveOffersList = () => {
       dataIndex: "freeItemId",
       key: "freeItemId",
       align: "center",
-      render: (id) => id?.slice(-4),
+      render: (id) => `#${id?.slice(-4)}`,
     },
     {
       title: "Free Item Name",
@@ -386,7 +386,7 @@ const ActiveOffersList = () => {
             dataSource={activeItems}
             rowKey={(item, index) => index}
             pagination={false}
-            scroll={{ x: true }}
+            scroll={{ x: "100%" }}
             size="small"
             bordered
           />
@@ -459,11 +459,14 @@ const ActiveOffersList = () => {
                 dataSource={filteredActive}
                 rowKey="id"
                 bordered
-                scroll={{ x: true }}
+                scroll={{ x: "100%" }}
                 pagination={{
                   current: currentPage,
-                  pageSize,
+                  pageSize: pageSize,
                   total: filteredActive.length,
+                  showSizeChanger: false, // ✅ because your Select is the page size changer
+                  showQuickJumper: true,
+                  showTotal: (total) => `Total ${total} offers`,
                   onChange: (page) => setCurrentPage(page),
                 }}
               />
@@ -487,7 +490,6 @@ const ActiveOffersList = () => {
                   value={comboSearchText}
                   onChange={(e) => handleComboSearch(e.target.value)}
                   allowClear
-                
                   style={{ width: 300 }}
                 />
               </Col>
@@ -505,15 +507,16 @@ const ActiveOffersList = () => {
                   rowKey="comboItemId"
                   bordered
                   pagination={false}
-                  scroll={{ x: true }}
+                  scroll={{ x: "100%" }}
                 />
                 <div style={{ marginTop: 16, textAlign: "right" }}>
                   <Pagination
                     current={comboPage}
                     pageSize={comboPageSize}
-                    total={comboTotal}
+                      total={comboTotal}
+                   
                     showSizeChanger
-                    pageSizeOptions={["25", "50", "75", "100"]}
+                    pageSizeOptions={["20", "50", "75", "100"]}
                     onChange={(page, size) => {
                       setComboPage(page);
                       setComboPageSize(size);

@@ -7,8 +7,10 @@ const CategoryInventory = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const accessToken = localStorage.getItem("accessToken");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // default 10
+ 
+  const accessToken = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +37,12 @@ const CategoryInventory = () => {
 
   const columns = [
     {
+      title: "S.No.",
+      key: "serial",
+      render: (_, __, index) => (currentPage - 1) * pageSize + (index + 1),
+      align: "center",
+    },
+    {
       title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
@@ -46,6 +54,20 @@ const CategoryInventory = () => {
       dataIndex: "description",
       key: "description",
       align: "center",
+      render: (text) => (
+        <div
+          style={{
+            textAlign: "center",
+            display: "-webkit-box",
+            maxWidth: 300,
+            WebkitBoxOrient: "vertical",
+            maxHeight: 120, // limit height
+            overflowX: "auto", // horizontal scroll
+          }}
+        >
+          {text}
+        </div>
+      ),
     },
     {
       title: "Unit",
@@ -106,6 +128,13 @@ const CategoryInventory = () => {
               <Table
                 columns={[
                   {
+                    title: "S.No.",
+                    key: "serial",
+                    render: (_, __, index) =>
+                      (currentPage - 1) * pageSize + (index + 1),
+                    align: "center",
+                  },
+                  {
                     title: "Category Name",
                     dataIndex: "catName",
                     key: "catName",
@@ -148,9 +177,17 @@ const CategoryInventory = () => {
                 columns={columns}
                 dataSource={category.itemInventoryResponseList}
                 rowKey="itemId"
-                pagination={{ pageSize: 5 }}
+                pagination={{
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: category.itemInventoryResponseList.length,
+                  showSizeChanger: false, // ✅ because your Select is the page size changer
+                  showQuickJumper: true,
+                  showTotal: (total) => `Total ${total} items`,
+                  onChange: (page) => setCurrentPage(page),
+                }}
                 bordered
-                scroll={{ x: true }}
+                scroll={{ x: "100%" }}
               />
             </div>
           ))

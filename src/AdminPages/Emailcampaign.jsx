@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
+import AdminPanelLayoutTest from "./AdminPanel";
 import BASE_URL from "./Config";
 import {
   Form,
@@ -30,8 +30,8 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
-const PRIMARY = "#1ab394";
-const SECONDARY = "#008cba";
+const PRIMARY = "#008cba";
+const SECONDARY = "#1ab394";
 const BORDER_COLOR = "#d9d9d9";
 
 export default function Email() {
@@ -42,14 +42,15 @@ export default function Email() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const invitationType = Form.useWatch("invitationType", form);
 
   const initialValues = useMemo(
     () => ({
-      invitationType: "",
+      // invitationType: "",
       perDaySendMails: "",
       lastProcessedRow: 0,
       mailSubject: "",
-      fromMail: "",
+      // fromMail: "",
       displayName: "",
       createdBy: "",
       sampleMessage: "",
@@ -57,7 +58,7 @@ export default function Email() {
       startDate: null,
       endDate: null,
     }),
-    []
+    [],
   );
 
   // ✅ Upload Excel
@@ -99,8 +100,7 @@ export default function Email() {
   };
 
   const buildPayload = (values) => {
-    return {
-      excelUrl: values.excelUrl,
+    const common = {
       sampleMessage: values.sampleMessage,
       displayName: values.displayName,
       createdBy: values.createdBy,
@@ -112,7 +112,21 @@ export default function Email() {
       endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
       invitationType: values.invitationType,
       mailSubject: values.mailSubject,
-      lastProcessedRow: values.lastProcessedRow || 0,
+      projectType: values.ProjectType,
+    };
+
+    if (values.invitationType === "sample") {
+      return {
+        ...common,
+        sampleEmail: values.sampleEmail,
+        // ❌ excelUrl not included
+      };
+    }
+
+    // bulk
+    return {
+      ...common,
+      excelUrl: values.excelUrl,
     };
   };
 
@@ -169,6 +183,11 @@ export default function Email() {
               <Descriptions.Item label={<strong>Display Name</strong>}>
                 {payload.displayName || "-"}
               </Descriptions.Item>
+              {payload.invitationType === "sample" && (
+                <Descriptions.Item label={<strong>Sample Email</strong>}>
+                  {payload.sampleEmail || "-"}
+                </Descriptions.Item>
+              )}
 
               <Descriptions.Item label={<strong>Created By</strong>}>
                 {payload.createdBy || "-"}
@@ -224,8 +243,8 @@ export default function Email() {
             const res = await fetch(`${BASE_URL}/user-service/create`, {
               method: "POST",
               headers: {
-                "Content-Type": "application/json", 
-                 Authorization: `Bearer ${localStorage.getItem("token")}`,
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
               body: JSON.stringify(payload),
             });
@@ -254,33 +273,31 @@ export default function Email() {
   };
 
   return (
-    
-      <div
-        style={{ maxWidth: "100%", padding: "12px 8px", minHeight: "100vh" }}
-      >
-        <Card bodyStyle={{ padding: "16px 20px" }}>
-          <Space direction="vertical" size={0} style={{ width: "100%" }}>
-            <Title level={2} style={{ color: PRIMARY, marginBottom: 4 }}>
-              Email Campaign Manager
-            </Title>
-            <Text type="secondary">
-              Create and manage email campaigns using Excel spreadsheets
-            </Text>
-          </Space>
-        </Card>
+    <div style={{ maxWidth: "100%", padding: "12px 8px", minHeight: "100vh" }}>
+      <Card bodyStyle={{ padding: "16px 20px" }}>
+        <Space direction="vertical" size={0} style={{ width: "100%" }}>
+          <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
+            Email Campaign Creation
+          </Title>
+          <Text type="secondary">
+            Create and manage email campaigns using Excel spreadsheets
+          </Text>
+        </Space>
+      </Card>
 
-        {/* Form Section */}
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={initialValues}
-          requiredMark="optional"
-        >
-          {/* File Upload Section */}
+      {/* Form Section */}
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={initialValues}
+        requiredMark="optional"
+      >
+        {/* File Upload Section */}
+        {invitationType !== "sample" && (
           <Card
             title={
               <span style={{ color: PRIMARY }}>
-                <strong>Step 1: Upload Email List</strong>
+                <strong>Upload Email List</strong>
               </span>
             }
             style={{ marginBottom: 20 }}
@@ -325,7 +342,12 @@ export default function Email() {
                 <Form.Item
                   label={<strong>Excel File URL (Auto-filled)</strong>}
                   name="excelUrl"
-                  rules={[{ required: true, message: "Excel URL is required" }]}
+                  rules={[
+                    {
+                      required: invitationType === "bulk",
+                      message: "Excel URL is required for BULK campaign",
+                    },
+                  ]}
                   extra="This field auto-populates after upload"
                 >
                   <Input
@@ -337,189 +359,142 @@ export default function Email() {
               </Col>
             </Row>
           </Card>
+        )}
+        <Card
+          title={
+            <span style={{ color: PRIMARY }}>
+              <strong>Campaign Settings</strong>
+            </span>
+          }
+          style={{ marginBottom: 20 }}
+          bodyStyle={{ padding: "16px 20px" }}
+        >
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Invitation Type</strong>}
+                name="invitationType"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select invitation type",
+                  },
+                ]}
+                extra="Choose SAMPLE to send to one email or BULK to send to all in Excel"
+              >
+                <Select
+                  placeholder="Select invitation type"
+                  size="large"
+                  options={[
+                    { label: "SAMPLE", value: "sample" },
+                    { label: "BULK", value: "bulk" },
+                  ]}
+                  onChange={(val) => {
+                    if (val !== "sample") {
+                      form.setFieldsValue({ sampleEmail: undefined });
+                    } else {
+                      // switching to sample
+                      form.setFieldsValue({ excelUrl: undefined });
+                      setUploadedFile(null);
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
 
-          {/* Email Configuration Section */}
-          <Card
-            title={
-              <span style={{ color: PRIMARY }}>
-                <strong> Step 2: Email Configuration</strong>
-              </span>
-            }
-            style={{ marginBottom: 20 }}
-            bodyStyle={{ padding: "16px 20px" }}
-          >
-            <Row gutter={[16, 16]}>
+            {invitationType === "sample" && (
               <Col xs={24} sm={24} md={12} lg={8}>
                 <Form.Item
-                  label={<strong>From Email Address</strong>}
-                  name="fromMail"
-                  rules={[{ required: true, message: "From mail is required" }]}
-                  extra="Select the sender email address"
-                >
-                  <Select
-                    placeholder="Select sender email"
-                    size="large"
-                    options={[
-                      {
-                        label: "admin@oxyloans.com",
-                        value: "admin@oxyloans.com",
-                      },
-                      {
-                        label: "radha@oxybricks.world",
-                        value: "radha@oxybricks.world",
-                      },
-                      { label: "anil@askoxy.ai", value: "anil@askoxy.ai" },
-                      { label: "team@askoxy.in", value: "team@askoxy.in" },
-                      {
-                        label: "support@askoxy.ai",
-                        value: "support@askoxy.ai",
-                      },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Display Name</strong>}
-                  name="displayName"
+                  label={<strong>Sample Email</strong>}
+                  name="sampleEmail"
                   rules={[
-                    { required: true, message: "Display name is required" },
-                    { min: 2, message: "Minimum 2 characters" },
-                    { max: 60, message: "Maximum 60 characters" },
+                    { required: true, message: "Please enter sample email" },
+                    {
+                      type: "email",
+                      message: "Please enter a valid email address",
+                    },
+                    {
+                      validator: (_, value) => {
+                        if (!value) return Promise.resolve();
+                        if (value.includes(" ")) {
+                          return Promise.reject(
+                            new Error("Email should not contain spaces"),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    },
                   ]}
-                  extra="Name shown in recipient's inbox"
+                  extra="This email will receive a test campaign message"
                 >
                   <Input
-                    placeholder="e.g., John Doe"
-                    size="large"
-                    maxLength={60}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Created By</strong>}
-                  name="createdBy"
-                  rules={[
-                    { required: true, message: "Created by is required" },
-                    { min: 2, message: "Minimum 2 characters" },
-                    { max: 60, message: "Maximum 60 characters" },
-                  ]}
-                  extra="Your name or admin username"
-                >
-                  <Input
-                    placeholder="e.g., admin"
-                    size="large"
-                    maxLength={60}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24}>
-                <Form.Item
-                  label={<strong>Email Subject Line</strong>}
-                  name="mailSubject"
-                  rules={[
-                    { required: true, message: "Mail subject is required" },
-                    { min: 3, message: "Minimum 3 characters" },
-                    { max: 120, message: "Maximum 120 characters" },
-                  ]}
-                  extra="Subject line recipients will see (3-120 characters)"
-                >
-                  <Input
-                    placeholder="Enter an engaging subject line"
+                    type="email"
+                    placeholder="e.g., test@gmail.com"
                     size="large"
                     maxLength={120}
                     showCount
+                    onBlur={(e) =>
+                      form.setFieldsValue({
+                        sampleEmail: e.target.value?.trim(),
+                      })
+                    }
                   />
                 </Form.Item>
               </Col>
+            )}
 
-              <Col xs={24}>
-                <Form.Item
-                  label={<strong>Sample Email Message</strong>}
-                  name="sampleMessage"
-                  rules={[
-                    { required: true, message: "Sample message is required" },
-                    { min: 10, message: "Minimum 10 characters" },
-                    { max: 5000, message: "Maximum 5000 characters" },
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Project Type</strong>}
+                name="ProjectType"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please select project type",
+                  },
+                ]}
+                extra="Type of campaign invitation"
+              >
+                <Select
+                  placeholder="Select project type"
+                  size="large"
+                  options={[
+                    { label: "oxybricks", value: "oxybricks" },
+                    { label: "oxyloans", value: "oxyloans" },
+                    { label: "askoxy", value: "askoxy" },
+                    { label: "erice", value: "erice" },
+                    { label: "studentx", value: "studentx" },
                   ]}
-                  extra="Email content that will be sent to all recipients (10-5000 characters)"
-                >
-                  <Input.TextArea
-                    rows={6}
-                    placeholder="Type your email message here..."
-                    maxLength={5000}
-                    showCount
-                    style={{ fontSize: 14 }}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+                />
+              </Form.Item>
+            </Col>
 
-          {/* Campaign Settings Section */}
-          <Card
-            title={
-              <span style={{ color: PRIMARY }}>
-                <strong>Step 3: Campaign Settings</strong>
-              </span>
-            }
-            style={{ marginBottom: 20 }}
-            bodyStyle={{ padding: "16px 20px" }}
-          >
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Invitation Type</strong>}
-                  name="invitationType"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select invitation type",
-                    },
-                  ]}
-                  extra="Type of campaign invitation"
-                >
-                  <Select
-                    placeholder="Select invitation type"
-                    size="large"
-                    options={[
-                      { label: "BMV Invitation", value: "bmv" },
-                      { label: "General Invitation", value: "null" },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Daily Email Limit</strong>}
+                name="perDaySendMails"
+                rules={[
+                  { required: true, message: "Daily limit is required" },
+                  { type: "number", min: 1, message: "Minimum 1 email" },
+                  {
+                    type: "number",
+                    max: 50000,
+                    message: "Maximum 50,000 emails",
+                  },
+                ]}
+                extra="Emails to send per day (1-50,000)"
+              >
+                <InputNumber
+                  placeholder="e.g., 100"
+                  style={{ width: "100%" }}
+                  size="large"
+                  min={1}
+                  max={50000}
+                />
+              </Form.Item>
+            </Col>
 
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Daily Email Limit</strong>}
-                  name="perDaySendMails"
-                  rules={[
-                    { required: true, message: "Daily limit is required" },
-                    { type: "number", min: 1, message: "Minimum 1 email" },
-                    {
-                      type: "number",
-                      max: 50000,
-                      message: "Maximum 50,000 emails",
-                    },
-                  ]}
-                  extra="Emails to send per day (1-50,000)"
-                >
-                  <InputNumber
-                    placeholder="e.g., 100"
-                    style={{ width: "100%" }}
-                    size="large"
-                    min={1}
-                    max={50000}
-                  />
-                </Form.Item>
-              </Col>
-
-              {/* <Col xs={24} sm={24} md={12} lg={8}>
+            {/* <Col xs={24} sm={24} md={12} lg={8}>
                 <Form.Item
                   label={<strong>Last Processed Row</strong>}
                   name="lastProcessedRow"
@@ -542,194 +517,309 @@ export default function Email() {
                 </Form.Item>
               </Col> */}
 
-              <Col xs={24} sm={12} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Campaign Start Date</strong>}
-                  name="startDate"
-                  rules={[
-                    { required: true, message: "Start date is required" },
-                  ]}
-                  extra="When to begin sending emails"
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    size="large"
-                    placeholder="Select start date"
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={12} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Campaign End Date</strong>}
-                  name="endDate"
-                  rules={[{ required: true, message: "End date is required" }]}
-                  extra="When to stop sending emails"
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    size="large"
-                    placeholder="Select end date"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
-
-          {/* Action Buttons */}
-          <Card
-            style={{ marginBottom: 24 }}
-            bodyStyle={{ padding: "16px 20px" }}
-          >
-            <Row justify="end" gutter={[12, 12]}>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  icon={<EyeOutlined />}
-                  onClick={openPreview}
-                  block
+            <Col xs={24} sm={12} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Campaign Start Date</strong>}
+                name="startDate"
+                rules={[{ required: true, message: "Start date is required" }]}
+                extra="When to begin sending emails"
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
                   size="large"
-                  style={{
-                    background: SECONDARY,
-                    borderColor: SECONDARY,
-                    color: "#fff",
-                  }}
-                >
-                  Preview
-                </Button>
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Button
-                  type="primary"
-                  onClick={submitWithConfirm}
-                  loading={submitting || confirming}
-                  block
-                  size="large"
-                  style={{
-                    background: PRIMARY,
-                    borderColor: PRIMARY,
-                  }}
-                >
-                  {submitting ? "Creating..." : "Create Campaign"}
-                </Button>
-              </Col>
-            </Row>
-          </Card>
-        </Form>
+                  placeholder="Select start date"
+                />
+              </Form.Item>
+            </Col>
 
-        {/* Preview Modal */}
-        <Modal
-          title="Campaign Preview"
-          open={previewOpen}
-          onCancel={() => setPreviewOpen(false)}
-          width="95%"
-          maxWidth={700}
-          footer={[
-            <Button
-              key="close"
-              onClick={() => setPreviewOpen(false)}
-              size="large"
-            >
-              Close
-            </Button>,
-            <Button
-              key="create"
-              type="primary"
-              style={{ background: PRIMARY, borderColor: PRIMARY }}
-              onClick={() => {
-                setPreviewOpen(false);
-                submitWithConfirm();
-              }}
-              loading={submitting}
-              size="large"
-            >
-              Continue & Create
-            </Button>,
-          ]}
+            <Col xs={24} sm={12} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Campaign End Date</strong>}
+                name="endDate"
+                rules={[{ required: true, message: "End date is required" }]}
+                extra="When to stop sending emails"
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  size="large"
+                  placeholder="Select end date"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Email Configuration Section */}
+        <Card
+          title={
+            <span style={{ color: PRIMARY }}>
+              <strong>Email Configuration</strong>
+            </span>
+          }
+          style={{ marginBottom: 20 }}
+          bodyStyle={{ padding: "16px 20px" }}
         >
-          {(() => {
-            const v = form.getFieldsValue(true);
-            const payload = buildPayload(v);
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>From Email Address</strong>}
+                name="fromMail"
+                rules={[{ required: true, message: "From mail is required" }]}
+                extra="Select the sender email address"
+              >
+                <Select
+                  placeholder="Select sender email"
+                  size="large"
+                  options={[
+                    {
+                      label: "admin@oxyloans.com",
+                      value: "admin@oxyloans.com",
+                    },
+                    {
+                      label: "radha@oxybricks.world",
+                      value: "radha@oxybricks.world",
+                    },
+                    { label: "anil@askoxy.ai", value: "anil@askoxy.ai" },
+                    { label: "team@askoxy.in", value: "team@askoxy.in" },
+                    {
+                      label: "support@askoxy.ai",
+                      value: "support@askoxy.ai",
+                    },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
 
-            return (
-              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                <Descriptions
-                  size="small"
-                  column={{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
-                  bordered
-                >
-                  <Descriptions.Item label={<strong>Invitation Type</strong>}>
-                    {payload.invitationType || "-"}
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Display Name</strong>}
+                name="displayName"
+                rules={[
+                  { required: true, message: "Display name is required" },
+                  { min: 2, message: "Minimum 2 characters" },
+                  { max: 60, message: "Maximum 60 characters" },
+                ]}
+                extra="Name shown in recipient's inbox"
+              >
+                <Input
+                  placeholder="e.g., John Doe"
+                  size="large"
+                  maxLength={60}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={24} md={12} lg={8}>
+              <Form.Item
+                label={<strong>Created By</strong>}
+                name="createdBy"
+                rules={[
+                  { required: true, message: "Created by is required" },
+                  { min: 2, message: "Minimum 2 characters" },
+                  { max: 60, message: "Maximum 60 characters" },
+                ]}
+                extra="Your name or admin username"
+              >
+                <Input placeholder="e.g., admin" size="large" maxLength={60} />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24}>
+              <Form.Item
+                label={<strong>Email Subject Line</strong>}
+                name="mailSubject"
+                rules={[
+                  { required: true, message: "Mail subject is required" },
+                  { min: 3, message: "Minimum 3 characters" },
+                  { max: 120, message: "Maximum 120 characters" },
+                ]}
+                extra="Subject line recipients will see (3-120 characters)"
+              >
+                <Input
+                  placeholder="Enter an engaging subject line"
+                  size="large"
+                  maxLength={120}
+                  showCount
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24}>
+              <Form.Item
+                label={<strong>Sample Email Message</strong>}
+                name="sampleMessage"
+                rules={[
+                  { required: true, message: "Sample message is required" },
+                  { min: 10, message: "Minimum 10 characters" },
+                  { max: 5000, message: "Maximum 5000 characters" },
+                ]}
+                extra="Email content that will be sent to all recipients (10-5000 characters)"
+              >
+                <Input.TextArea
+                  rows={6}
+                  placeholder="Type your email message here..."
+                  maxLength={5000}
+                  showCount
+                  style={{ fontSize: 14 }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
+        {/* Campaign Settings Section */}
+
+        {/* Action Buttons */}
+        <Card style={{ marginBottom: 24 }} bodyStyle={{ padding: "16px 20px" }}>
+          <Row justify="end" gutter={[12, 12]}>
+            <Col xs={12} sm={8} md={6}>
+              <Button
+                icon={<EyeOutlined />}
+                onClick={openPreview}
+                block
+                size="large"
+                style={{
+                  background: SECONDARY,
+                  borderColor: SECONDARY,
+                  color: "#fff",
+                }}
+              >
+                Preview
+              </Button>
+            </Col>
+            <Col xs={12} sm={8} md={6}>
+              <Button
+                type="primary"
+                onClick={submitWithConfirm}
+                loading={submitting || confirming}
+                block
+                size="large"
+                style={{
+                  background: PRIMARY,
+                  borderColor: PRIMARY,
+                }}
+              >
+                {submitting ? "Creating..." : "Create Campaign"}
+              </Button>
+            </Col>
+          </Row>
+        </Card>
+      </Form>
+
+      {/* Preview Modal */}
+      <Modal
+        title="Campaign Preview"
+        open={previewOpen}
+        onCancel={() => setPreviewOpen(false)}
+        width="95%"
+        maxWidth={700}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setPreviewOpen(false)}
+            size="large"
+          >
+            Close
+          </Button>,
+          <Button
+            key="create"
+            type="primary"
+            style={{ background: PRIMARY, borderColor: PRIMARY }}
+            onClick={() => {
+              setPreviewOpen(false);
+              submitWithConfirm();
+            }}
+            loading={submitting}
+            size="large"
+          >
+            Continue & Create
+          </Button>,
+        ]}
+      >
+        {(() => {
+          const v = form.getFieldsValue(true);
+          const payload = buildPayload(v);
+
+          return (
+            <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+              <Descriptions
+                size="small"
+                column={{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
+                bordered
+              >
+                <Descriptions.Item label={<strong>Invitation Type</strong>}>
+                  {payload.invitationType || "-"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label={<strong>Mail Subject</strong>}>
+                  {payload.mailSubject || "-"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label={<strong>From Mail</strong>}>
+                  {payload.fromMail || "-"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label={<strong>Display Name</strong>}>
+                  {payload.displayName || "-"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label={<strong>Created By</strong>}>
+                  {payload.createdBy || "-"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label={<strong>Per Day Send Mails</strong>}>
+                  {payload.perDaySendMails
+                    ? `${payload.perDaySendMails} emails/day`
+                    : "-"}
+                </Descriptions.Item>
+                {payload.invitationType === "sample" && (
+                  <Descriptions.Item label={<strong>Sample Email</strong>}>
+                    {payload.sampleEmail || "-"}
                   </Descriptions.Item>
+                )}
 
-                  <Descriptions.Item label={<strong>Mail Subject</strong>}>
-                    {payload.mailSubject || "-"}
-                  </Descriptions.Item>
+                <Descriptions.Item label={<strong>Last Processed Row</strong>}>
+                  {payload.lastProcessedRow ?? "-"}
+                </Descriptions.Item>
 
-                  <Descriptions.Item label={<strong>From Mail</strong>}>
-                    {payload.fromMail || "-"}
-                  </Descriptions.Item>
+                <Descriptions.Item label={<strong>Start Date</strong>}>
+                  {payload.startDate || "-"}
+                </Descriptions.Item>
 
-                  <Descriptions.Item label={<strong>Display Name</strong>}>
-                    {payload.displayName || "-"}
-                  </Descriptions.Item>
+                <Descriptions.Item label={<strong>End Date</strong>}>
+                  {payload.endDate || "-"}
+                </Descriptions.Item>
 
-                  <Descriptions.Item label={<strong>Created By</strong>}>
-                    {payload.createdBy || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item
-                    label={<strong>Per Day Send Mails</strong>}
+                <Descriptions.Item label={<strong>Sample Message</strong>}>
+                  <div
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      backgroundColor: "#fafafa",
+                      padding: 12,
+                      borderRadius: 4,
+                      maxHeight: 250,
+                      overflowY: "auto",
+                      border: `1px solid ${BORDER_COLOR}`,
+                    }}
                   >
-                    {payload.perDaySendMails
-                      ? `${payload.perDaySendMails} emails/day`
-                      : "-"}
-                  </Descriptions.Item>
+                    {payload.sampleMessage || "-"}
+                  </div>
+                </Descriptions.Item>
 
-                  <Descriptions.Item
-                    label={<strong>Last Processed Row</strong>}
+                <Descriptions.Item label={<strong>Excel File URL</strong>}>
+                  <Text
+                    code
+                    style={{ wordBreak: "break-all", fontSize: "12px" }}
                   >
-                    {payload.lastProcessedRow ?? "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Start Date</strong>}>
-                    {payload.startDate || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>End Date</strong>}>
-                    {payload.endDate || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Sample Message</strong>}>
-                    <div
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        backgroundColor: "#fafafa",
-                        padding: 12,
-                        borderRadius: 4,
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        border: `1px solid ${BORDER_COLOR}`,
-                      }}
-                    >
-                      {payload.sampleMessage || "-"}
-                    </div>
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Excel File URL</strong>}>
-                    <Text
-                      code
-                      style={{ wordBreak: "break-all", fontSize: "12px" }}
-                    >
-                      {payload.excelUrl || "-"}
-                    </Text>
-                  </Descriptions.Item>
-                </Descriptions>
-              </div>
-            );
-          })()}
-        </Modal>
-      </div>
-    
+                    {payload.excelUrl || "-"}
+                  </Text>
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+          );
+        })()}
+      </Modal>
+    </div>
   );
 }

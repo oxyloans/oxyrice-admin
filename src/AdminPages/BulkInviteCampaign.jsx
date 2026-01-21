@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useState, useCallback } from "react";
 import {
   Form,
   Input,
@@ -6,12 +8,19 @@ import {
   Upload,
   Button,
   Card,
-  Row,
-  Col,
   Modal,
   message as AntMessage,
+  Divider,
+  Space,
+  Alert,
+  Spin,
+  Empty,
 } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  UploadOutlined,
+  CheckCircleOutlined,
+  FileExcelOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
@@ -26,38 +35,53 @@ const BulkInviteCampaign = () => {
   const [loading, setLoading] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewData, setPreviewData] = useState({});
+  const [uploadedFile, setUploadedFile] = useState(null);
 
-  const handleInviteTypeChange = (value) => {
-    setInviteType(value);
-    form.setFieldsValue({ inviteType: value });
+  const handleInviteTypeChange = useCallback(
+    (value) => {
+      setInviteType(value);
+      form.setFieldsValue({ inviteType: value });
 
-    if (value === "sample") {
-      form.setFieldsValue({
-        multiPart: undefined,
-      });
+      if (value === "sample") {
+        form.setFieldsValue({ multiPart: undefined });
+        setUploadedFile(null);
+      } else {
+        form.setFieldsValue({ sampleEmail: undefined });
+      }
+    },
+    [form]
+  );
+
+  const handleFileChange = useCallback((fileList) => {
+    if (fileList && fileList.length > 0) {
+      setUploadedFile(fileList[0]);
+    } else {
+      setUploadedFile(null);
     }
-  };
+  }, []);
 
-  const onFinish = (values) => {
-    // Prepare preview data before sending
-    const fileName =
-      inviteType === "non sample"
-        ? values.multiPart?.[0]?.name || "No file selected"
-        : "No file (Sample Invite)";
+  const onFinish = useCallback(
+    (values) => {
+      const fileName =
+        inviteType === "non sample"
+          ? values.multiPart?.[0]?.name || "No file selected"
+          : "No file (Sample Invite)";
 
-    setPreviewData({
-      inviteType,
-      sampleEmail: values.sampleEmail || "",
-      mailSubject: values.mailSubject,
-      mailDispalyName: values.mailDispalyName,
-      message: values.message,
+      setPreviewData({
+        inviteType,
+        sampleEmail: values.sampleEmail || "",
+        mailSubject: values.mailSubject,
+        mailDispalyName: values.mailDispalyName,
+        message: values.message,
+        fileName,
+      });
 
-      fileName,
-    });
+      setPreviewVisible(true);
+    },
+    [inviteType]
+  );
 
-    setPreviewVisible(true); // open preview modal
-  };
-  const submitFinal = async () => {
+  const submitFinal = useCallback(async () => {
     setPreviewVisible(false);
     setLoading(true);
 
@@ -84,7 +108,6 @@ const BulkInviteCampaign = () => {
         formData.append("multiPart", emptyFile, "");
       }
 
-      // Validate required fields
       if (!values.mailSubject || !values.mailDispalyName || !values.message) {
         AntMessage.error("Please fill in all required fields.");
         return;
@@ -98,7 +121,6 @@ const BulkInviteCampaign = () => {
       const sampleEmailToSend =
         inviteType === "sample" ? values.sampleEmail || "" : "";
       formData.append("sampleEmail", sampleEmailToSend);
-
       formData.append("userId", userId);
 
       const url = `${BASE_URL}/user-service/excelInvite`;
@@ -110,9 +132,10 @@ const BulkInviteCampaign = () => {
         },
       });
 
-      AntMessage.success("Bulk invite triggered successfully.");
+      AntMessage.success("Bulk invite triggered successfully!");
       form.resetFields();
       setInviteType("non sample");
+      setUploadedFile(null);
     } catch (error) {
       console.error("Bulk invite error:", error);
       const errorMessage =
@@ -123,7 +146,7 @@ const BulkInviteCampaign = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, inviteType]);
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
@@ -132,141 +155,299 @@ const BulkInviteCampaign = () => {
     return e && e.fileList;
   };
 
+  const PreviewContent = () => {
+    if (!previewData.inviteType) {
+      return <Empty description="No preview data" />;
+    }
+
+    return (
+      <div className="space-y-4 max-h-96 overflow-y-auto">
+        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+          <p className="text-sm font-semibold text-blue-900">
+            Invite Type:{" "}
+            <span className="font-normal capitalize">
+              {previewData.inviteType}
+            </span>
+          </p>
+        </div>
+
+        {previewData.inviteType === "sample" && (
+          <div className="bg-gray-50 p-4 rounded border border-gray-200">
+            <p className="text-sm font-semibold text-gray-700">Sample Email</p>
+            <p className="text-sm text-gray-600 break-all">
+              {previewData.sampleEmail}
+            </p>
+          </div>
+        )}
+
+        {previewData.inviteType === "non sample" && (
+          <div className="bg-gray-50 p-4 rounded border border-gray-200 flex items-center gap-3">
+            <FileExcelOutlined className="text-xl text-green-600" />
+            <div>
+              <p className="text-sm font-semibold text-gray-700">
+                Uploaded File
+              </p>
+              <p className="text-sm text-gray-600 truncate">
+                {previewData.fileName}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <Divider />
+
+        <div className="bg-gray-50 p-4 rounded border border-gray-200">
+          <p className="text-sm font-semibold text-gray-700 mb-2">
+            Email Subject
+          </p>
+          <p className="text-sm text-gray-600">{previewData.mailSubject}</p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded border border-gray-200">
+          <p className="text-sm font-semibold text-gray-700 mb-2">
+            Sender Name
+          </p>
+          <p className="text-sm text-gray-600">{previewData.mailDispalyName}</p>
+        </div>
+
+        <div className="bg-gray-50 p-4 rounded border border-gray-200">
+          <p className="text-sm font-semibold text-gray-700 mb-3">
+            Email Message
+          </p>
+          <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+            {previewData.message}
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <AdminPanelLayoutTest>
-      <Card
-        title="Bulk Invite Campaign"
-        style={{
-          maxWidth: 900,
-          margin: "0 auto",
-          borderRadius: 12,
-        }}
-        headStyle={{
-          fontSize: 18,
-          fontWeight: 600,
-        }}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          initialValues={{
-            inviteType: "non sample",
-          }}
-          style={{ fontSize: 14 }}
-        >
-          {/* Row 1: Invite Type + (File or Sample Email based on type) */}
-          <Row gutter={16}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Invite Type"
-                name="inviteType"
-                rules={[
-                  {
-                    required: true,
-                    message:
-                      "Please choose whether this is a sample or bulk invite.",
-                  },
-                ]}
-              >
-                <Select
-                  onChange={handleInviteTypeChange}
-                  value={inviteType}
-                  placeholder="Select invite type"
-                >
-                  <Option value="non sample">
-                    Non Sample (Bulk Excel Upload)
-                  </Option>
-                  <Option value="sample">Sample (Single Test Email)</Option>
-                </Select>
-              </Form.Item>
-            </Col>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div>
+            <h6 className="text-1xl sm:text-xl font-bold text-gray-900 mb-2">
+              Bulk Invite Campaign
+            </h6>
+            <p className="text-gray-600 text-sm sm:text-base">
+              Send bulk invitations via Excel upload or test with a sample email
+            </p>
+          </div>
 
-            <Col xs={24} md={12}>
-              {inviteType === "non sample" && (
+          {/* Main Form Card */}
+          <Card
+           
+            style={{
+              borderRadius: "12px",
+              overflow: "hidden",
+            }}
+            bodyStyle={{
+              padding: "24px",
+            }}
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              initialValues={{
+                inviteType: "non sample",
+              }}
+              className="space-y-6"
+              requiredMark="optional"
+            >
+              {/* Alert Section */}
+              {/* {inviteType === "sample" && (
+                <Alert
+                  message="Sample Mode"
+                  description="Send a test invitation to a single email address to preview how your message will look."
+                  type="info"
+                  showIcon
+                  className="mb-6"
+                  closable
+                />
+              )} */}
+
+              {/* {inviteType === "non sample" && (
+                <Alert
+                  message="Bulk Mode"
+                  description="Upload an Excel file containing email addresses and user details to send bulk invitations."
+                  type="success"
+                  showIcon
+                  className="mb-6"
+                  closable
+                />
+              )} */}
+
+              {/* Row 1: Invite Type */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Form.Item
-                  label="Upload Excel File"
-                  name="multiPart"
-                  valuePropName="fileList"
-                  getValueFromEvent={normFile}
+                  label={
+                    <span className="font-semibold text-gray-700">
+                      Invite Type
+                    </span>
+                  }
+                  name="inviteType"
                   rules={[
                     {
                       required: true,
-                      message: "Please upload an Excel file with user details.",
+                      message: "Please select an invite type.",
                     },
                   ]}
+                  className="mb-0"
                 >
-                  <Upload
-                    beforeUpload={() => false} // prevent auto upload
-                    accept=".xls,.xlsx"
-                    maxCount={1}
+                  <Select
+                    onChange={handleInviteTypeChange}
+                    value={inviteType}
+                    placeholder="Select invite type"
+                    size="large"
+                    className="w-full"
                   >
-                    <Button icon={<UploadOutlined />}>
-                      Choose Excel File (.xls / .xlsx)
-                    </Button>
-                  </Upload>
+                    <Option value="non sample">
+                      <span className="flex items-center gap-2">
+                        <FileExcelOutlined />
+                        Bulk (Excel Upload)
+                      </span>
+                    </Option>
+                    <Option value="sample">
+                      <span className="flex items-center gap-2">
+                        <CheckCircleOutlined />
+                        Sample (Test Email)
+                      </span>
+                    </Option>
+                  </Select>
                 </Form.Item>
-              )}
 
-              {inviteType === "sample" && (
-                <Form.Item
-                  label="Sample Email"
-                  name="sampleEmail"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please enter a sample email address.",
-                    },
-                    {
-                      type: "email",
-                      message: "Please enter a valid email address.",
-                    },
-                  ]}
-                >
-                  <Input placeholder="e.g., test.user@example.com" />
-                </Form.Item>
-              )}
-            </Col>
-          </Row>
+                {/* File Upload or Sample Email */}
+                <div>
+                  {inviteType === "non sample" ? (
+                    <Form.Item
+                      label={
+                        <span className="font-semibold text-gray-700">
+                          Excel File
+                        </span>
+                      }
+                      name="multiPart"
+                      valuePropName="fileList"
+                      getValueFromEvent={normFile}
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please upload an Excel file.",
+                        },
+                      ]}
+                      className="mb-0"
+                    >
+                      <Upload
+                        beforeUpload={() => false}
+                        accept=".xls,.xlsx"
+                        maxCount={1}
+                        onChange={(info) => handleFileChange(info.fileList)}
+                        className="w-full"
+                      >
+                        <Button
+                          icon={<UploadOutlined />}
+                          size="large"
+                          className="w-full h-10 font-medium"
+                        >
+                          Choose Excel File (.xls/.xlsx)
+                        </Button>
+                      </Upload>
+                    </Form.Item>
+                  ) : (
+                    <Form.Item
+                      label={
+                        <span className="font-semibold text-gray-700">
+                          Email Address
+                        </span>
+                      }
+                      name="sampleEmail"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please enter an email address.",
+                        },
+                        {
+                          type: "email",
+                          message: "Please enter a valid email address.",
+                        },
+                      ]}
+                      className="mb-0"
+                    >
+                      <Input
+                        placeholder="test.user@example.com"
+                        size="large"
+                        type="email"
+                        className="rounded"
+                      />
+                    </Form.Item>
+                  )}
+                </div>
+              </div>
 
-          {/* Row 2: Mail Subject + Display Name */}
-          <Row gutter={16}>
-            <Col xs={24} md={12}>
+              <Divider />
+
+              {/* Row 2: Email Configuration */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Email Configuration
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Form.Item
+                    label={
+                      <span className="font-semibold text-gray-700">
+                        Email Subject
+                      </span>
+                    }
+                    name="mailSubject"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter an email subject.",
+                      },
+                    ]}
+                    className="mb-0"
+                  >
+                    <Input
+                      placeholder="e.g., Welcome to our platform"
+                      size="large"
+                      className="rounded"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label={
+                      <span className="font-semibold text-gray-700">
+                        Sender Name
+                      </span>
+                    }
+                    name="mailDispalyName"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter a sender name.",
+                      },
+                    ]}
+                    className="mb-0"
+                  >
+                    <Input
+                      placeholder="e.g., ASKOXY Team"
+                      size="large"
+                      className="rounded"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+
+              {/* Row 3: Email Body */}
               <Form.Item
-                label="Mail Subject"
-                name="mailSubject"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the subject line for the email.",
-                  },
-                ]}
-              >
-                <Input placeholder="e.g., Welcome to our platform" />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} md={12}>
-              <Form.Item
-                label="Mail Display Name"
-                name="mailDispalyName"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the sender display name.",
-                  },
-                ]}
-              >
-                <Input placeholder="e.g., ASKOXY Team" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* Row 3: Message (full width) */}
-          <Row>
-            <Col span={24}>
-              <Form.Item
-                label="Email Body Message"
+                label={
+                  <span className="font-semibold text-gray-700">
+                    Email Message
+                  </span>
+                }
                 name="message"
                 rules={[
                   {
@@ -274,100 +455,97 @@ const BulkInviteCampaign = () => {
                     message: "Please enter the email body content.",
                   },
                 ]}
+                className="mb-0"
               >
                 <TextArea
-                  rows={5}
-                  placeholder="Write the content of the email that users will receive."
+                  rows={8}
+                  placeholder="Write the email content that recipients will see..."
+                  className="rounded"
+                  style={{
+                    fontSize: "14px",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                  }}
                 />
               </Form.Item>
-            </Col>
-          </Row>
 
-          <Row justify="end">
-            <Col>
-              <Form.Item>
+              {/* Action Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200">
+                <Button
+                  size="large"
+                  className="w-full sm:w-auto rounded font-medium"
+                  disabled={loading}
+                >
+                  Clear Form
+                </Button>
                 <Button
                   type="primary"
                   htmlType="submit"
+                  size="large"
                   loading={loading}
+                  className="w-full sm:w-auto rounded font-medium h-10"
                   style={{
                     backgroundColor: "#008cba",
                     borderColor: "#008cba",
-                    padding: "0 28px",
-                    height: 40,
-                    fontSize: 14,
-                    fontWeight: 500,
                   }}
                 >
-                  Send Bulk Invite
+                  Preview & Send
                 </Button>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-        <Modal
-          title="Preview Bulk Invite"
-          open={previewVisible}
-          onCancel={() => setPreviewVisible(false)}
-          footer={[
-            <Button key="cancel" onClick={() => setPreviewVisible(false)}>
-              Cancel
-            </Button>,
+              </div>
+            </Form>
+          </Card>
 
+         
+        </div>
+      </div>
+
+      {/* Preview Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <CheckCircleOutlined className="text-green-600" />
+            <span>Preview Your Invitation</span>
+          </div>
+        }
+        open={previewVisible}
+        onCancel={() => setPreviewVisible(false)}
+        footer={null}
+        width="100%"
+        style={{ maxWidth: "600px" }}
+        bodyStyle={{
+          maxHeight: "70vh",
+          overflowY: "auto",
+        }}
+        className="rounded-lg"
+      >
+        <Spin spinning={loading} tip="Sending invitation...">
+          <PreviewContent />
+
+          <Divider />
+
+          <Space className="w-full flex justify-end gap-2 pt-4">
             <Button
-              key="confirm"
+              onClick={() => setPreviewVisible(false)}
+              disabled={loading}
+              size="large"
+            >
+              Back to Edit
+            </Button>
+            <Button
               type="primary"
-              loading={loading}
               onClick={submitFinal}
+              loading={loading}
+              size="large"
               style={{
                 backgroundColor: "#1ab394",
                 borderColor: "#1ab394",
-                color: "#ffffff",
-                fontWeight: 500,
               }}
             >
               Confirm & Send
-            </Button>,
-          ]}
-        >
-          <p>
-            <b>Invite Type:</b> {previewData.inviteType}
-          </p>
-
-          {previewData.inviteType === "sample" && (
-            <p>
-              <b>Sample Email:</b> {previewData.sampleEmail}
-            </p>
-          )}
-
-          {previewData.inviteType === "non sample" && (
-            <p>
-              <b>Uploaded File:</b> {previewData.fileName}
-            </p>
-          )}
-
-          <p>
-            <b>Mail Subject:</b> {previewData.mailSubject}
-          </p>
-          <p>
-            <b>Mail Display Name:</b> {previewData.mailDispalyName}
-          </p>
-
-          <p>
-            <b>Email Message:</b>
-          </p>
-          <div
-            style={{
-              padding: "10px",
-              background: "#f7f7f7",
-              borderRadius: "6px",
-              whiteSpace: "pre-line",
-            }}
-          >
-            {previewData.message}
-          </div>
-        </Modal>
-      </Card>
+            </Button>
+          </Space>
+        </Spin>
+      </Modal>
     </AdminPanelLayoutTest>
   );
 };

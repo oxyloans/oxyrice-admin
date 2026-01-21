@@ -2,19 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Layout, Menu, Row, Grid } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined } from "@ant-design/icons";
 import { MessageOutlined } from "@ant-design/icons";
-import { UserOutlined } from "@ant-design/icons";
+
 import { Link, useNavigate } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
-import { FaStore } from "react-icons/fa";
+
 
 import {
-  DashboardOutlined,
+  UnorderedListOutlined,
   FileTextOutlined,
   BarChartOutlined,
   SettingOutlined,
   ShopOutlined,
   TeamOutlined,
-  
 } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -50,6 +49,13 @@ const AgentsAdminLayout = ({ children }) => {
       label: "Agents Dashboard",
       icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
       link: "/admin/assistantslist",
+      style: { fontSize: "16px", fontWeight: 500 },
+    },
+    {
+      key: "freelancers-data",
+      label: "Freelancer Data",
+      icon: <UnorderedListOutlined style={{ fontSize: "18px" }} />,
+      link: "/admin/freelancer-list",
       style: { fontSize: "16px", fontWeight: 500 },
     },
     {

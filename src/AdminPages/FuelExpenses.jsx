@@ -29,8 +29,9 @@ const FuelExpenses = () => {
   const [modalData, setModalData] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
-  const accessToken = localStorage.getItem("token") || "";
+  const [pageSize, setPageSize] = useState(20); // default 20
+  const [currentPage, setCurrentPage] = useState(1);
+  const accessToken = localStorage.getItem("token");
 
   // Fetch Summary Data
   const fetchFuelStats = useCallback(async () => {
@@ -90,16 +91,16 @@ const FuelExpenses = () => {
   // Table Columns for Summary
   const columns = [
     {
-      title: "S.No",
-      render: (_, __, index) => index + 1,
+      title: "S.No.",
+      key: "serial",
+      render: (_, __, index) => (currentPage - 1) * pageSize + (index + 1),
       align: "center",
-      width: 60,
     },
     {
       title: "User ID",
       dataIndex: "user_id",
       key: "user_id",
-      render: (id) => id?.slice(-4),
+      render: (id) => `#${id?.slice(-4)}`,
       align: "center",
     },
     {
@@ -175,7 +176,7 @@ const FuelExpenses = () => {
       render: (_, record) => (
         <div style={{ lineHeight: 1.6 }}>
           <div>
-            <strong>User ID:</strong> {record.userId?.slice(-4)}
+            <strong>User ID:</strong>#{record.userId?.slice(-4)}
           </div>
           <div>
             <strong>Sender Name:</strong> {record.senderName}
@@ -343,7 +344,6 @@ const FuelExpenses = () => {
         </Row>
 
         {/* Search */}
-        {/* Search */}
         <Row style={{ margin: "16px 0" }}>
           <Col xs={24} sm={12} md={8}>
             <Input
@@ -379,10 +379,13 @@ const FuelExpenses = () => {
             columns={columns}
             rowKey="user_id"
             pagination={{
-              pageSize: 50,
-              showSizeChanger: true,
+              current: currentPage,
+              pageSize: pageSize,
+              total: data.length,
+              showSizeChanger: false,
               showQuickJumper: true,
-              pageSizeOptions: ["50", "100", "200", "300"],
+              showTotal: (total) => `Total ${total} records`,
+              onChange: (page) => setCurrentPage(page),
             }}
             scroll={{ x: true }}
           />
@@ -412,10 +415,13 @@ const FuelExpenses = () => {
               columns={modalColumns}
               rowKey="id"
               pagination={{
-                pageSize: 5,
-                showSizeChanger: true,
+                current: currentPage,
+                pageSize: pageSize,
+                total: modalData.length,
+                showSizeChanger: false,
                 showQuickJumper: true,
-                pageSizeOptions: ["5", "10", "20", "50"],
+                showTotal: (total) => `Total ${total} records`,
+                onChange: (page) => setCurrentPage(page),
               }}
               scroll={{ x: true, y: 400 }}
             />

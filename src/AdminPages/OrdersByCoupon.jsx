@@ -58,7 +58,8 @@ const OrdersByCoupon = () => {
   const [selectedCoupon, setSelectedCoupon] = useState("");
   const [visibleItems, setVisibleItems] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20); // default 20
   const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
@@ -90,7 +91,7 @@ const OrdersByCoupon = () => {
     {
       title: "S.No.",
       key: "serial",
-      render: (text, record, index) => index + 1,
+      render: (_, __, index) => (currentPage - 1) * pageSize + (index + 1),
       align: "center",
     },
     {
@@ -98,6 +99,13 @@ const OrdersByCoupon = () => {
       dataIndex: "orderId",
       align: "center",
       key: "orderId",
+      render: (id) => `#${id?.slice(-4)}`,
+    },
+    {
+      title: "User ID",
+      dataIndex: "userId",
+      align: "center",
+      key: "userId",
       render: (id) => `#${id?.slice(-4)}`,
     },
     {
@@ -135,7 +143,7 @@ const OrdersByCoupon = () => {
       dataIndex: "deliveryDate",
       key: "deliveryDate",
       align: "center",
-      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "-"),
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "Action",
@@ -160,6 +168,12 @@ const OrdersByCoupon = () => {
   ];
 
   const itemColumns = [
+    {
+      title: "S.No.",
+      key: "serial",
+      render: (_, __, index) => (currentPage - 1) * pageSize + (index + 1),
+      align: "center",
+    },
     {
       title: "Item Name",
       dataIndex: "itemName",
@@ -219,11 +233,20 @@ const OrdersByCoupon = () => {
           selectedCoupon && (
             <Table
               rowKey="orderId"
-              columns={orderColumns}
+                columns={orderColumns}
+                
               dataSource={orders}
-              pagination={{ pageSize: 20 }}
+              pagination={{
+                current: currentPage,
+                pageSize: pageSize,
+                total: orders.length,
+                showSizeChanger: false, // ✅ because your Select is the page size changer
+                showQuickJumper: true,
+                showTotal: (total) => `Total ${total} orders`,
+                onChange: (page) => setCurrentPage(page),
+              }}
               bordered
-              scroll={{ x: "100%" }}
+              scroll={{ x: "true" }}
             />
           )
         )}
@@ -239,7 +262,18 @@ const OrdersByCoupon = () => {
             columns={itemColumns}
             dataSource={selectedItems}
             rowKey={(item, index) => index.toString()}
-            pagination={false}
+            pagination={{
+              current: currentPage,
+            
+              pageSize: pageSize,
+              total: selectedItems.length,
+              showSizeChanger: false, // ✅ because your Select is the page size changer
+              showQuickJumper: true,
+              showTotal: (total) => `Total ${total} items`,
+              onChange: (page) => setCurrentPage(page),
+            }}
+            bordered
+            scroll={{x:true}}
             size="small"
           />
         </Modal>

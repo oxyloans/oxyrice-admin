@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Form,
   Input,
@@ -9,20 +9,26 @@ import {
   Card,
   Typography,
   Modal,
+  Row,
+  Col,
+  Divider,
   DatePicker,
   Spin,
+  Tabs,
 } from "antd";
 import {
   UploadOutlined,
   FileExcelOutlined,
   MessageOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "./AdminPanel";
 
 const { Option } = Select;
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 const OFFERS_API = `${BASE_URL}/cart-service/cart/activeOffers`;
 const CampaignUpload = () => {
   const [excelLoading, setExcelLoading] = useState(false);
@@ -46,6 +52,8 @@ const CampaignUpload = () => {
   const [offersLoading, setOffersLoading] = useState(false);
   const [offers, setOffers] = useState([]);
   const [selectedOfferName, setSelectedOfferName] = useState("");
+  const MAX_IMAGE_BYTES = 1048576; // 1MB
+  const MAX_EXCEL_BYTES = 5242880; // 5MB
   const fetchOffers = async () => {
     try {
       setOffersLoading(true);
@@ -155,6 +163,8 @@ const CampaignUpload = () => {
         );
         antdMessage.success("Excel Campaign successfully submitted!");
         excelForm.resetFields();
+        resetExcelFormAll();
+
         setExcelFile(null);
         setExcelImage(null);
         setExcelImageList([]); // 🔥 clears image UI
@@ -191,7 +201,7 @@ const CampaignUpload = () => {
         message: values.message,
 
         ...(values.mobileNumber && { mobileNumber: values.mobileNumber }),
-        ...(values.campaignName && { campaignName: values.campaignName }),
+        ...(values.name && { name: values.name }),
         ...(values.orderCount && { orderCount: values.orderCount }),
         ...(values.limit && { limit: values.limit }),
 
@@ -213,6 +223,7 @@ const CampaignUpload = () => {
         );
         antdMessage.success("WhatsApp Campaign successfully submitted!");
         whatsappForm.resetFields();
+        resetWhatsappFormAll();
         setWhatsappImageList([]); // 🔥 clears image UI
         setWhatsappImage(null);
         setWhatsappInviteType("");
@@ -236,458 +247,525 @@ const CampaignUpload = () => {
       }
     }
   };
+  const formatBytesMB = (bytes) => (bytes / 1024 / 1024).toFixed(2);
+  const isWhatsappDatesRequired = useMemo(() => {
+    return ["sampleMessage", "askOxyCustomers", "agents"].includes(
+      whatsappInviteType
+    );
+  }, [whatsappInviteType]);
+  const validateExcelBeforeUpload = (file) => {
+    if (file.size > MAX_EXCEL_BYTES) {
+      antdMessage.error(
+        `Please upload an Excel file below 5MB. Current size: ${formatBytesMB(
+          file.size
+        )}MB`
+      );
+      return false;
+    }
+    return true;
+  };
+  const resetWhatsappFormAll = () => {
+    whatsappForm.resetFields();
+    setWhatsappImage(null);
+    setWhatsappImageList([]);
+    setWhatsappInviteType(""); // ← ADD THIS: reset invite type state
+  };
+  const validateImageBeforeUpload = (file) => {
+    if (file.size > MAX_IMAGE_BYTES) {
+      Modal.error({
+        title: "Image Size Error",
+        icon: <ExclamationCircleOutlined />,
+        content: `Please upload an image below 1MB. Current size: ${formatBytesMB(
+          file.size
+        )}MB`,
+        okText: "OK",
+      });
+      return false;
+    }
+    return true;
+  };
+  const resetExcelFormAll = () => {
+    excelForm.resetFields();
+    setExcelFile(null);
+    setExcelImage(null);
+    setExcelImageList([]);
+    setSelectedOfferName("");
+    setExcelInviteType(""); // ← ADD THIS: reset invite type state
+  };
 
   return (
     <AdminPanelLayoutTest>
-      <div className="min-h-screen bg-gradient-to-br via-white p-6 sm:p-10">
+      <div className=" bg-gradient-to-br via-white p-2 sm:p-4 lg:p-6">
         <div className="max-w-7xl mx-auto">
-          <Title level={2} className="text-start mb-4 text-gray-800">
+          <Title level={3} className="text-start text-[#008cba]">
             Campaign Management
           </Title>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Excel Campaign */}
-            <Card
-              title={
-                <div className="flex items-center gap-2">
-                  <FileExcelOutlined className="text-white text-xl" />
-                  <span className="text-white font-semibold">
-                    Campaign Through Excel
-                  </span>
-                </div>
-              }
-              headStyle={{ background: "#008cba", color: "white" }}
-              className="shadow-md"
-            >
-              <Form
-                form={excelForm}
-                layout="vertical"
-                onFinish={handleExcelPreview}
+
+          <Card>
+            <Tabs type="card" defaultActiveKey="excel" size="large">
+              {/* ------------------- EXCEL TAB ------------------- */}
+              <TabPane
+                key="excel"
+                tab={
+                  <div className="flex items-center gap-3">
+                 
+                    <span className="font-semibold text-[#008cba]">
+                      Campaign Through Excel
+                    </span>
+                  </div>
+                }
               >
-                <Form.Item
-                  label="Invite Type"
-                  name="inviteType"
-                  rules={[
-                    { required: true, message: "Please select invite type" },
-                  ]}
+                <Form
+                  form={excelForm}
+                  layout="vertical"
+                  onFinish={handleExcelPreview}
                 >
-                  <Select
-                    placeholder="Select invite type"
-                    onChange={setExcelInviteType}
-                  >
-                    <Option value="sampleMessage">Sample Message</Option>
-                    <Option value="message">Message</Option>
-                  </Select>
-                </Form.Item>
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Form.Item
+                        label={<strong>Invite Type</strong>}
+                        name="inviteType"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select invite type",
+                          },
+                        ]}
+                      >
+                        <Select
+                          placeholder="Select invite type"
+                          size="large"
+                          onChange={(value) => setExcelInviteType(value)} // ← ADD THIS
+                        >
+                          <Option value="sampleMessage">Sample Message</Option>
+                          <Option value="message">Message</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
 
-                <Form.Item
-                  label="Message"
-                  name="message"
-                  rules={[{ required: true, message: "Please enter message" }]}
-                >
-                  <Input.TextArea
-                    rows={6}
-                    placeholder="Enter your message..."
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="Offer"
-                  name="offerId"
-                  rules={[
-                    {
-                      validator: async (_, value) => {
-                        const type = excelForm.getFieldValue("type");
-                        if (type === "referral") return Promise.resolve(); // ✅ allow referral
-                        if (!value)
-                          return Promise.reject(
-                            new Error("Please select an offer")
-                          );
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                >
-                  <Select
-                    placeholder={
-                      offersLoading ? "Loading offers..." : "Select offer"
-                    }
-                    loading={offersLoading}
-                    showSearch
-                    optionFilterProp="label"
-                    onChange={(value, option) => {
-                      // ✅ Referral selected
-                      if (value === "referral") {
-                        setSelectedOfferName("referral");
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Form.Item
+                        label={<strong>Offer / Referral</strong>}
+                        name="offerId"
+                        rules={[
+                          {
+                            validator: async (_, value) => {
+                              const type = excelForm.getFieldValue("type");
+                              if (type === "referral") return Promise.resolve();
+                              if (!value)
+                                return Promise.reject(
+                                  new Error("Please select an offer"),
+                                );
+                              return Promise.resolve();
+                            },
+                          },
+                        ]}
+                      >
+                        <Select
+                          placeholder={
+                            offersLoading ? "Loading offers..." : "Select offer"
+                          }
+                          size="large"
+                          loading={offersLoading}
+                          showSearch
+                          optionFilterProp="label"
+                          onChange={(value, option) => {
+                            // Referral selected
+                            if (value === "referral") {
+                              setSelectedOfferName("Referral");
+                              excelForm.setFieldsValue({
+                                type: "referral",
+                                offerId: "referral",
+                              });
+                              return;
+                            }
 
-                        // ✅ Clear offerId from form (so it won't go to payload)
-                        excelForm.setFieldsValue({
-                          offerId: undefined,
-                          type: "referral",
-                        });
-                        return;
-                      }
+                            const offerName = option?.label || "";
+                            setSelectedOfferName(offerName);
+                            excelForm.setFieldsValue({
+                              offerId: value,
+                              type: offerName,
+                            });
+                          }}
+                          filterOption={(input, option) =>
+                            (option?.label || "")
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
+                          }
+                          notFoundContent={
+                            offersLoading ? <Spin size="medium" /> : "No offers"
+                          }
+                        >
+                          <Option value="referral" label="referral">
+                            Referral
+                          </Option>
+                          {offers.map((o) => (
+                            <Option key={o.id} value={o.id} label={o.offerName}>
+                              {o.offerName}
+                            </Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
 
-                      // ✅ Normal offer selected
-                      const offerName = option?.label || "";
-                      setSelectedOfferName(offerName);
+                  {/* Hidden type (backend expects) */}
+                  <Form.Item name="type" hidden rules={[{ required: true }]}>
+                    <Input size="large" />
+                  </Form.Item>
 
-                      excelForm.setFieldsValue({
-                        offerId: value,
-                        type: offerName,
-                      });
-                    }}
-                    filterOption={(input, option) =>
-                      (option?.label || "")
-                        .toLowerCase()
-                        .includes(input.toLowerCase())
-                    }
-                    notFoundContent={
-                      offersLoading ? <Spin size="small" /> : "No offers"
-                    }
-                  >
-                    {/* ✅ STATIC Referral option */}
-                    <Option value="referral" label="referral">
-                      Referral
-                    </Option>
-
-                    {/* ✅ DYNAMIC offers */}
-                    {offers.map((o) => (
-                      <Option key={o.id} value={o.id} label={o.offerName}>
-                        {o.offerName}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                {/* ✅ hidden type */}
-                <Form.Item name="type" hidden rules={[{ required: true }]}>
-                  <Input />
-                </Form.Item>
-
-                {excelInviteType !== "message" && (
                   <Form.Item
-                    label="Mobile Number (Optional)"
-                    name="mobileNumber"
+                    label={<strong>Message</strong>}
+                    name="message"
                     rules={[
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
+                      { required: true, message: "Please enter message" },
                     ]}
                   >
-                    <Input placeholder="Enter mobile number" />
+                    <Input.TextArea
+                      rows={6}
+                      size="large"
+                      placeholder="Enter your message..."
+                    />
                   </Form.Item>
-                )}
 
-                {excelInviteType !== "sampleMessage" && (
-                  <Form.Item label="Upload Excel File (Optional)">
+                  <Row gutter={[16, 16]}>
+                    {/* Mobile Number optional when NOT "message" */}
+                    {excelInviteType !== "message" && (
+                      <Col xs={24} sm={24} md={12} lg={12}>
+                        <Form.Item
+                          label={<strong>Mobile Number (Optional)</strong>}
+                          name="mobileNumber"
+                          rules={[
+                            {
+                              pattern: /^[0-9]*$/,
+                              message: "Only numbers allowed",
+                            },
+                          ]}
+                        >
+                          <Input
+                            size="large"
+                            placeholder="Enter mobile number"
+                          />
+                        </Form.Item>
+                      </Col>
+                    )}
+
+                    {/* Excel file optional when NOT "sampleMessage" */}
+                    {excelInviteType !== "sampleMessage" && (
+                      <Col xs={24} sm={24} md={12} lg={12}>
+                        <Form.Item
+                          label={<strong>Upload Excel File (Optional)</strong>}
+                        >
+                          <Upload
+                            beforeUpload={(file) => {
+                              if (!validateExcelBeforeUpload(file))
+                                return false;
+                              setExcelFile(file);
+                              return false;
+                            }}
+                            accept=".xlsx,.xls"
+                            maxCount={1}
+                          >
+                            <Button size="large" icon={<UploadOutlined />}>
+                              Select Excel File
+                            </Button>
+                          </Upload>
+                          {excelFile?.name ? (
+                            <Text type="secondary">{excelFile.name}</Text>
+                          ) : null}
+                        </Form.Item>
+                      </Col>
+                    )}
+                  </Row>
+
+                  <Divider />
+
+                  <Form.Item label={<strong>Upload Image</strong>} required>
                     <Upload
+                      fileList={excelImageList}
                       beforeUpload={(file) => {
-                        // Check file size (5MB = 5242880 bytes)
-                        const maxSize = 5242880; // 5MB
-                        if (file.size > maxSize) {
-                          antdMessage.error(
-                            `Please upload an Excel file below 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
-                          );
-                          return false;
-                        }
-                        setExcelFile(file);
+                        if (!validateImageBeforeUpload(file)) return false;
+                        setExcelImage(file);
+                        setExcelImageList([file]);
                         return false;
                       }}
-                      accept=".xlsx,.xls"
+                      onRemove={() => {
+                        setExcelImage(null);
+                        setExcelImageList([]);
+                      }}
+                      accept="image/*"
                       maxCount={1}
                     >
-                      <Button icon={<UploadOutlined />}>
-                        Select Excel File
+                      <Button size="large" icon={<UploadOutlined />}>
+                        Select Image
                       </Button>
                     </Upload>
                   </Form.Item>
-                )}
 
-                <Form.Item label="Upload Image" required>
-                  <Upload
-                    fileList={excelImageList}
-                    beforeUpload={(file) => {
-                      // Check file size (1MB = 1048576 bytes)
-                      const maxSize = 1048576; // 1MB
-                      if (file.size > maxSize) {
-                        antdMessage.error(
-                          `Please upload an image below 1MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`
-                        );
-                        return false;
-                      }
-                      setExcelImage(file);
-                      setExcelImageList([file]); // ✅ control file
-                      return false;
-                    }}
-                    onRemove={() => {
-                      setExcelImage(null);
-                      setExcelImageList([]);
-                    }}
-                    accept="image/*"
-                    maxCount={1}
-                  >
-                    <Button icon={<UploadOutlined />}>Select Image</Button>
-                  </Upload>
-                </Form.Item>
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Button
+                        onClick={resetExcelFormAll}
+                        block
+                        style={{ height: 44, borderRadius: 10 }}
+                        disabled={excelLoading}
+                      >
+                        Reset
+                      </Button>
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={excelLoading}
+                        block
+                        style={{
+                          backgroundColor: "#008cba",
+                          borderRadius: 10,
+                          height: 44,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Preview Excel Campaign
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </TabPane>
 
-                <Form.Item className="text-right mt-6">
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={excelLoading}
-                    style={{
-                      backgroundColor: "#008cba",
-                      borderRadius: "10px",
-                      height: "45px",
-                      fontWeight: 600,
-                    }}
-                    block
-                  >
-                    Preview Excel Campaign
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-
-            {/* WhatsApp Campaign */}
-            <Card
-              title={
-                <div className="flex items-center gap-2">
-                  <MessageOutlined className="text-white text-xl" />
-                  <span className="text-white font-semibold">
-                    WhatsApp Campaign
-                  </span>
-                </div>
-              }
-              headStyle={{ background: "#1ab394", color: "white" }}
-              className="shadow-md"
-            >
-              <Form
-                form={whatsappForm}
-                layout="vertical"
-                onFinish={handleWhatsappPreview}
+              {/* ------------------- WHATSAPP TAB ------------------- */}
+              <TabPane
+                key="whatsapp"
+                tab={
+                  <div className="flex items-center gap-3">
+                
+                    <span className="font-semibold text-[#1ab39c]">
+                      WhatsApp Campaign
+                    </span>
+                  </div>
+                }
               >
-                <Form.Item
-                  label="Invite Type"
-                  name="inviteType"
-                  rules={[
-                    { required: true, message: "Please select invite type" },
-                  ]}
+                <Form
+                  form={whatsappForm}
+                  layout="vertical"
+                  onFinish={handleWhatsappPreview}
                 >
-                  <Select
-                    placeholder="Select invite type"
-                    onChange={setWhatsappInviteType}
-                  >
-                    <Option value="sampleMessage">Sample Message</Option>
-                    <Option value="askOxyCustomers">AskOxy Customers</Option>
-                    <Option value="kukatpallyCustomer">
-                      kukatpallyCustomer
-                    </Option>
-                    <Option value="agents">Agents</Option>
-                  </Select>
-                </Form.Item>
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Form.Item
+                        label={<strong>Invite Type</strong>}
+                        name="inviteType"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please select invite type",
+                          },
+                        ]}
+                      >
+                        <Select
+                          placeholder="Select invite type"
+                          size="large"
+                          onChange={(value) => setWhatsappInviteType(value)} // ← ADD THIS (this fixes the dates not appearing)
+                        >
+                          <Option value="sampleMessage">Sample Message</Option>
+                          <Option value="askOxyCustomers">
+                            AskOxy Customers
+                          </Option>
+                          <Option value="kukatpallyCustomer">
+                            Kukatpally Customer
+                          </Option>
+                          <Option value="agents">Agents</Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
 
-                <Form.Item
-                  label="Campaign Name"
-                  name="campaignName"
-                  rules={[{ required: true, message: "Please enter message" }]}
-                >
-                  <Input placeholder="Enter campaign name" />
-                </Form.Item>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Form.Item
+                        label={<strong>Campaign Name</strong>}
+                        name="name"
+                        rules={[
+                          {
+                            required: true,
+                            message: "Please enter campaign name",
+                          },
+                        ]}
+                      >
+                        <Input size="large" placeholder="Enter campaign name" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
 
-                <Form.Item
-                  label="Message"
-                  name="message"
-                  rules={[{ required: true, message: "Please enter message" }]}
-                >
-                  <Input.TextArea
-                    rows={6}
-                    placeholder="Enter your message..."
-                  />
-                </Form.Item>
-                {whatsappInviteType === "sampleMessage" && (
                   <Form.Item
-                    label="Start Date"
-                    name="startDate"
+                    label={<strong>Message</strong>}
+                    name="message"
                     rules={[
-                      { required: true, message: "Please select start date" },
+                      { required: true, message: "Please enter message" },
                     ]}
                   >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select start date"
-                      format="YYYY-MM-DD"
+                    <Input.TextArea
+                      rows={6}
+                      size="large"
+                      placeholder="Enter your WhatsApp message..."
                     />
                   </Form.Item>
-                )}
-                {whatsappInviteType === "sampleMessage" && (
-                  <Form.Item
-                    label="End Date"
-                    name="endDate"
-                    rules={[
-                      { required: true, message: "Please select end date" },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select end date"
-                      format="YYYY-MM-DD"
-                    />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "sampleMessage" && (
-                  <Form.Item
-                    label="Mobile Number"
-                    name="mobileNumber"
-                    rules={[
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter mobile number" />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "askOxyCustomers" && (
-                  <Form.Item
-                    label="Start Date"
-                    name="startDate"
-                    rules={[
-                      { required: true, message: "Please select start date" },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select start date"
-                      format="YYYY-MM-DD"
-                    />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "askOxyCustomers" && (
-                  <Form.Item
-                    label="End Date"
-                    name="endDate"
-                    rules={[
-                      { required: true, message: "Please select end date" },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select end date"
-                      format="YYYY-MM-DD"
-                    />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "agents" && (
-                  <Form.Item
-                    label="Start Date"
-                    name="startDate"
-                    rules={[
-                      { required: true, message: "Please select start date" },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select start date"
-                      format="YYYY-MM-DD"
-                    />
-                  </Form.Item>
-                )}
-                {whatsappInviteType === "agents" && (
-                  <Form.Item
-                    label="End Date"
-                    name="endDate"
-                    rules={[
-                      { required: true, message: "Please select end date" },
-                    ]}
-                  >
-                    <DatePicker
-                      style={{ width: "100%" }}
-                      placeholder="Select end date"
-                      format="YYYY-MM-DD"
-                    />
-                  </Form.Item>
-                )}
-                {/* {whatsappInviteType === "sampleMessage" && (
-                  <Form.Item
-                    label="Order Count"
-                    name="orderCount"
-                    rules={[
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter order count" />
-                  </Form.Item>
-                )} */}
 
-                <Form.Item
-                  label="Limit "
-                  name="limit"
-                  rules={[
-                    { required: true, message: "Please enter limit" },
-                    { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                  ]}
-                >
-                  <Input placeholder="Enter limit" />
-                </Form.Item>
+                  <Row gutter={[16, 16]}>
+                    {isWhatsappDatesRequired && (
+                      <>
+                        <Col xs={24} sm={24} md={12} lg={12}>
+                          <Form.Item
+                            label={<strong>Start Date</strong>}
+                            name="startDate"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select start date",
+                              },
+                            ]}
+                          >
+                            <DatePicker
+                              size="large"
+                              style={{ width: "100%" }}
+                              placeholder="Select start date"
+                              format="YYYY-MM-DD"
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} sm={24} md={12} lg={12}>
+                          <Form.Item
+                            label={<strong>End Date</strong>}
+                            name="endDate"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Please select end date",
+                              },
+                            ]}
+                          >
+                            <DatePicker
+                              size="large"
+                              style={{ width: "100%" }}
+                              placeholder="Select end date"
+                              format="YYYY-MM-DD"
+                            />
+                          </Form.Item>
+                        </Col>
+                      </>
+                    )}
 
-                {whatsappInviteType === "askOxyCustomers" && (
-                  <Form.Item
-                    label="Order Count"
-                    name="orderCount"
-                    rules={[
-                      { pattern: /^[0-9]*$/, message: "Only numbers allowed" },
-                    ]}
-                  >
-                    <Input placeholder="Enter order count" />
-                  </Form.Item>
-                )}
+                    {whatsappInviteType === "sampleMessage" && (
+                      <Col xs={24} sm={24} md={12} lg={12}>
+                        <Form.Item
+                          label={<strong>Mobile Number</strong>}
+                          name="mobileNumber"
+                          rules={[
+                            {
+                              pattern: /^[0-9]*$/,
+                              message: "Only numbers allowed",
+                            },
+                          ]}
+                        >
+                          <Input
+                            placeholder="Enter mobile number"
+                            size="large"
+                          />
+                        </Form.Item>
+                      </Col>
+                    )}
 
-                <Form.Item label="Upload Image" required>
-                  <Upload
-                    fileList={whatsappImageList}
-                    beforeUpload={(file) => {
-                      // Check file size (1MB = 1048576 bytes)
-                      const maxSize = 1048576; // 1MB
-                      if (file.size > maxSize) {
-                        antdMessage.error({
-                          title: "Image Size Error",
-                          content: `Please upload an image below 1MB. Current size: ${(file.size / 1024 / 1024).toFixed(2)}MB`,
-                          okText: "OK",
-                        });
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Form.Item
+                        label={<strong>Limit</strong>}
+                        name="limit"
+                        rules={[
+                          { required: true, message: "Please enter limit" },
+                          {
+                            pattern: /^[0-9]*$/,
+                            message: "Only numbers allowed",
+                          },
+                        ]}
+                      >
+                        <Input placeholder="Enter limit" size="large" />
+                      </Form.Item>
+                    </Col>
+
+                    {whatsappInviteType === "askOxyCustomers" && (
+                      <Col xs={24} sm={24} md={12} lg={12}>
+                        <Form.Item
+                          label={<strong>Order Count (Optional)</strong>}
+                          name="orderCount"
+                          rules={[
+                            {
+                              pattern: /^[0-9]*$/,
+                              message: "Only numbers allowed",
+                            },
+                          ]}
+                        >
+                          <Input placeholder="Enter order count" size="large" />
+                        </Form.Item>
+                      </Col>
+                    )}
+                  </Row>
+
+                  <Divider />
+
+                  <Form.Item label={<strong>Upload Image</strong>} required>
+                    <Upload
+                      fileList={whatsappImageList}
+                      beforeUpload={(file) => {
+                        if (!validateImageBeforeUpload(file)) return false;
+                        setWhatsappImage(file);
+                        setWhatsappImageList([file]);
                         return false;
-                      }
-                      setWhatsappImage(file);
-                      setWhatsappImageList([file]);
-                      return false;
-                    }}
-                    onRemove={() => {
-                      setWhatsappImage(null);
-                      setWhatsappImageList([]);
-                    }}
-                    accept="image/*"
-                    maxCount={1}
-                  >
-                    <Button icon={<UploadOutlined />}>Select Image</Button>
-                  </Upload>
-                </Form.Item>
-                <Form.Item className="text-right mt-6">
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={whatsappLoading}
-                    style={{
-                      backgroundColor: "#1ab394",
-                      borderRadius: "10px",
-                      height: "45px",
-                      fontWeight: 600,
-                    }}
-                    block
-                  >
-                    Preview WhatsApp Campaign
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </div>
+                      }}
+                      onRemove={() => {
+                        setWhatsappImage(null);
+                        setWhatsappImageList([]);
+                      }}
+                      accept="image/*"
+                      maxCount={1}
+                    >
+                      <Button size="large" icon={<UploadOutlined />}>
+                        Select Image
+                      </Button>
+                    </Upload>
+                  </Form.Item>
+
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Button
+                        onClick={resetWhatsappFormAll}
+                        block
+                        style={{ height: 44, borderRadius: 10 }}
+                        disabled={whatsappLoading}
+                      >
+                        Reset
+                      </Button>
+                    </Col>
+                    <Col xs={24} sm={24} md={12} lg={12}>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        loading={whatsappLoading}
+                        block
+                        style={{
+                          backgroundColor: "#1ab394",
+                          borderRadius: 10,
+                          height: 44,
+                          fontWeight: 600,
+                        }}
+                      >
+                        Preview WhatsApp Campaign
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form>
+              </TabPane>
+            </Tabs>
+          </Card>
         </div>
 
-        {/* 🔍 Preview Modal */}
+        {/* ------------------- PREVIEW MODAL ------------------- */}
         <Modal
           open={previewVisible}
           title="Preview Campaign Details"
@@ -706,58 +784,116 @@ const CampaignUpload = () => {
             </Button>,
           ]}
         >
-          <p>
-            <strong>Invite Type:</strong> {previewData.inviteType}
-          </p>
-          <p>
-            <strong>Message:</strong> {previewData.message}
-            {previewData.startDate && (
-              <p>
-                <strong>Start Date:</strong>{" "}
-                {previewData.startDate.format
-                  ? previewData.startDate.format("YYYY-MM-DD")
-                  : previewData.startDate}
-              </p>
-            )}
-            {previewData.endDate && (
-              <p>
-                <strong>End Date:</strong>{" "}
-                {previewData.endDate.format
-                  ? previewData.endDate.format("YYYY-MM-DD")
-                  : previewData.endDate}
-              </p>
-            )}
-            {previewData.limit && (
-              <p>
-                <strong>Limit:</strong> {previewData.limit}
-              </p>
-            )}
-          </p>
-          {previewData.mobileNumber && (
-            <p>
-              <strong>Mobile Number:</strong> {previewData.mobileNumber}
-            </p>
-          )}
-          {previewData.orderCount && (
-            <p>
-              <strong>Order Count:</strong> {previewData.orderCount}
-            </p>
-          )}
-          {previewData.file && (
-            <p>
-              <strong>Excel File:</strong> {previewData.file.name}
-            </p>
-          )}
-          {previewData.image && (
-            <div className="mt-3">
-              <strong>Image Preview:</strong>
-              <img
-                src={URL.createObjectURL(previewData.image)}
-                alt="preview"
-                className="mt-2 rounded-md border w-32 h-32 object-cover"
-              />
+          <div style={{ display: "grid", gap: 10 }}>
+            <div>
+              <Text strong>Form Type:</Text>{" "}
+              <Text>{currentFormType?.toUpperCase()}</Text>
             </div>
-          )}
+
+            {previewData.inviteType && (
+              <div>
+                <Text strong>Invite Type:</Text>{" "}
+                <Text>{previewData.inviteType}</Text>
+              </div>
+            )}
+
+            {currentFormType === "excel" && previewData.type && (
+              <div>
+                <Text strong>Type:</Text> <Text>{previewData.type}</Text>
+              </div>
+            )}
+
+            {currentFormType === "excel" && previewData.offerName && (
+              <div>
+                <Text strong>Offer Name:</Text>{" "}
+                <Text>{previewData.offerName}</Text>
+              </div>
+            )}
+
+            {previewData.name && (
+              <div>
+                <Text strong>Campaign Name:</Text>{" "}
+                <Text>{previewData.name}</Text>
+              </div>
+            )}
+
+            {previewData.message && (
+              <div>
+                <Text strong>Message:</Text>
+                <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>
+                  {previewData.message}
+                </div>
+              </div>
+            )}
+
+            {previewData.startDate && (
+              <div>
+                <Text strong>Start Date:</Text>{" "}
+                <Text>
+                  {previewData.startDate?.format
+                    ? previewData.startDate.format("YYYY-MM-DD")
+                    : previewData.startDate}
+                </Text>
+              </div>
+            )}
+
+            {previewData.endDate && (
+              <div>
+                <Text strong>End Date:</Text>{" "}
+                <Text>
+                  {previewData.endDate?.format
+                    ? previewData.endDate.format("YYYY-MM-DD")
+                    : previewData.endDate}
+                </Text>
+              </div>
+            )}
+
+            {previewData.limit && (
+              <div>
+                <Text strong>Limit:</Text> <Text>{previewData.limit}</Text>
+              </div>
+            )}
+
+            {previewData.mobileNumber && (
+              <div>
+                <Text strong>Mobile Number:</Text>{" "}
+                <Text>{previewData.mobileNumber}</Text>
+              </div>
+            )}
+
+            {previewData.orderCount && (
+              <div>
+                <Text strong>Order Count:</Text>{" "}
+                <Text>{previewData.orderCount}</Text>
+              </div>
+            )}
+
+            {previewData.file?.name && (
+              <div>
+                <Text strong>Excel File:</Text>{" "}
+                <Text>{previewData.file.name}</Text>
+              </div>
+            )}
+
+            {previewData.image && (
+              <div>
+                <Text strong>Image Preview:</Text>
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src={URL.createObjectURL(previewData.image)}
+                    alt="preview"
+                    style={{
+                      width: 140,
+                      height: 140,
+                      borderRadius: 10,
+                      objectFit: "cover",
+                      border: "1px solid #eee",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       </div>
     </AdminPanelLayoutTest>

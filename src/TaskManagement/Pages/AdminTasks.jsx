@@ -13,12 +13,16 @@ import {
   Tag,
   Modal,
   Select,
+  Empty,
+  Divider,
+  Card,
 } from "antd";
 import {
   SearchOutlined,
   EditOutlined,
   CommentOutlined,
   EyeOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../AdminPages/Config";
@@ -38,33 +42,76 @@ const AdminTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null); // ✅ single select
   const [statusFilter, setStatusFilter] = useState("All");
-  const [viewModalVisible, setViewModalVisible] = useState(false);
+
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 100,
   });
   const [commentsData, setCommentsData] = useState([]);
   const [comments, setComments] = useState("");
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+
+  const [adminComment, setAdminComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+
   const handleViewComments = async (task) => {
     try {
-      setLoading(true);
       setSelectedTask(task);
+      setAdminComment("");
+      setCommentsData([]);
+      setLoading(true);
 
-      const response = await axios.get(
+      const res = await axios.get(
         `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
           params: { taskId: task.id },
-        }
+        },
       );
 
-      setCommentsData(response.data || []);
+      setCommentsData(Array.isArray(res.data) ? res.data : []);
       setViewModalVisible(true);
-    } catch (error) {
-      console.error("View Comments Error:", error);
+    } catch (e) {
       message.error("Failed to fetch comments");
     } finally {
       setLoading(false);
+    }
+  };
+  const submitAdminComment = async () => {
+    if (!selectedTask?.id) return message.warning("Task not selected");
+    if (!adminComment.trim()) return message.warning("Please enter a comment");
+
+    try {
+      setSubmittingComment(true);
+
+      await axios.post(
+        `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
+        {
+          taskId: selectedTask.id,
+          comments: adminComment.trim(),
+          commentsBy: "ADMIN",
+        },
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+
+      message.success("Admin comment added!");
+      setAdminComment("");
+
+      // refresh comments
+      const refreshed = await axios.get(
+        `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { taskId: selectedTask.id },
+        },
+      );
+
+      setCommentsData(Array.isArray(refreshed.data) ? refreshed.data : []);
+      fetchTasks(); // optional: refresh main table
+    } catch (e) {
+      message.error("Failed to add comment");
+    } finally {
+      setSubmittingComment(false);
     }
   };
 
@@ -77,7 +124,7 @@ const AdminTasks = () => {
         `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
-        }
+        },
       );
 
       const reversedTasks = response.data.slice().reverse();
@@ -124,7 +171,7 @@ const AdminTasks = () => {
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/user-service/getAllEmployees`
+        `${BASE_URL}/user-service/getAllEmployees`,
       );
       setEmployees(response.data);
     } catch (error) {
@@ -160,7 +207,7 @@ const AdminTasks = () => {
 
     if (statusValue !== "All") {
       filtered = filtered.filter(
-        (task) => task.status?.toLowerCase() === statusValue.toLowerCase()
+        (task) => task.status?.toLowerCase() === statusValue.toLowerCase(),
       );
     }
 
@@ -174,14 +221,14 @@ const AdminTasks = () => {
           (task.taskAssignTo &&
             (Array.isArray(task.taskAssignTo)
               ? task.taskAssignTo.some((t) =>
-                  t?.toLowerCase().includes(searchValue.toLowerCase())
+                  t?.toLowerCase().includes(searchValue.toLowerCase()),
                 )
               : typeof task.taskAssignTo === "string" &&
                 task.taskAssignTo
                   .toLowerCase()
                   .includes(searchValue.toLowerCase()))) ||
           task.taskName?.toLowerCase().includes(searchValue.toLowerCase()) ||
-          task.status?.toLowerCase().includes(searchValue.toLowerCase())
+          task.status?.toLowerCase().includes(searchValue.toLowerCase()),
       );
     }
     // ✅ Consistent field name for sorting (tastCreatedDate)
@@ -262,7 +309,7 @@ const AdminTasks = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       message.success("Comments added successfully!");
@@ -297,7 +344,7 @@ const AdminTasks = () => {
             assignedTo: selectedName,
             userId: selectedEmployee,
           },
-        }
+        },
       );
 
       message.success("Task updated successfully!");
@@ -317,9 +364,9 @@ const AdminTasks = () => {
 
       const options = {
         year: "numeric",
-        month: "short",
+        month: "numeric",
         day: "numeric",
-        weekday: "short",
+        // weekday: "short",
       };
 
       return date.toLocaleDateString("en-IN", options);
@@ -359,9 +406,7 @@ const AdminTasks = () => {
         return (
           <div
             style={{
-              backgroundColor: "#f9f9f9",
-              borderLeft: "4px solid #008cba",
-              borderRadius: 8,
+              
               padding: "8px 12px",
               textAlign: "left",
               display: "inline-block",
@@ -399,8 +444,8 @@ const AdminTasks = () => {
       render: (text) => (
         <div
           style={{
-            width: "320px", // enforce width
-            maxWidth: "320px",
+            width: "300px", // enforce width
+            maxWidth: "300px",
 
             WebkitBoxOrient: "vertical",
             display: "-webkit-box",
@@ -425,18 +470,14 @@ const AdminTasks = () => {
         return (
           <div
             style={{
-              backgroundColor: "#f9f9f9",
-
-              borderRadius: 8,
+             
               padding: "8px 12px",
               textAlign: "left",
               display: "inline-block",
               minWidth: 170,
             }}
           >
-            <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
-              Task Timeline
-            </div>
+         
 
             <div style={{ color: "#555", fontSize: 13 }}>
               Assigned Date:{" "}
@@ -445,7 +486,7 @@ const AdminTasks = () => {
               </span>
             </div>
 
-            <div style={{ color: "#555", fontSize: 13 }}>
+            {/* <div style={{ color: "#555", fontSize: 13 }}>
               Completed Date:{" "}
               <span
                 style={{
@@ -455,7 +496,7 @@ const AdminTasks = () => {
               >
                 {taskCompleteDate ? formatDate(taskCompleteDate) : "Pending"}
               </span>
-            </div>
+            </div> */}
             <div style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
               Status: {getStatusTag(status)}
             </div>
@@ -500,20 +541,20 @@ const AdminTasks = () => {
         >
           {/* Edit Button */}
           <Button
-            icon={<EditOutlined />}
             style={{
               background: "#008cba",
               color: "white",
+              fontWeight: 600,
               borderColor: "#008cba",
             }}
-            size="small"
+            size="medium"
             onClick={() => handleEdit(record)}
           >
-            Re Assign
+            Re Assigned Task
           </Button>
 
           {/* Add Comments Button */}
-          <Button
+          {/* <Button
             icon={<CommentOutlined />}
             style={{
               background: "#1ab394",
@@ -524,28 +565,28 @@ const AdminTasks = () => {
             onClick={() => handleCommentsAdd(record)}
           >
             Admin Comments
-          </Button>
+          </Button> */}
 
           {/* View Button */}
           <Button
-            icon={<EyeOutlined />}
+            onClick={() => handleViewComments(record)}
+            size="medium"
             style={{
               background: "#351664",
-              color: "white",
+              color: "#fff",
               borderColor: "#351664",
+              fontWeight: 600,
             }}
-            size="small"
-            onClick={() => handleViewComments(record)}
           >
-            View Commenst
+            View / Add Comments
           </Button>
         </div>
       ),
     },
   ];
-<>
-  <style>
-    {`
+  <>
+    <style>
+      {`
       .task-mobile-meta {
         display: none;
       }
@@ -556,12 +597,8 @@ const AdminTasks = () => {
         }
       }
     `}
-  </style>
-
- 
-</>;
-
-
+    </style>
+  </>;
 
   return (
     <TaskAdminPanelLayout>
@@ -685,7 +722,7 @@ const AdminTasks = () => {
           ))}
         </Select>
       </Modal>
-     <Modal
+      {/* <Modal
   title={`Task Comments - ${
     selectedTask ? `#${selectedTask.id.slice(-4)}` : ""
   }`}
@@ -783,6 +820,100 @@ const AdminTasks = () => {
           required
           rows={4}
         />
+      </Modal> */}
+      <Modal
+        title={`Task Comments ${selectedTask?.id ? `- #${selectedTask.id.slice(-4)}` : ""}`}
+        open={viewModalVisible}
+        onCancel={() => {
+          setViewModalVisible(false);
+          setAdminComment("");
+        }}
+        footer={null}
+        width={800}
+      >
+        {/* Existing comments list */}
+        {commentsData.length === 0 ? (
+          <Empty description="No comments found for this task." />
+        ) : (
+          <Table
+            dataSource={commentsData}
+            pagination={false}
+            bordered
+            rowKey={(_, index) => index}
+            columns={[
+              {
+                title: "S.No",
+                align: "center",
+                width: 70,
+                render: (_, __, index) => index + 1,
+              },
+              {
+                title: "Comment By",
+                dataIndex: "commentsBy",
+                align: "center",
+                width: 140,
+              },
+              {
+                title: "Comment",
+                dataIndex: "comments",
+                align: "left",
+                render: (t) => (
+                  <span style={{ whiteSpace: "pre-wrap" }}>{t}</span>
+                ),
+              },
+            ]}
+            scroll={{ x: true }}
+            size="small"
+          />
+        )}
+
+        <Divider />
+
+        {/* ✅ Admin comment input inside same modal */}
+        <Card
+          style={{
+            borderRadius: 12,
+            border: "1px solid #e9f5ff",
+            background: "#f6fbff",
+          }}
+          bodyStyle={{ padding: 12 }}
+        >
+          <Text strong style={{ color: "#008cba" }}>
+            Add Admin Comment
+          </Text>
+
+          <Input.TextArea
+            value={adminComment}
+            onChange={(e) => setAdminComment(e.target.value)}
+            placeholder="Type your admin comment here..."
+            rows={3}
+            style={{ marginTop: 10 }}
+            maxLength={2000}
+            showCount
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: 16,
+            }}
+          >
+            <Button
+              type="primary"
+              icon={<SendOutlined />}
+              loading={submittingComment}
+              onClick={submitAdminComment}
+              style={{
+                backgroundColor: "#008cba",
+                borderColor: "#008cba",
+                fontWeight: 600,
+              }}
+            >
+              Submit Comment
+            </Button>
+          </div>
+        </Card>
       </Modal>
     </TaskAdminPanelLayout>
   );

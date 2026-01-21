@@ -30,8 +30,8 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
-const PRIMARY = "#1ab394";
-const SECONDARY = "#008cba";
+const PRIMARY = "#008cba";
+const SECONDARY = "#1ab394";
 const BORDER_COLOR = "#d9d9d9";
 
 export default function CampaignForm() {
@@ -42,14 +42,15 @@ export default function CampaignForm() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const invitationType = Form.useWatch("invitationType", form);
 
   const initialValues = useMemo(
     () => ({
-      invitationType: "",
+      // invitationType: "",
       perDaySendMails: "",
       lastProcessedRow: 0,
       mailSubject: "",
-      fromMail: "",
+      // fromMail: "",
       displayName: "",
       createdBy: "",
       sampleMessage: "",
@@ -57,7 +58,7 @@ export default function CampaignForm() {
       startDate: null,
       endDate: null,
     }),
-    []
+    [],
   );
 
   // ✅ Upload Excel
@@ -99,8 +100,7 @@ export default function CampaignForm() {
   };
 
   const buildPayload = (values) => {
-    return {
-      excelUrl: values.excelUrl,
+    const common = {
       sampleMessage: values.sampleMessage,
       displayName: values.displayName,
       createdBy: values.createdBy,
@@ -112,7 +112,21 @@ export default function CampaignForm() {
       endDate: values.endDate ? values.endDate.format("YYYY-MM-DD") : null,
       invitationType: values.invitationType,
       mailSubject: values.mailSubject,
-      
+      projectType: values.ProjectType,
+    };
+
+    if (values.invitationType === "sample") {
+      return {
+        ...common,
+        sampleEmail: values.sampleEmail,
+        // ❌ excelUrl not included
+      };
+    }
+
+    // bulk
+    return {
+      ...common,
+      excelUrl: values.excelUrl,
     };
   };
 
@@ -169,6 +183,11 @@ export default function CampaignForm() {
               <Descriptions.Item label={<strong>Display Name</strong>}>
                 {payload.displayName || "-"}
               </Descriptions.Item>
+              {payload.invitationType === "sample" && (
+                <Descriptions.Item label={<strong>Sample Email</strong>}>
+                  {payload.sampleEmail || "-"}
+                </Descriptions.Item>
+              )}
 
               <Descriptions.Item label={<strong>Created By</strong>}>
                 {payload.createdBy || "-"}
@@ -260,8 +279,8 @@ export default function CampaignForm() {
       >
         <Card bodyStyle={{ padding: "16px 20px" }}>
           <Space direction="vertical" size={0} style={{ width: "100%" }}>
-            <Title level={2} style={{ color: PRIMARY, marginBottom: 4 }}>
-              Email Campaign Manager
+            <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
+              Email Campaign Creation
             </Title>
             <Text type="secondary">
               Create and manage email campaigns using Excel spreadsheets
@@ -277,61 +296,258 @@ export default function CampaignForm() {
           requiredMark="optional"
         >
           {/* File Upload Section */}
+          {invitationType !== "sample" && (
+            <Card
+              title={
+                <span style={{ color: PRIMARY }}>
+                  <strong>Upload Email List</strong>
+                </span>
+              }
+              style={{ marginBottom: 20 }}
+              bodyStyle={{ padding: "16px 20px" }}
+            >
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={24} md={12} lg={12}>
+                  <Form.Item
+                    label={<strong>Excel File (.xlsx, .xls, .csv)</strong>}
+                    extra="Upload your email list in Excel format"
+                  >
+                    <Upload
+                      accept=".xlsx,.xls,.csv"
+                      customRequest={handleUpload}
+                      showUploadList={false}
+                      maxCount={1}
+                      disabled={uploading}
+                    >
+                      <Button
+                        icon={<UploadOutlined />}
+                        loading={uploading}
+                        size="large"
+                        block
+                        style={{
+                          background: SECONDARY,
+                          color: "#fff",
+                          borderColor: SECONDARY,
+                        }}
+                      >
+                        {uploading ? "Uploading..." : "Choose Excel File"}
+                      </Button>
+                    </Upload>
+                    {uploadedFile && (
+                      <div style={{ marginTop: 8, color: PRIMARY }}>
+                        <CheckCircleOutlined /> File: {uploadedFile}
+                      </div>
+                    )}
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} sm={24} md={12} lg={12}>
+                  <Form.Item
+                    label={<strong>Excel File URL (Auto-filled)</strong>}
+                    name="excelUrl"
+                    rules={[
+                      {
+                        required: invitationType === "bulk",
+                        message: "Excel URL is required for BULK campaign",
+                      },
+                    ]}
+                    extra="This field auto-populates after upload"
+                  >
+                    <Input
+                      placeholder="Auto-filled after upload"
+                      disabled
+                      size="large"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
           <Card
             title={
               <span style={{ color: PRIMARY }}>
-                <strong>Step 1: Upload Email List</strong>
+                <strong>Campaign Settings</strong>
               </span>
             }
             style={{ marginBottom: 20 }}
             bodyStyle={{ padding: "16px 20px" }}
           >
             <Row gutter={[16, 16]}>
-              <Col xs={24} sm={24} md={12} lg={12}>
+              <Col xs={24} sm={24} md={12} lg={8}>
                 <Form.Item
-                  label={<strong>Excel File (.xlsx, .xls, .csv)</strong>}
-                  extra="Upload your email list in Excel format"
+                  label={<strong>Invitation Type</strong>}
+                  name="invitationType"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select invitation type",
+                    },
+                  ]}
+                  extra="Choose SAMPLE to send to one email or BULK to send to all in Excel"
                 >
-                  <Upload
-                    accept=".xlsx,.xls,.csv"
-                    customRequest={handleUpload}
-                    showUploadList={false}
-                    maxCount={1}
-                    disabled={uploading}
-                  >
-                    <Button
-                      icon={<UploadOutlined />}
-                      loading={uploading}
-                      size="large"
-                      block
-                      style={{
-                        background: SECONDARY,
-                        color: "#fff",
-                        borderColor: SECONDARY,
-                      }}
-                    >
-                      {uploading ? "Uploading..." : "Choose Excel File"}
-                    </Button>
-                  </Upload>
-                  {uploadedFile && (
-                    <div style={{ marginTop: 8, color: PRIMARY }}>
-                      <CheckCircleOutlined /> File: {uploadedFile}
-                    </div>
-                  )}
+                  <Select
+                    placeholder="Select invitation type"
+                    size="large"
+                    options={[
+                      { label: "SAMPLE", value: "sample" },
+                      { label: "BULK", value: "bulk" },
+                    ]}
+                    onChange={(val) => {
+                      if (val !== "sample") {
+                        form.setFieldsValue({ sampleEmail: undefined });
+                      } else {
+                        // switching to sample
+                        form.setFieldsValue({ excelUrl: undefined });
+                        setUploadedFile(null);
+                      }
+                    }}
+                  />
                 </Form.Item>
               </Col>
 
-              <Col xs={24} sm={24} md={12} lg={12}>
+              {invitationType === "sample" && (
+                <Col xs={24} sm={24} md={12} lg={8}>
+                  <Form.Item
+                    label={<strong>Sample Email</strong>}
+                    name="sampleEmail"
+                    rules={[
+                      { required: true, message: "Please enter sample email" },
+                      {
+                        type: "email",
+                        message: "Please enter a valid email address",
+                      },
+                      {
+                        validator: (_, value) => {
+                          if (!value) return Promise.resolve();
+                          if (value.includes(" ")) {
+                            return Promise.reject(
+                              new Error("Email should not contain spaces"),
+                            );
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                    extra="This email will receive a test campaign message"
+                  >
+                    <Input
+                      type="email"
+                      placeholder="e.g., test@gmail.com"
+                      size="large"
+                      maxLength={120}
+                      showCount
+                      onBlur={(e) =>
+                        form.setFieldsValue({
+                          sampleEmail: e.target.value?.trim(),
+                        })
+                      }
+                    />
+                  </Form.Item>
+                </Col>
+              )}
+
+              <Col xs={24} sm={24} md={12} lg={8}>
                 <Form.Item
-                  label={<strong>Excel File URL (Auto-filled)</strong>}
-                  name="excelUrl"
-                  rules={[{ required: true, message: "Excel URL is required" }]}
-                  extra="This field auto-populates after upload"
+                  label={<strong>Project Type</strong>}
+                  name="ProjectType"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select project type",
+                    },
+                  ]}
+                  extra="Type of campaign invitation"
                 >
-                  <Input
-                    placeholder="Auto-filled after upload"
-                    disabled
+                  <Select
+                    placeholder="Select project type"
                     size="large"
+                    options={[
+                      { label: "oxybricks", value: "oxybricks" },
+                      { label: "oxyloans", value: "oxyloans" },
+                      { label: "askoxy", value: "askoxy" },
+                      { label: "erice", value: "erice" },
+                      { label: "studentx", value: "studentx" },
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={24} md={12} lg={8}>
+                <Form.Item
+                  label={<strong>Daily Email Limit</strong>}
+                  name="perDaySendMails"
+                  rules={[
+                    { required: true, message: "Daily limit is required" },
+                    { type: "number", min: 1, message: "Minimum 1 email" },
+                    {
+                      type: "number",
+                      max: 50000,
+                      message: "Maximum 50,000 emails",
+                    },
+                  ]}
+                  extra="Emails to send per day (1-50,000)"
+                >
+                  <InputNumber
+                    placeholder="e.g., 100"
+                    style={{ width: "100%" }}
+                    size="large"
+                    min={1}
+                    max={50000}
+                  />
+                </Form.Item>
+              </Col>
+
+              {/* <Col xs={24} sm={24} md={12} lg={8}>
+                <Form.Item
+                  label={<strong>Last Processed Row</strong>}
+                  name="lastProcessedRow"
+                  rules={[
+                    { required: true, message: "This field is required" },
+                    { type: "number", min: 0, message: "Must be 0 or more" },
+                  ]}
+                  extra={
+                    <Tooltip title="Set to 0 for new campaigns, or the last row number if resuming">
+                      <span>Set to 0 for new campaigns</span>
+                    </Tooltip>
+                  }
+                >
+                  <InputNumber
+                    placeholder="0"
+                    style={{ width: "100%" }}
+                    size="large"
+                    min={0}
+                  />
+                </Form.Item>
+              </Col> */}
+
+              <Col xs={24} sm={12} md={12} lg={8}>
+                <Form.Item
+                  label={<strong>Campaign Start Date</strong>}
+                  name="startDate"
+                  rules={[
+                    { required: true, message: "Start date is required" },
+                  ]}
+                  extra="When to begin sending emails"
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    size="large"
+                    placeholder="Select start date"
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24} sm={12} md={12} lg={8}>
+                <Form.Item
+                  label={<strong>Campaign End Date</strong>}
+                  name="endDate"
+                  rules={[{ required: true, message: "End date is required" }]}
+                  extra="When to stop sending emails"
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    size="large"
+                    placeholder="Select end date"
                   />
                 </Form.Item>
               </Col>
@@ -342,7 +558,7 @@ export default function CampaignForm() {
           <Card
             title={
               <span style={{ color: PRIMARY }}>
-                <strong> Step 2: Email Configuration</strong>
+                <strong>Email Configuration</strong>
               </span>
             }
             style={{ marginBottom: 20 }}
@@ -353,7 +569,6 @@ export default function CampaignForm() {
                 <Form.Item
                   label={<strong>From Email Address</strong>}
                   name="fromMail"
-                  
                   rules={[{ required: true, message: "From mail is required" }]}
                   extra="Select the sender email address"
                 >
@@ -462,120 +677,6 @@ export default function CampaignForm() {
           </Card>
 
           {/* Campaign Settings Section */}
-          <Card
-            title={
-              <span style={{ color: PRIMARY }}>
-                <strong>Step 3: Campaign Settings</strong>
-              </span>
-            }
-            style={{ marginBottom: 20 }}
-            bodyStyle={{ padding: "16px 20px" }}
-          >
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Invitation Type</strong>}
-                  name="invitationType"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select invitation type",
-                    },
-                  ]}
-                  extra="Type of campaign invitation"
-                >
-                  <Select
-                    placeholder="Select invitation type"
-                    size="large"
-                    options={[
-                      { label: "BMV Invitation", value: "bmv" },
-                      { label: "General Invitation", value: "null" },
-                    ]}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Daily Email Limit</strong>}
-                  name="perDaySendMails"
-                  rules={[
-                    { required: true, message: "Daily limit is required" },
-                    { type: "number", min: 1, message: "Minimum 1 email" },
-                    {
-                      type: "number",
-                      max: 50000,
-                      message: "Maximum 50,000 emails",
-                    },
-                  ]}
-                  extra="Emails to send per day (1-50,000)"
-                >
-                  <InputNumber
-                    placeholder="e.g., 100"
-                    style={{ width: "100%" }}
-                    size="large"
-                    min={1}
-                    max={50000}
-                  />
-                </Form.Item>
-              </Col>
-
-              {/* <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Last Processed Row</strong>}
-                  name="lastProcessedRow"
-                  rules={[
-                    { required: true, message: "This field is required" },
-                    { type: "number", min: 0, message: "Must be 0 or more" },
-                  ]}
-                  extra={
-                    <Tooltip title="Set to 0 for new campaigns, or the last row number if resuming">
-                      <span>Set to 0 for new campaigns</span>
-                    </Tooltip>
-                  }
-                >
-                  <InputNumber
-                    placeholder="0"
-                    style={{ width: "100%" }}
-                    size="large"
-                    min={0}
-                  />
-                </Form.Item>
-              </Col> */}
-
-              <Col xs={24} sm={12} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Campaign Start Date</strong>}
-                  name="startDate"
-                  rules={[
-                    { required: true, message: "Start date is required" },
-                  ]}
-                  extra="When to begin sending emails"
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    size="large"
-                    placeholder="Select start date"
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col xs={24} sm={12} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Campaign End Date</strong>}
-                  name="endDate"
-                  rules={[{ required: true, message: "End date is required" }]}
-                  extra="When to stop sending emails"
-                >
-                  <DatePicker
-                    style={{ width: "100%" }}
-                    size="large"
-                    placeholder="Select end date"
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
 
           {/* Action Buttons */}
           <Card
@@ -685,6 +786,11 @@ export default function CampaignForm() {
                       ? `${payload.perDaySendMails} emails/day`
                       : "-"}
                   </Descriptions.Item>
+                  {payload.invitationType === "sample" && (
+                    <Descriptions.Item label={<strong>Sample Email</strong>}>
+                      {payload.sampleEmail || "-"}
+                    </Descriptions.Item>
+                  )}
 
                   <Descriptions.Item
                     label={<strong>Last Processed Row</strong>}

@@ -11,9 +11,12 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import PincodesData from "./AdminPages/PincodesData";
 import StudentSalesData from "./Companies/Pages/StudentSalesData";
 import CampaignForm from "./AdminPages/CampaignForm";
-import EmployeeDailyPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
+
 import Email from "./AdminPages/Emailcampaign";
 import CampaignsWithComments from "./Companies/Pages/CampaignsWithComments";
+import FreelancersList from "./AgentsAdmin/Pages/Freelancer";
+import TodayPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
+import AllEmployeesDailyPlans from "./TaskManagement/Pages/AllEmployeesDailyPlans";
 
 // Authentication Components
 // (Legacy auth components imported elsewhere if needed)
@@ -234,6 +237,7 @@ const agentsAdminRoutes = [
     element: <AgentsAdminLayout />,
   },
   { path: "/admin/assistantslist", element: <AssistantsList /> },
+  { path: "/admin/freelancer-list", element: <FreelancersList /> },
   { path: "/admin/agents-aistore", element: <AgentStoreManager /> },
   { path: "/admin/conversationlist", element: <ConversationsList /> },
   { path: "/admin/agentsplanslist", element: <PlansList /> },
@@ -264,15 +268,19 @@ const taskManagementRoutes = [
     element: <TaskManagementByDate />,
   },
   {
-    path: "/employeeplanofday",
-    element: <EmployeeDailyPlans />,
+    path: "/taskmanagement/work-logs/today",
+    element: <TodayPlans />,
   },
   {
-    path: "/taskmanagement/tasklists",
+    path: "/taskmanagement/tasks/assigned",
     element: <AdminTasks />,
   },
   {
-    path: "/taskmanagement/admininstructions",
+    path: "/taskmanagement/work-logs/history",
+    element: <AllEmployeesDailyPlans />
+  },
+  {
+    path: "/taskmanagement/tasks/assigned",
     element: <AdminInstructions />,
   },
   {
@@ -280,11 +288,11 @@ const taskManagementRoutes = [
     element: <RadhaInstructionView />,
   },
   {
-    path: "/taskmanagement/planoftheday",
+    path: "/taskmanagement/reports/daily-plan",
     element: <PlanOfTheDay />,
   },
   {
-    path: "/taskmanagement/endoftheday",
+    path: "/taskmanagement/reports/daily-summary",
     element: <EndOfTheDay />,
   },
   {
@@ -292,11 +300,11 @@ const taskManagementRoutes = [
     element: <UserTaskDetailsPage />,
   },
   {
-    path: "/taskmanagement/employeeleaves",
+    path: "/taskmanagement/leave-management",
     element: <LeaveManagement />,
   },
   {
-    path: "/taskmanagement/teamattendance",
+    path: "/taskmanagement/attendance",
     element: <TeamAttendanceReport />,
   },
   {
@@ -304,7 +312,7 @@ const taskManagementRoutes = [
     element: <EmployeeRegisteredUsers />,
   },
   {
-    path: "/taskmanagement/dashboard",
+    path: "/taskmanagement/overview",
     element: <Dashboard />,
   },
 ].map((route) => ({

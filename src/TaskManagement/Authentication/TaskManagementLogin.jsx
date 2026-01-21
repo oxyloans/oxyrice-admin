@@ -99,7 +99,7 @@ function TaskManagementLogin() {
             duration: 2,
           });
           setTimeout(() => {
-            navigate("/taskmanagement/dashboard");
+            navigate("/taskmanagement/overview");
           }, 1000); // Delay navigation to show success message
         } else {
           // Show error if primaryType is not HELPDESKSUPERADMIN
