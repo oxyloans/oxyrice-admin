@@ -56,7 +56,7 @@ const TaskAdminPanelLayout = ({ children }) => {
 
     {
       key: "assignedTasks",
-      label: "WhatsApp Tasks",
+      label: "Assigned WhatsApp Tasks",
       icon: <WhatsAppOutlined />,
       link: "/taskmanagement/tasks/assigned",
     },
@@ -79,13 +79,13 @@ const TaskAdminPanelLayout = ({ children }) => {
       dropdownItems: [
         {
           key: "todayWorkLog",
-          label: "Today’s Work Log",
+          label: "Today's POD/EOD",
           icon: <CheckSquareOutlined />,
           link: "/taskmanagement/work-logs/today",
         },
         {
           key: "workLogHistory",
-          label: "Work Log History",
+          label: "All Employees Reports",
           icon: <UnorderedListOutlined />,
           link: "/taskmanagement/work-logs/history",
         },

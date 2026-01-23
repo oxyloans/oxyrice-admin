@@ -580,12 +580,8 @@ export default function CampaignForm() {
                         label: "admin@oxyloans.com",
                         value: "admin@oxyloans.com",
                       },
-                      {
-                        label: "radha@oxybricks.world",
-                        value: "radha@oxybricks.world",
-                      },
-                      { label: "anil@askoxy.ai", value: "anil@askoxy.ai" },
-                      { label: "team@askoxy.in", value: "team@askoxy.in" },
+                     
+                   
                       {
                         label: "support@askoxy.ai",
                         value: "support@askoxy.ai",
