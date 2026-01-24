@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import AdminPanelLayoutTest from "./AdminPanel";
+import * as XLSX from "xlsx";
 import BASE_URL from "./Config";
 import {
   Form,
@@ -18,21 +19,95 @@ import {
   Typography,
   Upload,
   Modal,
-  Descriptions,
-  Tooltip,
-  Alert,
+  Descriptions, Alert,
 } from "antd";
 import {
   UploadOutlined,
   EyeOutlined,
   CheckCircleOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const PRIMARY = "#008cba";
 const SECONDARY = "#1ab394";
 const BORDER_COLOR = "#d9d9d9";
+
+const MESSAGE_STYLE = {
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-word",
+  backgroundColor: "#f5f5f5",
+  padding: 12,
+  borderRadius: 4,
+  maxHeight: 250,
+  overflowY: "auto",
+  border: `1px solid ${BORDER_COLOR}`,
+};
+
+const renderPreviewContent = (payload) => (
+  <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+    <Descriptions
+      size="small"
+      column={{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
+      bordered
+    >
+      <Descriptions.Item label={<strong>Invitation Type</strong>}>
+        {payload.invitationType || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Project Type</strong>}>
+        {payload.projectType || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Mail Subject</strong>}>
+        {payload.mailSubject || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>From Mail Address</strong>}>
+        {payload.fromMail || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Display Name</strong>}>
+        {payload.displayName || "-"}
+      </Descriptions.Item>
+
+      {payload.invitationType === "sample" && (
+        <Descriptions.Item label={<strong>Sample Email</strong>}>
+          {payload.sampleEmail || "-"}
+        </Descriptions.Item>
+      )}
+
+      <Descriptions.Item label={<strong>Created By</strong>}>
+        {payload.createdBy || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Daily Email Limit</strong>}>
+        {payload.perDaySendMails
+          ? `${payload.perDaySendMails} emails/day`
+          : "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Campaign Start Date</strong>}>
+        {payload.startDate || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Campaign End Date</strong>}>
+        {payload.endDate || "-"}
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Sample Message</strong>}>
+        <div style={MESSAGE_STYLE}>{payload.sampleMessage || "-"}</div>
+      </Descriptions.Item>
+
+      <Descriptions.Item label={<strong>Excel File URL</strong>}>
+        <Text code style={{ wordBreak: "break-all", fontSize: 12 }}>
+          {payload.excelUrl || "-"}
+        </Text>
+      </Descriptions.Item>
+    </Descriptions>
+  </div>
+);
 
 export default function CampaignForm() {
   const [form] = Form.useForm();
@@ -46,11 +121,8 @@ export default function CampaignForm() {
 
   const initialValues = useMemo(
     () => ({
-      // invitationType: "",
       perDaySendMails: "",
-      lastProcessedRow: 0,
       mailSubject: "",
-      // fromMail: "",
       displayName: "",
       createdBy: "",
       sampleMessage: "",
@@ -60,6 +132,69 @@ export default function CampaignForm() {
     }),
     [],
   );
+
+  const downloadSampleExcel = () => {
+    const data = [
+      ["Names", "Email", "MobileNumber"],
+      ["Dominique Cim", "prameela7.k@gmail.com", "9493967848"],
+      ["Edward Hoare", "prameelakowall@gmail.com", "9989089588"],
+      ["Gene Balas", "kopuridrarka@gmail.com", "9441918817"],
+      ["Pablo Redondo", "thotamaneiah@gmail.com", "9493967848"],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws["!cols"] = [{ wch: 25 }, { wch: 35 }, { wch: 18 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Recipients");
+
+    XLSX.writeFile(wb, "sample_email_list_template.xlsx");
+  };
+
+
+  const beforeUploadExcel = async (file) => {
+    const isXlsx = file.name.toLowerCase().endsWith(".xlsx");
+    if (!isXlsx) {
+      message.error("Only .xlsx files are allowed!");
+      return Upload.LIST_IGNORE;
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const wb = XLSX.read(arrayBuffer, { type: "array" });
+      const wsname = wb.SheetNames[0];
+      if (!wsname) throw new Error("No worksheet found");
+
+      const ws = wb.Sheets[wsname];
+      if (!ws["!ref"]) throw new Error("Empty sheet");
+
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      if (range.s.r !== 0) {
+        message.error(
+          "No empty rows allowed above the headers. Headers must start from row 1.",
+        );
+        return Upload.LIST_IGNORE;
+      }
+
+      const headerRow = XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || [];
+      const headers = headerRow.map((cell) =>
+        typeof cell === "string" ? cell.trim() : "",
+      );
+
+      const expected = ["Names", "Email", "MobileNumber"];
+      if (headers.length !== 3 || headers.join("|") !== expected.join("|")) {
+        message.error(
+          "Invalid headers. First row must contain exactly: Names, Email, MobileNumber (exact spelling, no extra columns)",
+        );
+        return Upload.LIST_IGNORE;
+      }
+
+      return true; // Allow upload
+    } catch (err) {
+      message.error("Invalid or corrupted Excel file.");
+      return Upload.LIST_IGNORE;
+    }
+  };
 
   // ✅ Upload Excel
   const handleUpload = async ({ file, onSuccess, onError }) => {
@@ -119,7 +254,6 @@ export default function CampaignForm() {
       return {
         ...common,
         sampleEmail: values.sampleEmail,
-        // ❌ excelUrl not included
       };
     }
 
@@ -130,13 +264,8 @@ export default function CampaignForm() {
     };
   };
 
-  const openPreview = async () => {
-    try {
-      await form.validateFields();
-      setPreviewOpen(true);
-    } catch {
-      message.error("Please fix validation errors before preview");
-    }
+  const openPreview = () => {
+    setPreviewOpen(true);
   };
 
   const submitWithConfirm = async () => {
@@ -163,76 +292,7 @@ export default function CampaignForm() {
               showIcon
               style={{ marginBottom: 16 }}
             />
-            <Descriptions
-              size="small"
-              column={{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
-              bordered
-            >
-              <Descriptions.Item label={<strong>Invitation Type</strong>}>
-                {payload.invitationType || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Mail Subject</strong>}>
-                {payload.mailSubject || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>From Mail Address</strong>}>
-                {payload.fromMail || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Display Name</strong>}>
-                {payload.displayName || "-"}
-              </Descriptions.Item>
-              {payload.invitationType === "sample" && (
-                <Descriptions.Item label={<strong>Sample Email</strong>}>
-                  {payload.sampleEmail || "-"}
-                </Descriptions.Item>
-              )}
-
-              <Descriptions.Item label={<strong>Created By</strong>}>
-                {payload.createdBy || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Daily Email Limit</strong>}>
-                {payload.perDaySendMails
-                  ? `${payload.perDaySendMails} emails/day`
-                  : "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Last Processed Row</strong>}>
-                {payload.lastProcessedRow ?? "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Campaign Start Date</strong>}>
-                {payload.startDate || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Campaign End Date</strong>}>
-                {payload.endDate || "-"}
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Sample Message</strong>}>
-                <div
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    backgroundColor: "#f5f5f5",
-                    padding: 8,
-                    borderRadius: 4,
-                    maxHeight: 200,
-                    overflowY: "auto",
-                  }}
-                >
-                  {payload.sampleMessage || "-"}
-                </div>
-              </Descriptions.Item>
-
-              <Descriptions.Item label={<strong>Excel File URL</strong>}>
-                <Text code style={{ wordBreak: "break-all", fontSize: 12 }}>
-                  {payload.excelUrl || "-"}
-                </Text>
-              </Descriptions.Item>
-            </Descriptions>
+            {renderPreviewContent(payload)}
           </div>
         ),
         onOk: async () => {
@@ -267,24 +327,36 @@ export default function CampaignForm() {
           }
         },
       });
-    } catch (error) {
-      message.error(error.message);
+    } catch (err) {
+      // Validation failed - show field errors and scroll to first error
+      message.warning(
+        "Please complete all required fields and fix the highlighted errors.",
+      );
+
+      const errorList = form
+        .getFieldsError()
+        .filter(({ errors }) => errors.length > 0);
+
+      if (errorList.length > 0) {
+        form.scrollToField(errorList[0].name, {
+          behavior: "smooth",
+          block: "center",
+        });
+      }
     }
   };
 
   return (
     <AdminPanelLayoutTest>
       <div
-        style={{ maxWidth: "100%", padding: "12px 8px", minHeight: "100vh" }}
+        style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}
       >
-        <Card bodyStyle={{ padding: "16px 20px" }}>
+        <Card bodyStyle={{ padding: "8px 8px" }}>
           <Space direction="vertical" size={0} style={{ width: "100%" }}>
             <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
-              Email Campaign Creation
+            Campaign Creation
             </Title>
-            <Text type="secondary">
-              Create and manage email campaigns using Excel spreadsheets
-            </Text>
+           
           </Space>
         </Card>
 
@@ -296,11 +368,12 @@ export default function CampaignForm() {
           requiredMark="optional"
         >
           {/* File Upload Section */}
-          {invitationType !== "sample" && (
+          {/* File Upload Section - Only for BULK */}
+          {invitationType === "bulk" && (
             <Card
               title={
                 <span style={{ color: PRIMARY }}>
-                  <strong>Upload Email List</strong>
+                  <strong>Upload Files</strong>
                 </span>
               }
               style={{ marginBottom: 20 }}
@@ -309,30 +382,55 @@ export default function CampaignForm() {
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={24} md={12} lg={12}>
                   <Form.Item
-                    label={<strong>Excel File (.xlsx, .xls, .csv)</strong>}
-                    extra="Upload your email list in Excel format"
+                    label={<strong>Excel File (.xlsx only)</strong>}
+                    extra="Select your file list in .xlsx format"
                   >
-                    <Upload
-                      accept=".xlsx,.xls,.csv"
-                      customRequest={handleUpload}
-                      showUploadList={false}
-                      maxCount={1}
-                      disabled={uploading}
-                    >
-                      <Button
-                        icon={<UploadOutlined />}
-                        loading={uploading}
-                        size="large"
-                        block
-                        style={{
-                          background: SECONDARY,
-                          color: "#fff",
-                          borderColor: SECONDARY,
-                        }}
-                      >
-                        {uploading ? "Uploading..." : "Choose Excel File"}
-                      </Button>
-                    </Upload>
+                    {/* Buttons: Download & Upload side-by-side on larger screens */}
+                    <Row gutter={[16, 8]} style={{ marginBottom: 16 }}>
+                      <Col xs={24} sm={12}>
+                        <Button
+                          icon={<DownloadOutlined />}
+                          onClick={downloadSampleExcel}
+                          size="large"
+                          block
+                          style={{
+                            background: PRIMARY,
+                            borderColor: PRIMARY,
+                            color: "#fff",
+                            height: 48, // Ensures consistent height with upload button
+                          }}
+                        >
+                          Download Sample Template
+                        </Button>
+                      </Col>
+                      <Col xs={24} sm={12}>
+                        <Upload
+                          accept=".xlsx"
+                          customRequest={handleUpload}
+                          showUploadList={false}
+                          maxCount={1}
+                          disabled={uploading}
+                          beforeUpload={beforeUploadExcel}
+                        >
+                          <Button
+                            icon={<UploadOutlined />}
+                            loading={uploading}
+                            size="large"
+                            block
+                            style={{
+                              background: SECONDARY,
+                              color: "#fff",
+                              borderColor: SECONDARY,
+                              height: 48,
+                            }}
+                          >
+                            {uploading ? "Uploading..." : "Choose .xlsx File"}
+                          </Button>
+                        </Upload>
+                      </Col>
+                    </Row>
+
+                    {/* Uploaded file confirmation */}
                     {uploadedFile && (
                       <div style={{ marginTop: 8, color: PRIMARY }}>
                         <CheckCircleOutlined /> File: {uploadedFile}
@@ -347,11 +445,11 @@ export default function CampaignForm() {
                     name="excelUrl"
                     rules={[
                       {
-                        required: invitationType === "bulk",
-                        message: "Excel URL is required for BULK campaign",
+                        required: true,
+                        message: "Excel file is required for BULK campaign",
                       },
                     ]}
-                    extra="This field auto-populates after upload"
+                    extra="This field auto-populates after successful upload"
                   >
                     <Input
                       placeholder="Auto-filled after upload"
@@ -361,6 +459,8 @@ export default function CampaignForm() {
                   </Form.Item>
                 </Col>
               </Row>
+
+          
             </Card>
           )}
           <Card
@@ -396,7 +496,6 @@ export default function CampaignForm() {
                       if (val !== "sample") {
                         form.setFieldsValue({ sampleEmail: undefined });
                       } else {
-                        // switching to sample
                         form.setFieldsValue({ excelUrl: undefined });
                         setUploadedFile(null);
                       }
@@ -497,35 +596,26 @@ export default function CampaignForm() {
                 </Form.Item>
               </Col>
 
-              {/* <Col xs={24} sm={24} md={12} lg={8}>
-                <Form.Item
-                  label={<strong>Last Processed Row</strong>}
-                  name="lastProcessedRow"
-                  rules={[
-                    { required: true, message: "This field is required" },
-                    { type: "number", min: 0, message: "Must be 0 or more" },
-                  ]}
-                  extra={
-                    <Tooltip title="Set to 0 for new campaigns, or the last row number if resuming">
-                      <span>Set to 0 for new campaigns</span>
-                    </Tooltip>
-                  }
-                >
-                  <InputNumber
-                    placeholder="0"
-                    style={{ width: "100%" }}
-                    size="large"
-                    min={0}
-                  />
-                </Form.Item>
-              </Col> */}
-
               <Col xs={24} sm={12} md={12} lg={8}>
                 <Form.Item
                   label={<strong>Campaign Start Date</strong>}
                   name="startDate"
+                  dependencies={["endDate"]}
                   rules={[
                     { required: true, message: "Start date is required" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const end = getFieldValue("endDate");
+                        if (!value || !end) return Promise.resolve();
+
+                        if (value.isAfter(end, "day")) {
+                          return Promise.reject(
+                            new Error("Start date cannot be after End date"),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    }),
                   ]}
                   extra="When to begin sending emails"
                 >
@@ -533,6 +623,16 @@ export default function CampaignForm() {
                     style={{ width: "100%" }}
                     size="large"
                     placeholder="Select start date"
+                    disabledDate={(current) =>
+                      current &&
+                      current.startOf("day").isBefore(new Date(), "day")
+                    }
+                    onChange={(start) => {
+                      const end = form.getFieldValue("endDate");
+                      if (start && end && end.isBefore(start, "day")) {
+                        form.setFieldsValue({ endDate: null });
+                      }
+                    }}
                   />
                 </Form.Item>
               </Col>
@@ -541,13 +641,39 @@ export default function CampaignForm() {
                 <Form.Item
                   label={<strong>Campaign End Date</strong>}
                   name="endDate"
-                  rules={[{ required: true, message: "End date is required" }]}
+                  dependencies={["startDate"]}
+                  rules={[
+                    { required: true, message: "End date is required" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const start = getFieldValue("startDate");
+                        if (!value || !start) return Promise.resolve();
+
+                        if (value.isBefore(start, "day")) {
+                          return Promise.reject(
+                            new Error("End date cannot be before Start date"),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
+                    }),
+                  ]}
                   extra="When to stop sending emails"
                 >
                   <DatePicker
                     style={{ width: "100%" }}
                     size="large"
                     placeholder="Select end date"
+                    disabledDate={(current) => {
+                      const start = form.getFieldValue("startDate");
+                      const isPast =
+                        current &&
+                        current.startOf("day").isBefore(new Date(), "day");
+                      const beforeStart =
+                        start && current && current.isBefore(start, "day");
+
+                      return isPast || beforeStart;
+                    }}
                   />
                 </Form.Item>
               </Col>
@@ -580,8 +706,6 @@ export default function CampaignForm() {
                         label: "admin@oxyloans.com",
                         value: "admin@oxyloans.com",
                       },
-                     
-                   
                       {
                         label: "support@askoxy.ai",
                         value: "support@askoxy.ai",
@@ -672,8 +796,6 @@ export default function CampaignForm() {
             </Row>
           </Card>
 
-          {/* Campaign Settings Section */}
-
           {/* Action Buttons */}
           <Card
             style={{ marginBottom: 24 }}
@@ -720,7 +842,7 @@ export default function CampaignForm() {
           open={previewOpen}
           onCancel={() => setPreviewOpen(false)}
           width="95%"
-          maxWidth={700}
+          style={{ maxWidth: 700 }}
           footer={[
             <Button
               key="close"
@@ -747,89 +869,7 @@ export default function CampaignForm() {
           {(() => {
             const v = form.getFieldsValue(true);
             const payload = buildPayload(v);
-
-            return (
-              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                <Descriptions
-                  size="small"
-                  column={{ xxl: 1, xl: 1, lg: 1, md: 1, sm: 1, xs: 1 }}
-                  bordered
-                >
-                  <Descriptions.Item label={<strong>Invitation Type</strong>}>
-                    {payload.invitationType || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Mail Subject</strong>}>
-                    {payload.mailSubject || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>From Mail</strong>}>
-                    {payload.fromMail || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Display Name</strong>}>
-                    {payload.displayName || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Created By</strong>}>
-                    {payload.createdBy || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item
-                    label={<strong>Per Day Send Mails</strong>}
-                  >
-                    {payload.perDaySendMails
-                      ? `${payload.perDaySendMails} emails/day`
-                      : "-"}
-                  </Descriptions.Item>
-                  {payload.invitationType === "sample" && (
-                    <Descriptions.Item label={<strong>Sample Email</strong>}>
-                      {payload.sampleEmail || "-"}
-                    </Descriptions.Item>
-                  )}
-
-                  <Descriptions.Item
-                    label={<strong>Last Processed Row</strong>}
-                  >
-                    {payload.lastProcessedRow ?? "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Start Date</strong>}>
-                    {payload.startDate || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>End Date</strong>}>
-                    {payload.endDate || "-"}
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Sample Message</strong>}>
-                    <div
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                        backgroundColor: "#fafafa",
-                        padding: 12,
-                        borderRadius: 4,
-                        maxHeight: 250,
-                        overflowY: "auto",
-                        border: `1px solid ${BORDER_COLOR}`,
-                      }}
-                    >
-                      {payload.sampleMessage || "-"}
-                    </div>
-                  </Descriptions.Item>
-
-                  <Descriptions.Item label={<strong>Excel File URL</strong>}>
-                    <Text
-                      code
-                      style={{ wordBreak: "break-all", fontSize: "12px" }}
-                    >
-                      {payload.excelUrl || "-"}
-                    </Text>
-                  </Descriptions.Item>
-                </Descriptions>
-              </div>
-            );
+            return renderPreviewContent(payload);
           })()}
         </Modal>
       </div>

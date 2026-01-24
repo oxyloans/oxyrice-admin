@@ -5,6 +5,11 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+
+import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import EntryPointTracker from "./routes/EntryPointTracker";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -17,6 +22,7 @@ import CampaignsWithComments from "./Companies/Pages/CampaignsWithComments";
 import FreelancersList from "./AgentsAdmin/Pages/Freelancer";
 import TodayPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
 import AllEmployeesDailyPlans from "./TaskManagement/Pages/AllEmployeesDailyPlans";
+import DigitalInvestment from "./Companies/Pages/DigitalInvestment";
 
 // Authentication Components
 // (Legacy auth components imported elsewhere if needed)
@@ -210,6 +216,11 @@ const companyAdminRoutes = [
     loginPath: "/admin/comapanieslogin",
   },
   {
+    path: "/admin/digitalinvestment",
+    element: <DigitalInvestment />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
     path: "/admin/jobsmanage",
     element: <JobsManagement />,
     loginPath: "/admin/comapanieslogin",
@@ -325,322 +336,324 @@ function App() {
     <Router>
       {/* useLocation now lives inside Router context */}
       <EntryPointTracker />
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<LoginTest />} />
-          <Route path="/admin/agentslogin" element={<AgentsLogin />} />
-          <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
-          <Route
-            path="/admin/taskmanagementlogin"
-            element={<TaskManagementLogin />}
-          />
-          {/* === COMPANIES ADMIN - PROTECTED === */}
-          {companyAdminRoutes.map(({ path, element, loginPath }) => (
+      <MantineProvider defaultColorScheme="light">
+        <Notifications position="top-right" />
+
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public */}
+            <Route path="/" element={<LoginTest />} />
+            <Route path="/admin/agentslogin" element={<AgentsLogin />} />
+            <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
             <Route
-              key={path}
-              path={path}
-              element={
-                <ProtectedRoute element={element} loginPath={loginPath} />
-              }
+              path="/admin/taskmanagementlogin"
+              element={<TaskManagementLogin />}
             />
-          ))}
-          {/* === AGENTS ADMIN - PROTECTED === */}
-          {agentsAdminRoutes.map(({ path, element, loginPath }) => (
-            <Route
-              key={path}
-              path={path}
-              element={
-                <ProtectedRoute element={element} loginPath={loginPath} />
-              }
-            />
-          ))}
-          {/* Task Management */}
-          {taskManagementRoutes.map(({ path, element, loginPath }) => (
-            <Route
-              key={path}
-              path={path}
-              element={
-                <ProtectedRoute element={element} loginPath={loginPath} />
-              }
-            />
-          ))}
-          {/* Legacy/Other (protected) */}
-          <Route
-            path="/dashboard"
-            element={<ProtectedRoute element={<Dashboard />} />}
-          />
-          <Route
-            path="/SubscriberDetails"
-            element={<ProtectedRoute element={<SubscriberDetails />} />}
-          />
-          <Route
-            path="/user_queries"
-            element={<ProtectedRoute element={<AllQueriesForAdmin />} />}
-          />
-          <Route
-            path="/selleradd"
-            element={<ProtectedRoute element={<SellerAdd />} />}
-          />
-          <Route
-            path="/deliveryboy/deliveryboys_list"
-            element={<ProtectedRoute element={<DeliveryBoyList />} />}
-          />
-          <Route
-            path="/seller/seller_list"
-            element={<ProtectedRoute element={<SellersList />} />}
-          />
-          <Route
-            path="/selleritems/:sellerId"
-            element={<ProtectedRoute element={<SellerItemsList />} />}
-          />
-          <Route
-            path="/item/items_list"
-            element={<ProtectedRoute element={<ItemsList />} />}
-          />
-          <Route
-            path="/exchange_orderslist"
-            element={<ProtectedRoute element={<ExchangeOrderList />} />}
-          />
-          <Route
-            path="/subscription_plans/plans_list"
-            element={<ProtectedRoute element={<SubscriptionPlans />} />}
-          />
-          <Route
-            path="/subscription_plans/user_subscriptions_list"
-            element={<ProtectedRoute element={<SubscribersList />} />}
-          />
-          <Route
-            path="/coupons/coupons_list"
-            element={<ProtectedRoute element={<CouponList />} />}
-          />
-          {/* <Route path="/orders/orders_list" element={<ProtectedRoute element={<OrdersList />} />} /> */}
-          <Route
-            path="/orders/orders_list/:id"
-            element={
-              <ProtectedRoute element={<OrdersListDetailsCustomerId />} />
-            }
-          />
-          <Route
-            path="/subscription_plans/user_subscriptions_list/:id"
-            element={
-              <ProtectedRoute
-                element={<SubscriptionPlanListDetailsCustomerId />}
+            {/* === COMPANIES ADMIN - PROTECTED === */}
+            {companyAdminRoutes.map(({ path, element, loginPath }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute element={element} loginPath={loginPath} />
+                }
               />
-            }
-          />
-          <Route
-            path="/orders/return_pending_list"
-            element={<ProtectedRoute element={<PendingOrders />} />}
-          />
-          <Route
-            path="/orders/return_replied_list"
-            element={<ProtectedRoute element={<RepliedList />} />}
-          />
-          <Route
-            path="/slides/slides_list"
-            element={<ProtectedRoute element={<SlidesList />} />}
-          />
-          <Route
-            path="/reports/item_requirements"
-            element={<ProtectedRoute element={<ItemRequirements />} />}
-          />
-          <Route
-            path="/refunds"
-            element={<ProtectedRoute element={<RefundOrders />} />}
-          />
-          <Route
-            path="/orders/report"
-            element={<ProtectedRoute element={<OrdersReport />} />}
-          />
-          <Route
-            path="/customer/customers_list"
-            element={<ProtectedRoute element={<CustomerList />} />}
-          />
-          <Route
-            path="/change_password"
-            element={<ProtectedRoute element={<ChangePassword />} />}
-          />
-          <Route
-            path="/settings"
-            element={<ProtectedRoute element={<SettingsForm />} />}
-          />
-          <Route
-            path="/category/category_list"
-            element={<ProtectedRoute element={<CategoryList />} />}
-          />
-          <Route
-            path="/user/mobilenumber_updated"
-            element={<ProtectedRoute element={<CustomerUpdationDetails />} />}
-          />
-          <Route
-            path="/admin/fuel-expenses"
-            element={<ProtectedRoute element={<FuelExpenses />} />}
-          />
-          <Route
-            path="/admin/dashboard"
-            element={<ProtectedRoute element={<DashboardTest />} />}
-          />
-          <Route
-            path="/admin/all-referrals"
-            element={<ProtectedRoute element={<AllReferralsData />} />}
-          />
-          <Route
-            path="/admin/emailcampaign"
-            element={<ProtectedRoute element={<CampaignForm />} />}
-          />
-          <Route
-            path="/admin/nbfcdatalist"
-            element={<ProtectedRoute element={<NBFCDataList />} />}
-          />
-          <Route
-            path="/admin/timeslots"
-            element={<ProtectedRoute element={<TimeSlots />} />}
-          />
-          <Route
-            path="/admin/bulkinvites"
-            element={<ProtectedRoute element={<BulkInviteCampaign />} />}
-          />
+            ))}
+            {/* === AGENTS ADMIN - PROTECTED === */}
+            {agentsAdminRoutes.map(({ path, element, loginPath }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute element={element} loginPath={loginPath} />
+                }
+              />
+            ))}
+            {/* Task Management */}
+            {taskManagementRoutes.map(({ path, element, loginPath }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <ProtectedRoute element={element} loginPath={loginPath} />
+                }
+              />
+            ))}
+            {/* Legacy/Other (protected) */}
+            <Route
+              path="/dashboard"
+              element={<ProtectedRoute element={<Dashboard />} />}
+            />
+            <Route
+              path="/SubscriberDetails"
+              element={<ProtectedRoute element={<SubscriberDetails />} />}
+            />
+            <Route
+              path="/user_queries"
+              element={<ProtectedRoute element={<AllQueriesForAdmin />} />}
+            />
+            <Route
+              path="/selleradd"
+              element={<ProtectedRoute element={<SellerAdd />} />}
+            />
+            <Route
+              path="/deliveryboy/deliveryboys_list"
+              element={<ProtectedRoute element={<DeliveryBoyList />} />}
+            />
+            <Route
+              path="/seller/seller_list"
+              element={<ProtectedRoute element={<SellersList />} />}
+            />
+            <Route
+              path="/selleritems/:sellerId"
+              element={<ProtectedRoute element={<SellerItemsList />} />}
+            />
+            <Route
+              path="/item/items_list"
+              element={<ProtectedRoute element={<ItemsList />} />}
+            />
+            <Route
+              path="/exchange_orderslist"
+              element={<ProtectedRoute element={<ExchangeOrderList />} />}
+            />
+            <Route
+              path="/subscription_plans/plans_list"
+              element={<ProtectedRoute element={<SubscriptionPlans />} />}
+            />
+            <Route
+              path="/subscription_plans/user_subscriptions_list"
+              element={<ProtectedRoute element={<SubscribersList />} />}
+            />
+            <Route
+              path="/coupons/coupons_list"
+              element={<ProtectedRoute element={<CouponList />} />}
+            />
+            {/* <Route path="/orders/orders_list" element={<ProtectedRoute element={<OrdersList />} />} /> */}
+            <Route
+              path="/orders/orders_list/:id"
+              element={
+                <ProtectedRoute element={<OrdersListDetailsCustomerId />} />
+              }
+            />
+            <Route
+              path="/subscription_plans/user_subscriptions_list/:id"
+              element={
+                <ProtectedRoute
+                  element={<SubscriptionPlanListDetailsCustomerId />}
+                />
+              }
+            />
+            <Route
+              path="/orders/return_pending_list"
+              element={<ProtectedRoute element={<PendingOrders />} />}
+            />
+            <Route
+              path="/orders/return_replied_list"
+              element={<ProtectedRoute element={<RepliedList />} />}
+            />
+            <Route
+              path="/slides/slides_list"
+              element={<ProtectedRoute element={<SlidesList />} />}
+            />
+            <Route
+              path="/reports/item_requirements"
+              element={<ProtectedRoute element={<ItemRequirements />} />}
+            />
+            <Route
+              path="/refunds"
+              element={<ProtectedRoute element={<RefundOrders />} />}
+            />
+            <Route
+              path="/orders/report"
+              element={<ProtectedRoute element={<OrdersReport />} />}
+            />
+            <Route
+              path="/customer/customers_list"
+              element={<ProtectedRoute element={<CustomerList />} />}
+            />
+            <Route
+              path="/change_password"
+              element={<ProtectedRoute element={<ChangePassword />} />}
+            />
+            <Route
+              path="/settings"
+              element={<ProtectedRoute element={<SettingsForm />} />}
+            />
+            <Route
+              path="/category/category_list"
+              element={<ProtectedRoute element={<CategoryList />} />}
+            />
+            <Route
+              path="/user/mobilenumber_updated"
+              element={<ProtectedRoute element={<CustomerUpdationDetails />} />}
+            />
+            <Route
+              path="/admin/fuel-expenses"
+              element={<ProtectedRoute element={<FuelExpenses />} />}
+            />
+            <Route
+              path="/admin/dashboard"
+              element={<ProtectedRoute element={<DashboardTest />} />}
+            />
+            <Route
+              path="/admin/all-referrals"
+              element={<ProtectedRoute element={<AllReferralsData />} />}
+            />
+            <Route
+              path="/admin/emailcampaign"
+              element={<ProtectedRoute element={<CampaignForm />} />}
+            />
+            <Route
+              path="/admin/nbfcdatalist"
+              element={<ProtectedRoute element={<NBFCDataList />} />}
+            />
+            <Route
+              path="/admin/timeslots"
+              element={<ProtectedRoute element={<TimeSlots />} />}
+            />
+            <Route
+              path="/admin/bulkinvites"
+              element={<ProtectedRoute element={<BulkInviteCampaign />} />}
+            />
 
-          <Route
-            path="/admin/categories"
-            element={<ProtectedRoute element={<Categories />} />}
-          />
-          <Route
-            path="/admin/pincodesdata"
-            element={<ProtectedRoute element={<PincodesData />} />}
-          />
+            <Route
+              path="/admin/categories"
+              element={<ProtectedRoute element={<Categories />} />}
+            />
+            <Route
+              path="/admin/pincodesdata"
+              element={<ProtectedRoute element={<PincodesData />} />}
+            />
 
-          <Route
-            path="/admin/initiatedamountlist"
-            element={<ProtectedRoute element={<InitiatedAmountList />} />}
-          />
-          <Route
-            path="/admin/approvedamountlist"
-            element={<ProtectedRoute element={<ApprovedAmountList />} />}
-          />
-          <Route
-            path="/admin/withdrawaluserlist"
-            element={<ProtectedRoute element={<WithdrawalRequests />} />}
-          />
-          <Route
-            path="/admin/coupons"
-            element={<ProtectedRoute element={<Coupons />} />}
-          />
-          <Route
-            path="/admin/ordersByCoupon"
-            element={<ProtectedRoute element={<OrdersByCoupon />} />}
-          />
-          <Route
-            path="/admin/studentapplications"
-            element={<ProtectedRoute element={<StudentApplications />} />}
-          />
-          <Route
-            path="/admin/student-registrations"
-            element={<ProtectedRoute element={<StudentRegistrations />} />}
-          />
-          <Route
-            path="/admin/customers"
-            element={<ProtectedRoute element={<Customers />} />}
-          />
-          <Route
-            path="/admin/customer-updation"
-            element={<ProtectedRoute element={<CustomerUpdation />} />}
-          />
-          <Route
-            path="/admin/services"
-            element={<ProtectedRoute element={<Services />} />}
-          />
-          <Route
-            path="/admin/serviceslist"
-            element={<ProtectedRoute element={<ServiceList />} />}
-          />
-          <Route
-            path="/admin/category-inventory"
-            element={<ProtectedRoute element={<CategoryInventory />} />}
-          />
-          <Route
-            path="/admin/campaign-inventory"
-            element={<ProtectedRoute element={<CampaignUpload />} />}
-          />
-          <Route
-            path="/admin/delivery-boys"
-            element={<ProtectedRoute element={<DeliveryBoys />} />}
-          />
-          <Route
-            path="/admin/exchange-orders"
-            element={<ProtectedRoute element={<ExchangeOrders />} />}
-          />
-          <Route
-            path="/admin/items"
-            element={<ProtectedRoute element={<ItemList />} />}
-          />
-          <Route
-            path="/admin/items-lists"
-            element={<ProtectedRoute element={<ItemsLists />} />}
-          />
-          <Route
-            path="/admin/items-offerlists"
-            element={<ProtectedRoute element={<ActiveOffersList />} />}
-          />
-          <Route
-            path="/admin/orders-details"
-            element={<ProtectedRoute element={<Ordersdetails />} />}
-          />
-          <Route
-            path="/admin/orders-details/:id"
-            element={<ProtectedRoute element={<OrdersDetailsCustomerId />} />}
-          />
-          <Route
-            path="/admin/orders-pending"
-            element={<ProtectedRoute element={<OrdersPending />} />}
-          />
-          <Route
-            path="/admin/sellers-items/:sellerId"
-            element={<ProtectedRoute element={<SellerItems />} />}
-          />
-          <Route
-            path="/emailcampaignexcel"
-            element={ <Email /> }
-          />
-          <Route
-            path="/admin/sellers"
-            element={<ProtectedRoute element={<Sellers />} />}
-          />
-          <Route
-            path="/admin/settings"
-            element={<ProtectedRoute element={<Settings />} />}
-          />
-          <Route
-            path="/admin/subscription-plans-list"
-            element={<ProtectedRoute element={<SubscriptionPlansList />} />}
-          />
-          <Route
-            path="/admin/subscription-plans-list/:id"
-            element={
-              <ProtectedRoute element={<SubscriptionPlanListustomerId />} />
-            }
-          />
-          <Route
-            path="/admin/subscriber-details"
-            element={<ProtectedRoute element={<SubscriberDetailslist />} />}
-          />
-          <Route
-            path="/admin/subscribers"
-            element={<ProtectedRoute element={<Subscribers />} />}
-          />
-          <Route
-            path="/admin/user_queries"
-            element={<ProtectedRoute element={<AllQueries />} />}
-          />
-          <Route
-            path="/admin/allinformationofbarcode/:itemId"
-            element={<ProtectedRoute element={<AllInforMationOfBarCode />} />}
-          />
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+            <Route
+              path="/admin/initiatedamountlist"
+              element={<ProtectedRoute element={<InitiatedAmountList />} />}
+            />
+            <Route
+              path="/admin/approvedamountlist"
+              element={<ProtectedRoute element={<ApprovedAmountList />} />}
+            />
+            <Route
+              path="/admin/withdrawaluserlist"
+              element={<ProtectedRoute element={<WithdrawalRequests />} />}
+            />
+            <Route
+              path="/admin/coupons"
+              element={<ProtectedRoute element={<Coupons />} />}
+            />
+            <Route
+              path="/admin/ordersByCoupon"
+              element={<ProtectedRoute element={<OrdersByCoupon />} />}
+            />
+            <Route
+              path="/admin/studentapplications"
+              element={<ProtectedRoute element={<StudentApplications />} />}
+            />
+            <Route
+              path="/admin/student-registrations"
+              element={<ProtectedRoute element={<StudentRegistrations />} />}
+            />
+            <Route
+              path="/admin/customers"
+              element={<ProtectedRoute element={<Customers />} />}
+            />
+            <Route
+              path="/admin/customer-updation"
+              element={<ProtectedRoute element={<CustomerUpdation />} />}
+            />
+            <Route
+              path="/admin/services"
+              element={<ProtectedRoute element={<Services />} />}
+            />
+            <Route
+              path="/admin/serviceslist"
+              element={<ProtectedRoute element={<ServiceList />} />}
+            />
+            <Route
+              path="/admin/category-inventory"
+              element={<ProtectedRoute element={<CategoryInventory />} />}
+            />
+            <Route
+              path="/admin/campaign-inventory"
+              element={<ProtectedRoute element={<CampaignUpload />} />}
+            />
+            <Route
+              path="/admin/delivery-boys"
+              element={<ProtectedRoute element={<DeliveryBoys />} />}
+            />
+            <Route
+              path="/admin/exchange-orders"
+              element={<ProtectedRoute element={<ExchangeOrders />} />}
+            />
+            <Route
+              path="/admin/items"
+              element={<ProtectedRoute element={<ItemList />} />}
+            />
+            <Route
+              path="/admin/items-lists"
+              element={<ProtectedRoute element={<ItemsLists />} />}
+            />
+            <Route
+              path="/admin/items-offerlists"
+              element={<ProtectedRoute element={<ActiveOffersList />} />}
+            />
+            <Route
+              path="/admin/orders-details"
+              element={<ProtectedRoute element={<Ordersdetails />} />}
+            />
+            <Route
+              path="/admin/orders-details/:id"
+              element={<ProtectedRoute element={<OrdersDetailsCustomerId />} />}
+            />
+            <Route
+              path="/admin/orders-pending"
+              element={<ProtectedRoute element={<OrdersPending />} />}
+            />
+            <Route
+              path="/admin/sellers-items/:sellerId"
+              element={<ProtectedRoute element={<SellerItems />} />}
+            />
+            <Route path="/emailcampaignexcel" element={<Email />} />
+            <Route
+              path="/admin/sellers"
+              element={<ProtectedRoute element={<Sellers />} />}
+            />
+            <Route
+              path="/admin/settings"
+              element={<ProtectedRoute element={<Settings />} />}
+            />
+            <Route
+              path="/admin/subscription-plans-list"
+              element={<ProtectedRoute element={<SubscriptionPlansList />} />}
+            />
+            <Route
+              path="/admin/subscription-plans-list/:id"
+              element={
+                <ProtectedRoute element={<SubscriptionPlanListustomerId />} />
+              }
+            />
+            <Route
+              path="/admin/subscriber-details"
+              element={<ProtectedRoute element={<SubscriberDetailslist />} />}
+            />
+            <Route
+              path="/admin/subscribers"
+              element={<ProtectedRoute element={<Subscribers />} />}
+            />
+            <Route
+              path="/admin/user_queries"
+              element={<ProtectedRoute element={<AllQueries />} />}
+            />
+            <Route
+              path="/admin/allinformationofbarcode/:itemId"
+              element={<ProtectedRoute element={<AllInforMationOfBarCode />} />}
+            />
+            {/* Catch-all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+       
+      </MantineProvider>
     </Router>
   );
 }

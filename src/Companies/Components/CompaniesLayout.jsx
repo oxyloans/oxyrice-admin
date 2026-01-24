@@ -90,6 +90,11 @@ const CompaniesLayout = ({ children }) => {
           link: "/admin/news-papers",
         },
         {
+          key: "DigitalInvestment",
+          label: "Digital Investment",
+          link: "/admin/digitalinvestment",
+        },
+        {
           key: "StudentSalesData",
           label: "Student Sales Data",
           link: "/admin/studentsalesdata",
