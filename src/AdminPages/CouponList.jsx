@@ -72,11 +72,7 @@ const Coupons = () => {
     const sortedCoupons = response.data.sort((a, b) => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-      // setCoupons(response.data);
-      // setFilteredCoupons(response.data);
-
-
-      setCoupons(sortedCoupons);
+     setCoupons(sortedCoupons);
       setFilteredCoupons(sortedCoupons);
     } catch (error) {
       console.error("Error fetching coupons:", error);
@@ -609,12 +605,11 @@ const Coupons = () => {
               <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
                 <TabPane tab="Private Coupons" key="PRIVATE" />
                 <TabPane tab="Public Coupons" key="PUBLIC" />
-
               </Tabs>
 
               <Table
                 dataSource={filteredCoupons.filter(
-                  (c) => c.status === activeTab
+                  (c) => c.status === activeTab,
                 )}
                 columns={columns}
                 rowKey="couponId"
@@ -865,6 +860,9 @@ const Coupons = () => {
                   <Option value="RICE">RICE</Option>
                   <Option value="Grocery">GROCERY</Option>
                   <Option value="GOLD">GOLD</Option>
+                  <Option value="CONTAINERS">
+                    CONTAINERS 
+                  </Option>
                 </Select>
               </Form.Item>
             </Col>

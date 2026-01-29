@@ -301,7 +301,7 @@ const CampaignUpload = () => {
             Campaign Management
           </Title>
 
-          <Card>
+          <div>
             <Tabs type="card" defaultActiveKey="excel" size="large">
               {/* ------------------- EXCEL TAB ------------------- */}
               <TabPane
@@ -762,7 +762,7 @@ const CampaignUpload = () => {
                 </Form>
               </TabPane>
             </Tabs>
-          </Card>
+          </div>
         </div>
 
         {/* ------------------- PREVIEW MODAL ------------------- */}

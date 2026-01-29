@@ -626,12 +626,12 @@ const AdminPanelLayoutTest = ({ children }) => {
               ? "80px 16px 16px"
               : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
             padding: screens.xs ? 12 : 24,
-            background: "#fff",
+            background: "#ffffff",
             width: screens.xs
               ? "100%"
               : `calc(100% - ${collapsed ? "80px" : "240px"})`,
             marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
-            position: "relative", // Ensure it's positioned correctly
+            position: "relative", 
           }}
         >
           {children}
@@ -651,7 +651,7 @@ const AdminPanelLayoutTest = ({ children }) => {
           ASKOXY.AI Admin ©{fullYear} Created by ASKOXY.AI Company
         </Footer>
       </Layout>
-      {/* Custom scrollbar styling */}
+      
       <style>{`
         /* Customize scrollbar for the menu */
         .ant-menu::-webkit-scrollbar {

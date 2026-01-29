@@ -468,7 +468,7 @@ useEffect(() => {
   return (
     <AdminPanelLayoutTest>
       <Layout className="min-h-screen">
-        <Content className="p-4 sm:p-6 md:p-8">
+        <div className="p-4 sm:p-6 md:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <Title level={2} className="text-gray-800 font-bold m-0">
@@ -609,7 +609,7 @@ useEffect(() => {
               </>
             )}
           </div>
-        </Content>
+        </div>
       </Layout>
     </AdminPanelLayoutTest>
   );

@@ -348,17 +348,22 @@ export default function CampaignForm() {
 
   return (
     <AdminPanelLayoutTest>
-      <div
-        style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}
-      >
-        <Card bodyStyle={{ padding: "8px 8px" }}>
+      <div style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}>
+        <div
+          bodyStyle={{
+            padding: "8px 8px",
+            border: "none",
+            boxShadow: "none",
+            rounded: 0,
+          }}
+          style={{ marginBottom: 20 }}
+        >
           <Space direction="vertical" size={0} style={{ width: "100%" }}>
             <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
-            Campaign Creation
+              Campaign Creation
             </Title>
-           
           </Space>
-        </Card>
+        </div>
 
         {/* Form Section */}
         <Form
@@ -370,7 +375,7 @@ export default function CampaignForm() {
           {/* File Upload Section */}
           {/* File Upload Section - Only for BULK */}
           {invitationType === "bulk" && (
-            <Card
+            <div
               title={
                 <span style={{ color: PRIMARY }}>
                   <strong>Upload Files</strong>
@@ -459,11 +464,9 @@ export default function CampaignForm() {
                   </Form.Item>
                 </Col>
               </Row>
-
-          
-            </Card>
+            </div>
           )}
-          <Card
+          <div
             title={
               <span style={{ color: PRIMARY }}>
                 <strong>Campaign Settings</strong>
@@ -678,10 +681,10 @@ export default function CampaignForm() {
                 </Form.Item>
               </Col>
             </Row>
-          </Card>
+          </div>
 
           {/* Email Configuration Section */}
-          <Card
+          <div
             title={
               <span style={{ color: PRIMARY }}>
                 <strong>Email Configuration</strong>
@@ -709,6 +712,14 @@ export default function CampaignForm() {
                       {
                         label: "support@askoxy.ai",
                         value: "support@askoxy.ai",
+                      },
+                      {
+                        label: "radhakrishna.t@askoxy.ai",
+                        value: "radhakrishna.t@askoxy.ai",
+                      },
+                      {
+                        label: "anil@askoxy.ai",
+                        value: "anil@askoxy.ai",
                       },
                     ]}
                   />
@@ -794,10 +805,10 @@ export default function CampaignForm() {
                 </Form.Item>
               </Col>
             </Row>
-          </Card>
+          </div>
 
           {/* Action Buttons */}
-          <Card
+          <div
             style={{ marginBottom: 24 }}
             bodyStyle={{ padding: "16px 20px" }}
           >
@@ -833,7 +844,7 @@ export default function CampaignForm() {
                 </Button>
               </Col>
             </Row>
-          </Card>
+          </div>
         </Form>
 
         {/* Preview Modal */}

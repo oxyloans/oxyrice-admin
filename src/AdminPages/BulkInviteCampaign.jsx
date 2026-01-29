@@ -49,7 +49,7 @@ const BulkInviteCampaign = () => {
         form.setFieldsValue({ sampleEmail: undefined });
       }
     },
-    [form]
+    [form],
   );
 
   const handleFileChange = useCallback((fileList) => {
@@ -78,7 +78,7 @@ const BulkInviteCampaign = () => {
 
       setPreviewVisible(true);
     },
-    [inviteType]
+    [inviteType],
   );
 
   const submitFinal = useCallback(async () => {
@@ -237,8 +237,7 @@ const BulkInviteCampaign = () => {
           </div>
 
           {/* Main Form Card */}
-          <Card
-           
+          <div
             style={{
               borderRadius: "12px",
               overflow: "hidden",
@@ -493,9 +492,7 @@ const BulkInviteCampaign = () => {
                 </Button>
               </div>
             </Form>
-          </Card>
-
-         
+          </div>
         </div>
       </div>
 

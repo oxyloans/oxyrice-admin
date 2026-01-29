@@ -348,15 +348,12 @@ export default function Email() {
 
   return (
     <AdminPanelLayoutTest>
-      <div
-        style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}
-      >
+      <div style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}>
         <Card bodyStyle={{ padding: "8px 8px" }}>
           <Space direction="vertical" size={0} style={{ width: "100%" }}>
             <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
-            Campaign Creation
+              Campaign Creation
             </Title>
-           
           </Space>
         </Card>
 
@@ -459,8 +456,6 @@ export default function Email() {
                   </Form.Item>
                 </Col>
               </Row>
-
-          
             </Card>
           )}
           <Card
@@ -709,6 +704,14 @@ export default function Email() {
                       {
                         label: "support@askoxy.ai",
                         value: "support@askoxy.ai",
+                      },
+                      {
+                        label: "radhakrishna.t@askoxy.ai",
+                        value: "radhakrishna.t@askoxy.ai",
+                      },
+                      {
+                        label: "anil@askoxy.ai",
+                        value: "anil@askoxy.ai",
                       },
                     ]}
                   />
