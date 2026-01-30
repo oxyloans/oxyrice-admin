@@ -42,6 +42,27 @@ const AdminTasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null); // ✅ single select
   const [statusFilter, setStatusFilter] = useState("All");
+  const [assignedToFilter, setAssignedToFilter] = useState("All");
+
+  const getUniqueAssignees = () => {
+    const assignees = new Set();
+    tasks.forEach(task => {
+      if (Array.isArray(task.taskAssignTo)) {
+        task.taskAssignTo.forEach(name => {
+          if (name && name.trim()) assignees.add(name.trim());
+        });
+      } else if (task.taskAssignTo && task.taskAssignTo.trim()) {
+        assignees.add(task.taskAssignTo.trim());
+      }
+    });
+    return Array.from(assignees).sort();
+  };
+
+  const handleAssignedToFilter = (value) => {
+    setAssignedToFilter(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+    applyFilters(searchText, statusFilter, value);
+  };
 
   const [pagination, setPagination] = useState({
     current: 1,
@@ -150,9 +171,47 @@ const AdminTasks = () => {
         // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
         return hasValidAssignee && hasValidTaskName;
       });
+      
       validTasks.sort((a, b) => {
-        const dateA = new Date(a.tastCreatedDate || 0);
-        const dateB = new Date(b.tastCreatedDate || 0);
+        const parseDate = (dateStr) => {
+          if (!dateStr) return new Date(0);
+          
+          // Handle ISO format like "2025-10-25 07:35:47.956"
+          if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.includes(':')) {
+            return new Date(dateStr);
+          }
+          
+          if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+            const parts = dateStr.split(' ');
+            if (parts.length >= 2) {
+              const month = parts[0];
+              const day = parseInt(parts[1]);
+              const currentYear = new Date().getFullYear();
+              const currentMonth = new Date().getMonth();
+              
+              const monthMap = {
+                'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+              };
+              
+              if (monthMap[month] !== undefined && !isNaN(day)) {
+                const taskMonth = monthMap[month];
+                let year = currentYear;
+                
+                if (taskMonth > currentMonth) {
+                  year = currentYear - 1;
+                }
+                
+                return new Date(year, taskMonth, day);
+              }
+            }
+          }
+          
+          return new Date(dateStr);
+        };
+        
+        const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
+        const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
         return dateB - dateA;
       });
       setTasks(validTasks);
@@ -188,21 +247,19 @@ const AdminTasks = () => {
   // ✅ Handle search
   const handleSearch = (value) => {
     setSearchText(value);
-    // ✅ Reset to first page on search
     setPagination((prev) => ({ ...prev, current: 1 }));
-    applyFilters(value, statusFilter);
+    applyFilters(value, statusFilter, assignedToFilter);
   };
 
   // ✅ Handle status filter
   const handleStatusFilter = (value) => {
     setStatusFilter(value);
-    // ✅ Reset to first page on filter change
     setPagination((prev) => ({ ...prev, current: 1 }));
-    applyFilters(searchText, value);
+    applyFilters(searchText, value, assignedToFilter);
   };
 
-  // ✅ Apply combined filters (search + status)
-  const applyFilters = (searchValue, statusValue) => {
+  // ✅ Apply combined filters (search + status + assignedTo)
+  const applyFilters = (searchValue, statusValue, assignedToValue) => {
     let filtered = [...tasks];
 
     if (statusValue !== "All") {
@@ -211,13 +268,21 @@ const AdminTasks = () => {
       );
     }
 
+    if (assignedToValue !== "All") {
+      filtered = filtered.filter(task => {
+        if (Array.isArray(task.taskAssignTo)) {
+          return task.taskAssignTo.some(name => name?.trim() === assignedToValue);
+        }
+        return task.taskAssignTo?.trim() === assignedToValue;
+      });
+    }
+
     if (searchValue.trim()) {
       filtered = filtered.filter(
         (task) =>
           task.taskAssignBy
             ?.toLowerCase()
             .includes(searchValue.toLowerCase()) ||
-          // ✅ Handle taskAssignTo as array or string
           (task.taskAssignTo &&
             (Array.isArray(task.taskAssignTo)
               ? task.taskAssignTo.some((t) =>
@@ -233,9 +298,46 @@ const AdminTasks = () => {
     }
     // ✅ Consistent field name for sorting (tastCreatedDate)
     filtered.sort((a, b) => {
-      const dateA = new Date(a.tastCreatedDate || 0);
-      const dateB = new Date(b.tastCreatedDate || 0);
-      return dateB - dateA; // latest first
+      const parseDate = (dateStr) => {
+        if (!dateStr) return new Date(0);
+        
+        // Handle ISO format like "2025-10-25 07:35:47.956"
+        if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.includes(':')) {
+          return new Date(dateStr);
+        }
+        
+        if (typeof dateStr === 'string' && dateStr.includes(' ')) {
+          const parts = dateStr.split(' ');
+          if (parts.length >= 2) {
+            const month = parts[0];
+            const day = parseInt(parts[1]);
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth();
+            
+            const monthMap = {
+              'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+              'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+            };
+            
+            if (monthMap[month] !== undefined && !isNaN(day)) {
+              const taskMonth = monthMap[month];
+              let year = currentYear;
+              
+              if (taskMonth > currentMonth) {
+                year = currentYear - 1;
+              }
+              
+              return new Date(year, taskMonth, day);
+            }
+          }
+        }
+        
+        return new Date(dateStr);
+      };
+      
+      const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
+      const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
+      return dateB - dateA;
     });
     setFilteredTasks(filtered);
   };
@@ -359,17 +461,59 @@ const AdminTasks = () => {
     if (!dateString) return "N/A";
 
     try {
+      // Handle ISO format like "2025-10-25 07:35:47.956"
+      if (typeof dateString === 'string' && dateString.includes('-') && dateString.includes(':')) {
+        const date = new Date(dateString);
+        if (!isNaN(date)) {
+          return date.toLocaleDateString("en-IN", {
+            year: "numeric",
+            month: "numeric", 
+            day: "numeric"
+          });
+        }
+      }
+      
+      // Handle "Jan 23 Friday" format
+      if (typeof dateString === 'string' && dateString.includes(' ')) {
+        const parts = dateString.split(' ');
+        if (parts.length >= 2) {
+          const month = parts[0];
+          const day = parseInt(parts[1]);
+          const currentYear = new Date().getFullYear();
+          const currentMonth = new Date().getMonth();
+          
+          const monthMap = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+          };
+          
+          if (monthMap[month] !== undefined && !isNaN(day)) {
+            const taskMonth = monthMap[month];
+            let year = currentYear;
+            
+            if (taskMonth > currentMonth) {
+              year = currentYear - 1;
+            }
+            
+            const date = new Date(year, taskMonth, day);
+            return date.toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "numeric", 
+              day: "numeric"
+            });
+          }
+        }
+        return dateString;
+      }
+      
       const date = new Date(dateString);
-      if (isNaN(date)) return dateString; // if not a valid date
+      if (isNaN(date)) return dateString;
 
-      const options = {
+      return date.toLocaleDateString("en-IN", {
         year: "numeric",
         month: "numeric",
-        day: "numeric",
-        // weekday: "short",
-      };
-
-      return date.toLocaleDateString("en-IN", options);
+        day: "numeric"
+      });
     } catch (error) {
       return dateString;
     }
@@ -378,7 +522,7 @@ const AdminTasks = () => {
   // ✅ Table columns
   const columns = [
     {
-      title: "S.No",
+      title: "S.NO",
       key: "serial",
       align: "center",
 
@@ -479,12 +623,7 @@ const AdminTasks = () => {
           >
          
 
-            <div style={{ color: "#555", fontSize: 13 }}>
-              Assigned Date:{" "}
-              <span style={{ color: "#008cba", fontWeight: 500 }}>
-                {tastCreatedDate ? formatDate(tastCreatedDate) : "N/A"}
-              </span>
-            </div>
+            <div style={{ color: "#555", fontSize: 13, whiteSpace: "nowrap" }}>Assigned Date: <span style={{ color: "#008cba", fontWeight: 500 }}>{record.taskAssignedDate ? formatDate(record.taskAssignedDate) : (tastCreatedDate ? formatDate(tastCreatedDate) : "N/A")}</span></div>
 
             {/* <div style={{ color: "#555", fontSize: 13 }}>
               Completed Date:{" "}
@@ -498,34 +637,81 @@ const AdminTasks = () => {
               </span>
             </div> */}
             <div style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
-              Status: {getStatusTag(status)}
+              Status: <span style={{ 
+                color: status?.toLowerCase() === 'assigned' ? '#008CBA' : 
+                       status?.toLowerCase() === 'completed' ? '#1AB394' : '#555',
+                fontWeight: 'bold'
+              }}>{status}</span>
             </div>
           </div>
         );
       },
     },
 
-    {
-      title: "Image",
-      dataIndex: "image",
-      key: "image",
-      align: "center",
-      render: (url) =>
-        url ? (
-          <Image
-            width={80}
-            height={80}
-            src={url}
-            style={{
-              borderRadius: "4px",
-              objectFit: "cover",
-              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-            }}
-          />
-        ) : (
-          <Text type="secondary">No Image</Text>
-        ),
-    },
+  {
+  title: "Image & Files",
+    dataIndex: "image",
+  width: 150,
+  key: "image",
+  align: "center",
+  render: (url) => {
+    if (!url) return "-";
+
+    const fileUrl = url.toLowerCase();
+
+    // Image formats
+    const isImage =
+      fileUrl.endsWith(".jpg") ||
+      fileUrl.endsWith(".jpeg") ||
+      fileUrl.endsWith(".png") ||
+      fileUrl.endsWith(".webp") ||
+      fileUrl.endsWith(".gif");
+
+    // PDF
+    const isPdf = fileUrl.endsWith(".pdf");
+
+    // Excel
+    const isExcel =
+      fileUrl.endsWith(".xls") || fileUrl.endsWith(".xlsx");
+
+    if (isImage) {
+      return (
+        <Image
+          width={80}
+          height={80}
+          src={url}
+          preview
+          style={{
+            borderRadius: "6px",
+            objectFit: "cover",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          }}
+        />
+      );
+    }
+
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          fontWeight: 600,
+          color: "#2563EB",
+          textDecoration: "none",
+        }}
+      >
+        {isPdf && "📄 PDF Document"}
+        {isExcel && "📊 Excel File"}
+        {!isPdf && !isExcel && "View Document"}
+      </a>
+    );
+  },
+}
+,
     {
       title: "Action",
       key: "action",
@@ -604,44 +790,40 @@ const AdminTasks = () => {
     <TaskAdminPanelLayout>
       <div style={{ padding: 20 }}>
         {/* Header */}
-        <Row
-          justify="space-between"
-          align="middle"
-          gutter={[16, 16]}
-          style={{ marginBottom: 6 }}
-        >
-          <Col xs={24} sm={12} md={8}>
-            <Text strong style={{ fontSize: 18 }}>
-              Assigned Tasks WhatsApp
+        <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+          <Col xs={24} lg={8}>
+            <Text strong style={{ fontSize: 20, color: "#008cba" }}>
+            Whatsapp Tasks Assigned Dashboard
             </Text>
           </Col>
-
-          <Col xs={24} sm={12} md={8} style={{ textAlign: "right" }}>
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Search tasks..."
-              value={searchText}
-              onChange={(e) => handleSearch(e.target.value)}
-              allowClear
-              style={{ width: "100%", maxWidth: 280 }}
-            />
-          </Col>
-        </Row>
-
-        {/* Status Filter */}
-        <Row justify="start" style={{ marginBottom: 10 }}>
-          <Col xs={24} sm={12} md={6}>
-            <Select
-              value={statusFilter}
-              style={{ width: "100%", maxWidth: 200 }}
-              onChange={handleStatusFilter}
-            >
-              <Option value="All">All</Option>
-              <Option value="assigned">Assigned</Option>
-              <Option value="completed">Completed</Option>
-              <Option value="rejected">Rejected</Option>
-              <Option value="deleted">Deleted</Option>
-            </Select>
+          <Col xs={24} lg={16}>
+            <Row gutter={[8, 8]} justify="end">
+              <Col xs={24} sm={12} md={8}>
+                <Input
+                  prefix={<SearchOutlined />}
+                  placeholder="Search by name, task..."
+                  value={searchText}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  allowClear
+                  size="large"
+                />
+              </Col>
+              <Col xs={12} sm={6} md={4}>
+                <Select
+                  value={statusFilter}
+                  onChange={handleStatusFilter}
+                  size="large"
+                  style={{ width: "100%" }}
+                  placeholder="Status"
+                >
+                  <Option value="All">ALL STATUS</Option>
+                  <Option value="assigned">ASSIGNED</Option>
+                  <Option value="completed">COMPLETED</Option>
+                
+                </Select>
+              </Col>
+             
+            </Row>
           </Col>
         </Row>
 
@@ -822,98 +1004,60 @@ const AdminTasks = () => {
         />
       </Modal> */}
       <Modal
-        title={`Task Comments ${selectedTask?.id ? `- #${selectedTask.id.slice(-4)}` : ""}`}
+        title={`Comments ${selectedTask?.id ? `- #${selectedTask.id.slice(-4)}` : ""}`}
         open={viewModalVisible}
         onCancel={() => {
           setViewModalVisible(false);
           setAdminComment("");
         }}
         footer={null}
-        width={800}
+        width="90%"
+        style={{ maxWidth: 600, top: 20 }}
       >
-        {/* Existing comments list */}
+        {/* Existing comments */}
         {commentsData.length === 0 ? (
-          <Empty description="No comments found for this task." />
+          <Empty description="No comments" size="small" />
         ) : (
-          <Table
-            dataSource={commentsData}
-            pagination={false}
-            bordered
-            rowKey={(_, index) => index}
-            columns={[
-              {
-                title: "S.No",
-                align: "center",
-                width: 70,
-                render: (_, __, index) => index + 1,
-              },
-              {
-                title: "Comment By",
-                dataIndex: "commentsBy",
-                align: "center",
-                width: 140,
-              },
-              {
-                title: "Comment",
-                dataIndex: "comments",
-                align: "left",
-                render: (t) => (
-                  <span style={{ whiteSpace: "pre-wrap" }}>{t}</span>
-                ),
-              },
-            ]}
-            scroll={{ x: true }}
-            size="small"
-          />
+          <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 16 }}>
+            {commentsData.map((comment, index) => (
+              <div key={index} style={{ 
+                padding: 8, 
+                borderBottom: "1px solid #f0f0f0",
+                fontSize: 13
+              }}>
+                <strong style={{ color: "#1ab394" }}>{comment.commentsBy}:</strong>
+                <div style={{ marginTop: 4 }}>{comment.comments}</div>
+              </div>
+            ))}
+          </div>
         )}
 
-        <Divider />
-
-        {/* ✅ Admin comment input inside same modal */}
-        <Card
-          style={{
-            borderRadius: 12,
-            border: "1px solid #e9f5ff",
-            background: "#f6fbff",
-          }}
-          bodyStyle={{ padding: 12 }}
-        >
-          <Text strong style={{ color: "#008cba" }}>
-            Add Admin Comment
-          </Text>
-
+        {/* Add comment */}
+        <div style={{ background: "#f9f9f9", padding: 12, borderRadius: 6 }}>
+          <div style={{ marginBottom: 8, fontWeight: 500, fontSize: 14 }}>Add Comment</div>
           <Input.TextArea
             value={adminComment}
             onChange={(e) => setAdminComment(e.target.value)}
-            placeholder="Type your admin comment here..."
-            rows={3}
-            style={{ marginTop: 10 }}
-            maxLength={2000}
+            placeholder="Type comment..."
+            rows={2}
+            maxLength={500}
             showCount
           />
-
-          <div
+          <Button
+            type="primary"
+            loading={submittingComment}
+            onClick={submitAdminComment}
             style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: 16,
+              marginTop: 8,
+              backgroundColor: "#008cba",
+              borderColor: "#008cba",
+              fontSize: 12
             }}
+            size="small"
           >
-            <Button
-              type="primary"
-              icon={<SendOutlined />}
-              loading={submittingComment}
-              onClick={submitAdminComment}
-              style={{
-                backgroundColor: "#008cba",
-                borderColor: "#008cba",
-                fontWeight: 600,
-              }}
-            >
-              Submit Comment
-            </Button>
-          </div>
-        </Card>
+            Submit
+          </Button>
+        </div>
       </Modal>
     </TaskAdminPanelLayout>
   );

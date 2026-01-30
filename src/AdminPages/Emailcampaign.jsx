@@ -1,7 +1,7 @@
 
 
 import { useMemo, useState } from "react";
-import AdminPanelLayoutTest from "./AdminPanel";
+
 import * as XLSX from "xlsx";
 import BASE_URL from "./Config";
 import {
@@ -11,7 +11,7 @@ import {
   Button,
   DatePicker,
   Select,
-  Card,
+
   Row,
   Col,
   Space,
@@ -347,15 +347,15 @@ export default function Email() {
   };
 
   return (
-    <AdminPanelLayoutTest>
-      <div style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}>
-        <Card bodyStyle={{ padding: "8px 8px" }}>
+  
+      <div style={{ maxWidth: "100%", padding: "32px 64px", minHeight: "100vh" }}>
+        <div bodyStyle={{ padding: "8px 8px" }}>
           <Space direction="vertical" size={0} style={{ width: "100%" }}>
             <Title level={3} style={{ color: PRIMARY, marginBottom: 4 }}>
               Campaign Creation
             </Title>
           </Space>
-        </Card>
+        </div>
 
         {/* Form Section */}
         <Form
@@ -364,10 +364,9 @@ export default function Email() {
           initialValues={initialValues}
           requiredMark="optional"
         >
-          {/* File Upload Section */}
-          {/* File Upload Section - Only for BULK */}
+      
           {invitationType === "bulk" && (
-            <Card
+            <div
               title={
                 <span style={{ color: PRIMARY }}>
                   <strong>Upload Files</strong>
@@ -427,7 +426,7 @@ export default function Email() {
                       </Col>
                     </Row>
 
-                    {/* Uploaded file confirmation */}
+                  
                     {uploadedFile && (
                       <div style={{ marginTop: 8, color: PRIMARY }}>
                         <CheckCircleOutlined /> File: {uploadedFile}
@@ -456,9 +455,9 @@ export default function Email() {
                   </Form.Item>
                 </Col>
               </Row>
-            </Card>
+            </div>
           )}
-          <Card
+          <div
             title={
               <span style={{ color: PRIMARY }}>
                 <strong>Campaign Settings</strong>
@@ -673,10 +672,10 @@ export default function Email() {
                 </Form.Item>
               </Col>
             </Row>
-          </Card>
+          </div>
 
           {/* Email Configuration Section */}
-          <Card
+          <div
             title={
               <span style={{ color: PRIMARY }}>
                 <strong>Email Configuration</strong>
@@ -797,10 +796,10 @@ export default function Email() {
                 </Form.Item>
               </Col>
             </Row>
-          </Card>
+          </div>
 
           {/* Action Buttons */}
-          <Card
+          <div
             style={{ marginBottom: 24 }}
             bodyStyle={{ padding: "16px 20px" }}
           >
@@ -836,7 +835,7 @@ export default function Email() {
                 </Button>
               </Col>
             </Row>
-          </Card>
+          </div>
         </Form>
 
         {/* Preview Modal */}
@@ -876,6 +875,6 @@ export default function Email() {
           })()}
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+ 
   );
 }
