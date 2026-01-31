@@ -2,14 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Spin,
-  Empty,
-  Image,
+
   Typography,
   message,
   Row,
   Col,
   Select,
-  Input,
+ 
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../Components/CompaniesLayout";
@@ -19,9 +18,9 @@ import dayjs from "dayjs";
 const { Title } = Typography;
 const { Option } = Select;
 
-const API_URL = `${BASE_URL}/ai-service/agent/getNewsPapaerJobsPaoting`;
+const API_URL = `${BASE_URL}/ai-service/agent/rotaryData`;
 
-const NewsPapers = () => {
+const RotaryData = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +28,7 @@ const NewsPapers = () => {
   const [search, setSearch] = useState("");
 
   // ✅ table pagination states (antd is 1-based)
-  const [pagination, setPagination] = useState({ current: 1, pageSize:50 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -76,7 +75,7 @@ const NewsPapers = () => {
     return rows.filter((r) =>
       String(r?.name || "")
         .toLowerCase()
-        .includes(val)
+        .includes(val),
     );
   }, [rows, search]);
 
@@ -87,7 +86,7 @@ const NewsPapers = () => {
       title: "S.No.",
       key: "serial",
       align: "center",
-     
+
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
@@ -96,27 +95,40 @@ const NewsPapers = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
-    
     },
     {
-      title: "News Paper Image",
+      title: "Document / Image",
       dataIndex: "image",
       key: "image",
       align: "center",
-    
-      render: (url) => (
-        <div style={{ textAlign: "center" }}>
-          <Image width={100} src={url} alt="news paper" />
-        </div>
-      ),
+      render: (url) => {
+        if (!url) {
+          return <span style={{ color: "#9CA3AF" }}>No document</span>;
+        }
+
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontWeight: 600,
+            }}
+          >
+            📄 View Document
+          </a>
+        );
+      },
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
       align: "center",
-      render: (createdAt) =>
-        createdAt ? dayjs(createdAt).format("YYYY-MM-DD") : "N/A",
+      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "N/A"),
       sorter: (a, b) =>
         new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime(),
       defaultSortOrder: "descend",
@@ -125,11 +137,11 @@ const NewsPapers = () => {
 
   return (
     <CompaniesLayout>
-      <div className="p-4 sm:p-6 md:p-8 ">
+      <div className="p-4 sm:p-6 md:p-8">
         {/* ✅ Heading */}
         <div className="flex justify-between items-center mb-2 max-w-7xl mx-auto">
           <Title level={3} className="!m-0">
-            News Paper Job Postings
+            Rotary Data
           </Title>
         </div>
 
@@ -175,7 +187,7 @@ const NewsPapers = () => {
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Spin size="medium" tip="Loading NewsPapaer JobsPosting..." />
+            <Spin size="medium" tip="Loading Rotary Data..." />
           </div>
         ) : (
           <Table
@@ -186,7 +198,7 @@ const NewsPapers = () => {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total,
-              showSizeChanger: false, // ✅ Select controls it
+              showSizeChanger: false, 
               showQuickJumper: true,
               showTotal: (t, range) =>
                 `${range[0]}-${range[1]} of ${t} records`,
@@ -203,4 +215,4 @@ const NewsPapers = () => {
   );
 };
 
-export default NewsPapers;
+export default RotaryData;

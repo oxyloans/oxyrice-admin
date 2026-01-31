@@ -95,6 +95,11 @@ const CompaniesLayout = ({ children }) => {
           link: "/admin/digitalinvestment",
         },
         {
+          key: "Rotary Data",
+          label: "Rotary Data",
+          link: "/admin/rotarydata",
+        },
+        {
           key: "StudentSalesData",
           label: "Student Sales Data",
           link: "/admin/studentsalesdata",

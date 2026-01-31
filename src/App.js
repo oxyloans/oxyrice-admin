@@ -23,6 +23,7 @@ import FreelancersList from "./AgentsAdmin/Pages/Freelancer";
 import TodayPlans from "./TaskManagement/Pages/EmployeeDailyPlans";
 import AllEmployeesDailyPlans from "./TaskManagement/Pages/AllEmployeesDailyPlans";
 import DigitalInvestment from "./Companies/Pages/DigitalInvestment";
+import RotaryData from "./Companies/Pages/RotaryData";
 
 // Authentication Components
 // (Legacy auth components imported elsewhere if needed)
@@ -218,6 +219,11 @@ const companyAdminRoutes = [
   {
     path: "/admin/digitalinvestment",
     element: <DigitalInvestment />,
+    loginPath: "/admin/comapanieslogin",
+  },
+  {
+    path: "/admin/rotarydata",
+    element: <RotaryData />,
     loginPath: "/admin/comapanieslogin",
   },
   {

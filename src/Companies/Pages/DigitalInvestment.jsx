@@ -98,7 +98,7 @@ const DigitalInvestment = () => {
       align: "center",
     },
     {
-      title: "Document",
+      title: "Document / Image",
       dataIndex: "document",
       key: "document",
       align: "center",
@@ -140,7 +140,7 @@ const DigitalInvestment = () => {
 
   return (
     <CompaniesLayout>
-      <div className="p-4 sm:p-6 md:p-8 min-h-screen">
+      <div className="p-4 sm:p-6 md:p-8">
         {/* ✅ Heading */}
         <div className="flex justify-between items-center mb-2 max-w-7xl mx-auto">
           <Title level={3} className="!m-0">
@@ -190,7 +190,7 @@ const DigitalInvestment = () => {
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Spin size="medium" tip="Loading NewsPapaer JobsPosting..." />
+            <Spin size="medium" tip="Loading Digital Investment Data..." />
           </div>
         ) : (
           <Table
@@ -201,7 +201,7 @@ const DigitalInvestment = () => {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total,
-              showSizeChanger: false, // ✅ Select controls it
+              showSizeChanger: false, 
               showQuickJumper: true,
               showTotal: (t, range) =>
                 `${range[0]}-${range[1]} of ${t} records`,
