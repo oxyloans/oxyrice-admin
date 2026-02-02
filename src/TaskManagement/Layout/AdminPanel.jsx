@@ -46,72 +46,104 @@ const TaskAdminPanelLayout = ({ children }) => {
       setCollapsed(false); // Expand on larger screens
     }
   }, [screens]);
-  const sidebarItems = [
-    {
-      key: "dashboard",
-      label: "Dashboard Overview",
-      icon: <DashboardOutlined />,
-      link: "/taskmanagement/overview",
-    },
+ const sidebarItems = [
+   {
+     key: "dashboard",
+     label: "Dashboard Overview",
+     icon: <DashboardOutlined />,
+     dropdownItems: [
+       {
+         key: "dashboard-overview",
+         label: "Overview",
+         icon: <DashboardOutlined />,
+         link: "/taskmanagement/overview",
+       },
+     ],
+   },
 
-    {
-      key: "assignedTasks",
-      label: "Assigned WhatsApp Tasks",
-      icon: <WhatsAppOutlined />,
-      link: "/taskmanagement/tasks/assigned",
-    },
-    {
-      key: "teamAttendance",
-      label: "Attendance Overview",
-      icon: <TeamOutlined />,
-      link: "/taskmanagement/attendance",
-    },
-    {
-      key: "leaveManagement",
-      label: "Leave Administration",
-      icon: <CalendarOutlined />,
-      link: "/taskmanagement/leave-management",
-    },
-    {
-      key: "employeeWorkLogs",
-      label: "Employee Work Logs",
-      icon: <FileTextOutlined />,
-      dropdownItems: [
-        {
-          key: "todayWorkLog",
-          label: "Today's POD/EOD",
-          icon: <CheckSquareOutlined />,
-          link: "/taskmanagement/work-logs/today",
-        },
-        {
-          key: "workLogHistory",
-          label: "All Employees Reports",
-          icon: <UnorderedListOutlined />,
-          link: "/taskmanagement/work-logs/history",
-        },
-      ],
-    },
+   {
+     key: "assignedTasks",
+     label: "Assigned WhatsApp Tasks",
+     icon: <WhatsAppOutlined />,
+     dropdownItems: [
+       {
+         key: "assigned-tasks-list",
+         label: "Assigned Tasks",
+         icon: <WhatsAppOutlined />,
+         link: "/taskmanagement/tasks/assigned",
+       },
+     ],
+   },
 
-    {
-      key: "dailyReports",
-      label: "Daily Plans Reports",
-      icon: <BarChartOutlined />,
-      dropdownItems: [
-        {
-          key: "dailyWorkPlan",
-          label: "Daily Work Plan",
-          icon: <CheckSquareOutlined />,
-          link: "/taskmanagement/reports/daily-plan",
-        },
-        {
-          key: "dailyWorkSummary",
-          label: "Daily Work Summary",
-          icon: <ClockCircleOutlined />,
-          link: "/taskmanagement/reports/daily-summary",
-        },
-      ],
-    },
-  ];
+   {
+     key: "teamAttendance",
+     label: "Attendance Overview",
+     icon: <TeamOutlined />,
+     dropdownItems: [
+       {
+         key: "attendance-overview",
+         label: "Attendance",
+         icon: <TeamOutlined />,
+         link: "/taskmanagement/attendance",
+       },
+     ],
+   },
+
+   {
+     key: "leaveManagement",
+     label: "Leave Administration",
+     icon: <CalendarOutlined />,
+     dropdownItems: [
+       {
+         key: "leave-management",
+         label: "Leave Management",
+         icon: <CalendarOutlined />,
+         link: "/taskmanagement/leave-management",
+       },
+     ],
+   },
+
+   {
+     key: "employeeWorkLogs",
+     label: "Employee Work Logs",
+     icon: <FileTextOutlined />,
+     dropdownItems: [
+       {
+         key: "todayWorkLog",
+         label: "Today's POD/EOD",
+         icon: <CheckSquareOutlined />,
+         link: "/taskmanagement/work-logs/today",
+       },
+       {
+         key: "workLogHistory",
+         label: "All Employees Reports",
+         icon: <UnorderedListOutlined />,
+         link: "/taskmanagement/work-logs/history",
+       },
+     ],
+   },
+
+   {
+     key: "dailyReports",
+     label: "Daily Plans Reports",
+     icon: <BarChartOutlined />,
+     dropdownItems: [
+       {
+         key: "dailyWorkPlan",
+         label: "Daily Work Plan",
+         icon: <CheckSquareOutlined />,
+         link: "/taskmanagement/reports/daily-plan",
+       },
+       {
+         key: "dailyWorkSummary",
+         label: "Daily Work Summary",
+         icon: <ClockCircleOutlined />,
+         link: "/taskmanagement/reports/daily-summary",
+       },
+     ],
+   },
+ ];
+
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);

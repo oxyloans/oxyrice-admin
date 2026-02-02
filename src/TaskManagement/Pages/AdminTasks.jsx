@@ -609,7 +609,7 @@ const AdminTasks = () => {
       key: "task_timeline",
       align: "center",
       render: (_, record) => {
-        const { tastCreatedDate, taskCompleteDate, status } = record;
+        const { tastCreatedDate, status } = record;
 
         return (
           <div

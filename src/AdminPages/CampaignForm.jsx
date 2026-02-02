@@ -348,7 +348,7 @@ export default function CampaignForm() {
 
   return (
     <AdminPanelLayoutTest>
-      <div style={{ maxWidth: "100%", padding: "8px 4px", minHeight: "100vh" }}>
+      <div style={{ maxWidth: "100%", padding: "8px 16px", minHeight: "100vh" }}>
         <div
           bodyStyle={{
             padding: "8px 8px",

@@ -41,85 +41,89 @@ const CompaniesLayout = ({ children }) => {
       setCollapsed(false); // Expand on larger screens
     }
   }, [screens]);
-  const sidebarItems = [
-    {
-      key: "Company Management",
-      label: "Company Management",
-      icon: <BankOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "ManageCompanies",
-          label: "Manage Companies",
-          link: "/admin/companylist",
-        },
-      ],
-    },
-    {
-      key: "Job Management",
-      label: "Job Management",
-      icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "PostJob",
-          label: "Post Job",
-          link: "/admin/jobsmanage",
-        },
-        {
-          key: "JobsList",
-          label: "Jobs List",
-          link: "/admin/getalljobs",
-        },
-        {
-          key: "WeAreHiring",
-          label: "We Are Hiring",
-          link: "/admin/wearehiring",
-        },
-      ],
-    },
-    {
-      key: "Content Management",
-      label: "Content Management",
-      icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "NewsPapers",
-          label: "News Papers",
-          link: "/admin/news-papers",
-        },
-        {
-          key: "DigitalInvestment",
-          label: "Digital Investment",
-          link: "/admin/digitalinvestment",
-        },
-        {
-          key: "Rotary Data",
-          label: "Rotary Data",
-          link: "/admin/rotarydata",
-        },
-        {
-          key: "StudentSalesData",
-          label: "Student Sales Data",
-          link: "/admin/studentsalesdata",
-        },
-      ],
-    },
-    {
-      key: "campaign-moderation",
-      label: "Campaign Moderation",
-      icon: <MessageOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "campaign-comments",
-          label: "Comments & Likes",
-          link: "/admin/campaignwithcomments",
-        },
-      ],
-    },
-  ];
+const sidebarItems = [
+  {
+    key: "company-management",
+    label: "Company Management",
+    icon: <BankOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "manage-companies",
+        label: "Manage Companies",
+        link: "/admin/companylist",
+      },
+    ],
+  },
+
+  {
+    key: "job-management",
+    label: "Job Management",
+    icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "post-job",
+        label: "Post Job",
+        link: "/admin/jobsmanage",
+      },
+      {
+        key: "jobs-list",
+        label: "Jobs List",
+        link: "/admin/getalljobs",
+      },
+      {
+        key: "we-are-hiring",
+        label: "We Are Hiring",
+        link: "/admin/wearehiring",
+      },
+    ],
+  },
+
+  {
+    key: "content-management",
+    label: "Content Management",
+    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "news-papers",
+        label: "News Papers",
+        link: "/admin/news-papers",
+      },
+      {
+        key: "digital-investment",
+        label: "Digital Investment",
+        link: "/admin/digitalinvestment",
+      },
+      {
+        key: "rotary-data",
+        label: "Rotary Data",
+        link: "/admin/rotarydata",
+      },
+      {
+        key: "student-sales-data",
+        label: "Student Sales Data",
+        link: "/admin/studentsalesdata",
+      },
+    ],
+  },
+
+  {
+    key: "campaign-moderation",
+    label: "Campaign Moderation",
+    icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "campaign-comments",
+        label: "Comments & Likes",
+        link: "/admin/campaignwithcomments",
+      },
+    ],
+  },
+];
+
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);

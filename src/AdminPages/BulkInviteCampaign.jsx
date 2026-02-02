@@ -225,7 +225,7 @@ const BulkInviteCampaign = () => {
   return (
     <AdminPanelLayoutTest>
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div>
             <h6 className="text-1xl sm:text-xl font-bold text-gray-900 mb-2">

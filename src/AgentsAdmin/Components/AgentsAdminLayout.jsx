@@ -43,112 +43,155 @@ const AgentsAdminLayout = ({ children }) => {
     }
   }, [screens]);
 
-  const sidebarItems = [
-    {
-      key: "agents-dashboard",
-      label: "Agents Dashboard",
-      icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/assistantslist",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "freelancers-data",
-      label: "Freelancer Data",
-      icon: <UnorderedListOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/freelancer-list",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "agent-status",
-      label: "Agents Status List",
-      icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/agentsstatuslist",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
-    {
-      key: "agent-plans",
-      label: "Agent Plans",
-      icon: <SettingOutlined style={{ fontSize: "18px" }} />,
-      link: "/admin/agentsplanslist",
-      style: { fontSize: "16px", fontWeight: 500 },
-    },
+const sidebarItems = [
+  {
+    key: "agents-dashboard",
+    label: "Agents Dashboard",
+    icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "agents-dashboard-home",
+        label: "Dashboard Home",
+        link: "/admin/assistantslist",
+      },
+    ],
+  },
 
-    {
-      key: "Store Management",
-      label: "Store Management",
-      icon: <ShopOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "ai-store",
-          label: "Agents AI Store",
-          link: "/admin/agents-aistore",
-        },
-        {
-          key: "gpt-store",
-          label: "Agents GPT Store",
-          link: "/admin/agent-gptstore",
-        },
-      ],
-    },
-    {
-      key: "agent-users",
-      label: "Agents Users & Coins",
-      icon: <TeamOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "Agents Registered Users",
-          label: "Agents Registered Users",
-          link: "/admin/agentsregisteredusers",
-        },
-        {
-          key: "Agents Creation Users",
-          label: "Agents Creation Users",
-          link: "/admin/agents-creation-users",
-        },
-        {
-          key: "Agent Bmv Coins Updated",
-          label: "Agent BMV Coins Updated",
-          link: "/admin/agents-bmv-coins-updated",
-        },
-      ],
-    },
+  {
+    key: "freelancers-data",
+    label: "Freelancer Data",
+    icon: <UnorderedListOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "freelancers-data-list",
+        label: "Freelancers List",
+        link: "/admin/freelancer-list",
+      },
+    ],
+  },
 
-    {
-      key: "Conversations & Chats",
-      label: "Conversations & Chats",
-      icon: <MessageOutlined style={{ fontSize: "18px" }} />,
-      style: { fontSize: "16px", fontWeight: 500 },
-      dropdownItems: [
-        {
-          key: "agent-user-history",
-          label: "User Chat History",
-          link: "/admin/userhistory",
-        },
-        {
-          key: "agent-conversations",
-          label: "Agent Conversations",
-          link: "/admin/conversationlist",
-        },
-      ],
-    },
+  {
+    key: "agent-status",
+    label: "Agents Status List",
+    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "agent-status-list",
+        label: "Status List",
+        link: "/admin/agentsstatuslist",
+      },
+    ],
+  },
 
-    // {
-    //   key: "Authorized-Users",
-    //   label: "Authorized-Users",
-    //   icon: <UserOutlined style={{ fontSize: "18px" }} />,
-    //   link: "/admin/authorizedusers",
-    //   style: { fontSize: "20px" },
-    // },
-    // {
-    //   key: "useragent-login",
-    //   label: "OG Registered Users",
-    //   icon: <TeamOutlined style={{ fontSize: "18px" }} />,
-    //   link: "/admin/agents-registered-users",
-    //   style: { fontSize: "20px" },
-    // },
-  ];
+  {
+    key: "agent-plans",
+    label: "Agent Plans",
+    icon: <SettingOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "agent-plans-list",
+        label: "Plans List",
+        link: "/admin/agentsplanslist",
+      },
+    ],
+  },
+
+  {
+    key: "store-management",
+    label: "Store Management",
+    icon: <ShopOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "ai-store",
+        label: "Agents AI Store",
+        link: "/admin/agents-aistore",
+      },
+      {
+        key: "gpt-store",
+        label: "Agents GPT Store",
+        link: "/admin/agent-gptstore",
+      },
+    ],
+  },
+
+  {
+    key: "agent-users",
+    label: "Agents Users & Coins",
+    icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "agents-registered-users",
+        label: "Agents Registered Users",
+        link: "/admin/agentsregisteredusers",
+      },
+      {
+        key: "agents-creation-users",
+        label: "Agents Creation Users",
+        link: "/admin/agents-creation-users",
+      },
+      {
+        key: "agents-bmv-coins-updated",
+        label: "Agent BMV Coins Updated",
+        link: "/admin/agents-bmv-coins-updated",
+      },
+    ],
+  },
+
+  {
+    key: "conversations-chats",
+    label: "Conversations & Chats",
+    icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "agent-user-history",
+        label: "User Chat History",
+        link: "/admin/userhistory",
+      },
+      {
+        key: "agent-conversations",
+        label: "Agent Conversations",
+        link: "/admin/conversationlist",
+      },
+    ],
+  },
+
+  // ✅ UPDATED COMMENTED ITEMS (NOW DROPDOWN STYLE)
+  // {
+  //   key: "authorized-users",
+  //   label: "Authorized Users",
+  //   icon: <UserOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "authorized-users-list",
+  //       label: "Authorized Users List",
+  //       link: "/admin/authorizedusers",
+  //     },
+  //   ],
+  // },
+
+  // {
+  //   key: "og-registered-users",
+  //   label: "OG Registered Users",
+  //   icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "og-registered-users-list",
+  //       label: "OG Users List",
+  //       link: "/admin/agents-registered-users",
+  //     },
+  //   ],
+  // },
+];
+
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);

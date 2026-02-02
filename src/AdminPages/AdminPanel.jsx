@@ -12,11 +12,11 @@ import {
   FaBoxes,
   FaUserGraduate,
   FaTachometerAlt,
-  FaSlideshare,
+
   FaGasPump,
   FaBoxOpen,
   FaShoppingCart,
-  
+  FaTags,
 } from "react-icons/fa";
 import { AppstoreOutlined } from "@ant-design/icons";
 
@@ -250,204 +250,143 @@ const AdminPanelLayoutTest = ({ children }) => {
   // ];
 
 
-  const sidebarItems = [
-    {
-      key: "dashboard",
-      label: "Dashboard",
-      icon: <FaTachometerAlt />,
-      link: "/admin/dashboard",
-    },
+ const sidebarItems = [
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    icon: <FaTachometerAlt />,
+    dropdownItems: [
+      { key: "dashboardHome", label: "Dashboard Home", link: "/admin/dashboard" },
+    ],
+  },
 
-    {
-      key: "fuelExpenses",
-      label: "Fuel Expenses",
-      icon: <FaGasPump />,
-      link: "/admin/fuel-expenses",
-    },
+  {
+    key: "fuelExpenses",
+    label: "Fuel Expenses",
+    icon: <FaGasPump />,
+    dropdownItems: [
+      { key: "fuelExpensesList", label: "Fuel Expenses List", link: "/admin/fuel-expenses" },
+    ],
+  },
 
-    {
-      key: "itemsOffers",
-      label: "Item Offer Lists",
-      icon: <FaSlideshare />,
-      link: "/admin/items-offerlists",
-    },
+  {
+    key: "itemOffers",
+    label: "Item Offers",
+    icon: <FaTags />,
+    dropdownItems: [
+      { key: "itemOffersList", label: "Item Offers List", link: "/admin/items-offerlists" },
+    ],
+  },
 
-    {
-      key: "categoryInventory",
-      label: "Category Inventory",
-      icon: <MdInventory />,
-      link: "/admin/category-inventory",
-    },
+  {
+    key: "categoryInventory",
+    label: "Category Inventory",
+    icon: <MdInventory />,
+    dropdownItems: [
+      { key: "categoryInventoryList", label: "Category Inventory List", link: "/admin/category-inventory" },
+    ],
+  },
 
-    {
-      key: "campaignInventory",
-      label: "Campaign Inventory",
-      icon: <FaBoxes />,
-      dropdownItems: [
-        {
-          key: "campaignUpload",
-          label: "Campaign Upload",
-          link: "/admin/campaign-inventory",
-        },
-        {
-          key: "bulkInvites",
-          label: "Bulk Invites",
-          link: "/admin/bulkinvites",
-        },
-        {
-          key: "emailCampaign",
-          label: "Email Campaign",
-          link: "/admin/emailcampaign",
-        },
-      ],
-    },
+  {
+    key: "campaignInventory",
+    label: "Campaign Inventory",
+    icon: <FaBoxes />,
+    dropdownItems: [
+      { key: "campaignUpload", label: "Campaign Upload", link: "/admin/campaign-inventory" },
+      { key: "bulkInvites", label: "Bulk Invites", link: "/admin/bulkinvites" },
+      { key: "emailCampaign", label: "Email Campaign", link: "/admin/emailcampaign" },
+    ],
+  },
 
-    {
-      key: "studyAbroadAdmin",
-      label: "Study Abroad Admin",
-      icon: <FaUserGraduate />,
-      dropdownItems: [
-        {
-          key: "studentApplications",
-          label: "Student Applications",
-          link: "/admin/studentapplications",
-        },
-        {
-          key: "studentRegistrations",
-          label: "Student Registrations",
-          link: "/admin/student-registrations",
-        },
-      ],
-    },
+  {
+    key: "studyAbroad",
+    label: "Study Abroad Admin",
+    icon: <FaUserGraduate />,
+    dropdownItems: [
+      { key: "studentApplications", label: "Student Applications", link: "/admin/studentapplications" },
+      { key: "studentRegistrations", label: "Student Registrations", link: "/admin/student-registrations" },
+    ],
+  },
 
-    {
-      key: "customerWallet",
-      label: "Customer Wallet",
-      icon: <WalletOutlined />,
-      dropdownItems: [
-        {
-          key: "withdrawalUsers",
-          label: "Withdrawal Users",
-          link: "/admin/withdrawaluserlist",
-        },
-        {
-          key: "initiatedAmounts",
-          label: "Initiated Amounts",
-          link: "/admin/initiatedamountlist",
-        },
-        {
-          key: "approvedAmounts",
-          label: "Approved Amounts",
-          link: "/admin/approvedamountlist",
-        },
-      ],
-    },
+  {
+    key: "customerWallet",
+    label: "Customer Wallet",
+    icon: <WalletOutlined />,
+    dropdownItems: [
+      { key: "withdrawalUsers", label: "Withdrawal Users", link: "/admin/withdrawaluserlist" },
+      { key: "initiatedAmounts", label: "Initiated Amounts", link: "/admin/initiatedamountlist" },
+      { key: "approvedAmounts", label: "Approved Amounts", link: "/admin/approvedamountlist" },
+    ],
+  },
 
-    {
-      key: "categories",
-      label: "Categories",
-      icon: <BiSolidCategory />,
-      dropdownItems: [
-        {
-          key: "categoryList",
-          label: "Category List",
-          link: "/admin/categories",
-        },
-      ],
-    },
+  {
+    key: "categories",
+    label: "Categories",
+    icon: <BiSolidCategory />,
+    dropdownItems: [
+      { key: "categoryList", label: "Category List", link: "/admin/categories" },
+    ],
+  },
 
-    {
-      key: "subscriptionPlans",
-      label: "Subscription Plans",
-      icon: <MdSubscriptions />,
-      dropdownItems: [
-        {
-          key: "subscriptionPlansList",
-          label: "Subscription Plans List",
-          link: "/admin/subscription-plans-list",
-        },
-      ],
-    },
+  {
+    key: "subscriptionPlans",
+    label: "Subscription Plans",
+    icon: <MdSubscriptions />,
+    dropdownItems: [
+      { key: "subscriptionPlansList", label: "Subscription Plans List", link: "/admin/subscription-plans-list" },
+    ],
+  },
 
-    {
-      key: "items",
-      label: "Items",
-      icon: <FaBoxOpen />,
-      dropdownItems: [
-        {
-          key: "itemsList",
-          label: "Items List",
-          link: "/admin/items",
-        },
-      ],
-    },
+  {
+    key: "items",
+    label: "Items",
+    icon: <FaBoxOpen />,
+    dropdownItems: [
+      { key: "itemsList", label: "Items List", link: "/admin/items" },
+    ],
+  },
 
-    {
-      key: "coupons",
-      label: "Coupons",
-      icon: <BiSolidCoupon />,
-      dropdownItems: [
-        {
-          key: "couponsList",
-          label: "Coupons List",
-          link: "/admin/coupons",
-        },
-        {
-          key: "ordersByCoupon",
-          label: "Orders by Coupon",
-          link: "/admin/ordersByCoupon",
-        },
-      ],
-    },
+  {
+    key: "coupons",
+    label: "Coupons",
+    icon: <BiSolidCoupon />,
+    dropdownItems: [
+      { key: "couponsList", label: "Coupons List", link: "/admin/coupons" },
+      { key: "ordersByCoupon", label: "Orders by Coupon", link: "/admin/ordersByCoupon" },
+    ],
+  },
 
-    {
-      key: "ordersAndLocations",
-      label: "Orders & Locations",
-      icon: <FaShoppingCart />,
-      dropdownItems: [
-        {
-          key: "ordersList",
-          label: "Orders List",
-          link: "/admin/orders-details",
-        },
-        {
-          key: "pincodeOrders",
-          label: "Pincode-wise Orders",
-          link: "/admin/pincodesdata",
-        },
-        {
-          key: "returnPending",
-          label: "Return Pending",
-          link: "/admin/orders-pending",
-        },
-      ],
-    },
+  {
+    key: "ordersAndLocations",
+    label: "Orders & Locations",
+    icon: <FaShoppingCart />,
+    dropdownItems: [
+      { key: "ordersList", label: "Orders List", link: "/admin/orders-details" },
+      { key: "pincodeOrders", label: "Pincode-wise Orders", link: "/admin/pincodesdata" },
+      { key: "returnPending", label: "Return Pending", link: "/admin/orders-pending" },
+    ],
+  },
 
-    {
-      key: "services",
-      label: "Services",
-      icon: <AppstoreOutlined />,
-      dropdownItems: [
-        {
-          key: "serviceCategories",
-          label: "Service Categories",
-          link: "/admin/services",
-        },
-        {
-          key: "serviceItems",
-          label: "Service Items",
-          link: "/admin/serviceslist",
-        },
-      ],
-    },
+  {
+    key: "services",
+    label: "Services",
+    icon: <AppstoreOutlined />,
+    dropdownItems: [
+      { key: "serviceCategories", label: "Service Categories", link: "/admin/services" },
+      { key: "serviceItems", label: "Service Items", link: "/admin/serviceslist" },
+    ],
+  },
 
-    {
-      key: "timeSlots",
-      label: "Time Slots",
-      icon: <MdInventory />,
-      link: "/admin/timeslots",
-    },
-  ];
+  {
+    key: "timeSlots",
+    label: "Time Slots",
+    icon: <MdInventory />,
+    dropdownItems: [
+      { key: "timeSlotsList", label: "Time Slots List", link: "/admin/timeslots" },
+    ],
+  },
+];
+
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
