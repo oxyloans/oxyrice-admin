@@ -14,10 +14,10 @@ import {
   Progress,
   Row,
   Col,
-  Spin,
+ 
   DatePicker,
   Upload,
-  Alert,
+  
 } from "antd";
 import {
   SaveOutlined,
@@ -40,7 +40,7 @@ import TaskAdminPanelLayout from "../components/AdminPanel";
 import BASE_URL from "../../../core/config/Config";
 
 const { Option } = Select;
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, message, Spin, Checkbox } from "antd";
+import { Form, Input, Button, message, Spin } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../../AdminPages/Config";

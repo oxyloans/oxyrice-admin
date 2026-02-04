@@ -11,7 +11,7 @@ import {
   Spin,
 } from "antd";
 import axios from "axios";
-import { PlusOutlined, SearchOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import { Select } from "antd";

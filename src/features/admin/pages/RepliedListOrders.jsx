@@ -1,9 +1,9 @@
 import AdminPanelLayout from "./AdminPanelLayout";
-import React, { useState, useEffect } from "react";
-import { Table, Button, message } from "antd";
-import axios from "axios";
+import React, { useState } from "react";
+import { Table, Button } from "antd";
 
-const accessToken = localStorage.getItem("accessToken");
+
+
 
 // Define table columns
 const columns = [

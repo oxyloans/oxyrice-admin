@@ -9,7 +9,7 @@ import {
   Modal,
   Select,
   Input,
-  Space,
+ 
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
@@ -108,7 +108,7 @@ const GetAllJobs = () => {
   // ✅ Columns
   const columns = [
     {
-      title: "S.No.",
+      title: "S.NO",
       key: "serial",
       align: "center",
       width: 80,

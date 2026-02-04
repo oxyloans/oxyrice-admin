@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Spin,
-  Empty,
+  
   Image,
   Typography,
   message,
   Row,
   Col,
   Select,
-  Input,
+  
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
@@ -84,7 +84,7 @@ const DigitalInvestment = () => {
 
   const columns = [
     {
-      title: "S.No.",
+      title: "S.NO",
       key: "serial",
       align: "center",
 
@@ -107,20 +107,47 @@ const DigitalInvestment = () => {
           return <span style={{ color: "#9CA3AF" }}>No document</span>;
         }
 
+        const getFileType = (fileUrl) => {
+          const ext = fileUrl.split(".").pop().toLowerCase();
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
+          if (["pdf"].includes(ext)) return "pdf";
+          if (["mp4", "webm", "mov"].includes(ext)) return "video";
+          if (["xls", "xlsx"].includes(ext)) return "excel";
+          if (["ppt", "pptx"].includes(ext)) return "ppt";
+          if (["doc", "docx"].includes(ext)) return "document";
+          return "file";
+        };
+
+        const fileType = getFileType(url);
+        const icons = {
+          image: "🖼️",
+          pdf: "📄",
+          video: "🎥",
+          excel: "📊",
+          ppt: "📋",
+          document: "📝",
+          file: "📄"
+        };
+
         return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontWeight: 600,
-            }}
-          >
-            📄 View Document
-          </a>
+          <div style={{ textAlign: "center" }}>
+            {fileType === "image" && (
+              <Image width={80} src={url} alt="document" />
+            )}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontWeight: 600,
+              }}
+            >
+              {icons[fileType]} View {fileType === "file" ? "Document" : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
+            </a>
+          </div>
         );
       },
     },

@@ -56,7 +56,7 @@ const WeHiringPage = () => {
 
   const columns = [
     {
-      title: "S.No.",
+      title: "S.NO",
       dataIndex: "serial",
       key: "serial",
       align: "center",

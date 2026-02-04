@@ -160,7 +160,7 @@ import {
   Button,
   message,
   Select,
-  Pagination,
+ 
   Modal,
   Row,
   Col,
@@ -184,11 +184,7 @@ const SellerItems = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSellerItems, setFilteredSellerItems] = useState([]);
 
-  // Pagination logic
-  const paginatedCustomers = items.slice(
-    (currentPage - 1) * entriesPerPage,
-    currentPage * entriesPerPage,
-  );
+  
 
   // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
@@ -196,10 +192,7 @@ const SellerItems = () => {
     setCurrentPage(1);
   };
 
-  // Handle page change
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  
   // Fetch item details from the API
   const fetchItemDetails = async () => {
     setLoading(true);

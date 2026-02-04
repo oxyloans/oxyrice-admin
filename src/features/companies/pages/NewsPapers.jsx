@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Spin,
-  Empty,
+ 
   Image,
   Typography,
   message,
   Row,
   Col,
   Select,
-  Input,
+  
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
@@ -29,7 +29,7 @@ const NewsPapers = () => {
   const [search, setSearch] = useState("");
 
   // ✅ table pagination states (antd is 1-based)
-  const [pagination, setPagination] = useState({ current: 1, pageSize:50 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
 
   useEffect(() => {
     const fetch = async () => {
@@ -76,7 +76,7 @@ const NewsPapers = () => {
     return rows.filter((r) =>
       String(r?.name || "")
         .toLowerCase()
-        .includes(val)
+        .includes(val),
     );
   }, [rows, search]);
 
@@ -84,10 +84,10 @@ const NewsPapers = () => {
 
   const columns = [
     {
-      title: "S.No.",
+      title: "S.NO",
       key: "serial",
       align: "center",
-     
+
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
@@ -96,19 +96,110 @@ const NewsPapers = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
-    
     },
     {
-      title: "News Paper Image",
+      title: "Document/Media",
       dataIndex: "image",
-      key: "image",
+      key: "document",
       align: "center",
-    
-      render: (url) => (
-        <div style={{ textAlign: "center" }}>
-          <Image width={100} src={url} alt="news paper" />
-        </div>
-      ),
+
+      render: (url) => {
+        if (!url) return <span>N/A</span>;
+
+        const getFileType = (fileUrl) => {
+          if (!fileUrl) return "unknown";
+          const ext = fileUrl.split(".").pop().toLowerCase();
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
+            return "image";
+          if (["pdf"].includes(ext)) return "pdf";
+          if (["mp4", "webm", "mov"].includes(ext)) return "video";
+          if (["doc", "docx"].includes(ext)) return "document";
+          return "file";
+        };
+
+        const handleClick = (fileUrl) => {
+          // Open in new tab
+          window.open(fileUrl, '_blank');
+        };
+
+        const fileType = getFileType(url);
+
+        return (
+          <div
+            style={{
+              textAlign: "center",
+              display: "flex",
+              gap: 8,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {fileType === "image" && (
+              <Image width={80} src={url} alt="document" />
+            )}
+            {fileType === "pdf" && (
+              <button
+                onClick={() => handleClick(url)}
+                style={{
+                  color: "#1890ff",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                📄 PDF
+              </button>
+            )}
+            {fileType === "video" && (
+              <button
+                onClick={() => handleClick(url)}
+                style={{
+                  color: "#1890ff",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                🎥 Video
+              </button>
+            )}
+            {fileType === "document" && (
+              <button
+                onClick={() => handleClick(url)}
+                style={{
+                  color: "#1890ff",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                📋 Document
+              </button>
+            )}
+            {fileType === "file" && (
+              <button
+                onClick={() => handleClick(url)}
+                style={{
+                  color: "#008cba",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                View More
+              </button>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Date",

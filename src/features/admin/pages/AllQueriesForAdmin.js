@@ -1,30 +1,28 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { UploadOutlined } from "@ant-design/icons";
+
 import BASE_URL from "./Config.jsx";
 import {
   Modal,
   Button,
-  Form,
-  Input,
+ 
   Row,
   Col,
   Select,
-  Upload,
-  Image,
+ 
+ 
   Spin,
   Table,
   message,
 } from "antd";
 
-import { UserSwitchOutlined } from "@ant-design/icons";
+
 
 import AdminPanelLayoutTest from "../components/AdminPanel.jsx";
 const { Option } = Select;
 function AllQueries() {
   const [data, setData] = useState([]);
-  const [errormsg, setErrormsg] = useState("");
-  const [showModal, setShowModal] = useState(false);
+
   const [comments, setComments] = useState("");
   const [comments_error, setComments_error] = useState(false);
   const [loader, setLoader] = useState(false);
@@ -32,19 +30,16 @@ function AllQueries() {
   const [showModal1, setShowModal1] = useState(false);
   const [details, setDetails] = useState("");
   const [statusValue, setStatusValue] = useState("PENDING");
-  const [pendingQueries, setPendingQueries] = useState([]);
+
   const [documentId, setDocumentId] = useState("");
   const [uploadStatus, setUploadStatus] = useState();
   const [fileName, setFileName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSelectedOption = (event) => {
-    setData([]);
-    setStatusValue(event.target.value);
-  };
+
   const accesToken = localStorage.getItem("accessToken");
-  const userId = localStorage.getItem("userId");
+  
 
   function queriesdisplaygetcall() {
     let data = {

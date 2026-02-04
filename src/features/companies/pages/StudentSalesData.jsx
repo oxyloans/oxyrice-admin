@@ -2,14 +2,14 @@ import React, { useEffect, useState, useMemo } from "react";
 import {
   Table,
   Spin,
-  Empty,
+  
   Typography,
   message,
   Row,
   Col,
   Select,
   Input,
-  Card,
+ 
   Image,
 } from "antd";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
@@ -84,7 +84,7 @@ const StudentSalesData = () => {
 
   const columns = [
     {
-      title: "S.No.",
+      title: "S.NO",
       key: "serial",
       align: "center",
 

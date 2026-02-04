@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
   Table,
-  Button,
-  Modal,
-  Form,
+ 
   Input,
   Row,
   Col,
   Select,
-  Switch,
+  
   message,
 } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+
 import axios from "axios";
 import AdminPanelLayout from "../components/AdminPanel.jsx";
-import MainLayout from "./Layout";
+
 
 const SubscribersListDEtails = () => {
   const [subscribers, setSubscribers] = useState([]);

@@ -16,10 +16,10 @@ import {
   Space,
   Descriptions,
   Divider,
-  Switch,
+ 
   Tooltip,
 } from "antd";
-import { Tabs } from "antd";
+
 
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";

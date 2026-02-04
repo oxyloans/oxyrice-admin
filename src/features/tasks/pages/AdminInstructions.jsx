@@ -12,7 +12,7 @@ import {
   Select,
   Tooltip,
 } from "antd";
-import { UploadOutlined, MessageOutlined } from "@ant-design/icons";
+import { UploadOutlined } from "@ant-design/icons";
 import { MdModeEditOutline, MdForum } from "react-icons/md";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";

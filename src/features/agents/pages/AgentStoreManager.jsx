@@ -20,7 +20,7 @@ import {
   PlusOutlined,
   UsergroupAddOutlined,
   CopyOutlined,
-  DeleteOutlined,
+ 
 } from "@ant-design/icons";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";

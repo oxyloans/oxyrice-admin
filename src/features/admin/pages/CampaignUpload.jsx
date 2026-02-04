@@ -6,7 +6,7 @@ import {
   Upload,
   Button,
   message as antdMessage,
-  Card,
+ 
   Typography,
   Modal,
   Row,
@@ -18,8 +18,7 @@ import {
 } from "antd";
 import {
   UploadOutlined,
-  FileExcelOutlined,
-  MessageOutlined,
+ 
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import axios from "axios";

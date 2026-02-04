@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-// ✅ correct
+
 import { useNavigate } from "react-router-dom";
 
 import { Layout, Menu, Row, Grid } from "antd";
@@ -30,7 +30,7 @@ const AdminPanelLayoutTest = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const navigate = useNavigate();
-  const entryPoint = localStorage.getItem("entryPoint") || "direct";
+ 
 
   useEffect(() => {
     if (screens.xs) {

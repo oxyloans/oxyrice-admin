@@ -10,7 +10,7 @@ import {
   Typography,
   Card,
 } from "antd";
-import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";

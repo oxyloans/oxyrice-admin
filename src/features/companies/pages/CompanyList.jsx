@@ -244,7 +244,7 @@ const CompanyList = () => {
 
   const columns = [
     {
-      title: "S.No",
+      title: "S.NO",
       key: "serial",
       align: "center",
       render: (_, __, index) => (

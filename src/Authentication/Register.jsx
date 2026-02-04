@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Alert, Card, message } from 'antd';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { faSleigh } from '@fortawesome/free-solid-svg-icons';
+
 
 function Register() {
   const [email, setEmail] = useState('');

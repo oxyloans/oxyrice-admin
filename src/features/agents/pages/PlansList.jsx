@@ -17,8 +17,7 @@ import {
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
+
 import dayjs from "dayjs";
 
 const { Option } = Select;

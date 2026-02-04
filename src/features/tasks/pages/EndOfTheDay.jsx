@@ -16,11 +16,11 @@ import {
   Tag,
   Avatar,
   Collapse,
-  Modal,
+  
   Form,
   Input,
   Tooltip,
-  Space,
+  
   Statistic,
   Row,
   Col,
@@ -38,8 +38,7 @@ import {
   MessageOutlined,
   FileTextOutlined,
   DownOutlined,
-  CommentOutlined,
-  SendOutlined,
+  
   TeamOutlined,
   SearchOutlined,
   SortAscendingOutlined,
@@ -56,14 +55,7 @@ const { Panel } = Collapse;
 const { TextArea } = Input;
 const { Search } = Input;
 
-// Custom styles for consistent buttons
-const buttonStyle = {
-  width: "120px",
-  height: "40px",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
+
 
 const EndOfTheDay = () => {
   // State variables - Set status to static "COMPLETED" value

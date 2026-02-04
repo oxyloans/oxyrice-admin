@@ -14,15 +14,11 @@ import {
   Modal,
   Select,
   Empty,
-  Divider,
-  Card,
+ 
 } from "antd";
 import {
   SearchOutlined,
-  EditOutlined,
-  CommentOutlined,
-  EyeOutlined,
-  SendOutlined,
+ 
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";

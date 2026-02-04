@@ -7,8 +7,7 @@ import {
   Badge,
   Button,
   Tooltip,
-  Row,
-  Col,
+ 
   DatePicker,
   Spin,
   Table,

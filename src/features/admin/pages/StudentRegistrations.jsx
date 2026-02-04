@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, Alert, Input, Row, Col, Typography } from "antd";
-import { SearchOutlined } from "@ant-design/icons"; // <-- import icon
+import { SearchOutlined } from "@ant-design/icons"; 
 import axios from "axios";
 import BASE_URL from "./Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
