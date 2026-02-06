@@ -1,7 +1,5 @@
-
-
 import React, { useState, useEffect } from "react";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import {
   Table,
   Button,
@@ -41,7 +39,7 @@ const Categories = () => {
   const [inactiveSearchTerm, setInactiveSearchTerm] = useState("");
   const [filteredActiveCategories, setFilteredActiveCategories] = useState([]);
   const [filteredInactiveCategories, setFilteredInactiveCategories] = useState(
-    []
+    [],
   );
   const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [currentActivePage, setCurrentActivePage] = useState(1);
@@ -60,7 +58,7 @@ const Categories = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       // Set all categories
@@ -68,10 +66,10 @@ const Categories = () => {
 
       // Separate active and inactive categories
       const active = response.data.filter(
-        (category) => category.isActive === true
+        (category) => category.isActive === true,
       );
       const inactive = response.data.filter(
-        (category) => category.isActive === false
+        (category) => category.isActive === false,
       );
 
       setActiveCategories(active);
@@ -149,7 +147,7 @@ const Categories = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       // Success Message & Modal Close
@@ -159,7 +157,7 @@ const Categories = () => {
     } catch (error) {
       if (error.response?.status === 500) {
         message.error(
-          "Category already exists. Please choose a different name."
+          "Category already exists. Please choose a different name.",
         );
         closeModal(); // **Directly close the modal after success**
       } else {
@@ -204,7 +202,7 @@ const Categories = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       if (response.status === 200) {
@@ -246,17 +244,17 @@ const Categories = () => {
 
   const handleAddItem = async (values) => {
     setLoading(true);
-//  if (
-//       !values.itemName ||
-//       !values.itemUnit ||
-//       !values.quantity ||
-//       !values.tag ||
-//       !values.itemDescription
-//     ) {
-//       message.error("Please fill in all the required fields.");
-//       setLoading(false);
-//       return;
-//     }
+    //  if (
+    //       !values.itemName ||
+    //       !values.itemUnit ||
+    //       !values.quantity ||
+    //       !values.tag ||
+    //       !values.itemDescription
+    //     ) {
+    //       message.error("Please fill in all the required fields.");
+    //       setLoading(false);
+    //       return;
+    //     }
 
     // Validate weight for non-FESTIVAL categories
     // const selectedCategory = categories.find(
@@ -311,7 +309,7 @@ const Categories = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       message.success("Item added successfully");
@@ -334,7 +332,7 @@ const Categories = () => {
         (category.categoryName &&
           category.categoryName.toLowerCase().includes(value.toLowerCase())) ||
         (category.categoriesType &&
-          category.categoriesType.toLowerCase().includes(value.toLowerCase()))
+          category.categoriesType.toLowerCase().includes(value.toLowerCase())),
     );
     setFilteredActiveCategories(filtered);
   };
@@ -349,7 +347,7 @@ const Categories = () => {
         (category.categoryName &&
           category.categoryName.toLowerCase().includes(value.toLowerCase())) ||
         (category.categoriesType &&
-          category.categoriesType.toLowerCase().includes(value.toLowerCase()))
+          category.categoriesType.toLowerCase().includes(value.toLowerCase())),
     );
     setFilteredInactiveCategories(filtered);
   };
@@ -368,7 +366,7 @@ const Categories = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       message.success("Category status updated successfully.");
@@ -498,7 +496,6 @@ const Categories = () => {
 
     return false; // Accept file but prevent auto upload
   };
-
 
   return (
     <AdminPanelLayoutTest>
@@ -805,7 +802,7 @@ const Categories = () => {
                   validator: (_, value) => {
                     if (value <= 0) {
                       return Promise.reject(
-                        new Error("Weight must be greater than 0.")
+                        new Error("Weight must be greater than 0."),
                       );
                     }
                     return Promise.resolve();
@@ -826,7 +823,7 @@ const Categories = () => {
                   validator: (_, value) => {
                     if (value <= 0) {
                       return Promise.reject(
-                        new Error("Quantity must be greater than 0.")
+                        new Error("Quantity must be greater than 0."),
                       );
                     }
                     return Promise.resolve();

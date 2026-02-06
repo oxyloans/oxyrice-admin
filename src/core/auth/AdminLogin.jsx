@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "../../features/admin/pages/Config";
+import BASE_URL from "../../core/config/Config";
 
 function AdminLogin() {
   const [form] = Form.useForm();
@@ -26,7 +26,7 @@ function AdminLogin() {
     setActiveMode(savedUserType);
     message.success(
       `${savedUserType === "live" ? "Live" : "Test"} environment activated`,
-      2
+      2,
     );
   }, [form]);
 
@@ -40,15 +40,13 @@ function AdminLogin() {
       setActiveMode(mode);
       setSwitchingMode(false);
       message.success(
-        `Switched to ${mode === "live" ? "Live" : "Test"} environment`
+        `Switched to ${mode === "live" ? "Live" : "Test"} environment`,
       );
 
       // Force reload to apply new BASE_URL from Config
       window.location.reload();
     }, 800);
   };
-
- 
 
   const handleLogin = async () => {
     try {
@@ -74,18 +72,18 @@ function AdminLogin() {
         payload,
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (response.data?.status === "Login Successful") {
         // Store auth tokens
         localStorage.setItem(
           "token",
-          response.data.accessToken || response.data.token
+          response.data.accessToken || response.data.token,
         );
         localStorage.setItem(
           "refreshToken",
-          response.data.refreshToken || response.data.refreshToken
+          response.data.refreshToken || response.data.refreshToken,
         );
         localStorage.setItem("primaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
@@ -109,7 +107,7 @@ function AdminLogin() {
           } else {
             // Show error if not HELPDESKSUPERADMIN in live environment
             setError(
-              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment."
+              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment.",
             );
             triggerShakeAnimation();
           }
@@ -127,7 +125,7 @@ function AdminLogin() {
           } else {
             // Show error if not SELLER in test environment
             setError(
-              "Access denied. Only SELLER users can access Test environment."
+              "Access denied. Only SELLER users can access Test environment.",
             );
             triggerShakeAnimation();
           }
@@ -359,7 +357,7 @@ function AdminLogin() {
       </div>
 
       {/* CSS for animations */}
-      <style >{`
+      <style>{`
         .shake-animation {
           animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }

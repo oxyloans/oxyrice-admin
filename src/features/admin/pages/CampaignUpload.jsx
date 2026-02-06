@@ -6,7 +6,6 @@ import {
   Upload,
   Button,
   message as antdMessage,
- 
   Typography,
   Modal,
   Row,
@@ -16,13 +15,9 @@ import {
   Spin,
   Tabs,
 } from "antd";
-import {
-  UploadOutlined,
- 
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { UploadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { Option } = Select;

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 import * as XLSX from "xlsx";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import {
   Form,
   Input,
@@ -11,7 +11,6 @@ import {
   Button,
   DatePicker,
   Select,
-  
   Row,
   Col,
   Space,

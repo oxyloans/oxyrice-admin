@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Table, Typography, Spin, Alert, Input } from "antd";
 import AdminPanelLayoutTest from "../components/AdminPanel";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 
 const { Title } = Typography;
 const { Search } = Input;

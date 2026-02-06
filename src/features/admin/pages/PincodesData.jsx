@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Spin,
- 
   Typography,
   message,
   Row,
@@ -16,7 +15,7 @@ import {
   Space,
 } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 import { SearchOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";

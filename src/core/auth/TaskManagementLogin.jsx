@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "../../AdminPages/Config";
+import BASE_URL from "../../../core/config/Config";
 
 function TaskManagementLogin() {
   const [form] = Form.useForm();
@@ -26,7 +26,7 @@ function TaskManagementLogin() {
     setActiveMode(savedUserType);
     message.success(
       `${savedUserType === "live" ? "Live" : "Test"} environment activated`,
-      2
+      2,
     );
   }, [form]);
 
@@ -40,15 +40,13 @@ function TaskManagementLogin() {
       setActiveMode(mode);
       setSwitchingMode(false);
       message.success(
-        `Switched to ${mode === "live" ? "Live" : "Test"} environment`
+        `Switched to ${mode === "live" ? "Live" : "Test"} environment`,
       );
 
       // Force reload to apply new BASE_URL from Config
       window.location.reload();
     }, 800);
   };
-
-  
 
   const handleLogin = async () => {
     try {
@@ -74,18 +72,18 @@ function TaskManagementLogin() {
         payload,
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (response.data?.status === "Login Successful") {
         // Store auth tokens
         localStorage.setItem(
           "token",
-          response.data.accessToken || response.data.token
+          response.data.accessToken || response.data.token,
         );
         localStorage.setItem(
           "refreshToken",
-          response.data.refreshToken || response.data.refreshToken
+          response.data.refreshToken || response.data.refreshToken,
         );
         localStorage.setItem("primaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
@@ -323,7 +321,7 @@ function TaskManagementLogin() {
       </div>
 
       {/* CSS for animations */}
-      <style >{`
+      <style>{`
         .shake-animation {
           animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }

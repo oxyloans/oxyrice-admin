@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Table, Spin, Input, Row, Col } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 import debounce from "lodash/debounce"; // use lodash debounce
 

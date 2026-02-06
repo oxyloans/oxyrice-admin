@@ -22,7 +22,7 @@ import {
   Statistic,
   Divider,
 } from "antd";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import {
   ReloadOutlined,
   EyeOutlined,

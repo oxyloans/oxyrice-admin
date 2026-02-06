@@ -15,7 +15,7 @@ import {
 } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { Search } = Input;

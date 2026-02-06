@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "../config/Config";
+import BASE_URL from "../../core/config/Config";
 
 function CompaniesLogin() {
   const [form] = Form.useForm();
@@ -26,7 +26,7 @@ function CompaniesLogin() {
     setActiveMode(savedUserType);
     message.success(
       `${savedUserType === "live" ? "Live" : "Test"} environment activated`,
-      2
+      2,
     );
   }, [form]);
 
@@ -40,7 +40,7 @@ function CompaniesLogin() {
       setActiveMode(mode);
       setSwitchingMode(false);
       message.success(
-        `Switched to ${mode === "live" ? "Live" : "Test"} environment`
+        `Switched to ${mode === "live" ? "Live" : "Test"} environment`,
       );
 
       // Force reload to apply new BASE_URL from Config
@@ -72,18 +72,18 @@ function CompaniesLogin() {
         payload,
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (response.data?.status === "Login Successful") {
         // Store auth tokens
         localStorage.setItem(
           "token",
-          response.data.accessToken || response.data.token
+          response.data.accessToken || response.data.token,
         );
         localStorage.setItem(
           "refreshToken",
-          response.data.refreshToken || response.data.refreshToken
+          response.data.refreshToken || response.data.refreshToken,
         );
         localStorage.setItem("primaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
@@ -107,7 +107,7 @@ function CompaniesLogin() {
           } else {
             // Show error if not HELPDESKSUPERADMIN in live environment
             setError(
-              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment."
+              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment.",
             );
             triggerShakeAnimation();
           }
@@ -125,7 +125,7 @@ function CompaniesLogin() {
           } else {
             // Show error if not SELLER in test environment
             setError(
-              "Access denied. Only SELLER users can access Test environment."
+              "Access denied. Only SELLER users can access Test environment.",
             );
             triggerShakeAnimation();
           }
@@ -160,7 +160,7 @@ function CompaniesLogin() {
       <div className="text-center mb-8 transform hover:scale-105 transition-transform duration-300">
         <h1 className="text-5xl font-bold tracking-tight">
           <span className="text-emerald-600">JOBS</span>
-          <span className="text-orange-500"> ADMIN  </span>
+          <span className="text-orange-500"> ADMIN </span>
         </h1>
         <p className="text-gray-600 mt-2">Admin Control Panel</p>
       </div>
@@ -357,7 +357,7 @@ function CompaniesLogin() {
       </div>
 
       {/* CSS for animations */}
-      <style >{`
+      <style>{`
         .shake-animation {
           animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }

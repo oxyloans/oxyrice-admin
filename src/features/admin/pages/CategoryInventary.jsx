@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spin, Alert, Tag } from "antd";
 import AdminPanelLayoutTest from "../components/AdminPanel";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 const CategoryInventory = () => {
   const [categoryData, setCategoryData] = useState([]);
   const [loading, setLoading] = useState(true);

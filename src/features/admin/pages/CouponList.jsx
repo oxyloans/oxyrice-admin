@@ -29,7 +29,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
 import moment from "moment";
 import AdminPanelLayout from "../components/AdminPanel.jsx";
-import BASE_URL from "./Config.jsx";
+import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
 const { TabPane } = Tabs;
 const Coupons = () => {

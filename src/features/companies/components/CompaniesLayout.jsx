@@ -134,7 +134,7 @@ const sidebarItems = [
   const handleSignOut = () => {
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
-    window.location.href = "/admin/comapanieslogin"; // Redirect to login
+    window.location.href = "/admin/companieslogin"; // Redirect to login
     navigate(entryPoint);
   };
 

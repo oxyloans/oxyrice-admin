@@ -4,7 +4,7 @@ import AdminPanelLayoutTest from "../components/AdminPanel";
 import { Table, Col, Row, Select, Tag, Button, message, Spin } from "antd";
 import { useParams } from "react-router-dom";
 import { DownloadOutlined } from "@ant-design/icons";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
 
 const AllInforMationOfBarCode = () => {

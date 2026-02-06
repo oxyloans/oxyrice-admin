@@ -172,7 +172,7 @@ const FreelancersList = lazy(
 const ADMIN_BASE = "/admin";
 const TASK_BASE = "/taskmanagement";
 const ADMIN_LOGIN = "/";
-const COMPANIES_LOGIN = `${ADMIN_BASE}/comapanieslogin`;
+const COMPANIES_LOGIN = `${ADMIN_BASE}/companieslogin`;
 const AGENTS_LOGIN = `${ADMIN_BASE}/agentslogin`;
 const TASK_LOGIN = `${ADMIN_BASE}/taskmanagementlogin`;
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, message, Spin, Tabs } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { TabPane } = Tabs;

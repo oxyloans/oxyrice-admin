@@ -587,7 +587,7 @@ const DEPARTMENT_EMPLOYEES = {
               placeholder="Select Departments"
               onChange={(values) => {
                 setSelectedDept(values);
-                formAdd.setFieldsValue({ employeesName: undefined }); // reset employees
+                formEdit.setFieldsValue({ employeesName: undefined }); // reset employees
               }}
             >
               {Object.keys(DEPARTMENT_EMPLOYEES).map((dept) => (

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, Alert, Input, Row, Col, Typography } from "antd";
-import { SearchOutlined } from "@ant-design/icons"; 
+import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { Title } = Typography;
@@ -17,11 +17,11 @@ const StudentRegistrations = () => {
   const fetchStudents = async () => {
     try {
       const res = await axios.get(
-        `${BASE_URL}/user-service/student/getAllStudentRegistrations`
+        `${BASE_URL}/user-service/student/getAllStudentRegistrations`,
       );
       // Sort descending by createdAt (newest first)
       const sortedData = res.data.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
       setData(sortedData);
       setFilteredData(sortedData);
@@ -139,58 +139,59 @@ const StudentRegistrations = () => {
     },
   ];
 
+  return (
+    <AdminPanelLayoutTest>
+      <div style={{ padding: "16px" }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col>
+            <Title level={4}>Registered Users</Title>
+          </Col>
+          <Col>
+            <Input
+              placeholder="Search by ID (last 4), mobile or WhatsApp"
+              value={searchTerm}
+              onChange={handleSearch}
+              style={{ width: 300 }}
+              allowClear
+              prefix={<SearchOutlined />}
+            />
+          </Col>
+        </Row>
 
+        {loading && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100px", // adjust as needed
+              margin: "20px 0",
+            }}
+          >
+            <Spin tip="Loading student data..." />
+          </div>
+        )}
 
- return (
-   <AdminPanelLayoutTest>
-     <div style={{ padding: "16px" }}>
-       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-         <Col>
-           <Title level={4}>Registered Users</Title>
-         </Col>
-         <Col>
-           <Input
-             placeholder="Search by ID (last 4), mobile or WhatsApp"
-             value={searchTerm}
-             onChange={handleSearch}
-             style={{ width: 300 }}
-             allowClear
-             prefix={<SearchOutlined />}
-           />
-         </Col>
-       </Row>
+        {error && <Alert message={error} type="error" showIcon />}
 
-       {loading && (
-         <div
-           style={{
-             display: "flex",
-             justifyContent: "center",
-             alignItems: "center",
-             height: "100px", // adjust as needed
-             margin: "20px 0",
-           }}
-         >
-           <Spin tip="Loading student data..." />
-         </div>
-       )}
-
-       {error && <Alert message={error} type="error" showIcon />}
-
-       {!loading && !error && (
-         <Table
-           rowKey="id"
-           columns={columns}
-           dataSource={filteredData}
-           pagination={{ pageSize: 10 }}
-           bordered
-           scroll={{ x: "max-content" }}
-           size="middle"
-         />
-       )}
-     </div>
-   </AdminPanelLayoutTest>
- );
-
+        {!loading && !error && (
+          <Table
+            rowKey="id"
+            columns={columns}
+            dataSource={filteredData}
+            pagination={{ pageSize: 10 }}
+            bordered
+            scroll={{ x: "max-content" }}
+            size="middle"
+          />
+        )}
+      </div>
+    </AdminPanelLayoutTest>
+  );
 };
 
 export default StudentRegistrations;

@@ -15,7 +15,7 @@
 //   Tag,
 // } from "antd";
 // import { Link } from "react-router-dom";
-// import BASE_URL from "./Config";
+// import BASE_URL from "../../../core/config/Config";
 // import AdminPanelLayoutTest from "./AdminPanel";
 
 // import "../ItemList.css"; // Import custom CSS for responsive styling
@@ -1004,7 +1004,7 @@ import {
   Progress,
 } from "antd";
 import { Link } from "react-router-dom";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 import {

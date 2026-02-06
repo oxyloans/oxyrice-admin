@@ -22,7 +22,7 @@ import {
   FileExcelOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { TextArea } = Input;

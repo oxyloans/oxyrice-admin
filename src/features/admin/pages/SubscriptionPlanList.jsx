@@ -16,7 +16,7 @@ import {
 import axios from "axios";
 import AdminPanelLayout from "../components/AdminPanel.jsx";
 import { MdModeEditOutline } from "react-icons/md";
-import BASE_URL from "./Config.jsx";
+import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
 
 const SubscriptionPlansList = () => {

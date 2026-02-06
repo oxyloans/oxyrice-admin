@@ -32,12 +32,11 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   PlusCircleOutlined,
- 
   FilterOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import BASE_URL from "../../AdminPages/Config";
+import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../../TaskManagement/Layout/AdminPanel";
 
 const { Title, Text } = Typography;
@@ -131,7 +130,7 @@ const TasksList = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${BASE_URL}/user-service/write/getTaskData`
+        `${BASE_URL}/user-service/write/getTaskData`,
       );
       if (Array.isArray(response.data)) {
         setTasks(response.data);
@@ -196,7 +195,7 @@ const TasksList = () => {
   const handleEditTask = (task) => {
     setCurrentTask(task);
     const taskAssignees = parseAssignees(
-      task.taskassingnedto || task.taskassingnedby
+      task.taskassingnedto || task.taskassingnedby,
     );
 
     editForm.setFieldsValue({
@@ -228,7 +227,7 @@ const TasksList = () => {
           admindocumentid: currentTask.admindocumentid || "string",
           comments: values.comments,
           link: values.link,
-        }
+        },
       );
 
       setTasks((prev) =>
@@ -243,8 +242,8 @@ const TasksList = () => {
                 comments: values.comments,
                 link: values.link,
               }
-            : task
-        )
+            : task,
+        ),
       );
 
       message.success("Task updated successfully");

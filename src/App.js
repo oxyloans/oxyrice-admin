@@ -20,12 +20,12 @@ import "@mantine/notifications/styles.css";
 
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import ProtectedRoute from "./core/routing/ProtectedRoute";
-import EntryPointTracker from "./core/routing/EntryPointTracker";
-import LoadingSpinner from "./shared/components/LoadingSpinner";
 
-import Email from "./features/admin/pages/Emailcampaign";
+const ProtectedRoute = lazy(() => import("./core/routing/ProtectedRoute"));
+const EntryPointTracker = lazy(() => import("./core/routing/EntryPointTracker"));
 
+const LoadingSpinner = lazy(() => import("./shared/components/LoadingSpinner"));
+const Email = lazy(() => import("./features/admin/pages/Emailcampaign"));
 const LoginTest = lazy(() => import("./core/auth/AdminLogin"));
 const AgentsLogin = lazy(() => import("./core/auth/AgentsLogin"));
 const CompaniesLogin = lazy(() => import("./core/auth/CompaniesLogin"));
@@ -36,16 +36,15 @@ const TaskManagementLogin = lazy(
 function App() {
   return (
     <Router>
-      {/* useLocation now lives inside Router context */}
-      <EntryPointTracker />
       <MantineProvider defaultColorScheme="light">
         <Notifications position="top-right" />
         <Suspense fallback={<LoadingSpinner />}>
+          <EntryPointTracker />
           <Routes>
             {/* Public */}
             <Route path="/" element={<LoginTest />} />
             <Route path="/admin/agentslogin" element={<AgentsLogin />} />
-            <Route path="/admin/comapanieslogin" element={<CompaniesLogin />} />
+            <Route path="/admin/companieslogin" element={<CompaniesLogin />} />
             <Route
               path="/admin/taskmanagementlogin"
               element={<TaskManagementLogin />}

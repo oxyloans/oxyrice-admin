@@ -24,7 +24,7 @@ import {
   AiOutlinePrinter,
   AiOutlineEye,
 } from "react-icons/ai";
-import BASE_URL from "./Config.jsx";
+import BASE_URL from "../../../core/config/Config";
 const token = localStorage.getItem("token");
 const { Option } = Select;
 

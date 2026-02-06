@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, message, Button, Input, Row, Col } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { Search } = Input;
@@ -17,7 +17,7 @@ const ApprovedAmountList = () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/order-service/approvedAmountCustomers`,
-        { headers: { accept: "*/*" } }
+        { headers: { accept: "*/*" } },
       );
       setData(response.data || []);
       setFilteredData(response.data || []); // keep backup for search
@@ -38,7 +38,7 @@ const ApprovedAmountList = () => {
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
     const filtered = data.filter((item) =>
-      item.customerName.toLowerCase().includes(searchValue)
+      item.customerName.toLowerCase().includes(searchValue),
     );
     setFilteredData(filtered);
   };
@@ -82,7 +82,7 @@ const ApprovedAmountList = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      align:"center",
+      align: "center",
       render: (amount) => `₹ ${amount.toLocaleString()}`,
     },
   ];
@@ -97,7 +97,7 @@ const ApprovedAmountList = () => {
           style={{ marginBottom: 16 }}
         >
           <Col>
-            <h1 className="font-bold"  style={{ margin: 0 }}>
+            <h1 className="font-bold" style={{ margin: 0 }}>
               Approved Amount for Customers
             </h1>
           </Col>

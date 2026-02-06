@@ -6,7 +6,6 @@ import {
   Button,
   Space,
   Select,
- 
   Modal,
   TimePicker,
   Form,
@@ -16,7 +15,7 @@ import {
 } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 

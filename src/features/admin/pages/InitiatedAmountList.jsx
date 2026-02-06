@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, message, Button, Input, Row, Col } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 const { Search } = Input;
@@ -17,7 +17,7 @@ const InitiatedAmountList = () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/order-service/initiatedAmountForCustomers`,
-        { headers: { accept: "*/*" } }
+        { headers: { accept: "*/*" } },
       );
       setData(response.data || []);
       setFilteredData(response.data || []);
@@ -38,7 +38,7 @@ const InitiatedAmountList = () => {
   const handleSearch = (value) => {
     const searchValue = value.toLowerCase();
     const filtered = data.filter((item) =>
-      item.customerName.toLowerCase().includes(searchValue)
+      item.customerName.toLowerCase().includes(searchValue),
     );
     setFilteredData(filtered);
   };
@@ -82,8 +82,8 @@ const InitiatedAmountList = () => {
     },
     {
       title: "Amount",
-        dataIndex: "amount",
-      align:"center",
+      dataIndex: "amount",
+      align: "center",
       key: "amount",
       render: (amount) => `₹ ${amount.toLocaleString()}`,
     },
@@ -99,7 +99,9 @@ const InitiatedAmountList = () => {
           style={{ marginBottom: 16 }}
         >
           <Col>
-            <h1 className="font-bold" style={{ margin: 0 }}>Initiated Amount for Customers</h1>
+            <h1 className="font-bold" style={{ margin: 0 }}>
+              Initiated Amount for Customers
+            </h1>
           </Col>
           <Col>
             <div style={{ display: "flex", gap: "10px" }}>

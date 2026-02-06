@@ -14,7 +14,7 @@ import {
 } from "antd";
 import axios from "axios";
 import AdminPanelLayoutTest from "../components/AdminPanel";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 
 const { Option } = Select;
 const { TabPane } = Tabs;

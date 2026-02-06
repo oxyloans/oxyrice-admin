@@ -7,7 +7,6 @@ import {
   Badge,
   Button,
   Tooltip,
- 
   DatePicker,
   Spin,
   Table,
@@ -41,7 +40,7 @@ import {
   Legend,
 } from "chart.js";
 import AdminPanelLayoutTest from "../components/AdminPanel"; // Assuming this is your layout component
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 
 ChartJS.register(
   CategoryScale,
@@ -181,8 +180,10 @@ const DashboardTest = () => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    return `${year}-${month}-${day}`;
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
   const downloadExcel = async () => {

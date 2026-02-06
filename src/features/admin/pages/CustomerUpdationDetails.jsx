@@ -13,7 +13,7 @@ import {
 } from "antd";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
 
 const CustomerDetails = () => {

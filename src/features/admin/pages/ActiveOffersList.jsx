@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   Card,
   Table,
- 
   Typography,
   Spin,
   Button,
@@ -15,7 +14,7 @@ import {
   message,
 } from "antd";
 import axios from "axios";
-import BASE_URL from "./Config";
+import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 
 import { data } from "autoprefixer";
