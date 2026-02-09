@@ -308,13 +308,15 @@ const DashboardTest = () => {
   const StatCard = ({ title, value, icon, color, description, growth }) => (
     <Card
       className="shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl border-none"
-      style={{ background: "#fff", borderLeft: `4px solid ${color}` }}
+      style={{ 
+        background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`
+      }}
       bodyStyle={{ padding: "20px" }}
     >
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <Text className="text-gray-500 uppercase text-xs font-medium">
+            <Text className="uppercase text-xs font-medium" style={{ color: `${color}cc` }}>
               {title}
             </Text>
             <Title level={2} className="m-0 text-3xl" style={{ color }}>
@@ -323,16 +325,16 @@ const DashboardTest = () => {
           </div>
           <div
             className="p-3 rounded-full"
-            style={{ backgroundColor: `${color}10` }}
+            style={{ backgroundColor: `${color}25` }}
           >
             {React.cloneElement(icon, { style: { fontSize: 24, color } })}
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <Text className="text-gray-600 text-sm">{description}</Text>
+          <Text className="text-sm" style={{ color: `${color}dd` }}>{description}</Text>
           {growth && (
             <Text
-              className={`text-sm ${growth >= 0 ? "text-green-600" : "text-red-600"}`}
+              className={`text-sm font-semibold ${growth >= 0 ? "text-green-600" : "text-red-600"}`}
             >
               <RiseOutlined rotate={growth >= 0 ? 0 : 180} className="mr-1" />
               {growth >= 0 ? "+" : ""}
@@ -470,8 +472,8 @@ const DashboardTest = () => {
 
   return (
     <AdminPanelLayoutTest>
-      <Layout className="min-h-screen">
-        <div className="p-4 sm:p-6 md:p-8">
+      <Card >
+        <div className="p-2 sm:p-4 md:p-4">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
               <Title level={2} className="text-gray-800 font-bold m-0">
@@ -486,6 +488,7 @@ const DashboardTest = () => {
                     disabled={refreshing}
                     className="rounded-lg w-10 h-10 flex items-center justify-center"
                   />
+               
                 </Badge>
               </Tooltip>
             </div>
@@ -613,7 +616,7 @@ const DashboardTest = () => {
             )}
           </div>
         </div>
-      </Layout>
+      </Card>
     </AdminPanelLayoutTest>
   );
 };

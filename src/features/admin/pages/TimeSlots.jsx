@@ -96,7 +96,7 @@ const TimeSlots = () => {
         slot4Status: values.slot4Status || false,
       };
 
-      await axios.post(`${BASE_URL}/order-service/add`, payload);
+      await axios.post(`${BASE_URL}/order-service/addTimeSlot`, payload);
       message.success("Time Slot added successfully!");
       fetchTimeSlots();
       setIsModalOpen(false);
