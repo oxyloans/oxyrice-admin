@@ -8,7 +8,8 @@ import {
   Row,
   Col,
   Select,
- 
+  Button,
+  Tag,
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
@@ -23,6 +24,8 @@ const API_URL = `${BASE_URL}/ai-service/agent/rotaryData`;
 const RotaryData = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [extracting, setExtracting] = useState(false);
+  const [extractingRow, setExtractingRow] = useState(null);
 
   // ✅ toolbar states
   const [search, setSearch] = useState("");
@@ -81,6 +84,117 @@ const RotaryData = () => {
 
   const total = filteredRows.length;
 
+  // Count records without email and mobile
+  const missingDataCount = useMemo(() => {
+    return rows.filter(r => !r.emails && !r.mobileNumbers).length;
+  }, [rows]);
+
+  // Extract data for single row
+  const extractSingleRow = async (record) => {
+    if (!record.image) {
+      message.error("No image URL found");
+      return;
+    }
+
+    setExtractingRow(record.image);
+    try {
+      const accessToken = localStorage.getItem("accessToken") || "";
+      const res = await axios.post(
+        `${BASE_URL}/ai-service/agent/extractFileUrl1`,
+        [record.image],
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Refresh data
+      const updatedRes = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = Array.isArray(updatedRes.data) ? updatedRes.data : [];
+      const sorted = [...data].sort((a, b) => {
+        const da = new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
+        const db = new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
+        return db - da;
+      });
+
+      setRows(sorted);
+      message.success("Data extracted successfully");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to extract data");
+    } finally {
+      setExtractingRow(null);
+    }
+  };
+
+  // Extract all missing data (limit 50)
+  const extractAllMissing = async () => {
+    const missingRows = rows.filter(r => !r.emails && !r.mobileNumbers).slice(0, 50);
+    
+    if (missingRows.length === 0) {
+      message.info("No records to extract");
+      return;
+    }
+
+    setExtracting(true);
+    const accessToken = localStorage.getItem("accessToken") || "";
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const row of missingRows) {
+      if (!row.image) continue;
+
+      try {
+        await axios.post(
+          `${BASE_URL}/ai-service/agent/extractFileUrl1`,
+          [row.image],
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        successCount++;
+      } catch (err) {
+        console.error(err);
+        failCount++;
+      }
+    }
+
+    // Refresh data
+    try {
+      const updatedRes = await axios.get(API_URL, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = Array.isArray(updatedRes.data) ? updatedRes.data : [];
+      const sorted = [...data].sort((a, b) => {
+        const da = new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
+        const db = new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
+        return db - da;
+      });
+
+      setRows(sorted);
+      message.success(`Extracted ${successCount} records successfully${failCount > 0 ? `, ${failCount} failed` : ''}`);
+    } catch (err) {
+      message.error("Failed to refresh data");
+    } finally {
+      setExtracting(false);
+    }
+  };
+
   const columns = [
     {
       title: "S.NO",
@@ -96,6 +210,7 @@ const RotaryData = () => {
       key: "name",
       align: "center",
     },
+
     {
       title: "Document / Image",
       dataIndex: "image",
@@ -108,7 +223,8 @@ const RotaryData = () => {
 
         const getFileType = (fileUrl) => {
           const ext = fileUrl.split(".").pop().toLowerCase();
-          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
+            return "image";
           if (["pdf"].includes(ext)) return "pdf";
           if (["mp4", "webm", "mov"].includes(ext)) return "video";
           if (["xls", "xlsx"].includes(ext)) return "excel";
@@ -125,7 +241,7 @@ const RotaryData = () => {
           excel: "📊",
           ppt: "📋",
           document: "📝",
-          file: "📄"
+          file: "📄",
         };
 
         return (
@@ -144,9 +260,56 @@ const RotaryData = () => {
                 fontWeight: 600,
               }}
             >
-              {icons[fileType]} View {fileType === "file" ? "Document" : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
+              {icons[fileType]} View{" "}
+              {fileType === "file"
+                ? "Document"
+                : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
             </a>
           </div>
+        );
+      },
+    },
+
+    {
+      title: "Action / Contact",
+      key: "action",
+      align: "center",
+      render: (_, record) => {
+        const hasEmail = record.emails;
+        const hasMobile = record.mobileNumbers;
+
+        if (hasEmail || hasMobile) {
+          return (
+            <div style={{ textAlign: "center" }}>
+              {hasEmail && (
+                <div>
+                  <b>Email:</b>
+                  <span>{hasEmail}</span>
+                </div>
+              )}
+              {hasMobile && (
+                <div>
+                  <b>Mobile Number:</b>
+                  <span>{hasMobile}</span>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        return (
+          <Button
+            size="small"
+            loading={extractingRow === record.image}
+            onClick={() => extractSingleRow(record)}
+            style={{
+              backgroundColor: "#1ab394",
+              borderColor: "#1ab394",
+              color: "white",
+            }}
+          >
+            Extract Data
+          </Button>
         );
       },
     },
@@ -166,10 +329,24 @@ const RotaryData = () => {
     <CompaniesLayout>
       <div className="p-4 sm:p-6 md:p-8">
         {/* ✅ Heading */}
-        <div className="flex justify-between items-center mb-2 max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-4 max-w-7xl mx-auto">
           <Title level={3} className="!m-0">
             Rotary Data
           </Title>
+          <div style={{ textAlign: "right" }}>
+            <Button
+            style={{backgroundColor:"#008cba",color:"white"}}
+              size="large"
+              loading={extracting}
+              onClick={extractAllMissing}
+              disabled={missingDataCount === 0}
+            >
+              Extract All Data
+            </Button>
+            <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
+              {missingDataCount} records without email/mobile (max 50)
+            </div>
+          </div>
         </div>
 
         {/* ✅ ONE ROW: Show entries (left) + Search (right) */}

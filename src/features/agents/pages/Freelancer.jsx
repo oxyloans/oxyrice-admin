@@ -9,12 +9,27 @@ import {
   Row,
   Col,
   Space,
+  Statistic,
+  Tooltip,
+  Typography,
 } from "antd";
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import BASE_URL from "../../../core/config/Config";
+import {
+  EyeOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  UserOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
+import BASE_URL from "../../../core/config/Config";
+const { Text } = Typography;
+
 
 const PRIMARY = "#008cba";
+const SUCCESS = "#52c41a";
+const ERROR = "#ff4d4f";
+const WARNING = "#faad14";
 
 const FreelancersList = () => {
   const [data, setData] = useState([]);
@@ -42,7 +57,7 @@ const FreelancersList = () => {
       if (!res.ok) throw new Error("Failed to fetch freelancers");
 
       const json = await res.json();
-      setData(Array.isArray(json) ? json : []);
+      setData(Array.isArray(json) ? json.reverse() : []);
     } catch (err) {
       console.error(err);
       message.error("Failed to load freelancers");
@@ -56,10 +71,7 @@ const FreelancersList = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleResumeClick = (url) => {
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
-    else message.warning("No resume available");
-  };
+ 
 
   // ✅ filter data by search
   const filteredData = useMemo(() => {
@@ -73,100 +85,133 @@ const FreelancersList = () => {
     });
   }, [data, searchText]);
 
+  // ✅ statistics
+  const stats = useMemo(() => {
+    const openForWork = filteredData.filter(
+      (f) => String(f?.openForFreeLancing || "").toUpperCase() === "YES"
+    ).length;
+    const negotiable = filteredData.filter(
+      (f) => String(f?.amountNegotiable || "").toUpperCase() === "YES"
+    ).length;
+    return { total: filteredData.length, openForWork, negotiable };
+  }, [filteredData]);
+
   // ✅ columns
   const columns = [
     {
-      title: "S.No",
+      title: "#",
       key: "sno",
-      align: "center",
 
+      align: "center",
       render: (_text, _record, index) => {
         const { current, pageSize } = pagination;
-        return (current - 1) * pageSize + (index + 1);
+        return (
+          <Text strong style={{ color: PRIMARY }}>
+            {(current - 1) * pageSize + (index + 1)}
+          </Text>
+        );
       },
     },
-
     {
       title: "User ID",
       dataIndex: "userId",
       key: "userId",
-      align: "center",
 
-      render: (id) => (id ? `#${String(id).slice(-4)}` : "-"),
+      align: "center",
+      render: (id) => (
+        <Tooltip title={id}>
+          <Tag
+            icon={<UserOutlined />}
+            color="blue"
+            style={{ fontWeight: 500, cursor: "pointer" }}
+          >
+            {id ? `#${String(id).slice(-4)}` : "-"}
+          </Tag>
+        </Tooltip>
+      ),
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      align: "center",
+      align:"center",
 
-      render: (v) => v || "-",
+      render: (v) => (
+        <Tooltip title={v}>
+          <Text style={{ color: "#262626" }}>{v || "-"}</Text>
+        </Tooltip>
+      ),
     },
     {
       title: "Rates",
       key: "rates",
-      align: "center",
-
+align: "center",
       render: (_, record) => (
-        <div style={{ lineHeight: 1.6 }}>
+        <div style={{ fontSize: 13, lineHeight: 1.8 }}>
           <div>
-            <b>Per Hour:</b> ₹{record?.perHour ?? 0}
+            <Text type="secondary">Hour:</Text>{" "}
+            <Text strong>₹{record?.perHour?.toLocaleString() ?? 0}</Text>
           </div>
           <div>
-            <b>Per Day:</b> ₹{record?.perDay ?? 0}
+            <Text type="secondary">Day:</Text>{" "}
+            <Text strong>₹{record?.perDay?.toLocaleString() ?? 0}</Text>
           </div>
           <div>
-            <b>Per Week:</b> ₹{record?.perWeek ?? 0}
+            <Text type="secondary">Month:</Text>{" "}
+            <Text strong>₹{record?.perMonth?.toLocaleString() ?? 0}</Text>
           </div>
           <div>
-            <b>Per Month:</b> ₹{record?.perMonth ?? 0}
-          </div>
-          <div>
-            <b>Per Year:</b> ₹{record?.perYear ?? 0}
+            <Text type="secondary">PerYear:</Text>{" "}
+            <Text strong>₹{record?.perYear?.toLocaleString() ?? 0}</Text>
           </div>
         </div>
       ),
     },
     {
-      title: "Open for Freelancing",
+      title: "Availability",
       dataIndex: "openForFreeLancing",
       key: "openForFreeLancing",
-      align: "center",
 
+      align: "center",
+      filters: [
+        { text: "Available", value: "YES" },
+        { text: "Not Available", value: "NO" },
+      ],
+      onFilter: (value, record) =>
+        String(record?.openForFreeLancing || "").toUpperCase() === value,
       render: (status) => {
         const yes = String(status || "").toUpperCase() === "YES";
         return (
           <Tag
-            style={{
-              borderColor: yes ? PRIMARY : "#ff4d4f",
-              color: yes ? PRIMARY : "#ff4d4f",
-              background: "#fff",
-              fontWeight: 600,
-            }}
+            icon={yes ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+            color={yes ? "success" : "error"}
+            style={{ fontWeight: 600, fontSize: 13 }}
           >
-            {yes ? "YES" : "NO"}
+            {yes ? "Available" : "Unavailable"}
           </Tag>
         );
       },
     },
     {
-      title: "Amount Negotiable",
+      title: "Negotiable",
       dataIndex: "amountNegotiable",
       key: "amountNegotiable",
-      align: "center",
 
+      align: "center",
+      filters: [
+        { text: "Yes", value: "YES" },
+        { text: "No", value: "NO" },
+      ],
+      onFilter: (value, record) =>
+        String(record?.amountNegotiable || "").toUpperCase() === value,
       render: (status) => {
         const yes = String(status || "").toUpperCase() === "YES";
         return (
           <Tag
-            style={{
-              borderColor: yes ? PRIMARY : "#faad14",
-              color: yes ? PRIMARY : "#faad14",
-              background: "#fff",
-              fontWeight: 600,
-            }}
+            color={yes ? "processing" : "warning"}
+            style={{ fontWeight: 600, fontSize: 13 }}
           >
-            {yes ? "YES" : "NO"}
+            {yes ? "Yes" : "No"}
           </Tag>
         );
       },
@@ -176,100 +221,231 @@ const FreelancersList = () => {
       dataIndex: "resumeUrl",
       key: "resumeUrl",
       align: "center",
+      render: (url) => {
+        if (!url) {
+          return <span style={{ color: "#9CA3AF" }}>No document</span>;
+        }
 
-      render: (url) =>
-        url ? (
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            onClick={() => handleResumeClick(url)}
-            style={{
-              backgroundColor: PRIMARY,
-              borderColor: PRIMARY,
-              fontWeight: 600,
-            }}
-          >
-            View
-          </Button>
-        ) : (
-          <span style={{ color: "#999" }}>No Resume</span>
-        ),
+        const getFileType = (fileUrl) => {
+          const ext = fileUrl.split(".").pop().toLowerCase();
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
+          if (["pdf"].includes(ext)) return "pdf";
+          if (["mp4", "webm", "mov"].includes(ext)) return "video";
+          if (["xls", "xlsx"].includes(ext)) return "excel";
+          if (["ppt", "pptx"].includes(ext)) return "ppt";
+          if (["doc", "docx"].includes(ext)) return "document";
+          return "file";
+        };
+
+        const fileType = getFileType(url);
+        const icons = {
+          image: "🖼️",
+          pdf: "📄",
+          video: "🎥",
+          excel: "📊",
+          ppt: "📋",
+          document: "📝",
+          file: "📄"
+        };
+
+        return (
+          <div style={{ textAlign: "center" }}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontWeight: 600,
+              }}
+            >
+              {icons[fileType]} View {fileType === "file" ? "Document" : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
+            </a>
+          </div>
+        );
+      },
     },
   ];
 
   return (
     <AgentsAdminLayout>
-      <Card
-        style={{ borderRadius: 12 }}
-        bodyStyle={{ padding: 16 }}
-        title={
-          <Row gutter={[12, 12]} align="middle" justify="space-between">
-            <Col xs={24} md={10}>
-              <h2 style={{ margin: 0, color: PRIMARY }}>Freelancers List</h2>
-            </Col>
-
-            <Col
-              xs={24}
-              md={14}
+      <div style={{ padding: "0 8px" }}>
+        {/* Statistics Cards */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
+          <Col xs={24} sm={8}>
+            <Card
+              bordered={false}
               style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
               }}
             >
-              <Space align="center">
-                <Input
-                  allowClear
-                  value={searchText}
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                    setPagination((p) => ({ ...p, current: 1 }));
-                  }}
-                  prefix={<SearchOutlined />}
-                  placeholder="Search by Email or User ID"
-                  size="large"
-                  style={{ width: 280 }}
-                />
+              <Statistic
+                title={
+                  <span style={{ color: "#fff", fontSize: 14 }}>
+                    Total Freelancers
+                  </span>
+                }
+                value={stats.total}
+                valueStyle={{ color: "#fff", fontWeight: 700 }}
+                prefix={<UserOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                boxShadow: "0 4px 12px rgba(245, 87, 108, 0.3)",
+              }}
+            >
+              <Statistic
+                title={
+                  <span style={{ color: "#fff", fontSize: 14 }}>
+                    Available Now
+                  </span>
+                }
+                value={stats.openForWork}
+                valueStyle={{ color: "#fff", fontWeight: 700 }}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                boxShadow: "0 4px 12px rgba(79, 172, 254, 0.3)",
+              }}
+            >
+              <Statistic
+                title={
+                  <span style={{ color: "#fff", fontSize: 14 }}>
+                    Negotiable Rates
+                  </span>
+                }
+                value={stats.negotiable}
+                valueStyle={{ color: "#fff", fontWeight: 700 }}
+                prefix={<CheckCircleOutlined />}
+              />
+            </Card>
+          </Col>
+        </Row>
 
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={fetchFreelancers}
-                  size="large"
+        {/* Main Table Card */}
+        <Card
+          style={{
+            borderRadius: 12,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          }}
+          bodyStyle={{ padding: "20px" }}
+          title={
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} lg={8}>
+                <h2
                   style={{
-                    borderColor: PRIMARY,
+                    margin: 0,
                     color: PRIMARY,
-                    fontWeight: 600,
+                    fontSize: 20,
+                    fontWeight: 700,
                   }}
                 >
-                  Refresh
-                </Button>
-              </Space>
-            </Col>
-          </Row>
+                  Freelancers Details
+                </h2>
+              </Col>
+
+              <Col xs={24} lg={16}>
+                <Space
+                  size="middle"
+                  wrap
+                  style={{
+                    width: "100%",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Input
+                    allowClear
+                    value={searchText}
+                    onChange={(e) => {
+                      setSearchText(e.target.value);
+                      setPagination((p) => ({ ...p, current: 1 }));
+                    }}
+                    prefix={<SearchOutlined style={{ color: PRIMARY }} />}
+                    placeholder="Search by Email or User ID"
+                    size="large"
+                    style={{
+                      width: "100%",
+                      maxWidth: 320,
+                      borderRadius: 8,
+                    }}
+                  />
+
+                  <Button
+                    icon={<ReloadOutlined />}
+                    onClick={fetchFreelancers}
+                    size="large"
+                    loading={loading}
+                    style={{
+                      borderColor: PRIMARY,
+                      color: PRIMARY,
+                      fontWeight: 600,
+                      borderRadius: 8,
+                    }}
+                  >
+                    Refresh
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
+          }
+        >
+          <Table
+            rowKey={(r) => r?.id || `${r?.userId || ""}-${r?.email || ""}`}
+            loading={loading}
+            columns={columns}
+            dataSource={filteredData}
+            bordered
+            scroll={{ x: "100%" }}
+            rowClassName={(_, index) =>
+              index % 2 === 0 ? "table-row-light" : "table-row-dark"
+            }
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: filteredData.length,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              pageSizeOptions: [10, 25, 50, 100],
+              showTotal: (total, range) =>
+                `Showing ${range[0]}-${range[1]} of ${total} freelancers`,
+              onChange: (current, pageSize) => {
+                setPagination({ current, pageSize });
+              },
+              responsive: true,
+            }}
+          />
+        </Card>
+      </div>
+
+      <style jsx>{`
+        .table-row-light {
+          background-color: #ffffff;
         }
-      >
-        <Table
-          rowKey={(r) => r?.id || `${r?.userId || ""}-${r?.email || ""}`}
-          loading={loading}
-          columns={columns}
-          dataSource={filteredData}
-          bordered
-          scroll={{ x: "100%" }}
-          pagination={{
-            current: pagination.current,
-            pageSize: pagination.pageSize,
-            total: filteredData.length,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            pageSizeOptions: [10, 25, 50, 100, 200],
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} freelancers`,
-            onChange: (current, pageSize) => {
-              setPagination({ current, pageSize });
-            },
-          }}
-        />
-      </Card>
+        .table-row-dark {
+          background-color: #fafafa;
+        }
+        .table-row-light:hover,
+        .table-row-dark:hover {
+          background-color: #e6f7ff !important;
+        }
+      `}</style>
     </AgentsAdminLayout>
   );
 };
