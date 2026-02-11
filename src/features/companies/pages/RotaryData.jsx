@@ -10,6 +10,8 @@ import {
   Select,
   Button,
   Tag,
+  Modal,
+  Input,
 } from "antd";
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
@@ -18,6 +20,7 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { Option } = Select;
+const { TextArea } = Input;
 
 const API_URL = `${BASE_URL}/ai-service/agent/rotaryData`;
 
@@ -32,6 +35,13 @@ const RotaryData = () => {
 
   // ✅ table pagination states (antd is 1-based)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
+
+  // WhatsApp modal states
+  const [whatsappModalVisible, setWhatsappModalVisible] = useState(false);
+  const [whatsappContent, setWhatsappContent] = useState("");
+  const [whatsappNumbers, setWhatsappNumbers] = useState([]);
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -60,7 +70,7 @@ const RotaryData = () => {
         setRows(sorted);
       } catch (err) {
         console.error(err);
-        message.error("Failed to load News Paper Job Postings");
+        message.error("Failed to load Rotary Data");
         setRows([]);
       } finally {
         setLoading(false);
@@ -86,7 +96,7 @@ const RotaryData = () => {
 
   // Count records without email and mobile
   const missingDataCount = useMemo(() => {
-    return rows.filter(r => !r.emails && !r.mobileNumbers).length;
+    return rows.filter((r) => !r.emails && !r.mobileNumbers).length;
   }, [rows]);
 
   // Extract data for single row
@@ -107,7 +117,7 @@ const RotaryData = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Refresh data
@@ -120,8 +130,10 @@ const RotaryData = () => {
 
       const data = Array.isArray(updatedRes.data) ? updatedRes.data : [];
       const sorted = [...data].sort((a, b) => {
-        const da = new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
-        const db = new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
+        const da =
+          new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
+        const db =
+          new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
         return db - da;
       });
 
@@ -135,10 +147,82 @@ const RotaryData = () => {
     }
   };
 
+  // Open WhatsApp modal for all numbers
+  const openWhatsappModal = () => {
+    const numbers = rows
+      .filter((r) => r.mobileNumbers)
+      .flatMap((r) =>
+        r.mobileNumbers
+          .split(",")
+          .map((num) => num.trim())
+          .filter(Boolean)
+      );
+    const uniqueNumbers = [...new Set(numbers)];
+    setWhatsappNumbers(uniqueNumbers);
+    setWhatsappContent("");
+    setSelectedRecord(null);
+    setWhatsappModalVisible(true);
+  };
+
+  // Open WhatsApp modal for single record
+  const openWhatsappModalForRecord = (record) => {
+    if (!record.mobileNumbers) {
+      message.error("No mobile numbers available");
+      return;
+    }
+    const numbers = record.mobileNumbers
+      .split(",")
+      .map((num) => num.trim())
+      .filter(Boolean);
+    setWhatsappNumbers(numbers);
+    setWhatsappContent("");
+    setSelectedRecord(record);
+    setWhatsappModalVisible(true);
+  };
+
+  // Send WhatsApp message
+  const sendWhatsappMessage = async () => {
+    if (!whatsappContent.trim()) {
+      message.error("Please enter message content");
+      return;
+    }
+    if (whatsappNumbers.length === 0) {
+      message.error("No mobile numbers available");
+      return;
+    }
+
+    setSendingWhatsapp(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken") || "";
+      await axios.post(
+        `${BASE_URL}/ai-service/agent/rotaryWhatsappSend`,
+        {
+          content: whatsappContent,
+          mobileNumbers: whatsappNumbers,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      message.success("WhatsApp messages sent successfully");
+      setWhatsappModalVisible(false);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to send WhatsApp messages");
+    } finally {
+      setSendingWhatsapp(false);
+    }
+  };
+
   // Extract all missing data (limit 50)
   const extractAllMissing = async () => {
-    const missingRows = rows.filter(r => !r.emails && !r.mobileNumbers).slice(0, 50);
-    
+    const missingRows = rows
+      .filter((r) => !r.emails && !r.mobileNumbers)
+      .slice(0, 50);
+
     if (missingRows.length === 0) {
       message.info("No records to extract");
       return;
@@ -161,7 +245,7 @@ const RotaryData = () => {
               Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
-          }
+          },
         );
         successCount++;
       } catch (err) {
@@ -181,13 +265,17 @@ const RotaryData = () => {
 
       const data = Array.isArray(updatedRes.data) ? updatedRes.data : [];
       const sorted = [...data].sort((a, b) => {
-        const da = new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
-        const db = new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
+        const da =
+          new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
+        const db =
+          new Date(String(b?.date || "").replace(" ", "T")).getTime() || 0;
         return db - da;
       });
 
       setRows(sorted);
-      message.success(`Extracted ${successCount} records successfully${failCount > 0 ? `, ${failCount} failed` : ''}`);
+      message.success(
+        `Extracted ${successCount} records successfully${failCount > 0 ? `, ${failCount} failed` : ""}`,
+      );
     } catch (err) {
       message.error("Failed to refresh data");
     } finally {
@@ -197,22 +285,24 @@ const RotaryData = () => {
 
   const columns = [
     {
-      title: "S.NO",
+      title: "#",
       key: "serial",
       align: "center",
-
+      width: "50px",
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      align: "center",
-    },
+   {
+  title: "Uploaded By",
+  dataIndex: "name",
+  key: "name",
+  align: "center",
+  width: 150, // adjust as needed (120 / 140 / 160)
+}
+,
 
     {
-      title: "Document / Image",
+      title: "Document / File",
       dataIndex: "image",
       key: "image",
       align: "center",
@@ -221,76 +311,91 @@ const RotaryData = () => {
           return <span style={{ color: "#9CA3AF" }}>No document</span>;
         }
 
-        const getFileType = (fileUrl) => {
-          const ext = fileUrl.split(".").pop().toLowerCase();
-          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
-            return "image";
-          if (["pdf"].includes(ext)) return "pdf";
-          if (["mp4", "webm", "mov"].includes(ext)) return "video";
-          if (["xls", "xlsx"].includes(ext)) return "excel";
-          if (["ppt", "pptx"].includes(ext)) return "ppt";
-          if (["doc", "docx"].includes(ext)) return "document";
-          return "file";
-        };
+        const fileExtension = url.split(".").pop()?.toLowerCase();
 
-        const fileType = getFileType(url);
-        const icons = {
-          image: "🖼️",
-          pdf: "📄",
-          video: "🎥",
-          excel: "📊",
-          ppt: "📋",
-          document: "📝",
-          file: "📄",
-        };
+        const imageTypes = ["jpg", "jpeg", "png", "gif", "webp"];
+        const videoTypes = ["mp4", "webm", "ogg"];
+        const pdfTypes = ["pdf"];
+        const excelTypes = ["xls", "xlsx"];
+        const pptTypes = ["ppt", "pptx"];
 
-        return (
-          <div style={{ textAlign: "center" }}>
-            {fileType === "image" && (
-              <Image width={80} src={url} alt="document" />
-            )}
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontWeight: 600,
-              }}
-            >
-              {icons[fileType]} View{" "}
-              {fileType === "file"
-                ? "Document"
-                : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
+        // IMAGE
+        if (imageTypes.includes(fileExtension || "")) {
+          return <Image width={50} src={url} alt="file" preview />;
+        }
+
+        // VIDEO
+        if (videoTypes.includes(fileExtension || "")) {
+          return (
+            <video width="80" height="50" controls>
+              <source src={url} />
+            </video>
+          );
+        }
+
+        // PDF
+        if (pdfTypes.includes(fileExtension || "")) {
+          return (
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              📄 View PDF
             </a>
-          </div>
-        );
+          );
+        }
+
+        // EXCEL
+        if (excelTypes.includes(fileExtension || "")) {
+          return (
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              📊 View Excel
+            </a>
+          );
+        }
+
+        // PPT
+        if (pptTypes.includes(fileExtension || "")) {
+          return (
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              📽 View PPT
+            </a>
+          );
+        }
+
+        // Default fallback (Treat as image)
+        return <Image width={50} height={50} src={url} alt="file" preview />;
       },
     },
 
     {
-      title: "Action / Contact",
-      key: "action",
-      align: "center",
+      title: "Contact Details",
+      key: "contactDetails",
+      align: "left",
+
       render: (_, record) => {
         const hasEmail = record.emails;
         const hasMobile = record.mobileNumbers;
 
         if (hasEmail || hasMobile) {
           return (
-            <div style={{ textAlign: "center" }}>
+            <div style={{ textAlign: "left" }}>
               {hasEmail && (
                 <div>
-                  <b>Email:</b>
-                  <span>{hasEmail}</span>
+                  <b>Email:</b>{" "}
+                  <span>
+                    {[...new Set(hasEmail.split(","))]
+                      .map((email) => email.trim())
+                      .join(", ")}
+                  </span>
                 </div>
               )}
+
               {hasMobile && (
                 <div>
-                  <b>Mobile Number:</b>
-                  <span>{hasMobile}</span>
+                  <b>Phone:</b>{" "}
+                  <span>
+                    {[...new Set(hasMobile.split(","))]
+                      .map((mobile) => mobile.trim())
+                      .join(", ")}
+                  </span>
                 </div>
               )}
             </div>
@@ -303,8 +408,8 @@ const RotaryData = () => {
             loading={extractingRow === record.image}
             onClick={() => extractSingleRow(record)}
             style={{
-              backgroundColor: "#1ab394",
-              borderColor: "#1ab394",
+              backgroundColor: "#008cba",
+              borderColor: "#008cba",
               color: "white",
             }}
           >
@@ -314,7 +419,7 @@ const RotaryData = () => {
       },
     },
     {
-      title: "Date",
+      title: "Created At",
       dataIndex: "date",
       key: "date",
       align: "center",
@@ -323,28 +428,67 @@ const RotaryData = () => {
         new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime(),
       defaultSortOrder: "descend",
     },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      width: 120,
+      render: (_, record) => {
+        if (!record.mobileNumbers) {
+          return <span style={{ color: "#999" }}>-</span>;
+        }
+        return (
+          <Button
+            size="medium"
+            style={{
+              backgroundColor: "#1ab394",
+              color: "white",
+              borderColor: "#25D366",
+            }}
+            onClick={() => openWhatsappModalForRecord(record)}
+          >
+            WhatsApp Send
+          </Button>
+        );
+      },
+    },
   ];
 
   return (
     <CompaniesLayout>
       <div className="p-4 sm:p-6 md:p-8">
         {/* ✅ Heading */}
-        <div className="flex justify-between items-center mb-4 max-w-7xl mx-auto">
-          <Title level={3} className="!m-0">
-            Rotary Data
-          </Title>
-          <div style={{ textAlign: "right" }}>
-            <Button
-            style={{backgroundColor:"#008cba",color:"white"}}
-              size="large"
-              loading={extracting}
-              onClick={extractAllMissing}
-              disabled={missingDataCount === 0}
-            >
-              Extract All Data
-            </Button>
-            <div style={{ marginTop: 8, fontSize: 12, color: "#666" }}>
-              {missingDataCount} records without email/mobile (max 50)
+        <div className="max-w-7xl mx-auto mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <Title level={3} className="!m-0">
+              Rotary Data
+            </Title>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button
+                style={{ backgroundColor: "#1ab394", color: "white", borderColor: "#1ab394" }}
+                size="large"
+                onClick={openWhatsappModal}
+                block
+                className="sm:block"
+              >
+                WhatsApp Send to All
+              </Button>
+              <div className="flex flex-col">
+                <Button
+                  style={{ backgroundColor: "#008cba", color: "white" }}
+                  size="large"
+                  loading={extracting}
+                  onClick={extractAllMissing}
+                  disabled={missingDataCount === 0}
+                  block
+                  className="sm:block"
+                >
+                  Extract All Data
+                </Button>
+                <div style={{ marginTop: 4, fontSize: 11, color: "#666", textAlign: "center" }}>
+                  {missingDataCount} records (max 50)
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -402,7 +546,7 @@ const RotaryData = () => {
               current: pagination.current,
               pageSize: pagination.pageSize,
               total,
-              showSizeChanger: false, 
+              showSizeChanger: false,
               showQuickJumper: true,
               showTotal: (t, range) =>
                 `${range[0]}-${range[1]} of ${t} records`,
@@ -414,6 +558,51 @@ const RotaryData = () => {
             className="max-w-7xl mx-auto"
           />
         )}
+
+        {/* WhatsApp Modal */}
+        <Modal
+          title="Send WhatsApp Message"
+          open={whatsappModalVisible}
+          onCancel={() => setWhatsappModalVisible(false)}
+          onOk={sendWhatsappMessage}
+          confirmLoading={sendingWhatsapp}
+          okText="Send"
+          okButtonProps={{ style: { backgroundColor: "#008cba", borderColor: "#008cba" } }}
+          width={600}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}>
+              Mobile Numbers ({whatsappNumbers.length}):
+            </label>
+            <div
+              style={{
+                maxHeight: 120,
+                overflowY: "auto",
+                padding: 8,
+                border: "1px solid #d9d9d9",
+                borderRadius: 4,
+                backgroundColor: "#f5f5f5",
+              }}
+            >
+              {whatsappNumbers.length > 0 ? (
+                whatsappNumbers.join(", ")
+              ) : (
+                <span style={{ color: "#999" }}>No mobile numbers found</span>
+              )}
+            </div>
+          </div>
+          <div>
+            <label style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}>
+              Message Content:
+            </label>
+            <TextArea
+              rows={6}
+              placeholder="Enter your message here..."
+              value={whatsappContent}
+              onChange={(e) => setWhatsappContent(e.target.value)}
+            />
+          </div>
+        </Modal>
       </div>
     </CompaniesLayout>
   );
