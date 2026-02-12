@@ -16,6 +16,8 @@ import {
 import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
+import { FaWhatsapp } from "react-icons/fa";
+
 import dayjs from "dayjs";
 
 const { Title } = Typography;
@@ -186,6 +188,11 @@ const RotaryData = () => {
       message.error("Please enter message content");
       return;
     }
+    if (whatsappContent.trim().length < 5) {
+      message.error("Message must be at least 5 characters");
+      return;
+    }
+    
     if (whatsappNumbers.length === 0) {
       message.error("No mobile numbers available");
       return;
@@ -447,7 +454,8 @@ const RotaryData = () => {
             }}
             onClick={() => openWhatsappModalForRecord(record)}
           >
-            WhatsApp Send
+            <FaWhatsapp size={16} />
+            Send WhatsApp
           </Button>
         );
       },
@@ -465,14 +473,24 @@ const RotaryData = () => {
             </Title>
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
-                style={{ backgroundColor: "#1ab394", color: "white", borderColor: "#1ab394" }}
+                style={{
+                  backgroundColor: "#1ab394",
+                  color: "white",
+                  borderColor: "#1ab394",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
                 size="large"
                 onClick={openWhatsappModal}
                 block
                 className="sm:block"
               >
-                WhatsApp Send to All
+                <FaWhatsapp size={18} />
+                Bulk WhatsApp Messaging
               </Button>
+
               <div className="flex flex-col">
                 <Button
                   style={{ backgroundColor: "#008cba", color: "white" }}
@@ -485,7 +503,14 @@ const RotaryData = () => {
                 >
                   Extract All Data
                 </Button>
-                <div style={{ marginTop: 4, fontSize: 11, color: "#666", textAlign: "center" }}>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    color: "#666",
+                    textAlign: "center",
+                  }}
+                >
                   {missingDataCount} records (max 50)
                 </div>
               </div>
@@ -567,11 +592,15 @@ const RotaryData = () => {
           onOk={sendWhatsappMessage}
           confirmLoading={sendingWhatsapp}
           okText="Send"
-          okButtonProps={{ style: { backgroundColor: "#008cba", borderColor: "#008cba" } }}
+          okButtonProps={{
+            style: { backgroundColor: "#008cba", borderColor: "#008cba" },
+          }}
           width={600}
         >
           <div style={{ marginBottom: 16 }}>
-            <label style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}>
+            <label
+              style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}
+            >
               Mobile Numbers ({whatsappNumbers.length}):
             </label>
             <div
@@ -592,15 +621,28 @@ const RotaryData = () => {
             </div>
           </div>
           <div>
-            <label style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}>
+            <label
+              style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}
+            >
               Message Content:
             </label>
             <TextArea
               rows={6}
+              maxLength={5000}
               placeholder="Enter your message here..."
               value={whatsappContent}
               onChange={(e) => setWhatsappContent(e.target.value)}
             />
+            <div
+              style={{
+                textAlign: "right",
+                marginTop: 5,
+                color: whatsappContent.length > 4500 ? "red" : "#888",
+                fontSize: "12px",
+              }}
+            >
+              {whatsappContent.length} / 5000 characters
+            </div>
           </div>
         </Modal>
       </div>
