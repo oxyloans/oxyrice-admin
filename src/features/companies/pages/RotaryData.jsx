@@ -17,6 +17,7 @@ import axios from "axios";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import { FaWhatsapp } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
 
 import dayjs from "dayjs";
 
@@ -44,6 +45,12 @@ const RotaryData = () => {
   const [whatsappNumbers, setWhatsappNumbers] = useState([]);
   const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  // Email modal states
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
+  const [emailContent, setEmailContent] = useState("");
+  const [emailList, setEmailList] = useState([]);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [selectedEmailRecord, setSelectedEmailRecord] = useState(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -157,7 +164,7 @@ const RotaryData = () => {
         r.mobileNumbers
           .split(",")
           .map((num) => num.trim())
-          .filter(Boolean)
+          .filter(Boolean),
       );
     const uniqueNumbers = [...new Set(numbers)];
     setWhatsappNumbers(uniqueNumbers);
@@ -192,7 +199,7 @@ const RotaryData = () => {
       message.error("Message must be at least 5 characters");
       return;
     }
-    
+
     if (whatsappNumbers.length === 0) {
       message.error("No mobile numbers available");
       return;
@@ -212,7 +219,7 @@ const RotaryData = () => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       message.success("WhatsApp messages sent successfully");
       setWhatsappModalVisible(false);
@@ -221,6 +228,86 @@ const RotaryData = () => {
       message.error("Failed to send WhatsApp messages");
     } finally {
       setSendingWhatsapp(false);
+    }
+  };
+
+  // Open Email modal for all emails
+  const openEmailModal = () => {
+    const emails = rows
+      .filter((r) => r.emails)
+      .flatMap((r) =>
+        r.emails
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean),
+      );
+
+    const uniqueEmails = [...new Set(emails)];
+    setEmailList(uniqueEmails);
+    setEmailContent("");
+    setSelectedEmailRecord(null);
+    setEmailModalVisible(true);
+  };
+
+  const openEmailModalForRecord = (record) => {
+    if (!record.emails) {
+      message.error("No emails available");
+      return;
+    }
+
+    const emails = record.emails
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+
+    const uniqueEmails = [...new Set(emails)];
+    setEmailList(uniqueEmails);
+    setEmailContent("");
+    setSelectedEmailRecord(record);
+    setEmailModalVisible(true);
+  };
+
+
+  const sendEmailMessage = async () => {
+    // if (!emailContent.trim()) {
+    //   message.error("Please enter email content");
+    //   return;
+    // }
+    // if (emailContent.trim().length < 5) {
+    //   message.error("Email content must be at least 5 characters");
+    //   return;
+    // }
+    if (emailList.length === 0) {
+      message.error("No emails available");
+      return;
+    }
+
+    setSendingEmail(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken") || "";
+
+    
+      await axios.post(
+        `${BASE_URL}/ai-service/agent/rotaryEmailSend`,
+        {
+          // content: emailContent,
+          emails: emailList, 
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      message.success("Emails sent successfully");
+      setEmailModalVisible(false);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to send emails");
+    } finally {
+      setSendingEmail(false);
     }
   };
 
@@ -292,21 +379,20 @@ const RotaryData = () => {
 
   const columns = [
     {
-      title: "#",
+      title: "S.No.",
       key: "serial",
       align: "center",
-      width: "50px",
+      width: 30,
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + index + 1,
     },
-   {
-  title: "Uploaded By",
-  dataIndex: "name",
-  key: "name",
-  align: "center",
-  width: 150, // adjust as needed (120 / 140 / 160)
-}
-,
+    {
+      title: "Uploaded By",
+      dataIndex: "name",
+      key: "name",
+      align: "center",
+    
+    },
 
     {
       title: "Document / File",
@@ -375,34 +461,42 @@ const RotaryData = () => {
     {
       title: "Contact Details",
       key: "contactDetails",
-      align: "left",
+      align: "center",
 
       render: (_, record) => {
         const hasEmail = record.emails;
         const hasMobile = record.mobileNumbers;
 
         if (hasEmail || hasMobile) {
+          const emailList = hasEmail
+            ? [...new Set(hasEmail.split(","))]
+                .map((email) => email.trim())
+                .filter(Boolean)
+            : [];
+
+          const mobileList = hasMobile
+            ? [...new Set(hasMobile.split(","))]
+                .map((mobile) => mobile.trim())
+                .filter(Boolean)
+            : [];
+
           return (
             <div style={{ textAlign: "left" }}>
-              {hasEmail && (
-                <div>
-                  <b>Email:</b>{" "}
-                  <span>
-                    {[...new Set(hasEmail.split(","))]
-                      .map((email) => email.trim())
-                      .join(", ")}
-                  </span>
+              {emailList.length > 0 && (
+                <div style={{ marginBottom: "6px" }}>
+                  <b>Email:</b>
+                  {emailList.map((email, index) => (
+                    <div key={index}>{email}</div>
+                  ))}
                 </div>
               )}
 
-              {hasMobile && (
+              {mobileList.length > 0 && (
                 <div>
-                  <b>Phone:</b>{" "}
-                  <span>
-                    {[...new Set(hasMobile.split(","))]
-                      .map((mobile) => mobile.trim())
-                      .join(", ")}
-                  </span>
+                  <b>Phone:</b>
+                  {mobileList.map((mobile, index) => (
+                    <div key={index}>{mobile}</div>
+                  ))}
                 </div>
               )}
             </div>
@@ -430,33 +524,71 @@ const RotaryData = () => {
       dataIndex: "date",
       key: "date",
       align: "center",
-      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "N/A"),
+
+      render: (date) =>
+        date
+          ? dayjs(date, "YYYY-MM-DD HH:mm:ss.SSS").format("DD-MM-YYYY hh:mm A")
+          : "N/A",
+
       sorter: (a, b) =>
-        new Date(a?.date || 0).getTime() - new Date(b?.date || 0).getTime(),
+        dayjs(a?.date, "YYYY-MM-DD HH:mm:ss.SSS").valueOf() -
+        dayjs(b?.date, "YYYY-MM-DD HH:mm:ss.SSS").valueOf(),
+
       defaultSortOrder: "descend",
     },
     {
       title: "Action",
       key: "action",
       align: "center",
-      width: 120,
+      width: 220,
       render: (_, record) => {
-        if (!record.mobileNumbers) {
-          return <span style={{ color: "#999" }}>-</span>;
-        }
+        const hasWhatsapp = !!record.mobileNumbers;
+        const hasEmail = !!record.emails;
+
         return (
-          <Button
-            size="medium"
-            style={{
-              backgroundColor: "#1ab394",
-              color: "white",
-              borderColor: "#25D366",
-            }}
-            onClick={() => openWhatsappModalForRecord(record)}
-          >
-            <FaWhatsapp size={16} />
-            Send WhatsApp
-          </Button>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+            {/* WhatsApp */}
+            {hasWhatsapp ? (
+              <Button
+                size="middle"
+                style={{
+                  backgroundColor: "#1ab394",
+                  color: "white",
+                  borderColor: "#1ab394",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+                onClick={() => openWhatsappModalForRecord(record)}
+              >
+                <FaWhatsapp size={16} />
+                WhatsApp
+              </Button>
+            ) : (
+              <span style={{ color: "#999" }}>-</span>
+            )}
+
+            {/* Email */}
+            {hasEmail ? (
+              <Button
+                size="middle"
+                style={{
+                  backgroundColor: "#008cba",
+                  color: "white",
+                  borderColor: "#008cba",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+                onClick={() => openEmailModalForRecord(record)}
+              >
+                <MdEmail size={16} />
+                Email
+              </Button>
+            ) : (
+              <span style={{ color: "#999" }}>-</span>
+            )}
+          </div>
         );
       },
     },
@@ -465,7 +597,6 @@ const RotaryData = () => {
   return (
     <CompaniesLayout>
       <div className="p-4 sm:p-6 md:p-8">
-        {/* ✅ Heading */}
         <div className="max-w-7xl mx-auto mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <Title level={3} className="!m-0">
@@ -490,10 +621,32 @@ const RotaryData = () => {
                 <FaWhatsapp size={18} />
                 Bulk WhatsApp Messaging
               </Button>
+              <Button
+                style={{
+                  backgroundColor: "#008cba",
+                  color: "white",
+                  borderColor: "#008cba",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
+                size="large"
+                onClick={openEmailModal}
+                block
+                className="sm:block"
+              >
+                <MdEmail size={18} />
+                Bulk Email Messaging
+              </Button>
 
               <div className="flex flex-col">
                 <Button
-                  style={{ backgroundColor: "#008cba", color: "white" }}
+                  style={{
+                    backgroundColor: "#845956",
+                    borderColor: "#845956",
+                    color: "white",
+                  }}
                   size="large"
                   loading={extracting}
                   onClick={extractAllMissing}
@@ -593,7 +746,7 @@ const RotaryData = () => {
           confirmLoading={sendingWhatsapp}
           okText="Send"
           okButtonProps={{
-            style: { backgroundColor: "#008cba", borderColor: "#008cba" },
+            style: { backgroundColor: "#1ab394", borderColor: "#1ab394" },
           }}
           width={600}
         >
@@ -644,6 +797,68 @@ const RotaryData = () => {
               {whatsappContent.length} / 5000 characters
             </div>
           </div>
+        </Modal>
+        {/* Email Modal */}
+        <Modal
+          title="Send Email"
+          open={emailModalVisible}
+          onCancel={() => setEmailModalVisible(false)}
+          onOk={sendEmailMessage}
+          confirmLoading={sendingEmail}
+          okText="Send"
+          okButtonProps={{
+            style: { backgroundColor: "#008cba", borderColor: "#008cba" },
+          }}
+          width={600}
+        >
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}
+            >
+              Emails ({emailList.length}):
+            </label>
+            <div
+              style={{
+                maxHeight: 120,
+                overflowY: "auto",
+                padding: 8,
+                border: "1px solid #d9d9d9",
+                borderRadius: 4,
+                backgroundColor: "#f5f5f5",
+              }}
+            >
+              {emailList.length > 0 ? (
+                emailList.join(", ")
+              ) : (
+                <span style={{ color: "#999" }}>No emails found</span>
+              )}
+            </div>
+          </div>
+
+          {/* <div>
+            <label
+              style={{ fontWeight: "bold", display: "block", marginBottom: 8 }}
+            >
+              Email Content:
+            </label>
+            <TextArea
+              rows={6}
+              maxLength={5000}
+              placeholder="Enter your email message here..."
+              value={emailContent}
+              onChange={(e) => setEmailContent(e.target.value)}
+            />
+            <div
+              style={{
+                textAlign: "right",
+                marginTop: 5,
+                color: emailContent.length > 4500 ? "red" : "#888",
+                fontSize: "12px",
+              }}
+            >
+              {emailContent.length} / 5000 characters
+            </div>
+          </div> */}
         </Modal>
       </div>
     </CompaniesLayout>

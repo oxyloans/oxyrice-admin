@@ -307,11 +307,12 @@ const DashboardTest = () => {
 
   const StatCard = ({ title, value, icon, color, description, growth }) => (
     <Card
-      className="shadow-sm hover:shadow-lg transition-shadow duration-300 rounded-xl border-none"
+      className="shadow-md hover:shadow-xl transition-all duration-300 rounded-xl border-none"
       style={{ 
-        background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`
+        background: `linear-gradient(135deg, ${color}20 0%, ${color}08 100%)`,
+        borderLeft: `4px solid ${color}`
       }}
-      bodyStyle={{ padding: "20px" }}
+      bodyStyle={{ padding: "24px" }}
     >
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
@@ -472,7 +473,7 @@ const DashboardTest = () => {
 
   return (
     <AdminPanelLayoutTest>
-      <Card >
+      <Card className="border-none bg-gray-50">
         <div className="p-2 sm:p-4 md:p-4">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
@@ -534,7 +535,7 @@ const DashboardTest = () => {
                   />
                 </div>
 
-                <Card className="shadow-sm rounded-xl mb-6 border-none">
+                <Card className="shadow-md rounded-xl mb-6 border-none" style={{ background: 'white' }}>
                   <div className="h-[400px]">
                     <Line data={chartData} options={chartOptions} />
                   </div>
@@ -542,7 +543,8 @@ const DashboardTest = () => {
 
                 <Card
                   title="User Registration Details"
-                  className="shadow-sm rounded-xl border-none"
+                  className="shadow-md rounded-xl border-none"
+                  style={{ background: 'white' }}
                   extra={
                     <div className="flex flex-col sm:flex-row gap-3 items-end">
                       <div className="flex flex-col w-full sm:w-auto">
