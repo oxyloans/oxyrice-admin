@@ -23,7 +23,7 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { Option } = Select;
-const { TextArea } = Input;
+const { TextArea, Search: AntSearch } = Input;
 
 const API_URL = `${BASE_URL}/ai-service/agent/rotaryData`;
 
@@ -89,16 +89,27 @@ const RotaryData = () => {
     fetch();
   }, []);
 
-  // ✅ filter (client-side)
+  // Replace your current filteredRows with this:
   const filteredRows = useMemo(() => {
     const val = (search || "").trim().toLowerCase();
     if (!val) return rows;
 
-    return rows.filter((r) =>
-      String(r?.name || "")
-        .toLowerCase()
-        .includes(val),
-    );
+    return rows.filter((r) => {
+      const emails = (r.emails || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+
+      const mobiles = (r.mobileNumbers || "")
+        .split(",")
+        .map((m) => m.trim().toLowerCase())
+        .filter(Boolean);
+
+      return (
+        emails.some((email) => email.includes(val)) ||
+        mobiles.some((mobile) => mobile.includes(val))
+      );
+    });
   }, [rows, search]);
 
   const total = filteredRows.length;
@@ -267,7 +278,6 @@ const RotaryData = () => {
     setEmailModalVisible(true);
   };
 
-
   const sendEmailMessage = async () => {
     // if (!emailContent.trim()) {
     //   message.error("Please enter email content");
@@ -286,12 +296,11 @@ const RotaryData = () => {
     try {
       const accessToken = localStorage.getItem("accessToken") || "";
 
-    
       await axios.post(
         `${BASE_URL}/ai-service/agent/rotaryEmailSend`,
         {
           // content: emailContent,
-          emails: emailList, 
+          emails: emailList,
         },
         {
           headers: {
@@ -391,7 +400,6 @@ const RotaryData = () => {
       dataIndex: "name",
       key: "name",
       align: "center",
-    
     },
 
     {
@@ -597,50 +605,40 @@ const RotaryData = () => {
   return (
     <CompaniesLayout>
       <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto mb-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <Title level={3} className="!m-0">
               Rotary Data
             </Title>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <Button
                 style={{
                   backgroundColor: "#1ab394",
                   color: "white",
                   borderColor: "#1ab394",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
                 }}
                 size="large"
                 onClick={openWhatsappModal}
-                block
-                className="sm:block"
+                icon={<FaWhatsapp />}
               >
-                <FaWhatsapp size={18} />
-                Bulk WhatsApp Messaging
+                Bulk WhatsApp
               </Button>
+
               <Button
                 style={{
                   backgroundColor: "#008cba",
                   color: "white",
                   borderColor: "#008cba",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
                 }}
                 size="large"
                 onClick={openEmailModal}
-                block
-                className="sm:block"
+                icon={<MdEmail />}
               >
-                <MdEmail size={18} />
-                Bulk Email Messaging
+                Bulk Email
               </Button>
 
-              <div className="flex flex-col">
+              <div>
                 <Button
                   style={{
                     backgroundColor: "#845956",
@@ -651,17 +649,15 @@ const RotaryData = () => {
                   loading={extracting}
                   onClick={extractAllMissing}
                   disabled={missingDataCount === 0}
-                  block
-                  className="sm:block"
                 >
                   Extract All Data
                 </Button>
                 <div
                   style={{
-                    marginTop: 4,
                     fontSize: 11,
                     color: "#666",
                     textAlign: "center",
+                    marginTop: 4,
                   }}
                 >
                   {missingDataCount} records (max 50)
@@ -670,19 +666,36 @@ const RotaryData = () => {
             </div>
           </div>
         </div>
+        <style>{`
+        .custom-search-wrapper .ant-input-group-addon .ant-btn {
+          background-color: #008cba !important;
+          border-color: #008cba !important;
+          color: white !important;
+        }
+        
+        .custom-search-wrapper .ant-input-group-addon .ant-btn:hover,
+        .custom-search-wrapper .ant-input-group-addon .ant-btn:focus {
+          background-color: #006d98 !important;   /* darker hover shade */
+          border-color: #006d98 !important;
+        }
 
-        {/* ✅ ONE ROW: Show entries (left) + Search (right) */}
+        /* Optional: better spacing on very small screens */
+        @media (max-width: 575px) {
+          .entries-control {
+            justify-content: center !important;
+            margin-bottom: 12px !important;
+          }
+          .search-col {
+            text-align: center !important;
+          }
+        }
+      `}</style>
         <Row
           align="middle"
           justify="space-between"
-          style={{
-            marginBottom: 12,
-            gap: 12,
-            flexWrap: "wrap",
-          }}
+          style={{ marginBottom: 16 }}
           className="max-w-7xl mx-auto"
         >
-          {/* LEFT */}
           <Col xs={24} sm={12}>
             <div
               style={{
@@ -698,7 +711,7 @@ const RotaryData = () => {
                 onChange={(value) =>
                   setPagination({ current: 1, pageSize: value })
                 }
-                style={{ width: 120 }}
+                style={{ width: 100 }}
               >
                 {[50, 70, 80, 90, 100].map((num) => (
                   <Option key={num} value={num}>
@@ -709,22 +722,37 @@ const RotaryData = () => {
               <span>entries</span>
             </div>
           </Col>
+
+          <Col xs={24} sm={12} style={{ textAlign: "right" }}>
+            <div className="custom-search-wrapper">
+              <AntSearch
+                placeholder="Search by email or phone..."
+                allowClear
+                enterButton
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPagination((prev) => ({ ...prev, current: 1 }));
+                }}
+                style={{ width: 280, maxWidth: "100%" }}
+              />
+            </div>
+          </Col>
         </Row>
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Spin size="medium" tip="Loading Rotary Data..." />
+            <Spin size="large" tip="Loading Rotary Data..." />
           </div>
         ) : (
           <Table
             columns={columns}
             dataSource={filteredRows}
-            rowKey={(record, idx) => `${idx}-${record?.name || "row"}`}
+            rowKey={(record, idx) => `${idx}-${record?.image || "row"}`}
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
               total,
-              showSizeChanger: false,
               showQuickJumper: true,
               showTotal: (t, range) =>
                 `${range[0]}-${range[1]} of ${t} records`,

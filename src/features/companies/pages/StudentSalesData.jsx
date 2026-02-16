@@ -38,7 +38,7 @@ const StudentSalesData = () => {
       try {
         setLoading(true);
 
-        const accessToken = localStorage.getItem("accessToken") || "";
+        const accessToken = localStorage.getItem("token") || "";
         const res = await axios.get(API_URL, {
           headers: {
             Authorization: `Bearer ${accessToken}`,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
+import { DollarOutlined } from "@ant-design/icons";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
@@ -55,6 +56,19 @@ const sidebarItems = [
       },
     ],
   },
+  {
+    key: "ibj-ibbs-fd-sales",
+    label: "IBJ / IBBS / FD Sales",
+    icon: <DollarOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "manage-ibj-ibbs-fd-sales",
+        label: "Manage IBJ/IBBS/FD Sales",
+        link: "/admin/ibjandfdsales",
+      },
+    ],
+  },
 
   {
     key: "job-management",
@@ -79,7 +93,7 @@ const sidebarItems = [
       },
     ],
   },
-
+  
   {
     key: "content-management",
     label: "Content Management",
@@ -147,7 +161,7 @@ const sidebarItems = [
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 220 : 240}
+        width={screens.xs ? 240 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color
