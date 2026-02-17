@@ -180,7 +180,7 @@ const AllInforMationOfBarCode = () => {
           rowKey="itemId"
           pagination={false}
           bordered
-          scroll={{ x: "100%" }}
+          scroll={{ x: "100%"}}
         />
       )}
 

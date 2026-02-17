@@ -403,7 +403,7 @@ const RotaryData = () => {
     },
 
     {
-      title: "Document / File",
+      title: "Document / Image",
       dataIndex: "image",
       key: "image",
       align: "center",
@@ -412,60 +412,60 @@ const RotaryData = () => {
           return <span style={{ color: "#9CA3AF" }}>No document</span>;
         }
 
-        const fileExtension = url.split(".").pop()?.toLowerCase();
+        const getFileType = (fileUrl) => {
+          const ext = fileUrl.split(".").pop().toLowerCase();
+          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
+            return "image";
+          if (["pdf"].includes(ext)) return "pdf";
+          if (["mp4", "webm", "mov"].includes(ext)) return "video";
+          if (["xls", "xlsx"].includes(ext)) return "excel";
+          if (["ppt", "pptx"].includes(ext)) return "ppt";
+          if (["doc", "docx"].includes(ext)) return "document";
+          return "file";
+        };
 
-        const imageTypes = ["jpg", "jpeg", "png", "gif", "webp"];
-        const videoTypes = ["mp4", "webm", "ogg"];
-        const pdfTypes = ["pdf"];
-        const excelTypes = ["xls", "xlsx"];
-        const pptTypes = ["ppt", "pptx"];
+        const fileType = getFileType(url);
+        const icons = {
+          image: "🖼️",
+          pdf: "📄",
+          video: "🎥",
+          excel: "📊",
+          ppt: "📋",
+          document: "📝",
+          file: "📄",
+        };
 
-        // IMAGE
-        if (imageTypes.includes(fileExtension || "")) {
-          return <Image width={50} src={url} alt="file" preview />;
-        }
-
-        // VIDEO
-        if (videoTypes.includes(fileExtension || "")) {
-          return (
-            <video width="80" height="50" controls>
-              <source src={url} />
-            </video>
-          );
-        }
-
-        // PDF
-        if (pdfTypes.includes(fileExtension || "")) {
-          return (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              📄 View PDF
+        return (
+          <div style={{ textAlign: "center" }}>
+            {fileType === "image" && (
+              <Image width={80} src={url} alt="document" />
+            )}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                fontWeight: 600,
+              }}
+            >
+              {icons[fileType]} View{" "}
+              {fileType === "file"
+                ? "Document"
+                : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
             </a>
-          );
-        }
-
-        // EXCEL
-        if (excelTypes.includes(fileExtension || "")) {
-          return (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              📊 View Excel
-            </a>
-          );
-        }
-
-        // PPT
-        if (pptTypes.includes(fileExtension || "")) {
-          return (
-            <a href={url} target="_blank" rel="noopener noreferrer">
-              📽 View PPT
-            </a>
-          );
-        }
-
-        // Default fallback (Treat as image)
-        return <Image width={50} height={50} src={url} alt="file" preview />;
+          </div>
+        );
       },
     },
-
+    {
+      title: "Text",
+      dataIndex: "text",
+      key: "text",
+      align: "center",
+    },
     {
       title: "Contact Details",
       key: "contactDetails",
@@ -527,6 +527,7 @@ const RotaryData = () => {
         );
       },
     },
+
     {
       title: "Created At",
       dataIndex: "date",

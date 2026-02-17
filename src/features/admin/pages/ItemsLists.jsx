@@ -1001,7 +1001,7 @@ import {
   Popconfirm,
   Upload,
   Tabs,
-  Progress,
+  Progress,Image
 } from "antd";
 import { Link } from "react-router-dom";
 import BASE_URL from "../../../core/config/Config";
@@ -1597,6 +1597,7 @@ const ItemList = () => {
       dataIndex: "itemName",
       key: "itemName",
       align: "center",
+      responsive: ["md"],
     },
     {
       title: "Category Name",
@@ -1629,27 +1630,22 @@ const ItemList = () => {
       dataIndex: "itemImage",
       key: "itemImage",
       align: "center",
-      render: (text) => (
-        <div
+      render: (image) => (
+        <Image
+          src={image}
+          alt="Item Logo"
+          width={50}
+          height={50}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            objectFit: "cover",
+            borderRadius: 6,
           }}
-        >
-          <img
-            src={text}
-            alt="Item Logo"
-            style={{
-              width: 50,
-              height: 50,
-              objectFit: "cover",
-              borderRadius: 5,
-            }}
-          />
-        </div>
+          preview={{ mask: "View" }}
+          fallback="https://via.placeholder.com/50"
+        />
       ),
     },
+
     {
       title: "Status",
       dataIndex: "isActive",

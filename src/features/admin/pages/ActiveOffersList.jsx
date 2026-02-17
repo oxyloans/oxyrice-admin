@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Table,
@@ -417,113 +417,140 @@ const ActiveOffersList = () => {
       ),
     },
   ];
+ const tabItems = useMemo(
+   () => [
+     {
+       key: "active",
+       label: "Active Offers",
+       children: (
+         <>
+           <Row
+             justify="space-between"
+             align="middle"
+             style={{ marginBottom: 16 }}
+           >
+             <Col>
+               <Title level={4}>Active Offers</Title>
+             </Col>
+             <Col>
+               <Search
+                 placeholder="Search by Offer or Free Item"
+                 value={searchText}
+                 onChange={(e) => handleSearch(e.target.value)}
+                 allowClear
+                 style={{ width: 300 }}
+               />
+             </Col>
+           </Row>
 
+           {loading ? (
+             // ✅ nested spin pattern (safe even if you later add tip)
+             <Spin>
+               <div style={{ minHeight: 220 }} />
+             </Spin>
+           ) : (
+             <Table
+               columns={activeOfferColumns}
+               dataSource={filteredActive}
+               rowKey="id"
+               bordered
+               scroll={{ x: "100%" }}
+               pagination={{
+                 current: currentPage,
+                 pageSize,
+                 total: filteredActive.length,
+                 showSizeChanger: false,
+                 showQuickJumper: true,
+                 showTotal: (total) => `Total ${total} offers`,
+                 onChange: (page) => setCurrentPage(page),
+               }}
+             />
+           )}
+         </>
+       ),
+     },
+     {
+       key: "combo",
+       label: "Combo Offers",
+       children: (
+         <>
+           <Row
+             justify="space-between"
+             align="middle"
+             style={{ marginBottom: 16 }}
+           >
+             <Col>
+               <Title level={4} style={{ margin: 0 }}>
+                 Combo Offers
+               </Title>
+             </Col>
+             <Col>
+               <Search
+                 placeholder="Search by Combo Item Name"
+                 value={comboSearchText}
+                 onChange={(e) => handleComboSearch(e.target.value)}
+                 allowClear
+                 style={{ width: 300 }}
+               />
+             </Col>
+           </Row>
+
+           {loading ? (
+             <Spin>
+               <div style={{ minHeight: 220 }} />
+             </Spin>
+           ) : (
+             <>
+               <Table
+                 columns={comboOfferColumns}
+                 dataSource={filteredComboOffers}
+                 rowKey="comboItemId"
+                 bordered
+                 pagination={false}
+                 scroll={{ x: "100%" }}
+               />
+               <div style={{ marginTop: 16, textAlign: "right" }}>
+                 <Pagination
+                   current={comboPage}
+                   pageSize={comboPageSize}
+                   total={comboTotal}
+                   showSizeChanger
+                   pageSizeOptions={["20", "50", "75", "100"]}
+                   onChange={(page, size) => {
+                     setComboPage(page);
+                     setComboPageSize(size);
+                   }}
+                 />
+               </div>
+             </>
+           )}
+         </>
+       ),
+     },
+   ],
+   [
+     activeOfferColumns,
+     comboOfferColumns,
+     loading,
+     searchText,
+     comboSearchText,
+     filteredActive,
+     filteredComboOffers,
+     currentPage,
+     comboPage,
+     comboPageSize,
+     comboTotal,
+   ],
+ );
   return (
     <AdminPanelLayoutTest>
       <Card>
         <Tabs
-          defaultActiveKey="active"
+          items={tabItems} // ✅ FIXED
           activeKey={activeTab}
           onChange={(key) => setActiveTab(key)}
           type="card"
-        >
-          <TabPane tab="Active Offers" key="active">
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: 16 }}
-            >
-              <Col>
-                <Title level={4}>Active Offers</Title>
-              </Col>
-              <Col>
-                <Search
-                  placeholder="Search by Offer or Free Item"
-                  value={searchText}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  allowClear
-                  // prefix={<SearchOutlined />}
-                  style={{ width: 300 }}
-                />
-              </Col>
-            </Row>
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                <Spin size="medium" />
-              </div>
-            ) : (
-              <Table
-                columns={activeOfferColumns}
-                dataSource={filteredActive}
-                rowKey="id"
-                bordered
-                scroll={{ x: "100%" }}
-                pagination={{
-                  current: currentPage,
-                  pageSize: pageSize,
-                  total: filteredActive.length,
-                  showSizeChanger: false, // ✅ because your Select is the page size changer
-                  showQuickJumper: true,
-                  showTotal: (total) => `Total ${total} offers`,
-                  onChange: (page) => setCurrentPage(page),
-                }}
-              />
-            )}
-          </TabPane>
-
-          <TabPane tab="Combo Offers" key="combo">
-            <Row
-              justify="space-between"
-              align="middle"
-              style={{ marginBottom: 16 }}
-            >
-              <Col>
-                <Title level={4} style={{ margin: 0 }}>
-                  Combo Offers
-                </Title>
-              </Col>
-              <Col>
-                <Search
-                  placeholder="Search by Combo Item Name"
-                  value={comboSearchText}
-                  onChange={(e) => handleComboSearch(e.target.value)}
-                  allowClear
-                  style={{ width: 300 }}
-                />
-              </Col>
-            </Row>
-
-            {loading ? (
-              <div style={{ textAlign: "center", padding: "50px" }}>
-                <Spin size="medium" />
-              </div>
-            ) : (
-              <>
-                <Table
-                  columns={comboOfferColumns}
-                  dataSource={filteredComboOffers}
-                  rowKey="comboItemId"
-                  bordered
-                  pagination={false}
-                  scroll={{ x: "100%" }}
-                />
-                <div style={{ marginTop: 16, textAlign: "right" }}>
-                  <Pagination
-                    current={comboPage}
-                    pageSize={comboPageSize}
-                    total={comboTotal}
-                    showSizeChanger
-                    pageSizeOptions={["20", "50", "75", "100"]}
-                    onChange={(page, size) => {
-                      setComboPage(page);
-                      setComboPageSize(size);
-                    }}
-                  />
-                </div>
-              </>
-            )}
-          </TabPane>
-        </Tabs>
+        />
       </Card>
     </AdminPanelLayoutTest>
   );

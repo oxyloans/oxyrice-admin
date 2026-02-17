@@ -13,6 +13,7 @@ import {
   message,
   Popconfirm,
   Tabs,
+  Image,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -402,34 +403,43 @@ const Categories = () => {
       dataIndex: "categoryName",
       align: "center",
     },
-    {
-      title: "Category Image",
-      dataIndex: "categoryLogo",
-      align: "center",
-      render: (image) => (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={image}
-            alt="Category Logo"
-            style={{ width: 50, height: 50, objectFit: "cover" }}
-          />
-        </div>
-      ),
-    },
-    {
-      title: "Category Banner",
-      dataIndex: "categoryBanner",
-      align: "center",
-      render: (banner) => (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={banner}
-            alt="Banner"
-            style={{ width: 50, height: 50, objectFit: "cover" }}
-          />
-        </div>
-      ),
-    },
+  {
+  title: "Category Image",
+  dataIndex: "categoryLogo",
+  align: "center",
+  render: (image) => (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <Image
+        src={image}
+        alt="Category Logo"
+        width={50}
+        height={50}
+        style={{ objectFit: "cover", borderRadius: 6 }}
+        preview={{ mask: "View" }} // click to preview
+        fallback="https://via.placeholder.com/50"
+      />
+    </div>
+  ),
+},
+{
+  title: "Category Banner",
+  dataIndex: "categoryBanner",
+  align: "center",
+  render: (banner) => (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <Image
+        src={banner}
+        alt="Banner"
+        width={50}
+        height={50}
+        style={{ objectFit: "cover", borderRadius: 6 }}
+        preview={{ mask: "View" }}
+        fallback="https://via.placeholder.com/50"
+      />
+    </div>
+  ),
+},
+
     {
       title: "Status",
       dataIndex: "isActive",
@@ -557,7 +567,7 @@ const Categories = () => {
                 current: currentActivePage,
                 onChange: (page) => setCurrentActivePage(page),
               }}
-              scroll={{ x: true }}
+              scroll={{ x: true,y: 500 }}
               size="middle"
               bordered
             />
@@ -602,7 +612,7 @@ const Categories = () => {
                 current: currentInactivePage,
                 onChange: (page) => setCurrentInactivePage(page),
               }}
-              scroll={{ x: true }}
+              scroll={{ x: true,y: 500 }}
               size="middle"
               bordered
             />

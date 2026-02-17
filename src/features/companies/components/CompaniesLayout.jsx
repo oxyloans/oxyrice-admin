@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
-import { DollarOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, BarChartOutlined, DollarOutlined, ReadOutlined } from "@ant-design/icons";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
@@ -46,7 +46,7 @@ const sidebarItems = [
   {
     key: "company-management",
     label: "Company Management",
-    icon: <BankOutlined style={{ fontSize: "18px" }} />,
+    icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
     style: { fontSize: "16px", fontWeight: 500 },
     dropdownItems: [
       {
@@ -59,13 +59,23 @@ const sidebarItems = [
   {
     key: "ibj-ibbs-fd-sales",
     label: "IBJ / IBBS / FD Sales",
-    icon: <DollarOutlined style={{ fontSize: "18px" }} />,
+    icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
     style: { fontSize: "16px", fontWeight: 500 },
     dropdownItems: [
       {
-        key: "manage-ibj-ibbs-fd-sales",
-        label: "Manage IBJ/IBBS/FD Sales",
-        link: "/admin/ibjandfdsales",
+        key: "manage-ibj-official",
+        label: "IBJ Official",
+        link: "/admin/ibj-official",
+      },
+      {
+        key: "manage-iibs-summit",
+        label: "IIBS Summit",
+        link: "/admin/iibs-summit",
+      },
+      {
+        key: "manage-fd-sales-images",
+        label: "FD Sales Images",
+        link: "/admin/fd-sales-images",
       },
     ],
   },
@@ -93,7 +103,7 @@ const sidebarItems = [
       },
     ],
   },
-  
+
   {
     key: "content-management",
     label: "Content Management",
@@ -124,9 +134,9 @@ const sidebarItems = [
   },
 
   {
-    key: "campaign-moderation",
-    label: "Campaign Moderation",
-    icon: <MessageOutlined style={{ fontSize: "18px" }} />,
+    key: "blog-management",
+    label: "Manage Blogs",
+    icon: <ReadOutlined style={{ fontSize: "18px" }} />,
     style: { fontSize: "16px", fontWeight: 500 },
     dropdownItems: [
       {

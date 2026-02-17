@@ -308,16 +308,19 @@ const DashboardTest = () => {
   const StatCard = ({ title, value, icon, color, description, growth }) => (
     <Card
       className="shadow-md hover:shadow-xl transition-all duration-300 rounded-xl border-none"
-      style={{ 
+      style={{
         background: `linear-gradient(135deg, ${color}20 0%, ${color}08 100%)`,
-        borderLeft: `4px solid ${color}`
+        borderLeft: `4px solid ${color}`,
       }}
-      bodyStyle={{ padding: "24px" }}
+      styles={{ body: { padding: "24px" } }}
     >
       <div className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <Text className="uppercase text-xs font-medium" style={{ color: `${color}cc` }}>
+            <Text
+              className="uppercase text-xs font-medium"
+              style={{ color: `${color}cc` }}
+            >
               {title}
             </Text>
             <Title level={2} className="m-0 text-3xl" style={{ color }}>
@@ -332,7 +335,9 @@ const DashboardTest = () => {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          <Text className="text-sm" style={{ color: `${color}dd` }}>{description}</Text>
+          <Text className="text-sm" style={{ color: `${color}dd` }}>
+            {description}
+          </Text>
           {growth && (
             <Text
               className={`text-sm font-semibold ${growth >= 0 ? "text-green-600" : "text-red-600"}`}
@@ -489,15 +494,14 @@ const DashboardTest = () => {
                     disabled={refreshing}
                     className="rounded-lg w-10 h-10 flex items-center justify-center"
                   />
-               
                 </Badge>
               </Tooltip>
             </div>
 
             {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Spin size="medium" tip="Loading dashboard..." />
-              </div>
+              <Spin tip="Loading dashboard...">
+                <div style={{ minHeight: 220 }} />
+              </Spin>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
@@ -535,7 +539,10 @@ const DashboardTest = () => {
                   />
                 </div>
 
-                <Card className="shadow-md rounded-xl mb-6 border-none" style={{ background: 'white' }}>
+                <Card
+                  className="shadow-md rounded-xl mb-6 border-none"
+                  style={{ background: "white" }}
+                >
                   <div className="h-[400px]">
                     <Line data={chartData} options={chartOptions} />
                   </div>
@@ -544,7 +551,7 @@ const DashboardTest = () => {
                 <Card
                   title="User Registration Details"
                   className="shadow-md rounded-xl border-none"
-                  style={{ background: 'white' }}
+                  style={{ background: "white" }}
                   extra={
                     <div className="flex flex-col sm:flex-row gap-3 items-end">
                       <div className="flex flex-col w-full sm:w-auto">

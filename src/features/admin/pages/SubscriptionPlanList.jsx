@@ -342,6 +342,7 @@ const SubscriptionPlansList = () => {
                 pageSize: entriesPerPage,
                 onChange: (page) => setCurrentPage(page),
               }}
+              scroll={{ x: "100%", y: 500 }} // Enables horizontal and vertical scroll on smaller screens
             />
           </Tabs.TabPane>
           <Tabs.TabPane tab="Inactive Subscription Plans" key="2">
@@ -355,6 +356,7 @@ const SubscriptionPlansList = () => {
                 pageSize: entriesPerPage,
                 onChange: (page) => setCurrentPage(page),
               }}
+              scroll={{ x: "100%", y: 500 }} // Enables horizontal and vertical scroll on smaller screens
             />
           </Tabs.TabPane>
         </Tabs>

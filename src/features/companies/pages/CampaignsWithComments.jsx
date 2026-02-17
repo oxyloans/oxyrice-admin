@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import CompaniesLayout from "../components/CompaniesLayout";
+import { Image } from "antd";
 
 const CAMPAIGNS_API = `${BASE_URL}/marketing-service/campgin/getAllCampaignDetails`;
 
@@ -170,12 +171,12 @@ export default function CampaignsWithComments() {
   return (
     <CompaniesLayout>
       <div style={{ padding: 16, maxWidth: 980, margin: "0 auto" }}>
-        <h2 style={{ marginBottom: 12 }}>Campaigns</h2>
+        <h2 style={{ marginBottom: 12 }}>Blogs Management</h2>
 
         {loadingCampaigns ? (
-          <p>Loading campaigns...</p>
+          <p>Loading Blogs...</p>
         ) : campaigns.length === 0 ? (
-          <p>No campaigns found</p>
+          <p>No blogs found</p>
         ) : (
           <div style={{ display: "grid", gap: 12 }}>
             {campaigns.map((c) => {
@@ -202,16 +203,18 @@ export default function CampaignsWithComments() {
                   >
                     <div style={{ width: 140, flexShrink: 0 }}>
                       {firstImg ? (
-                        <img
+                        <Image
                           src={firstImg}
                           alt="campaign"
+                          width="100%"
+                          height={90}
                           style={{
-                            width: "100%",
-                            height: 90,
                             objectFit: "cover",
                             borderRadius: 10,
                             border: "1px solid #eee",
                           }}
+                          preview
+                          fallback="https://via.placeholder.com/300x90"
                         />
                       ) : (
                         <div

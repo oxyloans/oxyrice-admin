@@ -97,110 +97,61 @@ const NewsPapers = () => {
       key: "name",
       align: "center",
     },
-    {
-      title: "Document/Media",
-      dataIndex: "image",
-      key: "document",
-      align: "center",
-
-      render: (url) => {
-        if (!url) return <span>N/A</span>;
-
-        const getFileType = (fileUrl) => {
-          if (!fileUrl) return "unknown";
-          const ext = fileUrl.split(".").pop().toLowerCase();
-          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
-            return "image";
-          if (["pdf"].includes(ext)) return "pdf";
-          if (["mp4", "webm", "mov"].includes(ext)) return "video";
-          if (["doc", "docx"].includes(ext)) return "document";
-          return "file";
-        };
-
-        const handleClick = (fileUrl) => {
-          // Open in new tab
-          window.open(fileUrl, '_blank');
-        };
-
-        const fileType = getFileType(url);
-
-        return (
-          <div
-            style={{
-              textAlign: "center",
-              display: "flex",
-              gap: 8,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {fileType === "image" && (
-              <Image width={80} src={url} alt="document" />
-            )}
-            {fileType === "pdf" && (
-              <button
-                onClick={() => handleClick(url)}
-                style={{
-                  color: "#1890ff",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                📄 PDF
-              </button>
-            )}
-            {fileType === "video" && (
-              <button
-                onClick={() => handleClick(url)}
-                style={{
-                  color: "#1890ff",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                🎥 Video
-              </button>
-            )}
-            {fileType === "document" && (
-              <button
-                onClick={() => handleClick(url)}
-                style={{
-                  color: "#1890ff",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-              >
-                📋 Document
-              </button>
-            )}
-            {fileType === "file" && (
-              <button
-                onClick={() => handleClick(url)}
-                style={{
-                  color: "#008cba",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontWeight: 600,
-                  textDecoration: "none",
-                }}
-              >
-                View More
-              </button>
-            )}
-          </div>
-        );
-      },
-    },
+      {
+          title: "Document / Image",
+          dataIndex: "image",
+          key: "image",
+          align: "center",
+          render: (url) => {
+            if (!url) {
+              return <span style={{ color: "#9CA3AF" }}>No document</span>;
+            }
+    
+            const getFileType = (fileUrl) => {
+              const ext = fileUrl.split(".").pop().toLowerCase();
+              if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
+              if (["pdf"].includes(ext)) return "pdf";
+              if (["mp4", "webm", "mov"].includes(ext)) return "video";
+              if (["xls", "xlsx"].includes(ext)) return "excel";
+              if (["ppt", "pptx"].includes(ext)) return "ppt";
+              if (["doc", "docx"].includes(ext)) return "document";
+              return "file";
+            };
+    
+            const fileType = getFileType(url);
+            const icons = {
+              image: "🖼️",
+              pdf: "📄",
+              video: "🎥",
+              excel: "📊",
+              ppt: "📋",
+              document: "📝",
+              file: "📄"
+            };
+    
+            return (
+              <div style={{ textAlign: "center" }}>
+                {fileType === "image" && (
+                  <Image width={80} src={url} alt="document" />
+                )}
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontWeight: 600,
+                  }}
+                >
+                  {icons[fileType]} View {fileType === "file" ? "Document" : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
+                </a>
+              </div>
+            );
+          },
+        },
+   
     {
       title: "Date",
       dataIndex: "date",

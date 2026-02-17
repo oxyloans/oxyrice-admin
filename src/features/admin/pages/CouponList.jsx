@@ -31,7 +31,7 @@ import moment from "moment";
 import AdminPanelLayout from "../components/AdminPanel.jsx";
 import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
-const { TabPane } = Tabs;
+
 const Coupons = () => {
   const [coupons, setCoupons] = useState([]);
   const [filteredCoupons, setFilteredCoupons] = useState([]);
@@ -523,6 +523,10 @@ const Coupons = () => {
       setFilteredCoupons(coupons);
     }
   };
+const tabItems = [
+  { key: "PRIVATE", label: "Private Coupons" },
+  { key: "PUBLIC", label: "Public Coupons" },
+];
 
   return (
     <AdminPanelLayout>
@@ -601,10 +605,11 @@ const Coupons = () => {
             </div>
           ) : (
             <>
-              <Tabs activeKey={activeTab} onChange={(key) => setActiveTab(key)}>
-                <TabPane tab="Private Coupons" key="PRIVATE" />
-                <TabPane tab="Public Coupons" key="PUBLIC" />
-              </Tabs>
+              <Tabs
+                activeKey={activeTab}
+                onChange={(key) => setActiveTab(key)}
+                items={tabItems}
+              />
 
               <Table
                 dataSource={filteredCoupons.filter(
@@ -628,14 +633,15 @@ const Coupons = () => {
         </div>
       </div>
       <Modal
-        title={isEditMode ? "Edit Coupon" : "Add Coupon"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        onOk={handleAddCoupon}
-        confirmLoading={loading}
-        destroyOnClose
-        width={700}
-      >
+          title={isEditMode ? "Edit Coupon" : "Add Coupon"}
+          open={isModalVisible}
+          onCancel={handleCancel}
+          onOk={handleAddCoupon}
+          confirmLoading={loading}
+          destroyOnClose
+          width={700}
+        >
+          
         <Form form={form} layout="vertical">
           {/* Coupon Code */}
           <Row gutter={16}>
@@ -859,9 +865,7 @@ const Coupons = () => {
                   <Option value="RICE">RICE</Option>
                   <Option value="Grocery">GROCERY</Option>
                   <Option value="GOLD">GOLD</Option>
-                  <Option value="CONTAINERS">
-                    CONTAINERS 
-                  </Option>
+                  <Option value="CONTAINERS">CONTAINERS</Option>
                 </Select>
               </Form.Item>
             </Col>

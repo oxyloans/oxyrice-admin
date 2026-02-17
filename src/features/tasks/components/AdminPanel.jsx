@@ -166,7 +166,7 @@ const TaskAdminPanelLayout = ({ children }) => {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         breakpoint="md"
-        width={screens.xs ? 220 : 240}
+        width={screens.xs ? 240 : 240}
         collapsedWidth={screens.xs ? 0 : 80}
         style={{
           backgroundColor: "#1A202C", // Sidebar background color

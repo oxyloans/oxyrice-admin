@@ -1,5 +1,8 @@
 import { lazy } from "react";
-import IbjandFdsales from "../../features/companies/pages/IbjandFdsales";
+import IbjOfficialPage from "../../features/companies/pages/IbjOfficialPage";
+import IibsSummitPage from "../../features/companies/pages/IibsSummitPage";
+import FdSalesImagesPage from "../../features/companies/pages/FdSalesImagesPage";
+
 
 // Task Management
 const TaskCreation = lazy(
@@ -235,7 +238,10 @@ const companyAdminRoutes = [
   { path: "wearehiring", element: WeHiringPage },
   { path: "getalljobs", element: GetAllJobs },
   { path: "campaignwithcomments", element: CampaignsWithComments },
-  { path: "ibjandfdsales", element: IbjandFdsales },
+  
+  { path: "ibj-official", element: IbjOfficialPage },
+  { path: "iibs-summit", element: IibsSummitPage },
+  { path: "fd-sales-images", element: FdSalesImagesPage},
 ].map((route) => ({
   loginPath: COMPANIES_LOGIN,
   ...route,
