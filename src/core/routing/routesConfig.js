@@ -1,7 +1,5 @@
 import { lazy } from "react";
-import IbjOfficialPage from "../../features/companies/pages/IbjOfficialPage";
-import IibsSummitPage from "../../features/companies/pages/IibsSummitPage";
-import FdSalesImagesPage from "../../features/companies/pages/FdSalesImagesPage";
+
 
 
 // Task Management
@@ -131,7 +129,9 @@ const CampaignsWithComments = lazy(
 const StudentSalesData = lazy(
   () => import("../../features/companies/pages/StudentSalesData"),
 );
-
+const IbjOfficialPage = lazy(() => import("../../features/companies/pages/IbjOfficialPage"));
+const IibsSummitPage = lazy(() => import("../../features/companies/pages/IibsSummitPage"));
+const FdSalesImagesPage = lazy(() => import("../../features/companies/pages/FdSalesImagesPage"));
 // Agents Admin
 const AgentsAdminLayout = lazy(
   () => import("../../features/agents/components/AgentsAdminLayout"),

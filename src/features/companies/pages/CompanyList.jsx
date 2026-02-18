@@ -21,22 +21,19 @@ import {
   UploadOutlined,
   PlusOutlined,
   EditOutlined,
-  
   SearchOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import CompaniesLayout from "../components/CompaniesLayout";
 
-
 const { Text, Link } = Typography;
 const { Option } = Select;
-
 
 const CompanyList = () => {
   const [companies, setCompanies] = useState([]);
   const [filteredCompanies, setFilteredCompanies] = useState([]);
-  const [allCompanies, setAllCompanies] = useState([]); // for Add Job dropdown
+  const [allCompanies, setAllCompanies] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -61,8 +58,10 @@ const CompanyList = () => {
   const fetchCompanies = async (page = 0, size = 10) => {
     setLoading(true);
     try {
+      const validPage = Math.max(0, parseInt(page) || 0);
+      const validSize = Math.min(1000, Math.max(1, parseInt(size) || 10));
       const response = await axios.get(
-        `${BASE_URL}/marketing-service/campgin/all-companies?page=${page}&size=${size}`
+        `${BASE_URL}/marketing-service/campgin/all-companies?page=${validPage}&size=${validSize}`
       );
       const data = response.data;
       setCompanies(data.companies || []);
@@ -78,7 +77,7 @@ const CompanyList = () => {
     }
     setLoading(false);
   };
-  
+
   const fetchAllCompanies = async () => {
     try {
       const res = await axios.get(
@@ -86,10 +85,10 @@ const CompanyList = () => {
       );
       setAllCompanies(res.data || []);
     } catch (error) {
-
-      message.error(error.message );
+      message.error(error.message);
     }
   };
+
   useEffect(() => {
     fetchCompanies(0, pagination.pageSize);
     fetchAllCompanies();
@@ -104,9 +103,13 @@ const CompanyList = () => {
   };
 
   const openModal = (company = null) => {
-    setEditingCompany(company);
-    if (company) form.setFieldsValue(company);
-    else form.resetFields();
+    if (company) {
+      setEditingCompany(company);
+      form.setFieldsValue(company);
+    } else {
+      setEditingCompany(null);
+      form.resetFields();
+    }
     setIsModalVisible(true);
   };
 
@@ -116,13 +119,11 @@ const CompanyList = () => {
     setIsModalVisible(false);
   };
 
-
-
   const handleCloseJobModal = () => {
     jobForm.resetFields();
     setIsJobModalVisible(false);
   };
-  // ✅ Auto-fill logo & website when company selected
+
   const handleCompanySelect = (value) => {
     const selectedCompany = allCompanies.find((c) => c.id === value);
     if (selectedCompany) {
@@ -185,7 +186,7 @@ const CompanyList = () => {
       message.error("Failed to save company details");
     }
   };
-  // ✅ UPDATED Add Job function with correct payload
+
   const handleAddJob = async () => {
     try {
       const values = await jobForm.validateFields();
@@ -249,8 +250,7 @@ const CompanyList = () => {
       align: "center",
       render: (_, __, index) => (
         <div style={{ textAlign: "center" }}>
-          {" "}
-          {(pagination.current - 1) * pagination.pageSize + index + 1}{" "}
+          {(pagination.current - 1) * pagination.pageSize + index + 1}
         </div>
       ),
     },
@@ -261,8 +261,7 @@ const CompanyList = () => {
       align: "center",
       render: (url) => (
         <div style={{ textAlign: "center" }}>
-          {" "}
-          <Image width={50} src={url} alt="company logo" />{" "}
+          <Image width={50} src={url} alt="company logo" />
         </div>
       ),
     },
@@ -273,8 +272,7 @@ const CompanyList = () => {
       key: "name",
       render: (text) => (
         <Text style={{ display: "block", textAlign: "center" }} strong>
-          {" "}
-          {text}{" "}
+          {text}
         </Text>
       ),
     },
@@ -300,33 +298,51 @@ const CompanyList = () => {
       title: "Website",
       dataIndex: "websiteUrl",
       key: "website",
-      render: (url) => (
-        <div style={{ textAlign: "center" }}>
-          {" "}
-          <Link href={url} target="_blank">
-            {" "}
-            Visit{" "}
-          </Link>{" "}
-        </div>
-      ),
+      render: (url) => {
+        const sanitizeUrl = (rawUrl) => {
+          try {
+            const parsed = new URL(rawUrl);
+            if (!['http:', 'https:'].includes(parsed.protocol)) return '#';
+            return parsed.href;
+          } catch {
+            return '#';
+          }
+        };
+        return (
+          <div style={{ textAlign: "center" }}>
+            <Link href={sanitizeUrl(url)} target="_blank">
+              Visit
+            </Link>
+          </div>
+        );
+      },
     },
     {
       title: "LinkedIn",
       dataIndex: "linkedinUrl",
       key: "linkedin",
-      render: (url) => (
-        <div style={{ textAlign: "center" }}>
-          {" "}
-          {url && url !== "string" ? (
-            <Link href={url} target="_blank">
-              {" "}
-              View{" "}
-            </Link>
-          ) : (
-            <Text type="secondary">N/A</Text>
-          )}{" "}
-        </div>
-      ),
+      render: (url) => {
+        const sanitizeUrl = (rawUrl) => {
+          try {
+            const parsed = new URL(rawUrl);
+            if (!['http:', 'https:'].includes(parsed.protocol)) return '#';
+            return parsed.href;
+          } catch {
+            return '#';
+          }
+        };
+        return (
+          <div style={{ textAlign: "center" }}>
+            {url && url !== "string" ? (
+              <Link href={sanitizeUrl(url)} target="_blank">
+                View
+              </Link>
+            ) : (
+              <Text type="secondary">N/A</Text>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Created At",
@@ -335,8 +351,7 @@ const CompanyList = () => {
       key: "createdAt",
       render: (timestamp) => (
         <Text style={{ display: "block", textAlign: "center" }}>
-          {" "}
-          {formatDate(timestamp)}{" "}
+          {formatDate(timestamp)}
         </Text>
       ),
     },
@@ -346,7 +361,6 @@ const CompanyList = () => {
       align: "center",
       render: (_, record) => (
         <div style={{ textAlign: "center" }}>
-          {" "}
           <Button
             icon={<EditOutlined />}
             size="small"
@@ -357,8 +371,7 @@ const CompanyList = () => {
             }}
             onClick={() => openModal(record)}
           >
-            {" "}
-            Edit{" "}
+            Edit
           </Button>{" "}
           <Button
             icon={<PlusOutlined />}
@@ -372,7 +385,6 @@ const CompanyList = () => {
             onClick={() =>
               navigate("/admin/jobsmanage", { state: { company: record } })
             }
-           
           >
             Add Jobs
           </Button>
@@ -395,7 +407,7 @@ const CompanyList = () => {
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
-                onClick={openModal}
+                onClick={() => openModal()}
                 style={{
                   backgroundColor: "#008cba",
                   color: "white",
@@ -404,18 +416,6 @@ const CompanyList = () => {
               >
                 Add Company
               </Button>
-              {/* 
-              <Button
-                type="primary"
-                style={{
-                  background: "#1ab394",
-                  color: "white",
-                  border: "none",
-                }}
-                onClick={openJobModal}
-              >
-                Add Job
-              </Button> */}
             </Space>
           </Col>
         </Row>
@@ -432,7 +432,6 @@ const CompanyList = () => {
               <Select
                 value={pagination.pageSize}
                 onChange={(value) => {
-                  // ✅ server-side: refetch page 0 with new size
                   fetchCompanies(0, value);
                 }}
                 style={{ width: 120 }}
@@ -456,8 +455,6 @@ const CompanyList = () => {
               onChange={(e) => {
                 const val = e.target.value;
                 setSearchText(val);
-
-                // ✅ This only filters current page results you already loaded:
                 const filtered = companies.filter((item) =>
                   item.companyName?.toLowerCase().includes(val.toLowerCase())
                 );
@@ -497,6 +494,13 @@ const CompanyList = () => {
           onCancel={handleCloseModal}
           onOk={handleSave}
           okText={editingCompany ? "Update" : "Save"}
+          okButtonProps={{
+            style: {
+              backgroundColor: editingCompany ? "#1ab394" : "#008cba",
+              color: "white",
+              border: "none",
+            },
+          }}
           destroyOnClose
         >
           <Form layout="vertical" form={form}>
@@ -564,157 +568,6 @@ const CompanyList = () => {
                   style={{ marginTop: 10, borderRadius: 8 }}
                 />
               )}
-            </Form.Item>
-          </Form>
-        </Modal>
-        {/* ✅ Job Modal */}
-        <Modal
-          title="Add Job"
-          open={isJobModalVisible}
-          onCancel={handleCloseJobModal}
-          onOk={handleAddJob}
-          okText="Post Job"
-          destroyOnClose
-        >
-          <Form layout="vertical" form={jobForm}>
-            <Form.Item
-              name="companyId"
-              label="Select Company"
-              rules={[{ required: true, message: "Select a company" }]}
-            >
-              <Select
-                placeholder="Select company"
-                onChange={handleCompanySelect}
-                showSearch
-                optionFilterProp="children"
-              >
-                {allCompanies.map((c) => (
-                  <Option key={c.id} value={c.id}>
-                    {c.companyName}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="companyName" label="Company Name">
-              <Input disabled />
-            </Form.Item>
-
-            <Form.Item name="companyLogo" label="Company Logo">
-              <Input disabled />
-            </Form.Item>
-
-            <Form.Item name="companyWebsiteUrl" label="Company Website">
-              <Input disabled />
-            </Form.Item>
-
-            <Form.Item
-              name="jobTitle"
-              label="Job Title"
-              rules={[{ required: true, message: "Enter job title" }]}
-            >
-              <Input placeholder="Enter job title" />
-            </Form.Item>
-
-            <Form.Item
-              name="description"
-              label="Job Description"
-              rules={[{ required: true, message: "Enter job description" }]}
-            >
-              <Input.TextArea rows={3} />
-            </Form.Item>
-
-            <Form.Item name="applicationDeadLine" label="Application Deadline">
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-
-            <Form.Item name="benefits" label="Benefits">
-              <Input.TextArea rows={2} placeholder="Enter benefits" />
-            </Form.Item>
-
-            <Form.Item name="experience" label="Experience">
-              <Input placeholder="Enter experience required" />
-            </Form.Item>
-
-            <Form.Item name="industry" label="Industry">
-              <Input placeholder="Enter industry" />
-            </Form.Item>
-
-            <Form.Item name="jobDesignation" label="Job Designation">
-              <Input placeholder="Enter job designation" />
-            </Form.Item>
-
-            <Form.Item name="jobLocations" label="Job Locations">
-              <Input placeholder="Enter job locations" />
-            </Form.Item>
-
-            <Form.Item name="jobSource" label="Job Source">
-              <Input placeholder="Enter job source" />
-            </Form.Item>
-
-            <Form.Item name="jobType" label="Job Type">
-              <Select placeholder="Select job type">
-                <Option value="full-time">Full-time</Option>
-                <Option value="part-time">Part-time</Option>
-                <Option value="contract">Contract</Option>
-                <Option value="internship">Internship</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="qualifications" label="Qualifications">
-              <Input placeholder="Enter qualifications" />
-            </Form.Item>
-
-            <Row gutter={8}>
-              <Col span={12}>
-                <Form.Item name="salaryMin" label="Minimum Salary">
-                  <Input type="number" placeholder="Min salary" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="salaryMax" label="Maximum Salary">
-                  <Input type="number" placeholder="Max salary" />
-                </Form.Item>
-              </Col>
-            </Row>
-
-            <Form.Item name="skills" label="Skills">
-              <Input placeholder="Enter required skills" />
-            </Form.Item>
-
-            <Form.Item name="workMode" label="Work Mode">
-              <Select placeholder="Select work mode">
-                <Option value="remote">Remote</Option>
-                <Option value="onsite">Onsite</Option>
-                <Option value="hybrid">Hybrid</Option>
-              </Select>
-            </Form.Item>
-
-            <Form.Item name="companyLinkedinUrl" label="Company LinkedIn URL">
-              <Input placeholder="Enter LinkedIn URL" />
-            </Form.Item>
-
-            <Form.Item name="companyAddress" label="Company Address">
-              <Input placeholder="Enter company address" />
-            </Form.Item>
-
-            <Form.Item name="companyEmail" label="Company Email">
-              <Input placeholder="Enter company email" />
-            </Form.Item>
-
-            <Form.Item
-              name="companyHeadQuarterLocation"
-              label="Headquarter Location"
-            >
-              <Input placeholder="Enter headquarter location" />
-            </Form.Item>
-
-            <Form.Item name="countryCode" label="Country Code">
-              <Input placeholder="Enter country code" />
-            </Form.Item>
-
-            <Form.Item name="contactNumber" label="Contact Number">
-              <Input placeholder="Enter contact number" />
             </Form.Item>
           </Form>
         </Modal>

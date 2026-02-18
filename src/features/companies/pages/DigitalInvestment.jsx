@@ -107,6 +107,18 @@ const DigitalInvestment = () => {
           return <span style={{ color: "#9CA3AF" }}>No document</span>;
         }
 
+        const sanitizeUrl = (rawUrl) => {
+          try {
+            const parsed = new URL(rawUrl);
+            if (!['http:', 'https:'].includes(parsed.protocol)) return '#';
+            return parsed.href;
+          } catch {
+            return '#';
+          }
+        };
+
+        const safeUrl = sanitizeUrl(url);
+
         const getFileType = (fileUrl) => {
           const ext = fileUrl.split(".").pop().toLowerCase();
           if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
@@ -132,10 +144,10 @@ const DigitalInvestment = () => {
         return (
           <div style={{ textAlign: "center" }}>
             {fileType === "image" && (
-              <Image width={80} src={url} alt="document" />
+              <Image width={80} src={safeUrl} alt="document" />
             )}
             <a
-              href={url}
+              href={safeUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -223,7 +235,7 @@ const DigitalInvestment = () => {
           <Table
             columns={columns}
             dataSource={filteredRows}
-            rowKey={(record, idx) => `${idx}-${record?.name || "row"}`}
+            rowKey={(record, idx) => `${idx}-${String(record?.name || "row").replace(/[^a-zA-Z0-9-_]/g, '')}`}
             pagination={{
               current: pagination.current,
               pageSize: pagination.pageSize,
@@ -231,7 +243,7 @@ const DigitalInvestment = () => {
               showSizeChanger: false, 
               showQuickJumper: true,
               showTotal: (t, range) =>
-                `${range[0]}-${range[1]} of ${t} records`,
+                `${Math.max(0, parseInt(range[0]) || 0)}-${Math.max(0, parseInt(range[1]) || 0)} of ${Math.max(0, parseInt(t) || 0)} records`,
               onChange: (page) =>
                 setPagination((p) => ({ ...p, current: page })),
             }}

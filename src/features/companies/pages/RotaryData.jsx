@@ -33,10 +33,10 @@ const RotaryData = () => {
   const [extracting, setExtracting] = useState(false);
   const [extractingRow, setExtractingRow] = useState(null);
 
-  // ✅ toolbar states
+ 
   const [search, setSearch] = useState("");
 
-  // ✅ table pagination states (antd is 1-based)
+  
   const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
 
   // WhatsApp modal states
@@ -67,7 +67,7 @@ const RotaryData = () => {
 
         const data = Array.isArray(res.data) ? res.data : [];
 
-        // ✅ sort by date (latest first)
+        
         const sorted = [...data].sort((a, b) => {
           const da =
             new Date(String(a?.date || "").replace(" ", "T")).getTime() || 0;
@@ -89,7 +89,7 @@ const RotaryData = () => {
     fetch();
   }, []);
 
-  // Replace your current filteredRows with this:
+  
   const filteredRows = useMemo(() => {
     const val = (search || "").trim().toLowerCase();
     if (!val) return rows;
@@ -114,12 +114,11 @@ const RotaryData = () => {
 
   const total = filteredRows.length;
 
-  // Count records without email and mobile
+  
   const missingDataCount = useMemo(() => {
     return rows.filter((r) => !r.emails && !r.mobileNumbers).length;
   }, [rows]);
 
-  // Extract data for single row
   const extractSingleRow = async (record) => {
     if (!record.image) {
       message.error("No image URL found");
@@ -140,7 +139,7 @@ const RotaryData = () => {
         },
       );
 
-      // Refresh data
+    
       const updatedRes = await axios.get(API_URL, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -167,7 +166,7 @@ const RotaryData = () => {
     }
   };
 
-  // Open WhatsApp modal for all numbers
+  
   const openWhatsappModal = () => {
     const numbers = rows
       .filter((r) => r.mobileNumbers)

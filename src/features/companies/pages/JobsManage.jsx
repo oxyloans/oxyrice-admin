@@ -27,37 +27,36 @@ const AddJobs = () => {
   const [loading, setLoading] = useState(false);
   const [countryCode, setCountryCode] = useState("+91");
   const [contactNumber, setContactNumber] = useState("");
-const location = useLocation();
-const companyFromState = location.state?.company || null;
+  const location = useLocation();
+  const companyFromState = location.state?.company || null;
 
-  // 🏢 Fetch all companies on mount
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
         const res = await axios.get(
-          `${BASE_URL}/marketing-service/campgin/getallcompanies`
+          `${BASE_URL}/marketing-service/campgin/getallcompanies`,
         );
         setCompanies(res.data || []);
-          // ✅ Auto-select if company passed from CompanyList
-      if (companyFromState && res.data?.length) {
-        const matchedCompany = res.data.find(
-          (c) => c.id === companyFromState.id
-        );
-        if (matchedCompany) {
-          setSelectedCompany({
-            companyId: matchedCompany.id,
-            companyName: matchedCompany.companyName,
-            companyWebsiteUrl: matchedCompany.websiteUrl,
-            companyLogo: matchedCompany.logoUrl,
-          });
+       
+        if (companyFromState && res.data?.length) {
+          const matchedCompany = res.data.find(
+            (c) => c.id === companyFromState.id,
+          );
+          if (matchedCompany) {
+            setSelectedCompany({
+              companyId: matchedCompany.id,
+              companyName: matchedCompany.companyName,
+              companyWebsiteUrl: matchedCompany.websiteUrl,
+              companyLogo: matchedCompany.logoUrl,
+            });
 
-          form.setFieldsValue({
-            companyId: matchedCompany.id,
-            companyName: matchedCompany.companyName,
-            companyWebsiteUrl: matchedCompany.websiteUrl,
-          });
+            form.setFieldsValue({
+              companyId: matchedCompany.id,
+              companyName: matchedCompany.companyName,
+              companyWebsiteUrl: matchedCompany.websiteUrl,
+            });
+          }
         }
-      }
       } catch (error) {
         console.error(error);
         message.error("Failed to load companies");
@@ -66,7 +65,7 @@ const companyFromState = location.state?.company || null;
     fetchCompanies();
   }, []);
 
-  // 🧩 Handle company selection and auto-fill details
+
   const handleCompanyChange = (companyId) => {
     const company = companies.find((c) => c.id === companyId);
     if (company) {
@@ -79,7 +78,7 @@ const companyFromState = location.state?.company || null;
 
       setSelectedCompany(mappedCompany);
 
-      // ✅ Fill form fields automatically (only read-only fields)
+   
       form.setFieldsValue({
         companyName: mappedCompany.companyName,
         companyWebsiteUrl: mappedCompany.companyWebsiteUrl,
@@ -90,12 +89,11 @@ const companyFromState = location.state?.company || null;
     }
   };
 
-  // 📨 Submit job form
+ 
   const onFinish = async (values) => {
     try {
       setLoading(true);
 
-      // ✅ Convert arrays to comma-separated strings
       const processedValues = {
         ...values,
         jobLocations: values.jobLocations ? values.jobLocations.join(",") : "",
@@ -103,7 +101,6 @@ const companyFromState = location.state?.company || null;
         workMode: values.workMode || "",
       };
 
-      // ✅ Combine form and selected company details
       const payload = {
         ...processedValues,
         userId: localStorage.getItem("userId"),
@@ -119,11 +116,9 @@ const companyFromState = location.state?.company || null;
         countryCode: countryCode || "+91",
       };
 
-      console.log("📦 Final Payload:", payload);
-
       await axios.post(
         `${BASE_URL}/marketing-service/campgin/postajob`,
-        payload
+        payload,
       );
 
       message.success("Job added successfully!");
@@ -139,7 +134,6 @@ const companyFromState = location.state?.company || null;
     }
   };
 
-  // 🌍 Enhanced Dropdown data (expanded with more options across all categories)
   const industries = [
     "Information Technology",
     "Finance",
@@ -823,7 +817,6 @@ const companyFromState = location.state?.company || null;
               </Row>
             </Card>
 
-            {/* 🎓 Requirements & Qualifications */}
             <Card
               title={
                 <span className="text-lg font-semibold text-yellow-600">
@@ -977,7 +970,6 @@ const companyFromState = location.state?.company || null;
               </Row>
             </Card>
 
-            {/* 📋 Job Description */}
             <Card
               title={
                 <span className="text-lg font-semibold text-indigo-600">

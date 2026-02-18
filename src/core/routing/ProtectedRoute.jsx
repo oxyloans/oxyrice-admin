@@ -6,10 +6,8 @@ const ProtectedRoute = ({ element, loginPath = "/" }) => {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    localStorage.setItem(
-      "redirectAfterLogin",
-      location.pathname + location.search,
-    );
+    const sanitizedPath = encodeURI(location.pathname + location.search);
+    localStorage.setItem("redirectAfterLogin", sanitizedPath);
     return <Navigate to={loginPath} replace />;
   }
 
