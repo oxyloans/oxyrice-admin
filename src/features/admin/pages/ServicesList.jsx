@@ -15,7 +15,7 @@ import {
 import axios from "axios";
 import AdminPanelLayoutTest from "../components/AdminPanel";
 import BASE_URL from "../../../core/config/Config";
-
+import dayjs from "dayjs";
 const { Option } = Select;
 const { TabPane } = Tabs;
 
@@ -39,7 +39,7 @@ const Services = () => {
       const res = await axios.get(`${BASE_URL}/product-service/getAllCasCs`);
       setCategories(res.data);
     } catch (err) {
-      message.error("Failed to fetch categories");
+      message.error(err ||"Failed to fetch categories");
     }
     setLoading(false);
   };
@@ -158,7 +158,15 @@ const Services = () => {
     {
       title: "Created At",
       dataIndex: "createdAt",
+      width: 150,
       align: "center",
+       render: (createdAt) =>
+              createdAt ? dayjs(createdAt).format("YYYY-MM-DD") : "N/A",
+            sorter: (a, b) =>
+              new Date(a?.createdAt || 0).getTime() -
+              new Date(b?.createdAt || 0).getTime(),
+            sortDirections: ["descend", "ascend"],
+            defaultSortOrder: "descend",
     },
     {
       title: "Action",

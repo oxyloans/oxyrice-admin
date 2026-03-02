@@ -126,7 +126,7 @@ const StudentRegistrations = () => {
         const year = date.getFullYear();
         const day = String(date.getDate()).padStart(2, "0");
         const time = date.toTimeString().slice(0, 8); // hh:mm:ss
-        return `${month}-${year}-${day} ${time}`;
+        return `${month}-${year}-${day}`;
       },
       align: "center",
     },
@@ -148,11 +148,11 @@ const StudentRegistrations = () => {
           style={{ marginBottom: 16 }}
         >
           <Col>
-            <Title level={4}>Registered Users</Title>
+            <Title level={4}>StudyAbroad Registered Users</Title>
           </Col>
           <Col>
             <Input
-              placeholder="Search by ID (last 4), mobile or WhatsApp"
+              placeholder="Search by userId, mobile or WhatsApp"
               value={searchTerm}
               onChange={handleSearch}
               style={{ width: 300 }}

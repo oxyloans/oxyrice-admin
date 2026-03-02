@@ -58,7 +58,7 @@ const StudentApplications = () => {
 
   // W3.CSS Color Scheme
   const w3Colors = {
-    primary: "#2196F3", // W3-Blue
+    primary: "#008cba", // W3-Blue
     secondary: "#607D8B", // W3-Blue-Grey
     success: "#4CAF50", // W3-Green
     warning: "#FF9800", // W3-Orange
@@ -213,9 +213,13 @@ const StudentApplications = () => {
 
   const columns = [
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>App ID</div>
-      ),
+      title: "S.No",
+      dataIndex: "index",
+      align: "center",
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
+  },
+    {
+      title: "App ID",
       dataIndex: "applicationId",
       key: "applicationId",
       align: "center",
@@ -226,11 +230,8 @@ const StudentApplications = () => {
       ),
     },
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>
-          University
-        </div>
-      ),
+      title: "University",
+       width:150,
       dataIndex: "universityName",
       key: "universityName",
       align: "center",
@@ -243,18 +244,9 @@ const StudentApplications = () => {
       ),
     },
     {
-      title: (
-        <div
-          style={{
-            color: w3Colors.dark,
-            fontWeight: "600",
-            textAlign: "center",
-          }}
-        >
-          Course
-        </div>
-      ),
+      title: "Course",
       dataIndex: "courseName",
+      width: 250,
       key: "courseName",
       align: "center",
       render: (text) => (
@@ -276,9 +268,7 @@ const StudentApplications = () => {
       ),
     },
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>Duration</div>
-      ),
+      title: "Duration",
       dataIndex: "duration",
       key: "duration",
       align: "center",
@@ -294,9 +284,7 @@ const StudentApplications = () => {
       ),
     },
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>Intake</div>
-      ),
+      title: "Intake",
       key: "intake",
       align: "center",
       render: (_, record) => (
@@ -309,9 +297,7 @@ const StudentApplications = () => {
       ),
     },
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>Status</div>
-      ),
+      title: "Status",
       dataIndex: "applicationStatus",
       key: "applicationStatus",
       align: "center",
@@ -332,16 +318,14 @@ const StudentApplications = () => {
               fontSize: "12px",
             }}
           >
-            {config.icon}
+         
             {status}
           </div>
         );
       },
     },
     {
-      title: (
-        <div style={{ color: w3Colors.dark, fontWeight: "600" }}>Actions</div>
-      ),
+      title: "Actions",
       key: "actions",
       align: "center",
       render: (_, record) => (
@@ -540,7 +524,7 @@ const StudentApplications = () => {
                 <Search
                   placeholder="Search by university, course, or application ID..."
                   allowClear
-                  enterButton={<SearchOutlined style={{ color: "white" }} />}
+                  enterButton={<SearchOutlined style={{ color: "white"}} />}
                   size="large"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -615,7 +599,7 @@ const StudentApplications = () => {
               columns={columns}
               dataSource={filteredApplications}
               rowKey="applicationId"
-              scroll={{ x: 1400 }}
+              scroll={{ x: "100%" }}
               size="middle"
               bordered
               style={{

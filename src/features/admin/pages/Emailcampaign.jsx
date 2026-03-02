@@ -710,6 +710,10 @@ export default function Email() {
                       label: "anil@askoxy.ai",
                       value: "anil@askoxy.ai",
                     },
+                    {
+                      label: "VThatavarti16@oxygold.ai",
+                      value: "VThatavarti16@oxygold.ai",
+                    },
                   ]}
                 />
               </Form.Item>
