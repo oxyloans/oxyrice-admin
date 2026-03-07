@@ -13,7 +13,7 @@ import {
   Tabs,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 const { Option } = Select;
@@ -39,7 +39,7 @@ const Services = () => {
       const res = await axios.get(`${BASE_URL}/product-service/getAllCasCs`);
       setCategories(res.data);
     } catch (err) {
-      message.error(err ||"Failed to fetch categories");
+      message.error(err || "Failed to fetch categories");
     }
     setLoading(false);
   };
@@ -160,13 +160,13 @@ const Services = () => {
       dataIndex: "createdAt",
       width: 150,
       align: "center",
-       render: (createdAt) =>
-              createdAt ? dayjs(createdAt).format("YYYY-MM-DD") : "N/A",
-            sorter: (a, b) =>
-              new Date(a?.createdAt || 0).getTime() -
-              new Date(b?.createdAt || 0).getTime(),
-            sortDirections: ["descend", "ascend"],
-            defaultSortOrder: "descend",
+      render: (createdAt) =>
+        createdAt ? dayjs(createdAt).format("YYYY-MM-DD") : "N/A",
+      sorter: (a, b) =>
+        new Date(a?.createdAt || 0).getTime() -
+        new Date(b?.createdAt || 0).getTime(),
+      sortDirections: ["descend", "ascend"],
+      defaultSortOrder: "descend",
     },
     {
       title: "Action",
@@ -190,7 +190,7 @@ const Services = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4">
         <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <h2 className="text-xl font-bold mb-2 md:mb-0">Service Management</h2>
@@ -323,7 +323,7 @@ const Services = () => {
           </Form>
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

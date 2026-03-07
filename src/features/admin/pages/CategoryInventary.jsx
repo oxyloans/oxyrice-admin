@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Spin, Alert, Tag } from "antd";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const CategoryInventory = () => {
@@ -119,7 +119,7 @@ const CategoryInventory = () => {
   };
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4 w-full max-w-7xl mx-auto">
         {loading ? (
           // ✅ Spin tip fixed (nested)
@@ -220,7 +220,7 @@ const CategoryInventory = () => {
           })
         )}
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

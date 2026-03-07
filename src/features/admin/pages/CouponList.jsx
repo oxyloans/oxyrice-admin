@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 
-
-
-
 import { DeleteOutlined } from "@ant-design/icons";
 import {
   Table,
@@ -24,11 +21,10 @@ import {
 
 import { Tabs } from "antd";
 
-
 import { EditOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
 import moment from "moment";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
 
@@ -54,7 +50,7 @@ const Coupons = () => {
     fetchCoupons();
   }, []);
   const tabFilteredCoupons = filteredCoupons.filter(
-    (coupon) => coupon.status === activeTab
+    (coupon) => coupon.status === activeTab,
   );
   const fetchCoupons = useCallback(async () => {
     setFetching(true);
@@ -65,13 +61,15 @@ const Coupons = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
       // Sort coupons so latest ones appear first (assuming "createdAt" field is present)
-    const sortedCoupons = response.data.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-     setCoupons(sortedCoupons);
+      const sortedCoupons = response.data.sort((a, b) => {
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      });
+      setCoupons(sortedCoupons);
       setFilteredCoupons(sortedCoupons);
     } catch (error) {
       console.error("Error fetching coupons:", error);
@@ -95,7 +93,7 @@ const Coupons = () => {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
-        }
+        },
       );
 
       message.success("Coupon status updated successfully.");
@@ -118,53 +116,53 @@ const Coupons = () => {
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
-   useEffect(() => {
-      fetchItemsData();
-    }, []);
-   const fetchItemsData = async () => {
-     setLoading(true);
-     try {
-       const response = await axios.get(
-         `${BASE_URL}/product-service/getItemsData`,
-         {
-           headers: {
-             Authorization: `Bearer ${accessToken}`,
-           },
-         }
-       );
-       const activeItems = response.data.filter(
-         (item) => item.isActive === "true"
-       );
+  useEffect(() => {
+    fetchItemsData();
+  }, []);
+  const fetchItemsData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/product-service/getItemsData`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+      const activeItems = response.data.filter(
+        (item) => item.isActive === "true",
+      );
 
-       setItems(activeItems);
-       message.success("Data Fetched Successfully");
-     } catch (error) {
-       message.error("Error fetching items data: " + error.message);
-     } finally {
-       setLoading(false);
-     }
-   };
- const handleDeleteCoupon = async (id) => {
-   try {
-     setDeleteLoading(true);
+      setItems(activeItems);
+      message.success("Data Fetched Successfully");
+    } catch (error) {
+      message.error("Error fetching items data: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleDeleteCoupon = async (id) => {
+    try {
+      setDeleteLoading(true);
 
-     await axios.delete(`${BASE_URL}/order-service/couponDelete`, {
-       headers: {
-         Authorization: `Bearer ${accessToken}`,
-         "Content-Type": "application/json",
-       },
-       params: { id }, // 👈 ID sent as query param
-     });
+      await axios.delete(`${BASE_URL}/order-service/couponDelete`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        params: { id }, // 👈 ID sent as query param
+      });
 
-     message.success("Coupon deleted successfully!");
-     fetchCoupons(); // Refresh the list after deletion
-   } catch (error) {
-     console.error("Error deleting coupon:", error);
-     message.error("Failed to delete coupon. Please try again.");
-   } finally {
-     setDeleteLoading(false);
-   }
- };
+      message.success("Coupon deleted successfully!");
+      fetchCoupons(); // Refresh the list after deletion
+    } catch (error) {
+      console.error("Error deleting coupon:", error);
+      message.error("Failed to delete coupon. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -414,7 +412,9 @@ const Coupons = () => {
       const startDateTime = record.startDateTime
         ? moment(record.startDateTime)
         : null;
-      const endDateTime = record.endDateTime ? moment(record.endDateTime) : null;
+      const endDateTime = record.endDateTime
+        ? moment(record.endDateTime)
+        : null;
 
       // Format user mobile numbers if they exist
       const userMobileNumbers = record.userMobileNumbers
@@ -486,14 +486,14 @@ const Coupons = () => {
         await axios.put(
           `${BASE_URL}/order-service/updateCoupon`,
           { couponId: editingCouponId, ...formattedValues },
-          { headers: { Authorization: `Bearer ${accessToken}` } }
+          { headers: { Authorization: `Bearer ${accessToken}` } },
         );
         message.success("Coupon updated successfully.");
       } else {
         await axios.post(
           `${BASE_URL}/order-service/addCoupon`,
           formattedValues,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
+          { headers: { Authorization: `Bearer ${accessToken}` } },
         );
         message.success("Coupon added successfully.");
       }
@@ -515,18 +515,18 @@ const Coupons = () => {
     if (value) {
       const filtered = coupons.filter((coupon) =>
         ["couponCode", "minOrder"].some((key) =>
-          coupon[key]?.toString().toLowerCase().includes(value)
-        )
+          coupon[key]?.toString().toLowerCase().includes(value),
+        ),
       );
       setFilteredCoupons(filtered);
     } else {
       setFilteredCoupons(coupons);
     }
   };
-const tabItems = [
-  { key: "PRIVATE", label: "Private Coupons" },
-  { key: "PUBLIC", label: "Public Coupons" },
-];
+  const tabItems = [
+    { key: "PRIVATE", label: "Private Coupons" },
+    { key: "PUBLIC", label: "Public Coupons" },
+  ];
 
   return (
     <AdminPanelLayout>
@@ -633,15 +633,14 @@ const tabItems = [
         </div>
       </div>
       <Modal
-          title={isEditMode ? "Edit Coupon" : "Add Coupon"}
-          open={isModalVisible}
-          onCancel={handleCancel}
-          onOk={handleAddCoupon}
-          confirmLoading={loading}
-          destroyOnClose
-          width={700}
-        >
-          
+        title={isEditMode ? "Edit Coupon" : "Add Coupon"}
+        open={isModalVisible}
+        onCancel={handleCancel}
+        onOk={handleAddCoupon}
+        confirmLoading={loading}
+        destroyOnClose
+        width={700}
+      >
         <Form form={form} layout="vertical">
           {/* Coupon Code */}
           <Row gutter={16}>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import {
@@ -167,7 +167,6 @@ const PlanOfTheDay = () => {
     });
   };
 
-
   const fetchTasksByDate = useCallback(async () => {
     if (!selectedDate) {
       showNotification("warning", "Missing Date", "Please select a date.");
@@ -186,10 +185,9 @@ const PlanOfTheDay = () => {
         },
         {
           headers: {
-            
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       setTasks(response.data);
@@ -209,14 +207,14 @@ const PlanOfTheDay = () => {
           "info",
           "No Tasks Found",
           `No pending tasks found for ${formattedDate}.`,
-          <FileSearchOutlined style={{ color: "#1890ff" }} />
+          <FileSearchOutlined style={{ color: "#1890ff" }} />,
         );
       } else {
         showNotification(
           "success",
           "Tasks Found",
           `Found ${response.data.length} pending tasks for ${formattedDate}.`,
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />,
         );
       }
     } catch (error) {
@@ -224,7 +222,7 @@ const PlanOfTheDay = () => {
       showNotification(
         "error",
         "Fetch Failed",
-        "Failed to fetch tasks. Please try again later."
+        "Failed to fetch tasks. Please try again later.",
       );
     } finally {
       setLoading(false);
@@ -259,7 +257,7 @@ const PlanOfTheDay = () => {
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.data) {
@@ -267,7 +265,7 @@ const PlanOfTheDay = () => {
           "success",
           "Feedback Added",
           "Your feedback has been submitted successfully.",
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />,
         );
 
         // Refresh the task list
@@ -281,7 +279,7 @@ const PlanOfTheDay = () => {
       showNotification(
         "error",
         "Submission Failed",
-        "Failed to add feedback. Please try again."
+        "Failed to add feedback. Please try again.",
       );
     } finally {
       setSubmittingComment(false);
@@ -451,7 +449,7 @@ const PlanOfTheDay = () => {
         (resp) =>
           resp.adminDescription &&
           resp.adminDescription.trim() !== "" &&
-          resp.updateBy === "ADMIN"
+          resp.updateBy === "ADMIN",
       );
 
       if (adminResponseWithDesc) {
@@ -584,9 +582,7 @@ const PlanOfTheDay = () => {
 
         <div className="flex items-center gap-2 text-gray-500">
           <CalendarOutlined />
-          <Text>
-            Updated: {formatDate(task.planUpdatedAt )}
-          </Text>
+          <Text>Updated: {formatDate(task.planUpdatedAt)}</Text>
         </div>
       </div>
     </Card>
@@ -703,7 +699,7 @@ const PlanOfTheDay = () => {
         <Button
           icon={<ReloadOutlined />}
           size="small"
-        style={{backgroundColor: "#008CBA", color: "white"}}
+          style={{ backgroundColor: "#008CBA", color: "white" }}
           onClick={fetchTasksByDate}
           className="text-xs sm:text-sm" // Responsive button text
         >

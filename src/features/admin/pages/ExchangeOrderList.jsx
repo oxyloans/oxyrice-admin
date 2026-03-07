@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, message, Input, Row, Col, Select } from "antd";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import axios from "axios";
 
 const { Option } = Select;

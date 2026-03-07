@@ -37,7 +37,7 @@ import {
   CloseCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -217,7 +217,7 @@ const StudentApplications = () => {
       dataIndex: "index",
       align: "center",
       render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
-  },
+    },
     {
       title: "App ID",
       dataIndex: "applicationId",
@@ -231,7 +231,7 @@ const StudentApplications = () => {
     },
     {
       title: "University",
-       width:150,
+      width: 150,
       dataIndex: "universityName",
       key: "universityName",
       align: "center",
@@ -318,7 +318,6 @@ const StudentApplications = () => {
               fontSize: "12px",
             }}
           >
-         
             {status}
           </div>
         );
@@ -352,7 +351,7 @@ const StudentApplications = () => {
   };
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div
         style={{
           padding: "14px",
@@ -524,7 +523,7 @@ const StudentApplications = () => {
                 <Search
                   placeholder="Search by university, course, or application ID..."
                   allowClear
-                  enterButton={<SearchOutlined style={{ color: "white"}} />}
+                  enterButton={<SearchOutlined style={{ color: "white" }} />}
                   size="large"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
@@ -827,7 +826,7 @@ const StudentApplications = () => {
           )}
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

@@ -1,4 +1,4 @@
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Table,
@@ -10,7 +10,6 @@ import {
   Modal,
   Select,
   Tag,
-
 } from "antd";
 import axios from "axios";
 import * as XLSX from "xlsx";

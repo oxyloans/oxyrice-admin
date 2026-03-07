@@ -11,7 +11,7 @@ import {
   Row,
   Col,
 } from "antd";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;
@@ -217,7 +217,7 @@ const CustomerDetails = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <Row justify="space-between" align="middle" className="mb-4">
         <Col>
           <h2 className="text-xl font-bold">User Mobile Number Update</h2>
@@ -304,7 +304,7 @@ const CustomerDetails = () => {
           </Form>
         )}
       </Modal>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

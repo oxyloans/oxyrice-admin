@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
-import { ApartmentOutlined, BarChartOutlined, DollarOutlined, ReadOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, BarChartOutlined, ReadOutlined, IdcardOutlined } from "@ant-design/icons";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
@@ -9,7 +9,7 @@ import {
   MenuFoldOutlined,
   FileTextOutlined,
   BankOutlined,
- MessageOutlined,
+ 
   AppstoreOutlined,
 } from "@ant-design/icons";
 
@@ -143,6 +143,33 @@ const sidebarItems = [
         key: "campaign-comments",
         label: "Comments & Likes",
         link: "/admin/campaignwithcomments",
+      },
+    ],
+  },
+
+  {
+    key: "business-cards",
+    label: "Business Cards",
+    icon: <IdcardOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "manage-business-cards",
+        label: "Business Cards",
+        link: "/admin/business-cards",
+      },
+    ],
+  },
+  {
+    key: "summit",
+    label: "Summit",
+    icon: <BankOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "hysea-summit",
+        label: "Summit",
+        link: "/admin/hysea-summit",
       },
     ],
   },

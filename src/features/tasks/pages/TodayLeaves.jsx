@@ -28,7 +28,7 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

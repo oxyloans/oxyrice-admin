@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import { Table, Col, Row, Select, Tag, Button, message, Spin } from "antd";
 import { useParams } from "react-router-dom";
 import { DownloadOutlined } from "@ant-design/icons";
@@ -152,7 +152,7 @@ const AllInforMationOfBarCode = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       {/* Display Count and Status */}
       <Row gutter={16} className="mb-8">
         <Col xs={24} sm={12} md={6}>
@@ -180,13 +180,13 @@ const AllInforMationOfBarCode = () => {
           rowKey="itemId"
           pagination={false}
           bordered
-          scroll={{ x: "100%"}}
+          scroll={{ x: "100%" }}
         />
       )}
 
       {/* No Data Message */}
       {!loading && data.length === 0 && !error && <p>No data available.</p>}
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

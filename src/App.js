@@ -21,15 +21,15 @@ import "@mantine/notifications/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
+const LoadingSpinner = lazy(() => import("./shared/components/LoadingSpinner"));
 const ProtectedRoute = lazy(() => import("./core/routing/ProtectedRoute"));
 const EntryPointTracker = lazy(() => import("./core/routing/EntryPointTracker"));
 
-const LoadingSpinner = lazy(() => import("./shared/components/LoadingSpinner"));
 const Email = lazy(() => import("./features/admin/pages/Emailcampaign"));
-const LoginTest = lazy(() => import("./core/auth/AdminLogin"));
-const AgentsLogin = lazy(() => import("./core/auth/AgentsLogin"));
-const CompaniesLogin = lazy(() => import("./core/auth/CompaniesLogin"));
-const TaskManagementLogin = lazy(
+const AdminLoginPage = lazy(() => import("./core/auth/AdminLogin"));
+const AgentLoginPage = lazy(() => import("./core/auth/AgentsLogin"));
+const CompaniesLoginPage = lazy(() => import("./core/auth/CompaniesLogin"));
+const TaskManagementLoginPage = lazy(
   () => import("./features/tasks/pages/TaskManagementLogin"),
 );
 
@@ -42,12 +42,15 @@ function App() {
           <EntryPointTracker />
           <Routes>
             {/* Public */}
-            <Route path="/" element={<LoginTest />} />
-            <Route path="/admin/agentslogin" element={<AgentsLogin />} />
-            <Route path="/admin/companieslogin" element={<CompaniesLogin />} />
+            <Route path="/" element={<AdminLoginPage />} />
+            <Route path="/admin/agentslogin" element={<AgentLoginPage />} />
+            <Route
+              path="/admin/companieslogin"
+              element={<CompaniesLoginPage />}
+            />
             <Route
               path="/admin/taskmanagementlogin"
-              element={<TaskManagementLogin />}
+              element={<TaskManagementLoginPage />}
             />
             {/* === COMPANIES ADMIN - PROTECTED === */}
             {companyAdminRoutes.map(({ path, element, loginPath }) => {
@@ -119,6 +122,7 @@ function App() {
         </Suspense>
       </MantineProvider>
     </Router>
+    
   );
 }
 

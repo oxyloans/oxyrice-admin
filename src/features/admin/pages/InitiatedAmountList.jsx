@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Spin, message, Button, Input, Row, Col } from "antd";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { Search } = Input;
 
@@ -90,7 +90,7 @@ const InitiatedAmountList = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: 20 }}>
         {/* Header with title left, search + refresh right */}
         <Row
@@ -133,7 +133,7 @@ const InitiatedAmountList = () => {
           />
         )}
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

@@ -1,4 +1,4 @@
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import React, { useState } from "react";
 import {
   Table,

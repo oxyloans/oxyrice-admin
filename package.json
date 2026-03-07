@@ -24,7 +24,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^11.11.9",
     "jquery-sparkline": "^2.4.0",
-    "jspdf": "^4.1.0",
+    "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "jsvectormap": "^1.6.0",
     "jvectormap": "^2.0.4",

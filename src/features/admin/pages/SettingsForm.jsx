@@ -1,16 +1,7 @@
-import React, {  useState } from "react";
-import {
-  Form,
-  Input,
-  InputNumber,
-  Button,
-  message,
-  
-  Row,
-  Col,
-} from "antd";
+import React, { useState } from "react";
+import { Form, Input, InputNumber, Button, message, Row, Col } from "antd";
 import axios from "axios";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 const accessToken = localStorage.getItem("accessToken");
 const Settings = () => {
   const [loading, setLoading] = useState(false);

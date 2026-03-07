@@ -160,13 +160,12 @@ import {
   Button,
   message,
   Select,
- 
   Modal,
   Row,
   Col,
   Spin,
 } from "antd";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { useParams } from "react-router-dom";
 import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;
@@ -184,15 +183,12 @@ const SellerItems = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSellerItems, setFilteredSellerItems] = useState([]);
 
-  
-
   // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
     setEntriesPerPage(value);
     setCurrentPage(1);
   };
 
-  
   // Fetch item details from the API
   const fetchItemDetails = async () => {
     setLoading(true);

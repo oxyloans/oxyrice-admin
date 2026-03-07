@@ -23,7 +23,7 @@ import { BiSolidCategory, BiSolidCoupon } from "react-icons/bi";
 const { Header, Sider, Content, Footer } = Layout;
 const { useBreakpoint } = Grid;
 
-const AdminPanelLayoutTest = ({ children }) => {
+const AdminPanelLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
@@ -420,15 +420,11 @@ const AdminPanelLayoutTest = ({ children }) => {
 
         <Content
           style={{
-            margin: screens.xs
-              ? "80px 16px 16px"
-              : `80px 16px 16px ${collapsed ? "80px" : "240px"}`,
+            marginTop: 64,
+            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             padding: screens.xs ? 12 : 24,
             background: "#ffffff",
-            width: screens.xs
-              ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
-            marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
+            minHeight: "calc(100vh - 64px - 53px)",
             position: "relative",
           }}
         >
@@ -439,9 +435,6 @@ const AdminPanelLayoutTest = ({ children }) => {
           style={{
             textAlign: "center",
             background: "#fff",
-            width: screens.xs
-              ? "100%"
-              : `calc(100% - ${collapsed ? "80px" : "240px"})`,
             marginLeft: screens.xs ? "0px" : collapsed ? "80px" : "240px",
             position: "relative",
             bottom: 0,
@@ -499,4 +492,4 @@ const AdminPanelLayoutTest = ({ children }) => {
   );
 };
 
-export default AdminPanelLayoutTest;
+export default AdminPanelLayout;

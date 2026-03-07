@@ -2,23 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 import BASE_URL from "../../../core/config/Config";
-import {
-  Modal,
-  Button,
- 
-  Row,
-  Col,
-  Select,
- 
- 
-  Spin,
-  Table,
-  message,
-} from "antd";
+import { Modal, Button, Row, Col, Select, Spin, Table, message } from "antd";
 
-
-
-import AdminPanelLayoutTest from "../components/AdminPanel.jsx";
+import AdminPanelLayoutTest from "../components/AdminPanelLayout.jsx";
 const { Option } = Select;
 function AllQueries() {
   const [data, setData] = useState([]);
@@ -37,9 +23,7 @@ function AllQueries() {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-
   const accesToken = localStorage.getItem("accessToken");
-  
 
   function queriesdisplaygetcall() {
     let data = {
@@ -60,7 +44,7 @@ function AllQueries() {
         if (Array.isArray(response.data)) {
           // Ensure response.data is an array before filtering
           const filteredData = response.data.filter(
-            (item) => item.testUser === false
+            (item) => item.testUser === false,
           );
           setData(filteredData);
         } else {
@@ -170,7 +154,7 @@ function AllQueries() {
             "Content-Type": "multipart/form-data",
             // Ensure accessToken is defined
           },
-        }
+        },
       );
 
       setDocumentId(response.data.id);

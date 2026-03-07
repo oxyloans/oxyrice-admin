@@ -25,7 +25,7 @@ import {
 } from "antd";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import {
   ArrowLeftOutlined,
   MessageOutlined,
@@ -35,7 +35,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  
 } from "@ant-design/icons";
 
 const { Title, Text, Paragraph } = Typography;
@@ -70,7 +69,7 @@ const RadhaInstructionView = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${BASE_URL}/user-service/write/getRadhaInstructionId?id=${id}`
+        `${BASE_URL}/user-service/write/getRadhaInstructionId?id=${id}`,
       );
       setInstructionData(res.data);
     } catch (err) {
@@ -213,7 +212,7 @@ const RadhaInstructionView = () => {
 
       await axios.patch(
         `${BASE_URL}/user-service/write/radhaInteractions`,
-        payload
+        payload,
       );
       message.success("✅ Interaction saved successfully!");
       setIsInteractionModalOpen(false);
@@ -328,14 +327,13 @@ const RadhaInstructionView = () => {
                     <Row gutter={[16, 16]}>
                       <Col xs={24} sm={12}>
                         <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                         
                           <div>
                             <Text strong className="block text-gray-800">
                               Created
                             </Text>
                             <Text className="text-gray-600 text-sm">
                               {formatDateIST(
-                                instructionData.radhaInstructeddate
+                                instructionData.radhaInstructeddate,
                               )}
                             </Text>
                           </div>
@@ -343,7 +341,6 @@ const RadhaInstructionView = () => {
                       </Col>
                       <Col xs={24} sm={12}>
                         <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
-                         
                           <div>
                             <Text strong className="block text-gray-800">
                               Last Updated
@@ -514,7 +511,7 @@ const RadhaInstructionView = () => {
                     .sort(
                       (a, b) =>
                         new Date(b.employeeConversionDate).getTime() -
-                        new Date(a.employeeConversionDate).getTime()
+                        new Date(a.employeeConversionDate).getTime(),
                     )
                     .map((interaction, index) => (
                       <div key={index}>

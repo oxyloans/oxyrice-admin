@@ -14,10 +14,8 @@ import {
   Progress,
   Row,
   Col,
- 
   DatePicker,
   Upload,
-  
 } from "antd";
 import {
   SaveOutlined,
@@ -36,7 +34,7 @@ import {
   CalendarOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const { Option } = Select;
@@ -228,12 +226,12 @@ const TaskCreation = () => {
             },
             onUploadProgress: (progressEvent) => {
               const percentCompleted = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
+                (progressEvent.loaded * 100) / progressEvent.total,
               );
               setUploadProgress(percentCompleted);
               onProgress({ percent: percentCompleted });
             },
-          }
+          },
         );
 
         const docId = response.data.id;
@@ -287,7 +285,7 @@ const TaskCreation = () => {
 
       const response = await axios.post(
         `${BASE_URL}/user-service/write/saveTask`,
-        taskData
+        taskData,
       );
 
       if (response.data.message === "Task Created Successfully") {
@@ -524,7 +522,7 @@ const TaskCreation = () => {
                               </Tag>
                             </div>
                           </Option>
-                        )
+                        ),
                       )}
                   </Select>
                 </Form.Item>
@@ -767,7 +765,7 @@ const TaskCreation = () => {
         </Card>
       </div>
 
-      <style >{`
+      <style>{`
         .ant-form-item-label > label {
           font-weight: 500;
           color: #374151;
@@ -813,4 +811,3 @@ const TaskCreation = () => {
 };
 
 export default TaskCreation;
-

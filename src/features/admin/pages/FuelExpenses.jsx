@@ -16,7 +16,7 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
@@ -258,7 +258,7 @@ const FuelExpenses = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: 24 }}>
         {/* ✅ Summary Cards Row (Top Section) */}
         <Row
@@ -428,7 +428,7 @@ const FuelExpenses = () => {
           )}
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

@@ -3,7 +3,7 @@ import { Table, Tag, Input, Button, message, Popconfirm } from "antd";
 import axios from "axios";
 import moment from "moment";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const WithdrawalRequests = () => {
   const [data, setData] = useState([]);
@@ -132,7 +132,7 @@ const WithdrawalRequests = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: "20px" }}>
         <div
           style={{
@@ -160,7 +160,7 @@ const WithdrawalRequests = () => {
           pagination={{ pageSize: 5 }}
         />
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

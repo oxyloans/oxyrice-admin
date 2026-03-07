@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import {

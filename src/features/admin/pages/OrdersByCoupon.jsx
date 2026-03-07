@@ -10,7 +10,7 @@ import {
   Modal,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 
@@ -200,7 +200,7 @@ const OrdersByCoupon = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: 20 }}>
         <Title level={4}>Select Coupon Code to View Orders</Title>
         <Select
@@ -276,7 +276,7 @@ const OrdersByCoupon = () => {
           />
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

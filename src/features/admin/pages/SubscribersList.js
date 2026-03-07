@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
- 
-  Input,
-  Row,
-  Col,
-  Select,
-  
-  message,
-} from "antd";
+import { Table, Input, Row, Col, Select, message } from "antd";
 
 import axios from "axios";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
-
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 
 const SubscribersListDEtails = () => {
   const [subscribers, setSubscribers] = useState([]);

@@ -18,7 +18,7 @@ import {
   CalendarOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const { Title, Text, Paragraph } = Typography;

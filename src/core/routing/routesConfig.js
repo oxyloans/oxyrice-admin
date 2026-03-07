@@ -132,6 +132,8 @@ const StudentSalesData = lazy(
 const IbjOfficialPage = lazy(() => import("../../features/companies/pages/IbjOfficialPage"));
 const IibsSummitPage = lazy(() => import("../../features/companies/pages/IibsSummitPage"));
 const FdSalesImagesPage = lazy(() => import("../../features/companies/pages/FdSalesImagesPage"));
+const BusinessCards = lazy(() => import("../../features/companies/pages/BusinessCards"));
+const HyseaSummit = lazy(() => import("../../features/companies/pages/HyseaSummit"));
 // Agents Admin
 const AgentsAdminLayout = lazy(
   () => import("../../features/agents/components/AgentsAdminLayout"),
@@ -242,6 +244,8 @@ const companyAdminRoutes = [
   { path: "ibj-official", element: IbjOfficialPage },
   { path: "iibs-summit", element: IibsSummitPage },
   { path: "fd-sales-images", element: FdSalesImagesPage},
+  { path: "business-cards", element: BusinessCards },
+  { path: "hysea-summit", element: HyseaSummit },
 ].map((route) => ({
   loginPath: COMPANIES_LOGIN,
   ...route,

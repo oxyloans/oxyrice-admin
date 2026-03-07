@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import {
@@ -16,11 +16,9 @@ import {
   Tag,
   Avatar,
   Collapse,
-  
   Form,
   Input,
   Tooltip,
-  
   Statistic,
   Row,
   Col,
@@ -38,7 +36,6 @@ import {
   MessageOutlined,
   FileTextOutlined,
   DownOutlined,
-  
   TeamOutlined,
   SearchOutlined,
   SortAscendingOutlined,
@@ -54,8 +51,6 @@ const { TabPane } = Tabs;
 const { Panel } = Collapse;
 const { TextArea } = Input;
 const { Search } = Input;
-
-
 
 const EndOfTheDay = () => {
   // State variables - Set status to static "COMPLETED" value
@@ -112,7 +107,7 @@ const EndOfTheDay = () => {
             accept: "*/*",
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const filteredSameDateTasks = response.data.filter((task) => {
@@ -137,27 +132,27 @@ const EndOfTheDay = () => {
         date: selectedDate.toDate(),
       });
 
-     if (taskCount === 0) {
-       showNotification(
-         "info",
-         "No Tasks Found",
-         `No completed tasks found for ${formattedDate}.`,
-         <FileSearchOutlined style={{ color: "#1890ff" }} />
-       );
-     } else {
-       showNotification(
-         "success",
-         "Tasks Found",
-         `Found ${taskCount} completed tasks for ${formattedDate}.`,
-         <CheckCircleOutlined style={{ color: "#52c41a" }} />
-       );
-     }
+      if (taskCount === 0) {
+        showNotification(
+          "info",
+          "No Tasks Found",
+          `No completed tasks found for ${formattedDate}.`,
+          <FileSearchOutlined style={{ color: "#1890ff" }} />,
+        );
+      } else {
+        showNotification(
+          "success",
+          "Tasks Found",
+          `Found ${taskCount} completed tasks for ${formattedDate}.`,
+          <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+        );
+      }
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
       showNotification(
         "error",
         "Fetch Failed",
-        "Failed to fetch tasks. Please try again later."
+        "Failed to fetch tasks. Please try again later.",
       );
     } finally {
       setLoading(false);
@@ -404,7 +399,7 @@ const EndOfTheDay = () => {
         (resp) =>
           resp.adminDescription &&
           resp.adminDescription.trim() !== "" &&
-          resp.updateBy === "ADMIN"
+          resp.updateBy === "ADMIN",
       );
 
       if (adminResponseWithDesc) {

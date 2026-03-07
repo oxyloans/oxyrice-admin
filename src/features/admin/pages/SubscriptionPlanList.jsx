@@ -14,7 +14,7 @@ import {
   Popconfirm,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { MdModeEditOutline } from "react-icons/md";
 import BASE_URL from "../../../core/config/Config";
 const { Option } = Select;

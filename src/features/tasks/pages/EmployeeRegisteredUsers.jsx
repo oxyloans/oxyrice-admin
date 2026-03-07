@@ -15,7 +15,7 @@ import {
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";

@@ -13,7 +13,7 @@ import {
   Select,
 } from "antd";
 import axios from "axios";
-import AdminPanelLayout from "../components/AdminPanel.jsx";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { Link } from "react-router-dom";
 
 const Sellers = () => {

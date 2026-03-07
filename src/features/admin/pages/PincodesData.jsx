@@ -17,7 +17,7 @@ import {
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import { SearchOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";
 const { Title } = Typography;
 const { Option } = Select;
@@ -309,7 +309,7 @@ const PincodesData = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: 16, minHeight: "100vh" }}>
         {/* Heading */}
         <div style={{ maxWidth: 1200, margin: "0 auto 10px auto" }}>
@@ -546,7 +546,7 @@ const PincodesData = () => {
           </Form>
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

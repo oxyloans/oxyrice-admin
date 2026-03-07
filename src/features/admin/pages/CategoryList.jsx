@@ -17,7 +17,7 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import { MdModeEditOutline } from "react-icons/md";
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -403,42 +403,42 @@ const Categories = () => {
       dataIndex: "categoryName",
       align: "center",
     },
-  {
-  title: "Category Image",
-  dataIndex: "categoryLogo",
-  align: "center",
-  render: (image) => (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <Image
-        src={image}
-        alt="Category Logo"
-        width={50}
-        height={50}
-        style={{ objectFit: "cover", borderRadius: 6 }}
-        preview={{ mask: "View" }} // click to preview
-        fallback="https://via.placeholder.com/50"
-      />
-    </div>
-  ),
-},
-{
-  title: "Category Banner",
-  dataIndex: "categoryBanner",
-  align: "center",
-  render: (banner) => (
-    <div style={{ display: "flex", justifyContent: "center" }}>
-      <Image
-        src={banner}
-        alt="Banner"
-        width={50}
-        height={50}
-        style={{ objectFit: "cover", borderRadius: 6 }}
-        preview={{ mask: "View" }}
-        fallback="https://via.placeholder.com/50"
-      />
-    </div>
-  ),
-},
+    {
+      title: "Category Image",
+      dataIndex: "categoryLogo",
+      align: "center",
+      render: (image) => (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Image
+            src={image}
+            alt="Category Logo"
+            width={50}
+            height={50}
+            style={{ objectFit: "cover", borderRadius: 6 }}
+            preview={{ mask: "View" }} // click to preview
+            fallback="https://via.placeholder.com/50"
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Category Banner",
+      dataIndex: "categoryBanner",
+      align: "center",
+      render: (banner) => (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Image
+            src={banner}
+            alt="Banner"
+            width={50}
+            height={50}
+            style={{ objectFit: "cover", borderRadius: 6 }}
+            preview={{ mask: "View" }}
+            fallback="https://via.placeholder.com/50"
+          />
+        </div>
+      ),
+    },
 
     {
       title: "Status",
@@ -508,7 +508,7 @@ const Categories = () => {
   };
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4">
         <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <h2 className="text-xl font-bold mb-2 md:mb-0">
@@ -567,7 +567,7 @@ const Categories = () => {
                 current: currentActivePage,
                 onChange: (page) => setCurrentActivePage(page),
               }}
-              scroll={{ x: true,y: 500 }}
+              scroll={{ x: true, y: 500 }}
               size="middle"
               bordered
             />
@@ -612,7 +612,7 @@ const Categories = () => {
                 current: currentInactivePage,
                 onChange: (page) => setCurrentInactivePage(page),
               }}
-              scroll={{ x: true,y: 500 }}
+              scroll={{ x: true, y: 500 }}
               size="middle"
               bordered
             />
@@ -912,7 +912,7 @@ const Categories = () => {
           </Form>
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

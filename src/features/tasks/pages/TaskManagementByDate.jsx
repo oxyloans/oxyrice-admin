@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Table, DatePicker, Select, Button, Spin, message } from "antd";
 import moment from "moment";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const { Option } = Select;
@@ -21,7 +21,7 @@ const TaskManagementByDate = () => {
         {
           specificDate: date.format("YYYY-MM-DD"),
           taskStatus: status,
-        }
+        },
       );
       setTasks(response.data || []);
     } catch (err) {
@@ -52,28 +52,28 @@ const TaskManagementByDate = () => {
     {
       title: "Created At",
       dataIndex: "planCreatedAt",
-        key: "planCreatedAt",
-        align: "center",    
+      key: "planCreatedAt",
+      align: "center",
       render: (text) =>
         text ? moment(text).format("YYYY-MM-DD HH:mm") : "N/A",
     },
     {
       title: "Plan Status",
       dataIndex: "planStatus",
-        key: "planStatus",
-        align: "center",
+      key: "planStatus",
+      align: "center",
     },
     {
       title: "Updated By",
       dataIndex: "updatedBy",
       key: "updatedBy",
-        align: "center",
+      align: "center",
     },
     {
       title: "Status",
       dataIndex: "taskStatus",
-        key: "taskStatus",
-        align: "center",
+      key: "taskStatus",
+      align: "center",
       render: (status) => (
         <span
           className={`px-2 py-1 rounded ${
@@ -89,8 +89,8 @@ const TaskManagementByDate = () => {
     {
       title: "End of Day Summary",
       dataIndex: "endOftheDay",
-        key: "endOftheDay",
-        align: "center",
+      key: "endOftheDay",
+      align: "center",
       render: (text) => text || "N/A",
     },
   ];
@@ -121,8 +121,8 @@ const TaskManagementByDate = () => {
             dataSource={tasks}
             columns={columns}
             bordered
-                          pagination={{ pageSize: 5 }}
-                          scroll={{ x: true }}
+            pagination={{ pageSize: 5 }}
+            scroll={{ x: true }}
           />
         )}
       </div>

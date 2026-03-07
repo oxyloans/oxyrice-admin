@@ -16,7 +16,7 @@ import { UploadOutlined } from "@ant-design/icons";
 import { MdModeEditOutline, MdForum } from "react-icons/md";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 const AdminInstructions = () => {
@@ -25,7 +25,7 @@ const AdminInstructions = () => {
   const [data, setData] = useState([]);
   const [fileList, setFileList] = useState([]);
   const navigate = useNavigate();
-const [selectedDept, setSelectedDept] = useState(null);
+  const [selectedDept, setSelectedDept] = useState(null);
 
   const [formAdd] = Form.useForm();
   const [formEdit] = Form.useForm();
@@ -56,10 +56,10 @@ const [selectedDept, setSelectedDept] = useState(null);
       if (Array.isArray(response.data)) {
         const sortedData = response.data.sort((a, b) => {
           const dateA = new Date(
-            a.radhaUpdateDate || a.radhaInstructeddate
+            a.radhaUpdateDate || a.radhaInstructeddate,
           ).getTime();
           const dateB = new Date(
-            b.radhaUpdateDate || b.radhaInstructeddate
+            b.radhaUpdateDate || b.radhaInstructeddate,
           ).getTime();
           return dateB - dateA;
         });
@@ -97,7 +97,7 @@ const [selectedDept, setSelectedDept] = useState(null);
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
-      }
+      },
     );
   };
 
@@ -199,31 +199,31 @@ const [selectedDept, setSelectedDept] = useState(null);
     const istDate = new Date(date.getTime() + istOffset);
     return istDate.toLocaleString("en-IN", { hour12: true });
   };
-const DEPARTMENT_EMPLOYEES = {
-  SALESTEAM: ["Ravi", "Suresh", "Jhanisha"],
-  BACKENDTEAM: [
-    "Vinod",
-    "Naveen",
-    "Sridhar",
-    "Vijay",
-    "SaiKumar",
-    "Anushak",
-    "Sudeesh",
-  ],
-  FRONTENDTEAM: [
-    "Maneiah",
-    "Gopal",
-    "HariBabu",
-    "VaraLakshmi",
-    "SaiKrishna",
-    "Sreeja",
-    "Niharika",
-  ],
-  ACCOUNTSTEAM: ["Anusha", "Subbu", "Mounika"],
-  MANAGEMENTTEAM: ["Radha", "Rama", "Narendra"],
-  TESTINGTEAM: ["Guna", "Grishma", "Divya"],
-  HRTEAM: ["Ramya"],
-};
+  const DEPARTMENT_EMPLOYEES = {
+    SALESTEAM: ["Ravi", "Suresh", "Jhanisha"],
+    BACKENDTEAM: [
+      "Vinod",
+      "Naveen",
+      "Sridhar",
+      "Vijay",
+      "SaiKumar",
+      "Anushak",
+      "Sudeesh",
+    ],
+    FRONTENDTEAM: [
+      "Maneiah",
+      "Gopal",
+      "HariBabu",
+      "VaraLakshmi",
+      "SaiKrishna",
+      "Sreeja",
+      "Niharika",
+    ],
+    ACCOUNTSTEAM: ["Anusha", "Subbu", "Mounika"],
+    MANAGEMENTTEAM: ["Radha", "Rama", "Narendra"],
+    TESTINGTEAM: ["Guna", "Grishma", "Divya"],
+    HRTEAM: ["Ramya"],
+  };
 
   const columns = [
     { title: "S.No", render: (_, __, index) => index + 1, align: "center" },
@@ -292,8 +292,14 @@ const DEPARTMENT_EMPLOYEES = {
       align: "center",
       render: (text, record) => (
         <div style={{ textAlign: "left" }}>
-          <div><span style={{ fontWeight: "400" }}>Created: </span>{formatDateIST(record.radhaInstructeddate)}</div>
-          <div><span style={{ fontWeight: "400" }}>Updated: </span>{formatDateIST(record.radhaUpdateDate)}</div>
+          <div>
+            <span style={{ fontWeight: "400" }}>Created: </span>
+            {formatDateIST(record.radhaInstructeddate)}
+          </div>
+          <div>
+            <span style={{ fontWeight: "400" }}>Updated: </span>
+            {formatDateIST(record.radhaUpdateDate)}
+          </div>
         </div>
       ),
     },
@@ -387,7 +393,7 @@ const DEPARTMENT_EMPLOYEES = {
                   .includes(value.toLowerCase()) ||
                 item.radhaInstructions
                   ?.toLowerCase()
-                  .includes(value.toLowerCase())
+                  .includes(value.toLowerCase()),
             );
 
             setFilteredData(filtered);
@@ -485,7 +491,7 @@ const DEPARTMENT_EMPLOYEES = {
                   <Select.Option key={`${dept}-${emp}`} value={emp}>
                     {emp}
                   </Select.Option>
-                ))
+                )),
               )}
             </Select>
           </Form.Item>
@@ -613,7 +619,7 @@ const DEPARTMENT_EMPLOYEES = {
                   <Select.Option key={`${dept}-${emp}`} value={emp}>
                     {emp}
                   </Select.Option>
-                ))
+                )),
               )}
             </Select>
           </Form.Item>
@@ -692,5 +698,3 @@ const DEPARTMENT_EMPLOYEES = {
 };
 
 export default AdminInstructions;
-
-

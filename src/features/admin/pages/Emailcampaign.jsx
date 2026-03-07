@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import * as XLSX from "xlsx";
 import BASE_URL from "../../../core/config/Config";
@@ -115,6 +115,8 @@ export default function Email() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [activeEmails, setActiveEmails] = useState([]);
+  const [loadingEmails, setLoadingEmails] = useState(true);
   const invitationType = Form.useWatch("invitationType", form);
 
   const initialValues = useMemo(
@@ -130,6 +132,28 @@ export default function Email() {
     }),
     [],
   );
+
+  useEffect(() => {
+    const fetchActiveEmails = async () => {
+      setLoadingEmails(true);
+      try {
+        const res = await fetch(`${BASE_URL}/user-service/activeMails`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await res.json();
+        if (res.ok && Array.isArray(data)) {
+          setActiveEmails(data.map(email => ({ label: email, value: email })));
+        }
+      } catch (error) {
+        console.error("Failed to fetch active emails:", error);
+      } finally {
+        setLoadingEmails(false);
+      }
+    };
+    fetchActiveEmails();
+  }, []);
 
   const downloadSampleExcel = () => {
     const data = [
@@ -689,32 +713,9 @@ export default function Email() {
                 <Select
                   placeholder="Select sender email"
                   size="large"
-                  options={[
-                    {
-                      label: "admin@oxyloans.com",
-                      value: "admin@oxyloans.com",
-                    },
-                    {
-                      label: "support@askoxy.ai",
-                      value: "support@askoxy.ai",
-                    },
-                    {
-                      label: "radhakrishna.t@oxyloans.com",
-                      value: "radhakrishna.t@oxyloans.com",
-                    },
-                    {
-                      label: "radhakrishna.t@askoxy.ai",
-                      value: "radhakrishna.t@askoxy.ai",
-                    },
-                    {
-                      label: "anil@askoxy.ai",
-                      value: "anil@askoxy.ai",
-                    },
-                    {
-                      label: "VThatavarti16@oxygold.ai",
-                      value: "VThatavarti16@oxygold.ai",
-                    },
-                  ]}
+                  options={activeEmails}
+                  loading={loadingEmails}
+                  notFoundContent={loadingEmails ? "Loading..." : "No emails available"}
                 />
               </Form.Item>
             </Col>

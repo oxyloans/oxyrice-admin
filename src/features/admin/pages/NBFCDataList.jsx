@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Table, Spin, Input, Row, Col } from "antd";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import debounce from "lodash/debounce"; // use lodash debounce
 
 const { Search } = Input;
@@ -133,7 +133,7 @@ const NBFCDataList = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: 24 }}>
         <Row
           justify="space-between"
@@ -174,7 +174,7 @@ const NBFCDataList = () => {
           />
         </Spin>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

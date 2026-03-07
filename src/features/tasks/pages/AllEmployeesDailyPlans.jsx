@@ -14,7 +14,7 @@ import {
   Tag,
 } from "antd";
 import { SearchOutlined, UserOutlined } from "@ant-design/icons";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const { Title, Text } = Typography;
@@ -71,7 +71,6 @@ const AllEmployeesDailyPlans = () => {
         width: 70,
         align: "center",
         render: (_t, _r, index) => index + 1,
-        
       },
       {
         title: "Plan Of the Day",
@@ -99,7 +98,7 @@ const AllEmployeesDailyPlans = () => {
         title: "Date",
         dataIndex: "date",
         key: "date",
-       maxWidth: 140,
+        maxWidth: 140,
         sorter: (a, b) => new Date(a.date) - new Date(b.date),
         defaultSortOrder: "descend",
       },

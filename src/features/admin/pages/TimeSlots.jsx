@@ -17,7 +17,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { Option } = Select;
 const dayOrder = {
@@ -302,7 +302,7 @@ const TimeSlots = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4">
         {/* Header Section */}
         <div
@@ -528,7 +528,7 @@ const TimeSlots = () => {
           </Form>
         </Modal>
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

@@ -28,7 +28,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 
 const { Title, Text } = Typography;
 const { Search } = Input;

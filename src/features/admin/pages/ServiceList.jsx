@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, message, Spin, Tabs } from "antd";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { TabPane } = Tabs;
 
@@ -94,7 +94,7 @@ const ServiceList = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4">
         <div className="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center">
           <h2 className="text-xl font-bold mb-2 md:mb-0">Service List</h2>
@@ -120,7 +120,7 @@ const ServiceList = () => {
           />
         )}
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

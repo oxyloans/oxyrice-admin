@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
-import {  Table, message, Row, Col, Select } from "antd";
-import AdminPanelLayout from "../components/AdminPanel.jsx"; // Your Admin Panel Layout
+import { Table, message, Row, Col, Select } from "antd";
+import AdminPanelLayout from "../components/AdminPanelLayout.jsx"; // Your Admin Panel Layout
 
 const { Option } = Select;
 

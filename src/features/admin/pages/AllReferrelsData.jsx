@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Table, Typography, Spin, Alert, Input } from "antd";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 const { Title } = Typography;
@@ -98,37 +98,37 @@ const AllReferralsData = () => {
 
   if (loading) {
     return (
-      <AdminPanelLayoutTest>
+      <AdminPanelLayout>
         <div className="flex justify-center items-center h-40">
           <Spin size="medium" tip="Loading referrals..." />
         </div>
-      </AdminPanelLayoutTest>
+      </AdminPanelLayout>
     );
   }
 
   if (error) {
     return (
-      <AdminPanelLayoutTest>
+      <AdminPanelLayout>
         <Alert message="Error" description={error} type="error" showIcon />
-      </AdminPanelLayoutTest>
+      </AdminPanelLayout>
     );
   }
 
   if (!referrals.length) {
     return (
-      <AdminPanelLayoutTest>
+      <AdminPanelLayout>
         <Alert
           message="No Data"
           description="No referral records found."
           type="warning"
           showIcon
         />
-      </AdminPanelLayoutTest>
+      </AdminPanelLayout>
     );
   }
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
           <Title level={3}>All Referrals Data</Title>
@@ -151,7 +151,7 @@ const AllReferralsData = () => {
           scroll={{ x: "max-content" }}
         />
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

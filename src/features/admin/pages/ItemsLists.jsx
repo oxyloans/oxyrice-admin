@@ -16,7 +16,7 @@
 // } from "antd";
 // import { Link } from "react-router-dom";
 // import BASE_URL from "../../../core/config/Config";
-// import AdminPanelLayoutTest from "./AdminPanel";
+// import AdminPanelLayout from "./AdminPanel";
 
 // import "../ItemList.css"; // Import custom CSS for responsive styling
 
@@ -651,7 +651,7 @@
 //   };
 
 //   return (
-//     <AdminPanelLayoutTest>
+//     <AdminPanelLayout>
 //       <Row
 //         justify="space-between"
 //         align="middle"
@@ -979,7 +979,7 @@
 //           </Form>
 //         )}
 //       </Modal>
-//     </AdminPanelLayoutTest>
+//     </AdminPanelLayout>
 //   );
 // };
 
@@ -1001,18 +1001,19 @@ import {
   Popconfirm,
   Upload,
   Tabs,
-  Progress,Image
+  Progress,
+  Image,
 } from "antd";
 import { Link } from "react-router-dom";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 import {
   UploadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import "../../../ItemList.css";
+// import "../../../ItemList.css";
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -1815,7 +1816,7 @@ const ItemList = () => {
   };
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <Row
         justify="space-between"
         align="middle"
@@ -2486,7 +2487,7 @@ const ItemList = () => {
           </Form>
         )}
       </Modal>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

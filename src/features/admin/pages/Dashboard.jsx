@@ -39,7 +39,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
 } from "chart.js";
-import AdminPanelLayoutTest from "../components/AdminPanel"; // Assuming this is your layout component
+import AdminPanelLayout from "../components/AdminPanelLayout"; // Assuming this is your layout component
 import BASE_URL from "../../../core/config/Config";
 
 ChartJS.register(
@@ -477,7 +477,7 @@ const DashboardTest = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <Card className="border-none bg-gray-50">
         <div className="p-2 sm:p-4 md:p-4">
           <div className="max-w-7xl mx-auto">
@@ -626,7 +626,7 @@ const DashboardTest = () => {
           </div>
         </div>
       </Card>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

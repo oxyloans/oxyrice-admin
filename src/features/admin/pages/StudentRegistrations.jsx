@@ -3,7 +3,7 @@ import { Table, Spin, Alert, Input, Row, Col, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { Title } = Typography;
 
@@ -140,7 +140,7 @@ const StudentRegistrations = () => {
   ];
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div style={{ padding: "16px" }}>
         <Row
           justify="space-between"
@@ -152,7 +152,7 @@ const StudentRegistrations = () => {
           </Col>
           <Col>
             <Input
-              placeholder="Search by userId, mobile or WhatsApp"
+              placeholder="search by userId, mobile or WhatsApp"
               value={searchTerm}
               onChange={handleSearch}
               style={{ width: 300 }}
@@ -190,7 +190,7 @@ const StudentRegistrations = () => {
           />
         )}
       </div>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

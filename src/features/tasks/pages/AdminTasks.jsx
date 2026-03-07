@@ -14,15 +14,11 @@ import {
   Modal,
   Select,
   Empty,
- 
 } from "antd";
-import {
-  SearchOutlined,
- 
-} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -42,9 +38,9 @@ const AdminTasks = () => {
 
   const getUniqueAssignees = () => {
     const assignees = new Set();
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
       if (Array.isArray(task.taskAssignTo)) {
-        task.taskAssignTo.forEach(name => {
+        task.taskAssignTo.forEach((name) => {
           if (name && name.trim()) assignees.add(name.trim());
         });
       } else if (task.taskAssignTo && task.taskAssignTo.trim()) {
@@ -56,7 +52,7 @@ const AdminTasks = () => {
 
   const handleAssignedToFilter = (value) => {
     setAssignedToFilter(value);
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination((prev) => ({ ...prev, current: 1 }));
     applyFilters(searchText, statusFilter, value);
   };
 
@@ -167,45 +163,59 @@ const AdminTasks = () => {
         // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
         return hasValidAssignee && hasValidTaskName;
       });
-      
+
       validTasks.sort((a, b) => {
         const parseDate = (dateStr) => {
           if (!dateStr) return new Date(0);
-          
+
           // Handle ISO format like "2025-10-25 07:35:47.956"
-          if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.includes(':')) {
+          if (
+            typeof dateStr === "string" &&
+            dateStr.includes("-") &&
+            dateStr.includes(":")
+          ) {
             return new Date(dateStr);
           }
-          
-          if (typeof dateStr === 'string' && dateStr.includes(' ')) {
-            const parts = dateStr.split(' ');
+
+          if (typeof dateStr === "string" && dateStr.includes(" ")) {
+            const parts = dateStr.split(" ");
             if (parts.length >= 2) {
               const month = parts[0];
               const day = parseInt(parts[1]);
               const currentYear = new Date().getFullYear();
               const currentMonth = new Date().getMonth();
-              
+
               const monthMap = {
-                'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                Jan: 0,
+                Feb: 1,
+                Mar: 2,
+                Apr: 3,
+                May: 4,
+                Jun: 5,
+                Jul: 6,
+                Aug: 7,
+                Sep: 8,
+                Oct: 9,
+                Nov: 10,
+                Dec: 11,
               };
-              
+
               if (monthMap[month] !== undefined && !isNaN(day)) {
                 const taskMonth = monthMap[month];
                 let year = currentYear;
-                
+
                 if (taskMonth > currentMonth) {
                   year = currentYear - 1;
                 }
-                
+
                 return new Date(year, taskMonth, day);
               }
             }
           }
-          
+
           return new Date(dateStr);
         };
-        
+
         const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
         const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
         return dateB - dateA;
@@ -265,9 +275,11 @@ const AdminTasks = () => {
     }
 
     if (assignedToValue !== "All") {
-      filtered = filtered.filter(task => {
+      filtered = filtered.filter((task) => {
         if (Array.isArray(task.taskAssignTo)) {
-          return task.taskAssignTo.some(name => name?.trim() === assignedToValue);
+          return task.taskAssignTo.some(
+            (name) => name?.trim() === assignedToValue,
+          );
         }
         return task.taskAssignTo?.trim() === assignedToValue;
       });
@@ -296,41 +308,55 @@ const AdminTasks = () => {
     filtered.sort((a, b) => {
       const parseDate = (dateStr) => {
         if (!dateStr) return new Date(0);
-        
+
         // Handle ISO format like "2025-10-25 07:35:47.956"
-        if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.includes(':')) {
+        if (
+          typeof dateStr === "string" &&
+          dateStr.includes("-") &&
+          dateStr.includes(":")
+        ) {
           return new Date(dateStr);
         }
-        
-        if (typeof dateStr === 'string' && dateStr.includes(' ')) {
-          const parts = dateStr.split(' ');
+
+        if (typeof dateStr === "string" && dateStr.includes(" ")) {
+          const parts = dateStr.split(" ");
           if (parts.length >= 2) {
             const month = parts[0];
             const day = parseInt(parts[1]);
             const currentYear = new Date().getFullYear();
             const currentMonth = new Date().getMonth();
-            
+
             const monthMap = {
-              'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-              'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+              Jan: 0,
+              Feb: 1,
+              Mar: 2,
+              Apr: 3,
+              May: 4,
+              Jun: 5,
+              Jul: 6,
+              Aug: 7,
+              Sep: 8,
+              Oct: 9,
+              Nov: 10,
+              Dec: 11,
             };
-            
+
             if (monthMap[month] !== undefined && !isNaN(day)) {
               const taskMonth = monthMap[month];
               let year = currentYear;
-              
+
               if (taskMonth > currentMonth) {
                 year = currentYear - 1;
               }
-              
+
               return new Date(year, taskMonth, day);
             }
           }
         }
-        
+
         return new Date(dateStr);
       };
-      
+
       const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
       const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
       return dateB - dateA;
@@ -458,57 +484,71 @@ const AdminTasks = () => {
 
     try {
       // Handle ISO format like "2025-10-25 07:35:47.956"
-      if (typeof dateString === 'string' && dateString.includes('-') && dateString.includes(':')) {
+      if (
+        typeof dateString === "string" &&
+        dateString.includes("-") &&
+        dateString.includes(":")
+      ) {
         const date = new Date(dateString);
         if (!isNaN(date)) {
           return date.toLocaleDateString("en-IN", {
             year: "numeric",
-            month: "numeric", 
-            day: "numeric"
+            month: "numeric",
+            day: "numeric",
           });
         }
       }
-      
+
       // Handle "Jan 23 Friday" format
-      if (typeof dateString === 'string' && dateString.includes(' ')) {
-        const parts = dateString.split(' ');
+      if (typeof dateString === "string" && dateString.includes(" ")) {
+        const parts = dateString.split(" ");
         if (parts.length >= 2) {
           const month = parts[0];
           const day = parseInt(parts[1]);
           const currentYear = new Date().getFullYear();
           const currentMonth = new Date().getMonth();
-          
+
           const monthMap = {
-            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+            Jan: 0,
+            Feb: 1,
+            Mar: 2,
+            Apr: 3,
+            May: 4,
+            Jun: 5,
+            Jul: 6,
+            Aug: 7,
+            Sep: 8,
+            Oct: 9,
+            Nov: 10,
+            Dec: 11,
           };
-          
+
           if (monthMap[month] !== undefined && !isNaN(day)) {
             const taskMonth = monthMap[month];
             let year = currentYear;
-            
+
             if (taskMonth > currentMonth) {
               year = currentYear - 1;
             }
-            
+
             const date = new Date(year, taskMonth, day);
             return date.toLocaleDateString("en-IN", {
               year: "numeric",
-              month: "numeric", 
-              day: "numeric"
+              month: "numeric",
+              day: "numeric",
             });
           }
         }
         return dateString;
       }
-      
+
       const date = new Date(dateString);
       if (isNaN(date)) return dateString;
 
       return date.toLocaleDateString("en-IN", {
         year: "numeric",
         month: "numeric",
-        day: "numeric"
+        day: "numeric",
       });
     } catch (error) {
       return dateString;
@@ -546,7 +586,6 @@ const AdminTasks = () => {
         return (
           <div
             style={{
-              
               padding: "8px 12px",
               textAlign: "left",
               display: "inline-block",
@@ -610,16 +649,22 @@ const AdminTasks = () => {
         return (
           <div
             style={{
-             
               padding: "8px 12px",
               textAlign: "left",
               display: "inline-block",
               minWidth: 170,
             }}
           >
-         
-
-            <div style={{ color: "#555", fontSize: 13, whiteSpace: "nowrap" }}>Assigned Date: <span style={{ color: "#008cba", fontWeight: 500 }}>{record.taskAssignedDate ? formatDate(record.taskAssignedDate) : (tastCreatedDate ? formatDate(tastCreatedDate) : "N/A")}</span></div>
+            <div style={{ color: "#555", fontSize: 13, whiteSpace: "nowrap" }}>
+              Assigned Date:{" "}
+              <span style={{ color: "#008cba", fontWeight: 500 }}>
+                {record.taskAssignedDate
+                  ? formatDate(record.taskAssignedDate)
+                  : tastCreatedDate
+                    ? formatDate(tastCreatedDate)
+                    : "N/A"}
+              </span>
+            </div>
 
             {/* <div style={{ color: "#555", fontSize: 13 }}>
               Completed Date:{" "}
@@ -633,81 +678,88 @@ const AdminTasks = () => {
               </span>
             </div> */}
             <div style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
-              Status: <span style={{ 
-                color: status?.toLowerCase() === 'assigned' ? '#008CBA' : 
-                       status?.toLowerCase() === 'completed' ? '#1AB394' : '#555',
-                fontWeight: 'bold'
-              }}>{status}</span>
+              Status:{" "}
+              <span
+                style={{
+                  color:
+                    status?.toLowerCase() === "assigned"
+                      ? "#008CBA"
+                      : status?.toLowerCase() === "completed"
+                        ? "#1AB394"
+                        : "#555",
+                  fontWeight: "bold",
+                }}
+              >
+                {status}
+              </span>
             </div>
           </div>
         );
       },
     },
 
-  {
-  title: "Image & Files",
-    dataIndex: "image",
-  width: 150,
-  key: "image",
-  align: "center",
-  render: (url) => {
-    if (!url) return "-";
+    {
+      title: "Image & Files",
+      dataIndex: "image",
+      width: 150,
+      key: "image",
+      align: "center",
+      render: (url) => {
+        if (!url) return "-";
 
-    const fileUrl = url.toLowerCase();
+        const fileUrl = url.toLowerCase();
 
-    // Image formats
-    const isImage =
-      fileUrl.endsWith(".jpg") ||
-      fileUrl.endsWith(".jpeg") ||
-      fileUrl.endsWith(".png") ||
-      fileUrl.endsWith(".webp") ||
-      fileUrl.endsWith(".gif");
+        // Image formats
+        const isImage =
+          fileUrl.endsWith(".jpg") ||
+          fileUrl.endsWith(".jpeg") ||
+          fileUrl.endsWith(".png") ||
+          fileUrl.endsWith(".webp") ||
+          fileUrl.endsWith(".gif");
 
-    // PDF
-    const isPdf = fileUrl.endsWith(".pdf");
+        // PDF
+        const isPdf = fileUrl.endsWith(".pdf");
 
-    // Excel
-    const isExcel =
-      fileUrl.endsWith(".xls") || fileUrl.endsWith(".xlsx");
+        // Excel
+        const isExcel = fileUrl.endsWith(".xls") || fileUrl.endsWith(".xlsx");
 
-    if (isImage) {
-      return (
-        <Image
-          width={80}
-          height={80}
-          src={url}
-          preview
-          style={{
-            borderRadius: "6px",
-            objectFit: "cover",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-          }}
-        />
-      );
-    }
+        if (isImage) {
+          return (
+            <Image
+              width={80}
+              height={80}
+              src={url}
+              preview
+              style={{
+                borderRadius: "6px",
+                objectFit: "cover",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              }}
+            />
+          );
+        }
 
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          fontWeight: 600,
-          color: "#2563EB",
-          textDecoration: "none",
-        }}
-      >
-        {isPdf && "📄 PDF Document"}
-        {isExcel && "📊 Excel File"}
-        {!isPdf && !isExcel && "View Document"}
-      </a>
-    );
-  },
-}
-,
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              fontWeight: 600,
+              color: "#2563EB",
+              textDecoration: "none",
+            }}
+          >
+            {isPdf && "📄 PDF Document"}
+            {isExcel && "📊 Excel File"}
+            {!isPdf && !isExcel && "View Document"}
+          </a>
+        );
+      },
+    },
     {
       title: "Action",
       key: "action",
@@ -789,7 +841,7 @@ const AdminTasks = () => {
         <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
           <Col xs={24} lg={8}>
             <Text strong style={{ fontSize: 20, color: "#008cba" }}>
-            Whatsapp Tasks Assigned Dashboard
+              Whatsapp Tasks Assigned Dashboard
             </Text>
           </Col>
           <Col xs={24} lg={16}>
@@ -815,10 +867,8 @@ const AdminTasks = () => {
                   <Option value="All">ALL STATUS</Option>
                   <Option value="assigned">ASSIGNED</Option>
                   <Option value="completed">COMPLETED</Option>
-                
                 </Select>
               </Col>
-             
             </Row>
           </Col>
         </Row>
@@ -1016,12 +1066,17 @@ const AdminTasks = () => {
         ) : (
           <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 16 }}>
             {commentsData.map((comment, index) => (
-              <div key={index} style={{ 
-                padding: 8, 
-                borderBottom: "1px solid #f0f0f0",
-                fontSize: 13
-              }}>
-                <strong style={{ color: "#1ab394" }}>{comment.commentsBy}:</strong>
+              <div
+                key={index}
+                style={{
+                  padding: 8,
+                  borderBottom: "1px solid #f0f0f0",
+                  fontSize: 13,
+                }}
+              >
+                <strong style={{ color: "#1ab394" }}>
+                  {comment.commentsBy}:
+                </strong>
                 <div style={{ marginTop: 4 }}>{comment.comments}</div>
               </div>
             ))}
@@ -1030,7 +1085,9 @@ const AdminTasks = () => {
 
         {/* Add comment */}
         <div style={{ background: "#f9f9f9", padding: 12, borderRadius: 6 }}>
-          <div style={{ marginBottom: 8, fontWeight: 500, fontSize: 14 }}>Add Comment</div>
+          <div style={{ marginBottom: 8, fontWeight: 500, fontSize: 14 }}>
+            Add Comment
+          </div>
           <Input.TextArea
             value={adminComment}
             onChange={(e) => setAdminComment(e.target.value)}
@@ -1047,7 +1104,7 @@ const AdminTasks = () => {
               marginTop: 8,
               backgroundColor: "#008cba",
               borderColor: "#008cba",
-              fontSize: 12
+              fontSize: 12,
             }}
             size="small"
           >

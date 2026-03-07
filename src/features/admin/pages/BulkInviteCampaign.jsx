@@ -23,7 +23,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import BASE_URL from "../../../core/config/Config";
-import AdminPanelLayoutTest from "../components/AdminPanel";
+import AdminPanelLayout from "../components/AdminPanelLayout";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -223,7 +223,7 @@ const BulkInviteCampaign = () => {
   };
 
   return (
-    <AdminPanelLayoutTest>
+    <AdminPanelLayout>
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
@@ -543,7 +543,7 @@ const BulkInviteCampaign = () => {
           </Space>
         </Spin>
       </Modal>
-    </AdminPanelLayoutTest>
+    </AdminPanelLayout>
   );
 };
 

@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import dayjs from "dayjs";
-import TaskAdminPanelLayout from "../components/AdminPanel";
+import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 
 export default function Dashboard() {
