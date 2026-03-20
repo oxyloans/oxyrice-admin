@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[3439],{53439(a,n,t){t.r(n),t.d(n,{default:()=>m});var e=t(65043),i=t(73216);const l=["/","/admin/agentslogin","/admin/comapanieslogin","/admin/taskmanagementlogin"];const m=function(){const a=(0,i.zy)();return(0,e.useEffect)(()=>{l.includes(a.pathname)&&localStorage.setItem("entryPoint",a.pathname)},[a.pathname]),null}}}]);
+//# sourceMappingURL=3439.79f7727b.chunk.js.map
