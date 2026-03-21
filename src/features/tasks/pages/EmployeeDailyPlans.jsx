@@ -20,6 +20,7 @@ import {
 } from "@ant-design/icons";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title, Text, Paragraph } = Typography;
 const { useBreakpoint } = Grid;
@@ -31,7 +32,7 @@ const TodayPlans = () => {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
-
+  const { accessToken } = useAuth();
   const screens = useBreakpoint();
 
   // Today (YYYY-MM-DD)
@@ -46,7 +47,7 @@ const TodayPlans = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const accessToken = localStorage.getItem("token");
+      
 
         const response = await fetch(
           `${BASE_URL}/ai-service/agent/planOftheDataEmployes`,

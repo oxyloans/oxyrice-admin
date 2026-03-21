@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { Button, Form, Input, Upload, notification } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
+import useAuth from '../../../shared/hooks/useAuth';
 
-const accessToken = localStorage.getItem("accessToken");
 
 const SubscriberDetailslist = () => {
   const [uploading, setUploading] = useState(false);
   const [form] = Form.useForm();
-
   const handleFinish = (values) => {
     const { categoryName, file } = values;
 
@@ -27,13 +26,11 @@ const SubscriberDetailslist = () => {
 
     setUploading(true);
 
-    axios
-      .post(
+    axiosInstance.post(
         "https://meta.oxyloans.com/api/erice-service/categories/saveCategoryWithImage",
         formData,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "multipart/form-data",
           },
         }

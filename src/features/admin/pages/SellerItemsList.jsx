@@ -1,5 +1,5 @@
 // import React, { useEffect, useState } from 'react';
-// import axios from 'axios';
+// import axiosInstance from "../../../core/config/axiosInstance";
 // import { Table, Form, Input, Button, message, Modal, Row, Col } from 'antd';
 // import AdminPanelLayout from './AdminPanelLayout';
 
@@ -12,7 +12,7 @@
 //   // Fetch seller details (including sellerId) from an API
 //   const fetchSellerDetails = async () => {
 //     try {
-//       const response = await axios.get('https://meta.oxyloans.com/api/erice-service/seller/sellerDetails');
+//       const response = await axiosInstance.get('https://meta.oxyloans.com/api/erice-service/seller/sellerDetails');
 //       setSellerId(response.data.sellerId);
 //     } catch (error) {
 //       console.error('Error fetching seller details:', error);
@@ -24,7 +24,7 @@
 //   const fetchItemDetails = async () => {
 //     setLoading(true);
 //     try {
-//       const response = await axios.get('https://meta.oxyloans.com/api/erice-service/selleritems/ItemsGetTotal');
+//       const response = await axiosInstance.get('https://meta.oxyloans.com/api/erice-service/selleritems/ItemsGetTotal');
 //       setItems(response.data);
 //     } catch (error) {
 //       console.error('Error fetching item details:', error);
@@ -39,7 +39,7 @@
 //     if (!editingItem || sellerId === null) return;
 
 //     try {
-//       await axios.patch('https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix', {
+//       await axiosInstance.patch('https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix', {
 //         active: true,
 //         itemId: editingItem.itemId,
 //         itemMrp: values.itemMrp,
@@ -152,7 +152,7 @@
 // };
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import {
   Table,
   Form,
@@ -168,10 +168,8 @@ import {
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { useParams } from "react-router-dom";
 import { MdModeEditOutline } from "react-icons/md";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
-
-const accessToken = localStorage.getItem("accessToken");
-
 const SellerItems = () => {
   const { sellerId } = useParams(); // Get sellerId from URL params
   const [items, setItems] = useState([]);
@@ -193,13 +191,10 @@ const SellerItems = () => {
   const fetchItemDetails = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `https://meta.oxyglobal.tech/api/product-service/ItemsGetTotal?sellerId=${sellerId}`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Data fetched successfully");
       // setItems(response.data);
@@ -228,7 +223,7 @@ const SellerItems = () => {
     if (!editingItem) return; // Ensure editingItem is available
 
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         "https://meta.oxyloans.com/api/erice-service/selleritems/sellerItemPriceFix",
         {
           active: true,
@@ -238,10 +233,7 @@ const SellerItems = () => {
           sellerId: sellerId, // Use the sellerId from the URL
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       message.success("Item price updated successfully!");

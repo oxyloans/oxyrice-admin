@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import { Table, DatePicker, Select, Button, Spin, message } from "antd";
 import moment from "moment";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Option } = Select;
 
@@ -16,7 +17,7 @@ const TaskManagementByDate = () => {
   const fetchTasksByDate = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/write/get-task-by-date`,
         {
           specificDate: date.format("YYYY-MM-DD"),

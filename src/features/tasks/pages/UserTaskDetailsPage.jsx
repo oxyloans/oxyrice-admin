@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import {
   Card,
@@ -20,6 +20,7 @@ import {
   Row,
   Col,
 } from "antd";
+import useAuth from "../../../shared/hooks/useAuth";
 import dayjs from "dayjs";
 import {
   CalendarOutlined,
@@ -59,7 +60,7 @@ const UserTaskDetailsPage = () => {
   const fetchTasksByDate = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/write/getAllTaskUpdates`,
         {
           taskStatus: status,

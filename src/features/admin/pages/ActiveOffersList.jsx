@@ -13,11 +13,12 @@ import {
   Pagination,
   message,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 
 import { data } from "autoprefixer";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -43,7 +44,7 @@ const ActiveOffersList = () => {
   const fetchActiveOffers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/cart-service/cart/activeOffers`,
       );
       setActiveOffers(response.data);
@@ -62,7 +63,7 @@ const ActiveOffersList = () => {
   const fetchComboOffers = async (page = 1, size = 25) => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/combo-offers?page=${page - 1}&size=${size}`,
       );
       const { content, totalElements } = response.data;
@@ -119,7 +120,7 @@ const ActiveOffersList = () => {
   const toggleOfferStatus = async (id, currentStatus) => {
     setUpdatingId(id);
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/cart-service/cart/${id}/status?active=${!currentStatus}`,
       );
       await fetchActiveOffers();
@@ -140,7 +141,7 @@ const ActiveOffersList = () => {
     console.log("Toggling combo status for:", comboId);
     setUpdatingId(comboId);
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/product-service/updateComboStatus/${comboId}`,
       );
       await fetchComboOffers(comboPage, comboPageSize);
@@ -159,7 +160,7 @@ const ActiveOffersList = () => {
     setUpdatingId(key);
     console.log("Deactivating item:", comboId, itemId);
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/product-service/updateItem/${comboId}/${itemId}`,
       );
       if (data.status === 200) {

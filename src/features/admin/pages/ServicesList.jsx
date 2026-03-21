@@ -12,14 +12,16 @@ import {
   InputNumber,
   Tabs,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 const { TabPane } = Tabs;
 
 const Services = () => {
+  const { accessToken } = useAuth();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(50);
@@ -36,7 +38,9 @@ const Services = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URL}/product-service/getAllCasCs`);
+      const res = await axiosInstance.get(`${BASE_URL}/product-service/getAllCasCs`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       setCategories(res.data);
     } catch (err) {
       message.error(err || "Failed to fetch categories");
@@ -67,9 +71,10 @@ const Services = () => {
     };
 
     try {
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/product-service/saveCaCsCategory`,
         newCategory,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       message.success("Category added successfully");
       form.resetFields();
@@ -89,9 +94,10 @@ const Services = () => {
     };
 
     try {
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/product-service/saveCaCaAgreements`,
         payload,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       message.success("Agreement added successfully");
       addItemForm.resetFields();

@@ -13,10 +13,11 @@ import {
   Image,
 } from "antd";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 import CompaniesLayout from "../components/CompaniesLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -32,18 +33,14 @@ const StudentSalesData = () => {
 
   // pagination (antd is 1-based)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        const accessToken = localStorage.getItem("token") || "";
-        const res = await axios.get(API_URL, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+
+        const res = await axiosInstance.get(API_URL, {
+                  });
 
         const data = Array.isArray(res.data) ? res.data : [];
 

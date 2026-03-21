@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import CompaniesLayout from "../components/CompaniesLayout";
 import { Image } from "antd";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const CAMPAIGNS_API = `${BASE_URL}/marketing-service/campgin/getAllCampaignDetails`;
 
@@ -12,7 +13,6 @@ const HIDE_COMMENT_API_BASE = `${BASE_URL}/marketing-service/campgin/hide-commen
 
 const getAuthHeaders = () => {
   return {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
   };
 };
 
@@ -31,7 +31,7 @@ export default function CampaignsWithComments() {
   const fetchCampaigns = async () => {
     try {
       setLoadingCampaigns(true);
-      const res = await axios.get(CAMPAIGNS_API, {
+      const res = await axiosInstance.get(CAMPAIGNS_API, {
         headers: getAuthHeaders(),
       });
       setCampaigns(Array.isArray(res.data) ? res.data : []);
@@ -56,7 +56,7 @@ export default function CampaignsWithComments() {
         campaignId
       )}`;
 
-      const res = await axios.get(url, {
+      const res = await axiosInstance.get(url, {
         headers: getAuthHeaders(),
       });
 
@@ -92,7 +92,7 @@ export default function CampaignsWithComments() {
         id
       )}&type=${encodeURIComponent(type)}`;
 
-      await axios.patch(url, null, { headers: getAuthHeaders() });
+      await axiosInstance.patch(url, null, { headers: getAuthHeaders() });
 
       setCommentsMap((prev) => {
         const entry = prev[campaignId];
@@ -130,7 +130,7 @@ export default function CampaignsWithComments() {
         const url = `${HIDE_COMMENT_API_BASE}?id=${encodeURIComponent(
           id
         )}&type=${encodeURIComponent(type)}`;
-        await axios.patch(url, null, { headers: getAuthHeaders() });
+        await axiosInstance.patch(url, null, { headers: getAuthHeaders() });
 
         setCommentsMap((prev) => {
           const entry = prev[campaignId];

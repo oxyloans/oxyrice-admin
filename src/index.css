@@ -2,3 +2,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.devtools-warning{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  background:#fff;
+  color:red;
+  font-size:40px;
+  font-weight:bold;
+  text-align:center;
+  font-family:Arial, Helvetica, sans-serif;
+  letter-spacing:1px;
+}

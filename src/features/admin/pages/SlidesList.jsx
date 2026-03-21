@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import {
   Table,
   Button,
@@ -14,13 +14,13 @@ import {
 } from "antd";
 import AdminPanelLayout from "./AdminPanelLayout";
 import { useMediaQuery } from "react-responsive";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 const SlidesList = () => {
   const [slides, setSlides] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const accessToken = localStorage.getItem("accessToken");
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSlides, setFilteredSlides] = useState([]);
@@ -33,13 +33,10 @@ const SlidesList = () => {
 
   const fetchSlides = async () => {
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `https://meta.oxyloans.com/api/erice-service/user/allSlidesData`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+                  }
       );
       setSlides(response.data);
       setFilteredSlides(response.data);
@@ -55,14 +52,11 @@ const SlidesList = () => {
   const handleAddSlide = async (values) => {
     setLoading(true);
     try {
-      await axios.post(
+      await axiosInstance.post(
         `https://meta.oxyloans.com/api/erice-service/user/slides`,
         values,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+                  }
       );
       message.success("Slide added successfully");
       fetchSlides(); // Refresh the slides list

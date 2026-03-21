@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom"; // For capturing params from the URL
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import { Button, Table, message, Row, Col, Spin, Select } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx"; // Your Admin Panel Layout
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const OrdersDetailsCustomerId = () => {
@@ -14,7 +15,7 @@ const OrdersDetailsCustomerId = () => {
   const [error, setError] = useState(null); // Error handling
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
   // Table columns
   const columns = [
     {
@@ -105,7 +106,7 @@ const OrdersDetailsCustomerId = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         "https://meta.oxyglobal.tech/api/order-service/getAllOrders_customerId",
         {
           customerId: id, // Passing customerId from params to the request body

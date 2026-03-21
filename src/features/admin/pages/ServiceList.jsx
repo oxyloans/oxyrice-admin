@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Table, message, Spin, Tabs } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { TabPane } = Tabs;
 
 const ServiceList = () => {
+  const { accessToken } = useAuth();
   const [agreements, setAgreements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("CA SERVICES");
@@ -15,8 +17,9 @@ const ServiceList = () => {
   const fetchAgreements = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getAllAgreements`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       setAgreements(response.data);
     } catch (error) {

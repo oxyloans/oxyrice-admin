@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Table, Card, Input, Spin, message, Empty, Tag } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const PAGE_SIZE = 100;
 
@@ -20,13 +21,9 @@ const UserHistoryAdmin = () => {
   const fetchUserHistory = async (pageNumber, size) => {
     try {
       setLoading(true);
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/getShowingUserHistoryToAdmin?page=${pageNumber}&size=${size}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+        {},
       );
 
       const content = res?.data?.content || [];
@@ -48,7 +45,7 @@ const UserHistoryAdmin = () => {
       (item) =>
         item.agentName?.toLowerCase().includes(q) ||
         item.creatorName?.toLowerCase().includes(q) ||
-        item.agentId?.toLowerCase().includes(q)
+        item.agentId?.toLowerCase().includes(q),
     );
   }, [data, searchText]);
 

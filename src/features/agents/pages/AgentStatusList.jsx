@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Table, Card, Input, Row, Col, Select, message, Tag } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -13,20 +14,15 @@ const AgentsList = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-const [pageSize, setPageSize] = useState(50);
-
+  const [pageSize, setPageSize] = useState(50);
 
   // Fetch agents by status
   const fetchAgents = async (statusValue) => {
     setLoading(true);
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/get_agent_based_on_status?Status=${statusValue}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
+        {},
       );
 
       let result = Array.isArray(res.data) ? res.data : [res.data];
@@ -35,13 +31,13 @@ const [pageSize, setPageSize] = useState(50);
       if (statusValue === "REQUESTED") {
         result.sort((a, b) => {
           const dateA = new Date(a.createdAt);
-          const dateB = new Date(b.createdAt );
+          const dateB = new Date(b.createdAt);
           return dateB - dateA; // Descending (latest first)
         });
       } else {
         result.sort((a, b) => {
-          const dateA = new Date(a.approvedAt );
-          const dateB = new Date(b.approvedAt );
+          const dateA = new Date(a.approvedAt);
+          const dateB = new Date(b.approvedAt);
           return dateB - dateA; // Descending (latest first)
         });
       }
@@ -69,8 +65,6 @@ const [pageSize, setPageSize] = useState(50);
     );
   });
 
-
-
   // Status colors
   const statusColors = {
     APPROVED: "green",
@@ -94,7 +88,7 @@ const [pageSize, setPageSize] = useState(50);
         year: "numeric",
         month: "short",
         day: "numeric",
-      
+
         timeZone: "Asia/Kolkata",
       });
     } catch {
@@ -166,7 +160,7 @@ const [pageSize, setPageSize] = useState(50);
         </div>
       ),
     },
-   
+
     {
       title: "Free Trials",
       dataIndex: "freeTrails",

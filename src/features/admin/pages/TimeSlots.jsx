@@ -14,13 +14,15 @@ import {
   Switch,
 } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 const dayOrder = {
+
   MONDAY: 1,
   TUESDAY: 2,
   WEDNESDAY: 3,
@@ -35,7 +37,7 @@ const TimeSlots = () => {
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
-
+  const { accessToken } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentTimeSlot, setCurrentTimeSlot] = useState(null);
@@ -48,8 +50,9 @@ const TimeSlots = () => {
 
   const fetchTimeSlots = async () => {
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/fetchTimeSlotlist`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       const sortedData = response.data.sort(
         (a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek],
@@ -96,7 +99,9 @@ const TimeSlots = () => {
         slot4Status: values.slot4Status || false,
       };
 
-      await axios.post(`${BASE_URL}/order-service/addTimeSlot`, payload);
+      await axiosInstance.post(`${BASE_URL}/order-service/addTimeSlot`, payload, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       message.success("Time Slot added successfully!");
       fetchTimeSlots();
       setIsModalOpen(false);
@@ -111,7 +116,7 @@ const TimeSlots = () => {
   const handleDelete = async (id) => {
     try {
       setDeleteLoading(true);
-      await axios.delete(`${BASE_URL}/order-service/deleteSlot`, {
+      await axiosInstance.delete(`${BASE_URL}/order-service/deleteSlot`, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -183,7 +188,7 @@ const TimeSlots = () => {
         slot4Status: values.slot4Status,
       };
 
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/order-service/timeSlotStatusChange`,
         payload,
         {

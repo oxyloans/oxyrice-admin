@@ -2,6 +2,7 @@ import React from "react";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import IbjIibsFdSalesTable from "./IbjIibsFdSalesTable";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const IibsSummitPage = () => {
   return (

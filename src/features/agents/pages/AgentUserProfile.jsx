@@ -11,7 +11,7 @@ import {
   Table,
 } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import {
   ArrowLeftOutlined,
   ReloadOutlined,
@@ -19,6 +19,7 @@ import {
 } from "@ant-design/icons";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title, Text } = Typography;
 
@@ -43,7 +44,7 @@ const AgentUserProfile = () => {
       number: number || null,
       userId: userId || null,
     }),
-    [number, userId]
+    [number, userId],
   );
 
   const titleLabel = useMemo(() => {
@@ -60,16 +61,14 @@ const AgentUserProfile = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/getDataWithMobileOrWhatsappOrUserId`,
         payload,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const resp = response.data;
@@ -91,7 +90,7 @@ const AgentUserProfile = () => {
     } catch (err) {
       console.error(err);
       message.error(
-        err?.response?.data?.message || "Failed to fetch user details."
+        err?.response?.data?.message || "Failed to fetch user details.",
       );
     } finally {
       setLoading(false);
@@ -107,16 +106,14 @@ const AgentUserProfile = () => {
 
     setCommentsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/fetchAdminComments`,
         { userId: userIdToFetch },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const commentsData = response.data;
@@ -136,7 +133,7 @@ const AgentUserProfile = () => {
         message.warning("No comments updated for this user.");
       } else {
         message.error(
-          err?.response?.data?.message || "Failed to fetch comments."
+          err?.response?.data?.message || "Failed to fetch comments.",
         );
       }
       setComments([]);
@@ -309,7 +306,7 @@ const AgentUserProfile = () => {
                           hour: "2-digit",
                           minute: "2-digit",
                           hour12: true,
-                        }
+                        },
                       ) + " (IST)"
                     : "-"}
                 </Descriptions.Item>

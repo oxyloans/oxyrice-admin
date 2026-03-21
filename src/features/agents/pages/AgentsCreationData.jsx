@@ -11,11 +11,12 @@ import {
   Card,
 } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Search } = Input;
 const { Title, Text } = Typography;
@@ -27,17 +28,17 @@ const AgentsCreatrionUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const navigate = useNavigate();
-
+      const { accessToken } = useAuth();
   // Fetch all agents
   const fetchAgents = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
+
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/agentedCreatedUsersDetails`,
         {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
       );
       setData(response.data || []);
     } catch (error) {
@@ -53,76 +54,75 @@ const AgentsCreatrionUsers = () => {
   }, []);
 
   // Search filter
-const filteredData = useMemo(() => {
-  let result = data;
+  const filteredData = useMemo(() => {
+    let result = data;
 
-  // ✅ Show only records with testuser === false
-  result = result.filter((item) => item.testuser === false);
+    // ✅ Show only records with testuser === false
+    result = result.filter((item) => item.testuser === false);
 
-  // ✅ Apply search filter (if text entered)
-  if (searchText) {
-    result = result.filter(
-      (item) =>
-        item.mobile_number?.includes(searchText) ||
-        item.whatsapp_number?.includes(searchText)
-    );
-  }
+    // ✅ Apply search filter (if text entered)
+    if (searchText) {
+      result = result.filter(
+        (item) =>
+          item.mobile_number?.includes(searchText) ||
+          item.whatsapp_number?.includes(searchText),
+      );
+    }
 
-  return result;
-}, [data, searchText]);
+    return result;
+  }, [data, searchText]);
 
-const handleDownloadExcel = () => {
-  if (filteredData.length === 0) {
-    message.warning("No data available to download");
-    return;
-  }
+  const handleDownloadExcel = () => {
+    if (filteredData.length === 0) {
+      message.warning("No data available to download");
+      return;
+    }
 
-  // Flatten and format all user + agent details
-  const exportData = filteredData.flatMap((user, index) => {
-    if (user.agentDetails && user.agentDetails.length > 0) {
-      return user.agentDetails.map((agent, agentIndex) => ({
-        "S.No": `${index + 1}.${agentIndex + 1}`,
-        "User ID": user.user_id || "N/A",
-        "User Name": user.user_name || "N/A",
-        Email: user.email || "N/A",
-        "Mobile Number": user.mobile_number || "N/A",
-        "WhatsApp Number": user.whatsapp_number || "N/A",
-        "Agent ID": agent.id || "N/A",
-        "Agent Name": agent.agent_name || "N/A",
-        "Assistance ID": agent.assistance_id || "N/A",
-        "Agent Created Date": agent.created_at
-          ? new Date(agent.created_at).toLocaleString()
-          : "N/A",
-      }));
-    } else {
-      // No agents case
-      return [
-        {
-          "S.No": index + 1,
+    // Flatten and format all user + agent details
+    const exportData = filteredData.flatMap((user, index) => {
+      if (user.agentDetails && user.agentDetails.length > 0) {
+        return user.agentDetails.map((agent, agentIndex) => ({
+          "S.No": `${index + 1}.${agentIndex + 1}`,
           "User ID": user.user_id || "N/A",
           "User Name": user.user_name || "N/A",
           Email: user.email || "N/A",
           "Mobile Number": user.mobile_number || "N/A",
           "WhatsApp Number": user.whatsapp_number || "N/A",
-          "Agent ID": "N/A",
-          "Agent Name": "No Agents",
-          "Assistance ID": "N/A",
-          "Agent Created Date": "N/A",
-        },
-      ];
-    }
-  });
+          "Agent ID": agent.id || "N/A",
+          "Agent Name": agent.agent_name || "N/A",
+          "Assistance ID": agent.assistance_id || "N/A",
+          "Agent Created Date": agent.created_at
+            ? new Date(agent.created_at).toLocaleString()
+            : "N/A",
+        }));
+      } else {
+        // No agents case
+        return [
+          {
+            "S.No": index + 1,
+            "User ID": user.user_id || "N/A",
+            "User Name": user.user_name || "N/A",
+            Email: user.email || "N/A",
+            "Mobile Number": user.mobile_number || "N/A",
+            "WhatsApp Number": user.whatsapp_number || "N/A",
+            "Agent ID": "N/A",
+            "Agent Name": "No Agents",
+            "Assistance ID": "N/A",
+            "Agent Created Date": "N/A",
+          },
+        ];
+      }
+    });
 
-  // Convert to Excel sheet
-  const worksheet = XLSX.utils.json_to_sheet(exportData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Agents Created Users");
+    // Convert to Excel sheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Agents Created Users");
 
-  // Download Excel file
-  XLSX.writeFile(workbook, "Agents_Created_Users_All_Details.xlsx");
-  message.success("Excel file downloaded successfully with all details!");
-};
-
+    // Download Excel file
+    XLSX.writeFile(workbook, "Agents_Created_Users_All_Details.xlsx");
+    message.success("Excel file downloaded successfully with all details!");
+  };
 
   const columns = [
     {
@@ -146,47 +146,46 @@ const handleDownloadExcel = () => {
           "-"
         ),
     },
-  {
-  title: "User Details",
-  key: "user_details",
-  align: "center",
-  render: (_, record) => (
-    <div
-      style={{
-        backgroundColor: "#f9f9f9",
-      
-        textAlign: "left",
-        borderRadius: 8,
-        padding: "10px 12px",
-        display: "inline-block",
-        width: "100%",
-      }}
-    >
-      <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
-        {record.user_name || "N/A"}
-      </div>
-      <div style={{ color: "#555", fontSize: 13, marginBottom: 4 }}>
-        Email:{" "}
-        <span style={{ color: "#1ab394", fontWeight: 500 }}>
-          {record.email || "N/A"}
-        </span>
-      </div>
-      <div style={{ color: "#555", fontSize: 13, marginBottom: 4 ,}}>
-        Mobile:{" "}
-        <Tag color="#1ab394" style={{ fontWeight: 500 }}>
-          {record.mobile_number || "N/A"}
-        </Tag>
-      </div>
-      <div style={{ color: "#555", fontSize: 13, marginBottom: 4 }}>
-        WhatsApp:{" "}
-        <Tag color="#008cba" style={{ fontWeight: 500 }}>
-          {record.whatsapp_number || "N/A"}
-        </Tag>
-      </div>
-    </div>
-  ),
-}
-    ,
+    {
+      title: "User Details",
+      key: "user_details",
+      align: "center",
+      render: (_, record) => (
+        <div
+          style={{
+            backgroundColor: "#f9f9f9",
+
+            textAlign: "left",
+            borderRadius: 8,
+            padding: "10px 12px",
+            display: "inline-block",
+            width: "100%",
+          }}
+        >
+          <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
+            {record.user_name || "N/A"}
+          </div>
+          <div style={{ color: "#555", fontSize: 13, marginBottom: 4 }}>
+            Email:{" "}
+            <span style={{ color: "#1ab394", fontWeight: 500 }}>
+              {record.email || "N/A"}
+            </span>
+          </div>
+          <div style={{ color: "#555", fontSize: 13, marginBottom: 4 }}>
+            Mobile:{" "}
+            <Tag color="#1ab394" style={{ fontWeight: 500 }}>
+              {record.mobile_number || "N/A"}
+            </Tag>
+          </div>
+          <div style={{ color: "#555", fontSize: 13, marginBottom: 4 }}>
+            WhatsApp:{" "}
+            <Tag color="#008cba" style={{ fontWeight: 500 }}>
+              {record.whatsapp_number || "N/A"}
+            </Tag>
+          </div>
+        </div>
+      ),
+    },
     {
       title: "Agent Details",
       key: "agentDetails",
@@ -204,7 +203,6 @@ const handleDownloadExcel = () => {
                 style={{
                   marginBottom: 8,
                   backgroundColor: "#f9f9f9",
-                 
                 }}
               >
                 <div style={{ fontWeight: 600, color: "#008cba" }}>
@@ -308,7 +306,7 @@ const handleDownloadExcel = () => {
               setPageSize(size);
             },
           }}
-          scroll={{x:"true"}}
+          scroll={{ x: "true" }}
           style={{
             background: "#fff",
             borderRadius: 10,

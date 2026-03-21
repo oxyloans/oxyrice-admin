@@ -151,10 +151,11 @@ const TaskAdminPanelLayout = ({ children }) => {
     setOpenKeys(keys.length ? [keys.pop()] : []);
 
   const handleSignOut = () => {
+    const currentPath = window.location.pathname + window.location.search;
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
+    localStorage.setItem("redirectAfterLogin_task", currentPath);
     window.location.href = "/admin/taskmanagementlogin"; // Redirect to login
-    navigate(entryPoint);
   };
 
   const date = new Date();

@@ -1,5 +1,5 @@
 // import React, { useEffect, useState } from "react";
-// import axios from "axios";
+// import axiosInstance from "../../../core/config/axiosInstance";
 // import {
 //   Table,
 //   Button,
@@ -34,7 +34,7 @@
 //   const [searchTerm, setSearchTerm] = useState("");
 //   const [filteredItems, setFilteredItems] = useState([]);
 //   const [form] = Form.useForm(); // Create a form instance
-//   const accessToken = localStorage.getItem("accessToken");
+//   const { accessToken } = useAuth();
 //   const [selectedFile, setSelectedFile] = useState(null);
 //   const [offerLoading, setOfferLoading] = useState(false);
 //   const [imageViewLoading, setImageViewLoading] = useState(false);
@@ -47,7 +47,7 @@
 //   const fetchItemsData = async () => {
 //     setLoading(true);
 //     try {
-//       const response = await axios.get(
+//       const response = await axiosInstance.get(
 //         `${BASE_URL}/product-service/getItemsDataForAskOxy`,
 //         {
 //           headers: {
@@ -107,7 +107,7 @@
 //         formData.append("itemDescription", values.itemDescription);
 //         formData.append("tag", values.tag);
 
-//         await axios.patch(
+//         await axiosInstance.patch(
 //           `${BASE_URL}/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
 //           formData,
 //           {
@@ -155,7 +155,7 @@
 //         offerName: values.offerName,
 //       };
 
-//       await axios.post(
+//       await axiosInstance.post(
 //         `${BASE_URL}/cart-service/cart/createOffer`,
 //         requestBody,
 //         {
@@ -190,7 +190,7 @@
 //       const formData = new FormData();
 //       formData.append("multiPart", selectedFile);
 
-//       const response = await axios.post(
+//       const response = await axiosInstance.post(
 //         `${BASE_URL}/product-service/imageViews`,
 //         formData,
 //         {
@@ -238,7 +238,7 @@
 //     try {
 //       const url = `${BASE_URL}/product-service/viewGeneratedBarCodes`;
 
-//       const response = await axios.post(
+//       const response = await axiosInstance.post(
 //         url,
 //         {
 //           catId: item.categoryId,
@@ -366,7 +366,7 @@
 //     setLoading(true);
 //     try {
 //       const url = `${BASE_URL}/product-service/itemActiveAndInActive`;
-//       await axios.patch(
+//       await axiosInstance.patch(
 //         url,
 //         {
 //           itemId: itemId, // Dynamic itemId
@@ -986,7 +986,7 @@
 // export default ItemList;
 
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import {
   Table,
   Button,
@@ -1007,8 +1007,9 @@ import {
 import { Link } from "react-router-dom";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
-
+import useAuth from '../../../shared/hooks/useAuth';
 import {
+
   UploadOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
@@ -1035,7 +1036,7 @@ const ItemList = () => {
   const [activeTab, setActiveTab] = useState("all"); // New state for active tab
   const [form] = Form.useForm(); // Create a form instance
   const [comboForm] = Form.useForm();
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
   const [selectedFile, setSelectedFile] = useState(null);
   const [offerLoading, setOfferLoading] = useState(false);
   const [imageViewLoading, setImageViewLoading] = useState(false);
@@ -1058,13 +1059,10 @@ const ItemList = () => {
   const fetchItemsData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getItemsData`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Data Fetched Successfully");
 
@@ -1091,13 +1089,12 @@ const ItemList = () => {
       setUploading(true);
       setUploadProgress(0); // Reset progress
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/product-service/uploadComboImages?fileType=${fileType}`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(
@@ -1212,12 +1209,11 @@ const ItemList = () => {
         formData.append("itemDescription", values.itemDescription);
         formData.append("tag", values.tag);
 
-        await axios.patch(
+        await axiosInstance.patch(
           `${BASE_URL}/product-service/UpdateItems?itemId=${selectedItem.itemId}`,
           formData,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "multipart/form-data",
             },
           },
@@ -1262,12 +1258,11 @@ const ItemList = () => {
         offerName: values.offerName,
       };
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/cart-service/cart/createOffer`,
         requestBody,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         },
@@ -1297,12 +1292,11 @@ const ItemList = () => {
       const formData = new FormData();
       formData.append("multiPart", selectedFile);
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/product-service/imageViews`,
         formData,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "multipart/form-data",
           },
           params: {
@@ -1348,7 +1342,7 @@ const ItemList = () => {
     try {
       const url = `${BASE_URL}/product-service/viewGeneratedBarCodes`;
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         url,
         {
           catId: item.categoryId,
@@ -1471,17 +1465,14 @@ const ItemList = () => {
     setLoading(true);
     try {
       const url = `${BASE_URL}/product-service/itemActiveAndInActive`;
-      await axios.patch(
+      await axiosInstance.patch(
         url,
         {
           itemId: itemId, // Dynamic itemId
           status: !isActive, // Toggle status correctly
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       message.success("Item status updated successfully.");
@@ -1560,9 +1551,8 @@ const ItemList = () => {
         })),
       };
 
-      await axios.post(`${BASE_URL}/product-service/saveCombo`, requestBody, {
+      await axiosInstance.post(`${BASE_URL}/product-service/saveCombo`, requestBody, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       });

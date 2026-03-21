@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 
@@ -54,10 +55,9 @@ const AgentStoreManager = () => {
   const [searchText, setSearchText] = useState("");
 
   const [form] = Form.useForm();
-  const accessToken = localStorage.getItem("token") || "";
+  const { accessToken, userId } = useAuth();
 
   const getAuthHeader = () => ({
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
   });
 
   // Dynamic base URL
@@ -271,7 +271,6 @@ const AgentStoreManager = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
         }
@@ -324,7 +323,6 @@ const AgentStoreManager = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
         }
@@ -426,7 +424,7 @@ const AgentStoreManager = () => {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
+                Authorization:`Bearer ${accessToken}`
               },
               body: JSON.stringify(payload),
             }
@@ -645,7 +643,7 @@ const AgentStoreManager = () => {
   const [uploadFileList, setUploadFileList] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadForm] = Form.useForm();
-  const userId = localStorage.getItem("userId") || "admin-user-id";
+
 
   const handleMultiAgentUpload = async (values) => {
     setUploading(true);
@@ -667,6 +665,7 @@ const AgentStoreManager = () => {
         {
           method: "POST",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${accessToken}`,
           },
           body: formData,
@@ -1028,7 +1027,7 @@ const AgentStoreManager = () => {
                     const file = e.target.files[0];
                     if (!file) return;
 
-                    const accessToken = localStorage.getItem("token");
+              
                     const uploadUrl = `${BASE_URL}/upload-service/upload?id=45880e62-acaf-4645-a83e-d1c8498e923e&fileType=aadhar`;
 
                     const formData = new FormData();

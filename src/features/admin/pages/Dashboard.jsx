@@ -27,7 +27,7 @@ import {
   WhatsAppOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import * as XLSX from "xlsx";
 import {
   Chart as ChartJS,
@@ -41,6 +41,7 @@ import {
 } from "chart.js";
 import AdminPanelLayout from "../components/AdminPanelLayout"; // Assuming this is your layout component
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 ChartJS.register(
   CategoryScale,
@@ -56,6 +57,7 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 
 const DashboardTest = () => {
+  const { accessToken } = useAuth();
   const [analyticsData, setAnalyticsData] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,12 +80,15 @@ const DashboardTest = () => {
   const fetchCounts = async () => {
     try {
       setRefreshing(true);
-      const response = await axios.get(`${BASE_URL}/user-service/counts`);
+      const response = await axiosInstance.get(`${BASE_URL}/user-service/counts`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       setAnalyticsData(response.data);
       setLoading(false);
       setRefreshing(false);
     } catch (error) {
-      console.error("Error fetching count data:", error);
+      const errMsg = error.response?.data?.error || error.response?.data?.message || "Failed to fetch dashboard counts.";
+      message.error(errMsg);
       setLoading(false);
       setRefreshing(false);
     }
@@ -104,8 +109,9 @@ const DashboardTest = () => {
       }
       const formattedStartDate = fromDate.format("YYYY-MM-DD");
       const formattedEndDate = endDate.format("YYYY-MM-DD");
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/date-rangeuserdetails?startDate=${formattedStartDate}&endDate=${formattedEndDate}&page=${page}&size=${size}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (response.data) {
         const dataWithIndex = (response.data.content || response.data).map(
@@ -115,7 +121,6 @@ const DashboardTest = () => {
           }),
         );
         setUserDetails(dataWithIndex);
-        // ✅ update pagination state
         setPagination({
           current: page + 1,
           pageSize: size,
@@ -124,7 +129,8 @@ const DashboardTest = () => {
       }
       setUserDetailsLoading(false);
     } catch (error) {
-      console.error("Error fetching user details:", error);
+      const errMsg = error.response?.data?.error || error.response?.data?.message || "Failed to fetch user details.";
+      message.error(errMsg);
       setUserDetailsLoading(false);
     }
   };
@@ -144,8 +150,9 @@ const DashboardTest = () => {
       }
       const formattedStartDate = fromDate.format("YYYY-MM-DD");
       const formattedEndDate = endDate.format("YYYY-MM-DD");
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/date-rangeuserdetails?startDate=${formattedStartDate}&endDate=${formattedEndDate}&page=0&size=10000`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (response.data) {
         const dataWithIndex = (response.data.content || response.data).map(
@@ -160,8 +167,8 @@ const DashboardTest = () => {
       setDownloadLoading(false);
       return null;
     } catch (error) {
-      console.error("Error fetching users for download:", error);
-      message.error("Failed to fetch users for download");
+      const errMsg = error.response?.data?.error || error.response?.data?.message || "Failed to fetch users for download.";
+      message.error(errMsg);
       setDownloadLoading(false);
       return null;
     }

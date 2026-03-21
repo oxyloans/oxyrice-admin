@@ -9,9 +9,10 @@ import {
   Col,
   Select,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 import { Input } from "antd";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -23,21 +24,19 @@ const IbjIibsFdSalesTable = ({ title, apiUrl }) => {
 
   const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
-
   useEffect(() => {
     if (fetchedOnceRef.current) return;
 
     const fetchData = async () => {
       try {
         setLoading(true);
-        const accessToken = localStorage.getItem("token");
 
-        const res = await axios.post(
+
+        const res = await axiosInstance.post(
           apiUrl,
           {},
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
           },

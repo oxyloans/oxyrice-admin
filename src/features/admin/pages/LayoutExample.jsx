@@ -1,4 +1,5 @@
 import { Layout } from "antd";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Header, Footer, Sider, Content } = Layout;
 const LayoutExample = () => (

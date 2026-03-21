@@ -16,15 +16,17 @@ import {
   Tabs,
 } from "antd";
 import { UploadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
 
 const OFFERS_API = `${BASE_URL}/cart-service/cart/activeOffers`;
 const CampaignUpload = () => {
+  const { accessToken } = useAuth();
   const [excelLoading, setExcelLoading] = useState(false);
   const [whatsappLoading, setWhatsappLoading] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
@@ -52,7 +54,9 @@ const CampaignUpload = () => {
   const fetchOffers = async () => {
     try {
       setOffersLoading(true);
-      const res = await axios.get(OFFERS_API);
+      const res = await axiosInstance.get(OFFERS_API, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       const list = Array.isArray(res.data) ? res.data : [];
       const activeOnly = list.filter((x) => x?.active === true);
@@ -148,11 +152,11 @@ const CampaignUpload = () => {
 
       try {
         setExcelLoading(true);
-        const response = await axios.post(
+        const response = await axiosInstance.post(
           `${BASE_URL}/order-service/campaignThroughExcel`,
           formData,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${accessToken}` },
             params,
           },
         );
@@ -208,11 +212,11 @@ const CampaignUpload = () => {
 
       try {
         setWhatsappLoading(true);
-        const response = await axios.post(
+        const response = await axiosInstance.post(
           `${BASE_URL}/order-service/whatsAppcampaign`,
           formData,
           {
-            headers: { "Content-Type": "multipart/form-data" },
+            headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${accessToken}` },
             params,
           },
         );

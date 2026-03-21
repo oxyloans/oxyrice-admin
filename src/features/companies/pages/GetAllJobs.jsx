@@ -11,7 +11,7 @@ import {
   Input,
  
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
@@ -21,6 +21,7 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import "antd/dist/reset.css";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -56,7 +57,7 @@ const GetAllJobs = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/marketing-service/campgin/getuserandallusersappliedjobs?page=${pg}&size=${size}`
       );
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Table, Typography, Spin, Alert, Input } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Search } = Input;

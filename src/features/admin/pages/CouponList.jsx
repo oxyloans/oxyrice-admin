@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 
 import { DeleteOutlined } from "@ant-design/icons";
@@ -26,6 +26,7 @@ import { FaPlus } from "react-icons/fa";
 import moment from "moment";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const Coupons = () => {
@@ -44,7 +45,7 @@ const Coupons = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     fetchCoupons();
@@ -55,13 +56,10 @@ const Coupons = () => {
   const fetchCoupons = useCallback(async () => {
     setFetching(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getAllCoupons`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       // Sort coupons so latest ones appear first (assuming "createdAt" field is present)
       const sortedCoupons = response.data.sort((a, b) => {
@@ -86,14 +84,11 @@ const Coupons = () => {
         ? `${BASE_URL}/order-service/deactivateCoupon`
         : `${BASE_URL}/order-service/activateCoupon`;
 
-      await axios.post(
+      await axiosInstance.post(
         url,
         { couponId },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       message.success("Coupon status updated successfully.");
@@ -122,13 +117,10 @@ const Coupons = () => {
   const fetchItemsData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getItemsData`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       const activeItems = response.data.filter(
         (item) => item.isActive === "true",
@@ -146,9 +138,8 @@ const Coupons = () => {
     try {
       setDeleteLoading(true);
 
-      await axios.delete(`${BASE_URL}/order-service/couponDelete`, {
+      await axiosInstance.delete(`${BASE_URL}/order-service/couponDelete`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
         params: { id }, // 👈 ID sent as query param
@@ -416,14 +407,14 @@ const Coupons = () => {
         ? moment(record.endDateTime)
         : null;
 
-      // Format user mobile numbers if they exist
+      
       const userMobileNumbers = record.userMobileNumbers
         ? Array.isArray(record.userMobileNumbers)
           ? record.userMobileNumbers.join(",")
           : record.userMobileNumbers
         : "";
 
-      // Set form values with properly formatted fields
+   
       form.setFieldsValue({
         couponCode: record.couponCode,
         couponValue: record.couponValue,
@@ -433,12 +424,12 @@ const Coupons = () => {
         maxDiscount: record.maxDiscount,
         couponUsage: record.couponUsage,
         discountType: record.discountType,
-        status: record.status || "PUBLIC", // Default to PUBLIC if not set
+        status: record.status || "PUBLIC", 
         startDateTime: startDateTime,
         endDateTime: endDateTime,
 
         userMobileNumbers: userMobileNumbers,
-        // 👇 convert string to array for Select (only for UI)
+     
         couponApplicableItemId: record.couponApplicableItemId
           ? record.couponApplicableItemId.split(",")
           : [],
@@ -483,14 +474,14 @@ const Coupons = () => {
       setLoading(true);
 
       if (isEditMode) {
-        await axios.put(
+        await axiosInstance.put(
           `${BASE_URL}/order-service/updateCoupon`,
           { couponId: editingCouponId, ...formattedValues },
           { headers: { Authorization: `Bearer ${accessToken}` } },
         );
         message.success("Coupon updated successfully.");
       } else {
-        await axios.post(
+        await axiosInstance.post(
           `${BASE_URL}/order-service/addCoupon`,
           formattedValues,
           { headers: { Authorization: `Bearer ${accessToken}` } },

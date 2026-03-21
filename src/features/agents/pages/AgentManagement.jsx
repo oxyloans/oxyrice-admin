@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Table, Button, Input, message, Spin, Modal, Form } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const AgentManagement = () => {
   const [agents, setAgents] = useState([]);
@@ -12,15 +13,14 @@ const AgentManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const { accessToken } = useAuth();
 
   /** Fetch Agents */
   const fetchAgents = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/getAllAgentApproved`,
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       setAgents(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -29,19 +29,18 @@ const AgentManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [accessToken]);
 
   /** Save Authorized By */
   const saveAgent = async (values) => {
     setLoading(true);
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/ai-service/agent/agentApprovedName`,
         {
           id: selectedAgentId || "6810c5e4-0e80-4673-bff3-f3f2ac1e863e",
           authorizedBy: values.authorizedBy,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       message.success("Authorized user added successfully");
       fetchAgents();
@@ -57,43 +56,42 @@ const AgentManagement = () => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (accessToken) {
       fetchAgents();
     } else {
       message.error("No authorization token found. Please log in.");
     }
-  }, [fetchAgents, token]);
+  }, [fetchAgents, accessToken]);
 
- const columns = [
-   {
-     title: "S.No",
-     key: "sno",
-     align: "center",
-     render: (_, __, index) => index + 1,
-   },
-   {
-     title: "ID",
-     dataIndex: "id",
-     key: "id",
-     align: "center",
-     render: (id) => (
-       <>
-         {id && (
-           <span style={{ color: "#008cba", fontWeight: 600 }}>
-             #{id.slice(-4)}
-           </span>
-         )}
-       </>
-     ),
-   },
-   {
-     title: "Authorized By",
-     dataIndex: "authorizedBy",
-     key: "authorizedBy",
-     align: "center",
-   },
- ];
-
+  const columns = [
+    {
+      title: "S.No",
+      key: "sno",
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      align: "center",
+      render: (id) => (
+        <>
+          {id && (
+            <span style={{ color: "#008cba", fontWeight: 600 }}>
+              #{id.slice(-4)}
+            </span>
+          )}
+        </>
+      ),
+    },
+    {
+      title: "Authorized By",
+      dataIndex: "authorizedBy",
+      key: "authorizedBy",
+      align: "center",
+    },
+  ];
 
   return (
     <AgentsAdminLayout>

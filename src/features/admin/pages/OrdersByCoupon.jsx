@@ -9,16 +9,18 @@ import {
   Button,
   Modal,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 // Order status mapping
 const orderStatusMap = {
+
   0: "Incomplete",
   1: "Order Placed",
   2: "Order Accepted",
@@ -60,7 +62,7 @@ const OrdersByCoupon = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // default 20
   const [selectedItems, setSelectedItems] = useState([]);
-
+  const { accessToken } = useAuth();
   useEffect(() => {
     if (selectedCoupon) {
       fetchOrders(selectedCoupon);
@@ -70,8 +72,9 @@ const OrdersByCoupon = () => {
   const fetchOrders = async (couponCode) => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getAllOrdersBasedOnCouponCode?couponCode=${couponCode}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       if (Array.isArray(response.data)) {
         setOrders(response.data);

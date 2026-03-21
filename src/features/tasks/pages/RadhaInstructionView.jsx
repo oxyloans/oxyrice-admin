@@ -23,8 +23,9 @@ import {
   Tooltip,
   Popconfirm,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import {
   ArrowLeftOutlined,
@@ -64,11 +65,10 @@ const RadhaInstructionView = () => {
   const [isInteractionModalOpen, setIsInteractionModalOpen] = useState(false);
   const [formInteraction] = Form.useForm();
   const [saving, setSaving] = useState(false);
-
   const fetchInstructionData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/user-service/write/getRadhaInstructionId?id=${id}`,
       );
       setInstructionData(res.data);
@@ -81,7 +81,9 @@ const RadhaInstructionView = () => {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get(`${BASE_URL}/user-service/getAllEmployees`);
+      const res = await axiosInstance.get(
+        `${BASE_URL}/user-service/getAllEmployees`,
+      );
       setEmployees(res.data);
     } catch (err) {
       message.error("❌ Failed to fetch employees");
@@ -94,7 +96,9 @@ const RadhaInstructionView = () => {
   }, [id]);
   const handleDeleteDocument = async (documentId) => {
     try {
-      await axios.delete(`${BASE_URL}/user-service/write/delete/${documentId}`);
+      await axiosInstance.delete(
+        `${BASE_URL}/user-service/write/delete/${documentId}`,
+      );
       message.success("✅ Document deleted successfully");
       fetchInstructionData(); // Refresh data after delete
     } catch (err) {
@@ -210,7 +214,7 @@ const RadhaInstructionView = () => {
         userid: instructionData?.adminUserId,
       };
 
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/user-service/write/radhaInteractions`,
         payload,
       );

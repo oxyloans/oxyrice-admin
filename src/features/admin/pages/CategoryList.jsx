@@ -16,9 +16,10 @@ import {
   Image,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import { MdModeEditOutline } from "react-icons/md";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 const { TabPane } = Tabs;
 
@@ -45,21 +46,15 @@ const Categories = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [currentActivePage, setCurrentActivePage] = useState(1);
   const [currentInactivePage, setCurrentInactivePage] = useState(1);
-
-  const accessToken = localStorage.getItem("accessToken");
-
   const [activeTabKey, setActiveTabKey] = useState("1");
 
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getAllcategories`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       // Set all categories
@@ -140,13 +135,12 @@ const Categories = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/product-service/saveCategoryWithImage`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
           },
         },
       );
@@ -195,13 +189,12 @@ const Categories = () => {
     try {
       setLoading(true);
 
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         `${BASE_URL}/product-service/UpdateCategories?categoryId=${editingCategory.id}`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
           },
         },
       );
@@ -302,13 +295,12 @@ const Categories = () => {
 
     try {
       // API call to add the item
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/product-service/ItemAddAndImageUpload`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${accessToken}`,
           },
         },
       );
@@ -357,17 +349,14 @@ const Categories = () => {
     setLoading(true);
     try {
       const url = `${BASE_URL}/product-service/activeOrInactive`;
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         url,
         {
           id: categoryId,
           isActive: !isActive, // Toggle the status (active -> inactive, inactive -> active)
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       message.success("Category status updated successfully.");

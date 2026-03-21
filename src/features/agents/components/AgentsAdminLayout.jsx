@@ -200,10 +200,11 @@ const sidebarItems = [
     setOpenKeys(keys.length ? [keys.pop()] : []);
   const entryPoint = localStorage.getItem("entryPoint") || "direct";
   const handleSignOut = () => {
+    const currentPath = window.location.pathname + window.location.search;
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
+    localStorage.setItem("redirectAfterLogin_agents", currentPath);
     window.location.href = "/admin/agentslogin"; // Redirect to login
-    navigate(entryPoint);
   };
 
   const date = new Date();

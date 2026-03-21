@@ -1,10 +1,11 @@
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import React, { useState, useEffect } from "react";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import { Table, Col, Row, Select, Tag, Button, message, Spin } from "antd";
 import { useParams } from "react-router-dom";
 import { DownloadOutlined } from "@ant-design/icons";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const AllInforMationOfBarCode = () => {
@@ -17,20 +18,16 @@ const AllInforMationOfBarCode = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [count, setCount] = useState(0);
   const [currentStatus, setCurrentStatus] = useState("");
-
   const fetchData = async () => {
-    const accessToken = localStorage.getItem("accessToken");
+   
     setLoading(true);
     setError(null);
 
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getBarCodeInfo/${itemId}`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       setData(response.data.barCodeResponse);
       setCount(response.data.count);
@@ -47,21 +44,18 @@ const AllInforMationOfBarCode = () => {
   }, []);
 
   const handleDownloadBarcode = async (record) => {
-    const accessToken = localStorage.getItem("accessToken");
+    
     setDownloadLoading(true);
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/product-service/downloadSingleBarcode`,
         {
           itemId: record.itemId,
           barcodeValue: record.barcode,
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          responseType: "blob",
+                    responseType: "blob",
         },
       );
 

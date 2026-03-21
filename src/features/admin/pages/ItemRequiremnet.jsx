@@ -14,7 +14,8 @@ import {
 } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const ItemsLists = () => {
@@ -26,17 +27,13 @@ const ItemsLists = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const accessToken = localStorage.getItem("accessToken");
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyloans.com/api/erice-service/stock/getStock",
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       console.log(response.data);
       setItemsdata(response.data);
@@ -164,11 +161,8 @@ const ItemsLists = () => {
         "https://meta.oxyloans.com/api/erice-service/stock/riceStock";
 
       // Making the POST request
-      await axios.post(apiUrl, payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axiosInstance.post(apiUrl, payload, {
+              });
 
       // Displaying success notification
       notification.success({

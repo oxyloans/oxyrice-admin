@@ -22,14 +22,13 @@ import {
   CloseCircleOutlined,
 } from "@ant-design/icons";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
-import BASE_URL from "../../../core/config/Config";
+import BASE_URL,{uploadurlwithId} from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Text } = Typography;
 
 
 const PRIMARY = "#008cba";
-const SUCCESS = "#52c41a";
-const ERROR = "#ff4d4f";
-const WARNING = "#faad14";
+
 
 const FreelancersList = () => {
   const [data, setData] = useState([]);
@@ -42,8 +41,7 @@ const FreelancersList = () => {
     pageSize: 25,
   });
 
-  const accessToken = localStorage.getItem("token") || "";
-
+  const { accessToken } = useAuth();
   const fetchFreelancers = async () => {
     try {
       setLoading(true);
@@ -111,24 +109,6 @@ const FreelancersList = () => {
           </Text>
         );
       },
-    },
-    {
-      title: "User ID",
-      dataIndex: "userId",
-      key: "userId",
-
-      align: "center",
-      render: (id) => (
-        <Tooltip title={id}>
-          <Tag
-            icon={<UserOutlined />}
-            color="blue"
-            style={{ fontWeight: 500, cursor: "pointer" }}
-          >
-            {id ? `#${String(id).slice(-4)}` : "-"}
-          </Tag>
-        </Tooltip>
-      ),
     },
     {
       title: "Email",
@@ -221,51 +201,31 @@ align: "center",
       dataIndex: "resumeUrl",
       key: "resumeUrl",
       align: "center",
-      render: (url) => {
-        if (!url) {
-          return <span style={{ color: "#9CA3AF" }}>No document</span>;
-        }
+   render: (url) => {
+  if (!url) {
+    return <span style={{ color: "#9CA3AF" }}>No document</span>;
+  }
 
-        const getFileType = (fileUrl) => {
-          const ext = fileUrl.split(".").pop().toLowerCase();
-          if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) return "image";
-          if (["pdf"].includes(ext)) return "pdf";
-          if (["mp4", "webm", "mov"].includes(ext)) return "video";
-          if (["xls", "xlsx"].includes(ext)) return "excel";
-          if (["ppt", "pptx"].includes(ext)) return "ppt";
-          if (["doc", "docx"].includes(ext)) return "document";
-          return "file";
-        };
+  const fullUrl = `${uploadurlwithId}${url}`;
 
-        const fileType = getFileType(url);
-        const icons = {
-          image: "🖼️",
-          pdf: "📄",
-          video: "🎥",
-          excel: "📊",
-          ppt: "📋",
-          document: "📝",
-          file: "📄"
-        };
-
-        return (
-          <div style={{ textAlign: "center" }}>
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                fontWeight: 600,
-              }}
-            >
-              {icons[fileType]} View {fileType === "file" ? "Document" : fileType.charAt(0).toUpperCase() + fileType.slice(1)}
-            </a>
-          </div>
-        );
-      },
+  return (
+    <div style={{ textAlign: "center" }}>
+      <a
+        href={fullUrl}
+        download
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          fontWeight: 600,
+          color: "#1677ff"
+        }}
+      >
+        Download Resume
+      </a>
+    </div>
+  );
+}
     },
   ];
 

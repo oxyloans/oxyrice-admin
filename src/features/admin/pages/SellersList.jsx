@@ -12,9 +12,10 @@ import {
   Spin,
   Select,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { Link } from "react-router-dom";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const Sellers = () => {
   const [sellerDetails, setSellerDetails] = useState([]);
@@ -25,8 +26,6 @@ const Sellers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredSellers, setFilteredSellers] = useState([]);
-
-  const accessToken = localStorage.getItem("accessToken");
   const { Option } = Select;
 
   // Fetch seller details on mount
@@ -41,13 +40,10 @@ const Sellers = () => {
   const fetchSellerDetails = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyloans.com/api/erice-service/user/sellerData",
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Data fetched successfully");
       setSellerDetails(response.data);
@@ -61,17 +57,14 @@ const Sellers = () => {
 
   const onFinish = async (values) => {
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         "https://meta.oxyloans.com/api/erice-service/user/saveSellerDetails",
         {
           id: editingSeller.sellerId,
           ...values,
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Seller details updated successfully");
       setEditingSeller(null);

@@ -11,7 +11,7 @@ import {
   Select,
   Tag,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import * as XLSX from "xlsx";
 import {
   AiOutlineDownload,
@@ -19,6 +19,7 @@ import {
   AiOutlineEye,
 } from "react-icons/ai";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const OrdersPending = () => {
@@ -33,7 +34,7 @@ const OrdersPending = () => {
   const [filteredItems, setFilteredItems] = useState([]); // Define filteredItems state
 
   // Access token from localStorage
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
 
   // Handle change in the number of entries per page
   const handleEntriesPerPageChange = (value) => {
@@ -61,7 +62,7 @@ const OrdersPending = () => {
   const fetchOrderDetailsModal = async (orderId) => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
         { headers: { Authorization: `Bearer ${accessToken}` } },
       );
@@ -238,7 +239,7 @@ const OrdersPending = () => {
   const fetchOrderDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/cancelled-incomplete`,
         {
           params: {

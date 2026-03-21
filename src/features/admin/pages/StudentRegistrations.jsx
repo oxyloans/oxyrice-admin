@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, Alert, Input, Row, Col, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 
 const StudentRegistrations = () => {
+  const { accessToken } = useAuth();
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,8 +18,9 @@ const StudentRegistrations = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/user-service/student/getAllStudentRegistrations`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       // Sort descending by createdAt (newest first)
       const sortedData = res.data.sort(

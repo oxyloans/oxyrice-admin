@@ -13,13 +13,14 @@ import {
   Modal,
   Input,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import { FaWhatsapp } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -51,16 +52,14 @@ const RotaryData = () => {
   const [emailList, setEmailList] = useState([]);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [selectedEmailRecord, setSelectedEmailRecord] = useState(null);
-
   useEffect(() => {
     const fetch = async () => {
       try {
         setLoading(true);
 
-        const accessToken = localStorage.getItem("accessToken") || "";
-        const res = await axios.get(API_URL, {
+      
+        const res = await axiosInstance.get(API_URL, {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "multipart/form-data",
           },
         });
@@ -127,22 +126,20 @@ const RotaryData = () => {
 
     setExtractingRow(record.image);
     try {
-      const accessToken = localStorage.getItem("accessToken") || "";
-      const res = await axios.post(
+    
+      const res = await axiosInstance.post(
         `${BASE_URL}/ai-service/agent/extractFileUrl1`,
         [record.image],
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         },
       );
 
     
-      const updatedRes = await axios.get(API_URL, {
+      const updatedRes = await axiosInstance.get(API_URL, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "multipart/form-data",
         },
       });
@@ -217,8 +214,8 @@ const RotaryData = () => {
 
     setSendingWhatsapp(true);
     try {
-      const accessToken = localStorage.getItem("accessToken") || "";
-      await axios.post(
+ 
+      await axiosInstance.post(
         `${BASE_URL}/ai-service/agent/rotaryWhatsappSend`,
         {
           content: whatsappContent,
@@ -226,7 +223,6 @@ const RotaryData = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         },
@@ -293,9 +289,9 @@ const RotaryData = () => {
 
     setSendingEmail(true);
     try {
-      const accessToken = localStorage.getItem("accessToken") || "";
+    
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/ai-service/agent/rotaryEmailSend`,
         {
           // content: emailContent,
@@ -303,7 +299,6 @@ const RotaryData = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
         },
@@ -331,7 +326,7 @@ const RotaryData = () => {
     }
 
     setExtracting(true);
-    const accessToken = localStorage.getItem("accessToken") || "";
+   
     let successCount = 0;
     let failCount = 0;
 
@@ -339,12 +334,11 @@ const RotaryData = () => {
       if (!row.image) continue;
 
       try {
-        await axios.post(
+        await axiosInstance.post(
           `${BASE_URL}/ai-service/agent/extractFileUrl1`,
           [row.image],
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
               "Content-Type": "application/json",
             },
           },
@@ -358,9 +352,8 @@ const RotaryData = () => {
 
     // Refresh data
     try {
-      const updatedRes = await axios.get(API_URL, {
+      const updatedRes = await axiosInstance.get(API_URL, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "multipart/form-data",
         },
       });

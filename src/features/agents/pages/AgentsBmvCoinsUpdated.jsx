@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Form, InputNumber, Button, message, Card } from "antd";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const AgentsBmvCoinsUpdated = () => {
   const [loading, setLoading] = useState(false);

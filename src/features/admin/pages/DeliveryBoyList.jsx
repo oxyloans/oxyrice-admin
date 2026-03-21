@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import {
   Form,
@@ -15,6 +15,7 @@ import {
   Col,
 } from "antd";
 import { MdModeEditOutline } from "react-icons/md";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 
@@ -52,7 +53,7 @@ const createUpdateDeliveryBoyRequest = (formValues, userId) => {
 // API function to save a new delivery boy
 const saveDeliveryBoy = async (requestBody, accessToken) => {
   try {
-    await axios.post(
+    await axiosInstance.post(
       "https://meta.oxyloans.com/api/erice-service/deliveryboy/save",
       requestBody,
       {
@@ -68,7 +69,7 @@ const saveDeliveryBoy = async (requestBody, accessToken) => {
 // API function to update an existing delivery boy
 const updateDeliveryBoy = async (requestBody, accessToken) => {
   try {
-    await axios.patch(
+    await axiosInstance.patch(
       "https://meta.oxyglobal.tech/api/user-service/update",
       requestBody,
       {
@@ -88,7 +89,7 @@ const DeliveryBoy = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [currentRecord, setCurrentRecord] = useState(null);
   const [form] = Form.useForm();
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [searchTerm, setSearchTerm] = useState("");
@@ -97,7 +98,7 @@ const DeliveryBoy = () => {
   // API function to fetch delivery boys
   const fetchDeliveryBoys = async (accessToken) => {
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyglobal.tech/api/user-service/deliveryBoyList",
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -440,14 +441,14 @@ const DeliveryBoy = () => {
 export default DeliveryBoy;
 
 // import React, { useEffect, useState } from "react";
-// import axios from "axios";
+// import axiosInstance from "../../../core/config/axiosInstance";
 // import AdminPanelLayout from "./AdminPanelLayout";
 // import { Form, Input, Button, Table, message, Switch, Upload, Modal, Row, Col } from 'antd';
 
 // // API function to fetch delivery boys
 // const fetchDeliveryBoys = async (accessToken) => {
 //   try {
-//     const response = await axios.get(
+//     const response = await axiosInstance.get(
 //       "https://meta.oxyloans.com/api/erice-service/deliveryboy/list",
 //       {
 //         headers: { Authorization: `Bearer ${accessToken}` },
@@ -489,7 +490,7 @@ export default DeliveryBoy;
 // // API function to save a new delivery boy
 // const saveDeliveryBoy = async (requestBody, accessToken) => {
 //   try {
-//     await axios.post(
+//     await axiosInstance.post(
 //       'https://meta.oxyloans.com/api/erice-service/deliveryboy/save',
 //       requestBody,
 //       {
@@ -505,7 +506,7 @@ export default DeliveryBoy;
 // // API function to update an existing delivery boy
 // const updateDeliveryBoy = async (requestBody, accessToken) => {
 //   try {
-//     await axios.patch(
+//     await axiosInstance.patch(
 //       'https://meta.oxyloans.com/api/erice-service/deliveryboy/update',
 //       requestBody,
 //       {
@@ -525,7 +526,7 @@ export default DeliveryBoy;
 //   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 //   const [currentRecord, setCurrentRecord] = useState(null);
 //   const [form] = Form.useForm();
-//   const accessToken = localStorage.getItem("accessToken");
+//   const { accessToken } = useAuth();
 //   const [currentPage, setCurrentPage] = useState(1);
 //   const entriesPerPage = 5;
 

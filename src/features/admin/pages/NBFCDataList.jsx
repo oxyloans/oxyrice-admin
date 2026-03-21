@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Table, Spin, Input, Row, Col } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import debounce from "lodash/debounce"; // use lodash debounce
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Search } = Input;
 
@@ -19,7 +20,7 @@ const NBFCDataList = () => {
   const fetchData = async (page = 1, size = 100, search = "") => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/marketing-service/campgin/nbfcdatalist`,
         {
           params: {

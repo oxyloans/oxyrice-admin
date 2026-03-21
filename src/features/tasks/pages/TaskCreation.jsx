@@ -33,9 +33,10 @@ import {
   ReloadOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -50,7 +51,7 @@ const TaskCreation = () => {
   const [documentId, setDocumentId] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [uploadProgress, setUploadProgress] = useState(0);
-  const userId = localStorage.getItem("userId") || "ADMIN";
+  const { userId } = useAuth();
   const [fileList, setFileList] = useState([]);
   const [selectedBusinessUnit, setSelectedBusinessUnit] = useState(null);
   const [businessUnitSubType, setBusinessUnitSubType] = useState(null);
@@ -217,7 +218,7 @@ const TaskCreation = () => {
       formData.append("fileType", "kyc");
 
       try {
-        const response = await axios.post(
+        const response = await axiosInstance.post(
           `${BASE_URL}/user-service/write/uploadTaskScreenShot?userId=${userId}`,
           formData,
           {
@@ -283,7 +284,7 @@ const TaskCreation = () => {
         projectType: values.projectType, // New field
       };
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/write/saveTask`,
         taskData,
       );

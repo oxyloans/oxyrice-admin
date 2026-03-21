@@ -21,22 +21,23 @@ import {
   CheckCircleOutlined,
   FileExcelOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 const BulkInviteCampaign = () => {
   const [form] = Form.useForm();
-
+ const { userId } = useAuth();
   const [inviteType, setInviteType] = useState("non sample");
   const [loading, setLoading] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewData, setPreviewData] = useState({});
   const [uploadedFile, setUploadedFile] = useState(null);
-
+ 
   const handleInviteTypeChange = useCallback(
     (value) => {
       setInviteType(value);
@@ -87,7 +88,7 @@ const BulkInviteCampaign = () => {
 
     try {
       const values = form.getFieldsValue();
-      const userId = localStorage.getItem("userId");
+
 
       if (!userId) {
         AntMessage.error("User ID not found. Please login again.");
@@ -125,7 +126,7 @@ const BulkInviteCampaign = () => {
 
       const url = `${BASE_URL}/user-service/excelInvite`;
 
-      await axios.post(url, formData, {
+      await axiosInstance.post(url, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           accept: "*/*",

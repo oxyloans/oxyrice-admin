@@ -10,11 +10,12 @@ import {
   Typography,
   Spin,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import { Select } from "antd";
+import useAuth from "../../../shared/hooks/useAuth";
 const { Option } = Select;
 
 const { Title } = Typography;
@@ -33,7 +34,7 @@ const GPTStore = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20); // default 20
 
-  const accessToken = localStorage.getItem("token") || "";
+  const { accessToken } = useAuth();
   const headers = { Authorization: `Bearer ${accessToken}` };
 
   const API_GET = `${BASE_URL}/ai-service/agent/getAllUrls`;
@@ -42,7 +43,7 @@ const GPTStore = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_GET, { headers });
+      const response = await axiosInstance.get(API_GET, { headers });
       if (Array.isArray(response.data.reverse())) {
         setData(response.data.reverse());
         setFilteredData(response.data.reverse());
@@ -66,10 +67,10 @@ const GPTStore = () => {
       const payload = { ...values };
       if (editingRecord?.id) {
         payload.id = editingRecord.id;
-        await axios.patch(API_PATCH, payload, { headers });
+        await axiosInstance.patch(API_PATCH, payload, { headers });
         message.success("Agent updated successfully!");
       } else {
-        await axios.patch(API_PATCH, payload, { headers });
+        await axiosInstance.patch(API_PATCH, payload, { headers });
         message.success("Agent added successfully!");
       }
       setIsModalOpen(false);
@@ -184,7 +185,7 @@ const GPTStore = () => {
     const filtered = data.filter(
       (item) =>
         item.agentName?.toLowerCase().includes(value.toLowerCase()) ||
-        item.url?.toLowerCase().includes(value.toLowerCase())
+        item.url?.toLowerCase().includes(value.toLowerCase()),
     );
     setFilteredData(filtered);
   };
@@ -322,7 +323,7 @@ const GPTStore = () => {
                     const wordCount = value.trim().split(/\s+/).length;
                     if (wordCount > 500)
                       return Promise.reject(
-                        new Error("Description cannot exceed 500 words")
+                        new Error("Description cannot exceed 500 words"),
                       );
                     return Promise.resolve();
                   },
