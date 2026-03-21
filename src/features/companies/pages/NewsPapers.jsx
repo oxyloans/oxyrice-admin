@@ -11,10 +11,11 @@ import {
   Select,
   
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -30,16 +31,14 @@ const NewsPapers = () => {
 
   // ✅ table pagination states (antd is 1-based)
   const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
-
   useEffect(() => {
     const fetch = async () => {
       try {
         setLoading(true);
 
-        const accessToken = localStorage.getItem("accessToken") || "";
-        const res = await axios.get(API_URL, {
+      
+        const res = await axiosInstance.get(API_URL, {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "multipart/form-data",
           },
         });

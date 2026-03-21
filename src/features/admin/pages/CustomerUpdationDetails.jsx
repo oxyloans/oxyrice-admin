@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import {
   Table,
   Button,
@@ -14,6 +14,7 @@ import {
 import AdminPanelLayout from "../components/AdminPanelLayout";
 
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const CustomerDetails = () => {
@@ -28,7 +29,7 @@ const CustomerDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
 
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     fetchItemsData();
@@ -37,7 +38,7 @@ const CustomerDetails = () => {
   const fetchItemsData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `{BASE_URL}/erice-service/user/getAllUsers`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -58,7 +59,7 @@ const CustomerDetails = () => {
     if (selectedItem) {
       setModalLoading(true);
       try {
-        await axios.patch(
+        await axiosInstance.patch(
           `{BASE_URL}/erice-service/user/updateMobileNumber`,
           {
             userId: selectedItem.userId,
@@ -82,7 +83,7 @@ const CustomerDetails = () => {
 
   const handleUpdateTestUser = async (item) => {
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `{BASE_URL}/erice-service/user/updateTestUsers`,
         {
           userId: item.userId,

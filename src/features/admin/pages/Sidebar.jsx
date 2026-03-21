@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa"; // Import Font Awesome icons
 
 import Header from "./Header"; // Import the Header component
+import useAuth from '../../../shared/hooks/useAuth';
 
 // Reusable component for Sidebar items
 const SidebarItem = ({

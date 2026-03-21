@@ -1,13 +1,15 @@
 import AdminPanelLayout from "./AdminPanelLayout";
 import React, { useState } from "react";
 import { Table, Button } from "antd";
+import useAuth from '../../../shared/hooks/useAuth';
 
 
 
 
 // Define table columns
 const columns = [
-  { title: "Order Id", dataIndex: "orderId", key: "orderId", align: "center" },
+  {
+  const { accessToken } = useAuth(); title: "Order Id", dataIndex: "orderId", key: "orderId", align: "center" },
   {
     title: "Order Date",
     dataIndex: "orderDate",
@@ -68,7 +70,7 @@ const ReturnList = () => {
   // const fetchOrderDetails = async () => {
   //   try {
   //     setLoading(true);
-  //     const response = await axios.get(`https://meta.oxyloans.com/api/erice-service/order/cancelled-incomplete`, {
+  //     const response = await axiosInstance.get(`https://meta.oxyloans.com/api/erice-service/order/cancelled-incomplete`, {
   //       headers: { Authorization: `Bearer ${accessToken}` },
   //     });
 

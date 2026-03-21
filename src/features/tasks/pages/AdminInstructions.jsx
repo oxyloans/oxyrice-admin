@@ -14,11 +14,12 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { MdModeEditOutline, MdForum } from "react-icons/md";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
+
 const AdminInstructions = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,7 +53,7 @@ const AdminInstructions = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(API_URL);
+      const response = await axiosInstance.get(API_URL);
       if (Array.isArray(response.data)) {
         const sortedData = response.data.sort((a, b) => {
           const dateA = new Date(
@@ -92,7 +93,7 @@ const AdminInstructions = () => {
       formData.append("file", file.originFileObj);
     });
 
-    await axios.post(
+    await axiosInstance.post(
       `${UPLOAD_API}?fileType=kyc&instructionId=${instructionId}&userId=${adminUserId}`,
       formData,
       {
@@ -114,7 +115,7 @@ const AdminInstructions = () => {
       };
 
       // First save instruction
-      const resp = await axios.patch(SAVE_API, payload);
+      const resp = await axiosInstance.patch(SAVE_API, payload);
 
       if (resp.data?.radhaInstructionsId) {
         // If user uploaded files, upload them linked to instructionId
@@ -149,7 +150,7 @@ const AdminInstructions = () => {
       };
 
       // First update instruction
-      const resp = await axios.patch(SAVE_API, payload);
+      const resp = await axiosInstance.patch(SAVE_API, payload);
 
       // ✅ If user uploaded new files, upload them linked to instructionId
       if (resp.data?.radhaInstructionsId && fileList.length > 0) {
@@ -180,7 +181,7 @@ const AdminInstructions = () => {
         userid: adminUserId,
       };
 
-      await axios.patch(INTERACTION_API, payload);
+      await axiosInstance.patch(INTERACTION_API, payload);
       message.success("Interaction saved successfully!");
       setIsInteractionModalOpen(false);
       setInteractionRecord(null);

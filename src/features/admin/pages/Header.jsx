@@ -1,6 +1,7 @@
 import React from "react";
 import { FaSignOutAlt, FaShoppingCart, FaUserAlt } from "react-icons/fa";
 import Logo from "../assets/img/ericelogo.webp";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const Header = () => {
   return (

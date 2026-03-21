@@ -13,10 +13,11 @@ import {
   Card,
   Statistic,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Search } = Input;
 const { RangePicker } = DatePicker;
@@ -31,7 +32,7 @@ const FuelExpenses = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [pageSize, setPageSize] = useState(20); // default 20
   const [currentPage, setCurrentPage] = useState(1);
-  const accessToken = localStorage.getItem("token");
+  const { accessToken } = useAuth();
 
   // Fetch Summary Data
   const fetchFuelStats = useCallback(async () => {
@@ -40,7 +41,7 @@ const FuelExpenses = () => {
       const startDate = dates[0]?.format("YYYY-MM-DD");
       const endDate = dates[1]?.format("YYYY-MM-DD");
 
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/fuel-stats?startDate=${startDate}&endDate=${endDate}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -67,7 +68,7 @@ const FuelExpenses = () => {
       const startDate = dates[0]?.format("YYYY-MM-DD");
       const endDate = dates[1]?.format("YYYY-MM-DD");
 
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/dboy-fuel-stats-whole?startDate=${startDate}&endDate=${endDate}&userId=${userId}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -81,7 +82,7 @@ const FuelExpenses = () => {
 
       setModalData(sortedData);
     } catch (error) {
-      console.error("Error fetching user fuel details:", error);
+     
       message.error("Failed to fetch detailed fuel records.");
     } finally {
       setModalLoading(false);

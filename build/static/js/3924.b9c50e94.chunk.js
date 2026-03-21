@@ -1,2 +1,0 @@
-"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[3924],{43924(e,t,a){a.r(t),a.d(t,{default:()=>o});a(65043);var l=a(73216),n=a(70579);const o=e=>{let{element:t,loginPath:a="/"}=e;const o=!!localStorage.getItem("token"),r=(0,l.zy)();if(!o){const e=encodeURI(r.pathname+r.search);return localStorage.setItem("redirectAfterLogin",e),(0,n.jsx)(l.C5,{to:a,replace:!0})}return t}}}]);
-//# sourceMappingURL=3924.b9c50e94.chunk.js.map

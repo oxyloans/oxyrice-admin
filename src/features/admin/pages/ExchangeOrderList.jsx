@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Table, message, Input, Row, Col, Select } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 
@@ -20,13 +21,10 @@ const ExchangeOrders = () => {
   const fetchExchangeOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyglobal.tech/api/erice-service/order/getAllExchangeOrder",
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        },
+                  },
       );
       setData(response.data);
       setFilteredData(response.data);

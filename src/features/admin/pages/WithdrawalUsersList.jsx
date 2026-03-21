@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Table, Tag, Input, Button, message, Popconfirm } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import moment from "moment";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const WithdrawalRequests = () => {
+  const { accessToken } = useAuth();
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -18,8 +20,9 @@ const WithdrawalRequests = () => {
   const fetchWithdrawalUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getAllWithdrawalUsers`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
       setData(response.data || []);
       setFilteredData(response.data || []);
@@ -34,10 +37,10 @@ const WithdrawalRequests = () => {
   // Approve API
   const approveWithdrawal = async (userId) => {
     try {
-      await axios.post(`${BASE_URL}/order-service/approveAmount`, {
-        customerId: userId,
-        status: "APPROVED",
-      });
+      await axiosInstance.post(`${BASE_URL}/order-service/approveAmount`,
+        { customerId: userId, status: "APPROVED" },
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
       message.success("Withdrawal approved successfully");
       fetchWithdrawalUsers(); // Refresh data
     } catch (error) {

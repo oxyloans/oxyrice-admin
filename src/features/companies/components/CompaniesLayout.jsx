@@ -183,10 +183,11 @@ const sidebarItems = [
     setOpenKeys(keys.length ? [keys.pop()] : []);
 
   const handleSignOut = () => {
+    const currentPath = window.location.pathname + window.location.search;
     localStorage.clear(); // Clear all local storage items
     sessionStorage.clear(); // Clear all session storage items
+    localStorage.setItem("redirectAfterLogin_companies", currentPath);
     window.location.href = "/admin/companieslogin"; // Redirect to login
-    navigate(entryPoint);
   };
 
   const date = new Date();

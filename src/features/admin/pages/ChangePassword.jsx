@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Form, Input, Button, message, Layout, Row, Col } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "./AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Content } = Layout;
 
@@ -13,7 +14,7 @@ const ChangePassword = () => {
     setLoading(true);
 
     try {
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         "http://182.18.139.138:8181/api/change-password",
         {
           oldPassword,

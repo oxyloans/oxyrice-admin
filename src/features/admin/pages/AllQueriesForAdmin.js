@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 
 import BASE_URL from "../../../core/config/Config";
 import { Modal, Button, Row, Col, Select, Spin, Table, message } from "antd";
 
 import AdminPanelLayoutTest from "../components/AdminPanelLayout.jsx";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 function AllQueries() {
   const [data, setData] = useState([]);
@@ -23,7 +24,7 @@ function AllQueries() {
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const accesToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
 
   function queriesdisplaygetcall() {
     let data = {
@@ -32,12 +33,8 @@ function AllQueries() {
       queryStatus: statusValue,
     };
     setLoader(true);
-    axios
-      .post(`${BASE_URL}/user-service/write/getAllQueries`, data, {
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      })
+    axiosInstance
+      .post(`${BASE_URL}/user-service/write/getAllQueries`, data, {})
       .then((response) => {
         setLoader(false);
 
@@ -88,12 +85,8 @@ function AllQueries() {
     };
 
     setApproveLoader(true);
-    axios
-      .post(`${BASE_URL}/user-service/write/saveData`, data, {
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      })
+    axiosInstance
+      .post(`${BASE_URL}/user-service/write/saveData`, data, {})
       .then(() => {
         setApproveLoader(false);
         setShowModal1(false);
@@ -146,7 +139,7 @@ function AllQueries() {
     formData.append("projectType", "ASKOXY");
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/write/uploadQueryScreenShot?userId=${userId}`,
         formData,
         {

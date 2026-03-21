@@ -19,6 +19,7 @@ import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 const { Search } = Input;
@@ -32,8 +33,7 @@ const PlansList = () => {
   const [pageSize, setPageSize] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("all");
-  const accessToken = localStorage.getItem("token");
-
+  const { accessToken } = useAuth();
   // Fetch Plans
   const fetchPlans = async () => {
     try {

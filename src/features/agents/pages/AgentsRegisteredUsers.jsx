@@ -1,22 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  Table,
-  Input,
-  Row,
-  Col,
-  message,
-  Button,
-  Tag,
-  
-  Typography,
-  
-} from "antd";
+import { Table, Input, Row, Col, message, Button, Tag, Typography } from "antd";
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import * as XLSX from "xlsx";
 import { useNavigate } from "react-router-dom";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Search } = Input;
 const { Title } = Typography;
@@ -28,18 +18,18 @@ const AgentsRegisteredUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const navigate = useNavigate();
-
+ const { accessToken } = useAuth();
   // Fetch all agents
   const fetchAgents = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
+     
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/getUserDataBasedOnType`,
         {
           params: { primaryType: "AGENT", registerFrom: "WEB" },
-          headers: { Authorization: `Bearer ${token}` },
-        }
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
       );
       setData(response.data || []);
     } catch (error) {
@@ -60,7 +50,7 @@ const AgentsRegisteredUsers = () => {
     return data.filter(
       (item) =>
         item.mobileNumber?.includes(searchText) ||
-        item.whatsappNumber?.includes(searchText)
+        item.whatsappNumber?.includes(searchText),
     );
   }, [data, searchText]);
 
@@ -110,7 +100,7 @@ const AgentsRegisteredUsers = () => {
             style={{ cursor: "pointer" }}
             onClick={() =>
               navigate(
-                `/admin/agent-user?userId=${encodeURIComponent(record.userId)}`
+                `/admin/agent-user?userId=${encodeURIComponent(record.userId)}`,
               )
             }
           >
@@ -180,12 +170,7 @@ const AgentsRegisteredUsers = () => {
   return (
     <AgentsAdminLayout>
       {/* Header Section */}
-      <Row
-        justify="space-between"
-        align="middle"
-        gutter={[16, 16]}
-       
-      >
+      <Row justify="space-between" align="middle" gutter={[16, 16]}>
         <Col xs={24} sm={12} md={8}>
           <Title
             level={4}
@@ -272,7 +257,6 @@ const AgentsRegisteredUsers = () => {
       </div>
     </AgentsAdminLayout>
   );
-
 };
 
 export default AgentsRegisteredUsers;

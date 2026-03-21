@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, Input, Row, Col, Select, message } from "antd";
 
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const SubscribersListDEtails = () => {
   const [subscribers, setSubscribers] = useState([]);
@@ -13,19 +14,13 @@ const SubscribersListDEtails = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { Option } = Select;
-
-  const accessToken = localStorage.getItem("accessToken");
-
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyloans.com/api/erice-service/subscription-plans/getAllSubscriptionForUser",
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Data fetched successfully");
       setSubscribers(response.data);

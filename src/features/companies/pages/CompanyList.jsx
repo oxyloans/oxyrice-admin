@@ -23,9 +23,10 @@ import {
   EditOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import CompaniesLayout from "../components/CompaniesLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Text, Link } = Typography;
 const { Option } = Select;
@@ -40,7 +41,7 @@ const CompanyList = () => {
   const [isJobModalVisible, setIsJobModalVisible] = useState(false);
   const [editingCompany, setEditingCompany] = useState(null);
   const [form] = Form.useForm();
-  const userId = localStorage.getItem("userId");
+  const { userId } = useAuth();
   const navigate = useNavigate();
   const [jobForm] = Form.useForm();
   const [pagination, setPagination] = useState({
@@ -60,7 +61,7 @@ const CompanyList = () => {
     try {
       const validPage = Math.max(0, parseInt(page) || 0);
       const validSize = Math.min(1000, Math.max(1, parseInt(size) || 10));
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/marketing-service/campgin/all-companies?page=${validPage}&size=${validSize}`
       );
       const data = response.data;
@@ -80,7 +81,7 @@ const CompanyList = () => {
 
   const fetchAllCompanies = async () => {
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/marketing-service/campgin/getallcompanies`
       );
       setAllCompanies(res.data || []);
@@ -142,7 +143,7 @@ const CompanyList = () => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/marketing-service/campgin/upload-company-logo`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
@@ -169,7 +170,7 @@ const CompanyList = () => {
         updatedAt: new Date().toISOString(),
       };
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/marketing-service/campgin/save-or-update-company`,
         payload
       );
@@ -230,7 +231,7 @@ const CompanyList = () => {
         companyLinkedinUrl: values.companyLinkedinUrl,
       };
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/marketing-service/campgin/postajob`,
         payload
       );

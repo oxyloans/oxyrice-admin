@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Image,
-  Spin,
-  Input,
-  Row,
-  Col,
-  message,
- 
-} from "antd";
-import axios from "axios";
+import { Table, Image, Spin, Input, Row, Col, message } from "antd";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const GeminiUsers = () => {
   const [data, setData] = useState([]);
@@ -28,13 +20,9 @@ const GeminiUsers = () => {
   const fetchData = async (pageNumber, size) => {
     setLoading(true);
     try {
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/getAllGeminiUsers?page=${pageNumber}&size=${size}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        {},
       );
 
       const reversedList = (res.data.listResponse || []).reverse();
@@ -52,7 +40,7 @@ const GeminiUsers = () => {
   const toggleTestUser = async (id, currentStatus) => {
     try {
       setLoading(true);
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/user-service/updateTestUsers`,
         {
           id: id,
@@ -60,13 +48,12 @@ const GeminiUsers = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
       message.success(
-        `User updated to ${!currentStatus ? "TEST USER" : "LIVE USER"}`
+        `User updated to ${!currentStatus ? "TEST USER" : "LIVE USER"}`,
       );
       fetchData(page - 1, pageSize); // refresh data
     } catch (error) {
@@ -81,7 +68,7 @@ const GeminiUsers = () => {
   const filteredData = data.filter(
     (item) =>
       item.userId?.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.mobileNumber?.toLowerCase().includes(searchText.toLowerCase())
+      item.mobileNumber?.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   const columns = [
@@ -144,7 +131,7 @@ const GeminiUsers = () => {
       key: "userName",
       align: "center",
     },
-    
+
     // {
     //   title: "Action",
     //   key: "action",

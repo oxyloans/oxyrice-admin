@@ -38,12 +38,14 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
 
 const StudentApplications = () => {
+  const { accessToken } = useAuth();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -79,6 +81,7 @@ const StudentApplications = () => {
 
       const response = await fetch(
         `${BASE_URL}/user-service/student/all-application-users?pageIndex=${page - 1}&pageSize=${size}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
       if (!response.ok)

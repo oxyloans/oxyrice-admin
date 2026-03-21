@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 
 import * as XLSX from "xlsx";
+import useAuth from "../../../shared/hooks/useAuth";
 import BASE_URL from "../../../core/config/Config";
 import {
   Form,
@@ -20,6 +21,7 @@ import {
   Alert,
 } from "antd";
 import {
+
   UploadOutlined,
   EyeOutlined,
   CheckCircleOutlined,
@@ -117,8 +119,8 @@ export default function Email() {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [activeEmails, setActiveEmails] = useState([]);
   const [loadingEmails, setLoadingEmails] = useState(true);
+  const {accessToken} = useAuth();
   const invitationType = Form.useWatch("invitationType", form);
-
   const initialValues = useMemo(
     () => ({
       perDaySendMails: "",
@@ -138,9 +140,7 @@ export default function Email() {
       setLoadingEmails(true);
       try {
         const res = await fetch(`${BASE_URL}/user-service/activeMails`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
         if (res.ok && Array.isArray(data)) {
@@ -226,13 +226,10 @@ export default function Email() {
       uploadForm.append("file", file);
 
       const uploadUrl = `${BASE_URL}/upload-service/upload?id=45880e62-acaf-4645-a83e-d1c8498e923e&fileType=aadhar`;
-      const accessToken = localStorage.getItem("token");
+  
 
       const res = await fetch(uploadUrl, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
         body: uploadForm,
       });
 
@@ -325,7 +322,6 @@ export default function Email() {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
               },
               body: JSON.stringify(payload),
             });

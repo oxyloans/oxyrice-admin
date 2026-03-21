@@ -14,11 +14,12 @@ import {
   Switch,
   Space,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import { SearchOutlined, PlusOutlined, EditOutlined } from "@ant-design/icons";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Title } = Typography;
 const { Option } = Select;
 
@@ -39,14 +40,14 @@ const PincodesData = () => {
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [switchStatus, setSwitchStatus] = useState(true);
-
+   const { accessToken } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        const accessToken = localStorage.getItem("accessToken") || "";
-        const res = await axios.get(API_URL, {
+     
+        const res = await axiosInstance.get(API_URL, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
@@ -130,7 +131,7 @@ const PincodesData = () => {
   const handleSubmit = async (values) => {
     try {
       console.log("Form values received:", values); // Debug log
-      const accessToken = localStorage.getItem("accessToken") || "";
+      
       // Ensure status is properly converted to boolean
       const statusValue = Boolean(
         values.status === true ||
@@ -149,13 +150,13 @@ const PincodesData = () => {
       if (editingRecord) {
         // Update existing record
         payload.id = editingRecord.id;
-        await axios.patch(`${BASE_URL}/order-service/updatePincodes`, payload, {
+        await axiosInstance.patch(`${BASE_URL}/order-service/updatePincodes`, payload, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         message.success("Pincode updated successfully");
       } else {
         // Create new record
-        await axios.patch(`${BASE_URL}/order-service/updatePincodes`, payload, {
+        await axiosInstance.patch(`${BASE_URL}/order-service/updatePincodes`, payload, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         message.success("Pincode added successfully");
@@ -169,7 +170,7 @@ const PincodesData = () => {
 
       // Refetch data with fresh call
       try {
-        const res = await axios.get(API_URL, {
+        const res = await axiosInstance.get(API_URL, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = Array.isArray(res.data) ? res.data : [];

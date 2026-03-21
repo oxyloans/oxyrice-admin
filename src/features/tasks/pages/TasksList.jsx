@@ -35,9 +35,10 @@ import {
   FilterOutlined,
   ClearOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../../TaskManagement/Layout/AdminPanel";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -129,7 +130,7 @@ const TasksList = () => {
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/write/getTaskData`,
       );
       if (Array.isArray(response.data)) {
@@ -218,7 +219,7 @@ const TasksList = () => {
       const values = await editForm.validateFields();
       setUpdateLoading(true);
 
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/user-service/write/updateTask/${currentTask.id}`,
         {
           taskcontent: values.taskcontent,

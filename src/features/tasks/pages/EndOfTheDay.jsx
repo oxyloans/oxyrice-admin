@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import {
   Card,
@@ -24,7 +24,7 @@ import {
   Col,
   Select,
 } from "antd";
-
+import useAuth from "../../../shared/hooks/useAuth";
 import dayjs from "dayjs";
 import {
   CalendarOutlined,
@@ -96,7 +96,7 @@ const EndOfTheDay = () => {
     try {
       const formattedDate = selectedDate.format("YYYY-MM-DD");
 
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${BASE_URL}/user-service/write/get-task-by-date`,
         {
           taskStatus: status,

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import { Table, Spin, Alert, Tag } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const CategoryInventory = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -12,12 +13,12 @@ const CategoryInventory = () => {
   // ✅ per-category pagination state (so each category table keeps its own page)
   const [pageState, setPageState] = useState({}); // { [catId]: { current: 1, pageSize: 10 } }
 
-  const accessToken = localStorage.getItem("token");
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
+        const response = await axiosInstance.get(
           `${BASE_URL}/product-service/getActiveCategoryInventory`,
           {
             headers: { Authorization: `Bearer ${accessToken}` },

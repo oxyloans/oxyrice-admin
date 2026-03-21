@@ -16,14 +16,13 @@ import {
   Space,
   Descriptions,
   Divider,
- 
   Tooltip,
 } from "antd";
 
-
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -39,7 +38,7 @@ const AssistantsList = () => {
   // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 50,
+    pageSize: 80,
     total: 0,
   });
   const [cursorAfter, setCursorAfter] = useState(null);
@@ -56,8 +55,7 @@ const AssistantsList = () => {
   const [toolForm] = Form.useForm();
   const [selectedTools, setSelectedTools] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const accessToken = localStorage.getItem("token") || "";
-  const userId = localStorage.getItem("userId") || "";
+  const { accessToken, userId } = useAuth();
 
   // ---------- Utils ----------
   const parseTools = (a) => {
@@ -130,7 +128,6 @@ const AssistantsList = () => {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          Accept: "*/*",
         },
       });
 
@@ -154,7 +151,7 @@ const AssistantsList = () => {
   };
 
   // ---------- Delete Agent ----------
-  const handleDeleteAgent = async (record) => {
+  const handlePermanentDeleteAgent = async (record) => {
     if (!record?.assistantId) {
       message.error("Missing assistantId");
       return;
@@ -169,13 +166,12 @@ const AssistantsList = () => {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          Accept: "*/*",
         },
       });
 
       if (!res.ok) throw new Error("Failed to delete agent");
 
-      message.success("Agent deleted successfully");
+      message.success("Agent Permanent deleted successfully");
 
       // Refresh the list after deletion
       await fetchAssistants({
@@ -189,7 +185,40 @@ const AssistantsList = () => {
       message.error("Failed to delete agent");
     }
   };
+ const handleStatusChanegDeleteAgent = async (record) => {
+   if (!record?.assistantId) {
+     message.error("Missing assistantId");
+     return;
+   }
 
+   try {
+     const url = `${BASE_URL}/ai-service/agent/deleteId/${encodeURIComponent(
+       record.assistantId,
+     )}`;
+
+     const res = await fetch(url, {
+       method: "DELETE",
+       headers: {
+         Authorization: `Bearer ${accessToken}`,
+       },
+     });
+
+     if (!res.ok) throw new Error("Failed to delete agent");
+
+     message.success("Agent Status deleted successfully");
+
+     // Refresh the list after deletion
+     await fetchAssistants({
+       limit: pagination.pageSize,
+       replace: true,
+       searchValue: searchTerm,
+       status: statusFilter,
+     });
+   } catch (err) {
+     console.error(err);
+     message.error("Failed to delete agent");
+   }
+ };
   // ---------- Fetching ----------
   const fetchAssistants = async ({
     limit,
@@ -339,11 +368,7 @@ const AssistantsList = () => {
       setLoading(true);
       const res = await fetch(
         `${BASE_URL}/ai-service/agent/webSearchForAgent?message=${encodeURIComponent(searchValue)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+        {},
       );
 
       if (!res.ok) throw new Error("Failed to fetch search results");
@@ -436,7 +461,7 @@ const AssistantsList = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`
           },
           body: JSON.stringify(payload),
         },
@@ -496,9 +521,7 @@ const AssistantsList = () => {
         `${BASE_URL}/ai-service/agent/getAllAgentApproved`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+
         },
       );
 
@@ -551,7 +574,6 @@ const AssistantsList = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -580,7 +602,7 @@ const AssistantsList = () => {
   const ViewBusinessCardFunc = (businessCardId) => {
     console.log("Business Card ID:", businessCardId);
     if (businessCardId) {
-      axios
+      axiosInstance
         .get(
           `${BASE_URL}/ai-service/agent/getBusinessCardById/${businessCardId}`,
           {
@@ -826,34 +848,33 @@ const AssistantsList = () => {
               gap: "8px",
             }}
           >
-            {/* Status */}
-            {/* <div>{renderStatusTag(record.status)}</div> */}
-
             {/* Preview Button */}
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => {
-                setSelectedAssistant(record);
-                setPreviewVisible(true);
-              }}
-              style={{
-                backgroundColor: "#008cba",
-                borderColor: "#008cba",
-                height: "32px",
-                width: "100px",
-                fontWeight: 500,
-              }}
-            >
-              Preview
-            </Button>
+            <Tooltip title="View complete agent details">
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => {
+                  setSelectedAssistant(record);
+                  setPreviewVisible(true);
+                }}
+                style={{
+                  backgroundColor: "#008cba",
+                  borderColor: "#008cba",
+                  height: "32px",
+                  width: "120px",
+                  fontWeight: 500,
+                }}
+              >
+                View Details
+              </Button>
+            </Tooltip>
 
-            {/* Hide / Show Switch */}
+            {/* Hide / Show Button */}
             <Tooltip
               title={
                 record.hideAgent
-                  ? "This agent is currently HIDDEN in Bharat AI Store"
-                  : "This agent is VISIBLE in Bharat AI Store"
+                  ? "This agent is currently hidden in Bharat AI Store"
+                  : "This agent is currently visible in Bharat AI Store"
               }
             >
               <Button
@@ -863,51 +884,83 @@ const AssistantsList = () => {
                   borderColor: record.hideAgent ? "#ff4d4f" : "#1ab394",
                   color: "white",
                   height: "32px",
-                  width: "100px",
+                  width: "120px",
                   fontWeight: 500,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   Modal.confirm({
-                    title: record.hideAgent ? "Show Agent?" : "Hide Agent?",
+                    title: record.hideAgent
+                      ? "Make Agent Visible?"
+                      : "Hide Agent?",
                     content: record.hideAgent
-                      ? "This agent will be VISIBLE in Bharat AI Store."
-                      : "This agent will be HIDDEN from Bharat AI Store.",
-                    okText: "Yes",
-                    cancelText: "No",
+                      ? "This agent will become visible in Bharat AI Store."
+                      : "This agent will be hidden from Bharat AI Store.",
+                    okText: record.hideAgent ? "Make Visible" : "Hide Agent",
+                    cancelText: "Cancel",
                     onOk: () =>
                       handleToggleHideAgent(record, !record.hideAgent),
                   });
                 }}
               >
-                {record.hideAgent ? "Hidden" : "Visible"}
+                {record.hideAgent ? "Make Visible" : "Hide Agent"}
               </Button>
             </Tooltip>
 
-            {/* Delete Button */}
-            <Tooltip title="Permanently delete this agent">
+            {/* Permanent Delete Button */}
+            <Tooltip title="Permanently delete this agent from the database">
               <Button
                 size="small"
                 danger
                 style={{
                   height: "32px",
-                  width: "100px",
+                  width: "120px",
                   fontWeight: 500,
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   Modal.confirm({
-                    title: "Delete Agent?",
+                    title: "Permanent Delete Agent?",
                     content:
-                      "This action cannot be undone. The agent will be permanently deleted.",
-                    okText: "Delete",
+                      "This action will permanently remove the agent from the database and cannot be undone.",
+                    okText: "Permanent Delete",
                     okType: "danger",
                     cancelText: "Cancel",
-                    onOk: () => handleDeleteAgent(record),
+                    onOk: () => handlePermanentDeleteAgent(record),
                   });
                 }}
               >
-                Delete
+                Permanent Delete
+              </Button>
+            </Tooltip>
+
+            {/* Status Delete Button */}
+            <Tooltip title="Mark this agent as deleted while keeping the record in the database">
+              <Button
+                size="small"
+                danger
+                style={{
+                  height: "32px",
+                  width: "120px",
+                  fontWeight: 500,
+                  backgroundColor: "#faad14",
+                  borderColor: "#faad14",
+                  color: "#fff",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  Modal.confirm({
+                    title: "Status Delete Agent?",
+                    content:
+                      "This action will mark the agent as deleted, but the record will remain in the database.",
+                    okText: "Mark as Deleted",
+                    okType: "danger",
+                    cancelText: "Cancel",
+                    onOk: () => handleStatusChanegDeleteAgent(record),
+                  });
+                }}
+              >
+                Status Delete
               </Button>
             </Tooltip>
           </div>

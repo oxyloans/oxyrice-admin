@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import { Table, message, Row, Col, Select } from "antd";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx"; // Your Admin Panel Layout
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 
@@ -14,7 +15,7 @@ const SubscriptionPlanListustomerId = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [errorMessage, setErrorMessage] = useState(""); // Error message
   const [currentPage, setCurrentPage] = useState(1);
-  const accessToken = localStorage.getItem("accessToken");
+  const { accessToken } = useAuth();
 
   // Table columns
   const columns = [
@@ -80,7 +81,7 @@ const SubscriptionPlanListustomerId = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         "https://meta.oxyglobal.tech/api/order-service/getSubscriptionsDetailsForaCustomer",
         {
           customerId: id, // Passing customerId from params to the request body

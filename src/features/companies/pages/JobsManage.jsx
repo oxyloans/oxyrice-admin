@@ -11,11 +11,12 @@ import {
   message,
   Switch,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import "antd/dist/reset.css";
 import { useLocation } from "react-router-dom";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -33,7 +34,7 @@ const AddJobs = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-        const res = await axios.get(
+        const res = await axiosInstance.get(
           `${BASE_URL}/marketing-service/campgin/getallcompanies`,
         );
         setCompanies(res.data || []);
@@ -116,7 +117,7 @@ const AddJobs = () => {
         countryCode: countryCode || "+91",
       };
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/marketing-service/campgin/postajob`,
         payload,
       );

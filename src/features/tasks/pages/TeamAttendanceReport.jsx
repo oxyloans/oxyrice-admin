@@ -23,12 +23,13 @@ import {
   ClockCircleOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -71,7 +72,7 @@ const TeamAttendanceReport = () => {
   const fetchAttendanceData = async (month) => {
     try {
       setLoading(true);
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/write/team_attendance_report?month=${month}`,
       );
       setData(response.data || []);

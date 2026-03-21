@@ -1,5 +1,6 @@
 // /src/AdminTasks.jsx
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Table,
   Spin,
@@ -16,9 +17,10 @@ import {
   Empty,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -74,7 +76,7 @@ const AdminTasks = () => {
       setCommentsData([]);
       setLoading(true);
 
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -97,21 +99,20 @@ const AdminTasks = () => {
     try {
       setSubmittingComment(true);
 
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
         {
           taskId: selectedTask.id,
           comments: adminComment.trim(),
           commentsBy: "ADMIN",
         },
-        { headers: { Authorization: `Bearer ${accessToken}` } },
       );
 
       message.success("Admin comment added!");
       setAdminComment("");
 
       // refresh comments
-      const refreshed = await axios.get(
+      const refreshed = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -128,12 +129,12 @@ const AdminTasks = () => {
     }
   };
 
-  const accessToken = localStorage.getItem("token");
+  const { accessToken } = useAuth();
 
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
@@ -235,7 +236,7 @@ const AdminTasks = () => {
   // ✅ Fetch all employees
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/getAllEmployees`,
       );
       setEmployees(response.data);
@@ -422,18 +423,14 @@ const AdminTasks = () => {
     }
 
     try {
-      await axios.post(
+      await axiosInstance.post(
         `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
         {
           taskId: selectedTask.id,
           comments: comments,
           commentsBy: "ADMIN",
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+        {},
       );
 
       message.success("Comments added successfully!");
@@ -456,13 +453,10 @@ const AdminTasks = () => {
     const selectedName = emp ? emp.name : "";
 
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/ai-service/agent/taskAssignedToRadhaSir`,
         null, // no request body
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
           params: {
             id: selectedTask.id,
             assignedTo: selectedName,

@@ -13,7 +13,7 @@ import {
   Input,
   Tag,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import moment from "moment";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -25,7 +25,8 @@ import {
   AiOutlineEye,
 } from "react-icons/ai";
 import BASE_URL from "../../../core/config/Config";
-const token = localStorage.getItem("token");
+import useAuth from '../../../shared/hooks/useAuth';
+
 const { Option } = Select;
 
 const Ordersdetails = () => {
@@ -34,6 +35,7 @@ const Ordersdetails = () => {
   const [loading, setLoading] = useState(false);
   const [entriesPerPage, setEntriesPerPage] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
+  const { accessToken } = useAuth();
   const [toDate, setToDate] = useState(null);
   const [fromDate, setFromDate] = useState(null);
   const [orderDetails, setOrderDetails] = useState(null);
@@ -105,9 +107,9 @@ const Ordersdetails = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getOrdersByOrderId/${orderId}`,
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer \${accessToken}` } },
       );
 
       if (response?.status === 200 && response?.data?.length > 0) {
@@ -311,14 +313,13 @@ const Ordersdetails = () => {
 
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/order-service/date-range`, {
+      const response = await axiosInstance.get(`${BASE_URL}/order-service/date-range`, {
         params: {
           startDate,
           endDate,
           // Only include status in the API request if it's not "All"
           ...(orderStatus !== "All" && { status: orderStatus }),
         },
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.status === 200) {
@@ -825,7 +826,7 @@ const Ordersdetails = () => {
                       dataIndex: "price",
                       key: "price",
                       align: "right",
-                      render: (text) => `₹${Number(text).toFixed(2) || "0.00"}`,
+                      render: (text) => `?${Number(text).toFixed(2) || "0.00"}`,
                       width: 100,
                     },
                   ]}
@@ -849,7 +850,7 @@ const Ordersdetails = () => {
                         Sub Total
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹{Number(orderDetails?.subTotal).toFixed(2) || "0.00"}
+                        ?{Number(orderDetails?.subTotal).toFixed(2) || "0.00"}
                       </td>
                     </tr>
                     <tr>
@@ -857,7 +858,7 @@ const Ordersdetails = () => {
                         Delivery Fee
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹
+                        ?
                         {Number(orderDetails?.deliveryFee).toFixed(2) || "0.00"}
                       </td>
                     </tr>
@@ -866,7 +867,7 @@ const Ordersdetails = () => {
                         Coupon Amount Used
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹
+                        ?
                         {Number(orderDetails?.discountAmount).toFixed(2) ||
                           "0.00"}
                       </td>
@@ -876,7 +877,7 @@ const Ordersdetails = () => {
                         Subscription Amount Used
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹
+                        ?
                         {Number(orderDetails?.subscriptionAmount).toFixed(2) ||
                           "0.00"}
                       </td>
@@ -886,7 +887,7 @@ const Ordersdetails = () => {
                         Wallet Amount Used
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹
+                        ?
                         {Number(orderDetails?.walletAmount).toFixed(2) ||
                           "0.00"}
                       </td>
@@ -896,7 +897,7 @@ const Ordersdetails = () => {
                         Referral Amount Used
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹
+                        ?
                         {Number(orderDetails?.referralAmountUsed).toFixed(2) ||
                           "0.00"}
                       </td>
@@ -906,7 +907,7 @@ const Ordersdetails = () => {
                         GST Amount
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right">
-                        ₹{Number(orderDetails?.gstAmount).toFixed(2) || "0.00"}
+                        ?{Number(orderDetails?.gstAmount).toFixed(2) || "0.00"}
                       </td>
                     </tr>
                     <tr className="bg-gray-100">
@@ -914,7 +915,7 @@ const Ordersdetails = () => {
                         Grand Total
                       </td>
                       <td className="border border-gray-300 px-3 py-2 text-right font-semibold">
-                        ₹{Number(orderDetails?.grandTotal).toFixed(2) || "0.00"}
+                        ?{Number(orderDetails?.grandTotal).toFixed(2) || "0.00"}
                       </td>
                     </tr>
                   </tbody>

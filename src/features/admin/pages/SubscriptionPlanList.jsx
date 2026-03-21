@@ -13,10 +13,11 @@ import {
   Tabs,
   Popconfirm,
 } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { MdModeEditOutline } from "react-icons/md";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
 const SubscriptionPlansList = () => {
@@ -26,7 +27,6 @@ const SubscriptionPlansList = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [form] = Form.useForm();
-  const accessToken = localStorage.getItem("accessToken");
   const [entriesPerPage, setEntriesPerPage] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredPlans, setFilteredPlans] = useState([]);
@@ -38,13 +38,10 @@ const SubscriptionPlansList = () => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/getAllPlans`,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       // setPlans(response.data || []);
       // setFilteredPlans(response.data || []); // Initially set filtered plans
@@ -72,11 +69,8 @@ const SubscriptionPlansList = () => {
         limitAmount: values.limitAmount,
         payAmount: values.payAmount,
       };
-      await axios.post(`${BASE_URL}/order-service/subscriptionPlans`, payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await axiosInstance.post(`${BASE_URL}/order-service/subscriptionPlans`, payload, {
+              });
       notification.success({
         message: "Plan added successfully!",
       });
@@ -95,7 +89,7 @@ const SubscriptionPlansList = () => {
   const updatePlan = async (values) => {
     if (selectedSubscription) {
       try {
-        await axios.patch(
+        await axiosInstance.patch(
           `${BASE_URL}/order-service/updatePlansBasedOnId`,
           {
             planId: selectedSubscription.planId,
@@ -104,10 +98,7 @@ const SubscriptionPlansList = () => {
             payAmount: values.payAmount,
           },
           {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
+                      },
         );
         message.success("Subscription Plan data updated successfully");
         fetchPlans();
@@ -168,17 +159,14 @@ const SubscriptionPlansList = () => {
     setLoading(true);
     try {
       const url = `${BASE_URL}/order-service/activeOrInactive`;
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         url,
         {
           id: planId,
           active: !isActive, // Toggle the status (active -> inactive, inactive -> active)
         },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       message.success("Subscription status updated successfully.");

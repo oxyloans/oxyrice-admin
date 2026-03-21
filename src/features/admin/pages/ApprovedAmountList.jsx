@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Table, Spin, message, Button, Input, Row, Col } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Search } = Input;
 
 const ApprovedAmountList = () => {
+  const { accessToken } = useAuth();
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,9 +17,9 @@ const ApprovedAmountList = () => {
   const fetchApprovedAmounts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/order-service/approvedAmountCustomers`,
-        { headers: { accept: "*/*" } },
+        { headers: { accept: "*/*", Authorization: `Bearer ${accessToken}` } },
       );
       setData(response.data || []);
       setFilteredData(response.data || []); // keep backup for search

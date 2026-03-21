@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
-import axios from "axios";
+import axiosInstance from "../config/axiosInstance";
 import { useNavigate } from "react-router-dom";
-import BASE_URL from "../../core/config/Config";
 
 function AdminLogin() {
   const [form] = Form.useForm();
@@ -67,27 +66,21 @@ function AdminLogin() {
       };
 
       // Get the current BASE_URL which should reflect the active environment
-      const response = await axios.post(
-        `${BASE_URL}/user-service/userEmailPassword`,
+      const response = await axiosInstance.post(
+        `/user-service/userEmailPassword`,
         payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        },
+        { headers: { "Content-Type": "application/json" } },
       );
 
       if (response.data?.status === "Login Successful") {
         // Store auth tokens
-        localStorage.setItem(
-          "token",
-          response.data.accessToken || response.data.token,
-        );
-        localStorage.setItem(
-          "refreshToken",
-          response.data.refreshToken || response.data.refreshToken,
-        );
-        localStorage.setItem("primaryType", response.data.primaryType);
+        localStorage.setItem("adminAccessToken", response.data.accessToken);
+        localStorage.setItem("adminToken", response.data.token);
+        localStorage.setItem("adminRefreshToken", response.data.refreshToke || response.data.refreshToken);
+        localStorage.setItem("adminPrimaryType", response.data.primaryType);
         localStorage.setItem("userId", response.data.userId);
-        localStorage.setItem("lastLogin", new Date().toISOString());
+        localStorage.setItem("adminName", response.data.name);
+      
 
         const primaryType = response.data.primaryType;
         const currentMode = localStorage.getItem("userType") || "live";
@@ -97,36 +90,26 @@ function AdminLogin() {
           // Live environment requires HELPDESKSUPERADMIN
           if (primaryType === "HELPDESKSUPERADMIN") {
             // Success animation
-            message.success({
-              content: "Login successful! Redirecting to dashboard...",
-              duration: 2,
-            });
+            message.success({ content: "Login successful! Redirecting...", duration: 2 });
             setTimeout(() => {
-              navigate("/admin/dashboard");
-            }, 1000); // Delay navigation to show success message
+              const redirect = localStorage.getItem("redirectAfterLogin_admin") || "/admin/dashboard";
+              localStorage.removeItem("redirectAfterLogin_admin");
+              navigate(redirect);
+            }, 1000);
           } else {
-            // Show error if not HELPDESKSUPERADMIN in live environment
-            setError(
-              "Access denied. Only HELPDESKSUPERADMIN users can access Live environment.",
-            );
+            setError("Access denied. Only HELPDESKSUPERADMIN users can access Live environment.");
             triggerShakeAnimation();
           }
         } else if (currentMode === "test") {
-          // Test environment requires SELLER
           if (primaryType === "SELLER") {
-            // Success animation
-            message.success({
-              content: "Login successful! Redirecting to dashboard...",
-              duration: 2,
-            });
+            message.success({ content: "Login successful! Redirecting...", duration: 2 });
             setTimeout(() => {
-              navigate("/admin/dashboard");
-            }, 1000); // Delay navigation to show success message
+              const redirect = localStorage.getItem("redirectAfterLogin_admin") || "/admin/dashboard";
+              localStorage.removeItem("redirectAfterLogin_admin");
+              navigate(redirect);
+            }, 1000);
           } else {
-            // Show error if not SELLER in test environment
-            setError(
-              "Access denied. Only SELLER users can access Test environment.",
-            );
+            setError("Access denied. Only SELLER users can access Test environment.");
             triggerShakeAnimation();
           }
         }

@@ -1,10 +1,10 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { Row, Col, Typography, message, Table, Input, Button } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AgentsAdminLayout from "../components/AgentsAdminLayout";
 import { SearchOutlined } from "@ant-design/icons";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -18,12 +18,10 @@ const ConversationsList = () => {
     total: 0,
   });
   const [searchText, setSearchText] = useState("");
-  const token = localStorage.getItem("token");
-
   const fetchConversations = async (
     pageNumber = 0,
     size = 100,
-    search = ""
+    search = "",
   ) => {
     setLoading(true);
     try {
@@ -35,13 +33,9 @@ const ConversationsList = () => {
         params.append("agentName", search.trim());
       }
 
-      const res = await axios.get(
+      const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/getAllConversations?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        {},
       );
 
       if (res.data && res.data.content) {
@@ -149,7 +143,7 @@ const ConversationsList = () => {
         render: (text) => text || "-",
       },
     ],
-    [pagination.current, pagination.pageSize]
+    [pagination.current, pagination.pageSize],
   );
 
   return (

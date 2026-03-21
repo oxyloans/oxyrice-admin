@@ -25,10 +25,11 @@ import {
   CloseCircleOutlined,
   FileTextOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
+import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -63,11 +64,11 @@ const LeaveManagement = () => {
         let response;
         if (activeTab === "byDate") {
           const formattedDate = formatDateForApi(date);
-          response = await axios.get(
+          response = await axiosInstance.get(
             `${BASE_URL}/user-service/write/leaves/today?specificDate=${formattedDate}`,
           );
         } else {
-          response = await axios.get(
+          response = await axiosInstance.get(
             `${BASE_URL}/user-service/write/leaves/all`,
           );
         }
@@ -152,7 +153,7 @@ const LeaveManagement = () => {
         userId: actionModal.userId,
       };
 
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/user-service/write/adminApproval`,
         requestData,
       );

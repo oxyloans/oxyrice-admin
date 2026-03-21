@@ -12,9 +12,10 @@ import {
 import { DownloadOutlined } from "@ant-design/icons";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
 import { Link } from "react-router-dom";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Option } = Select;
 
@@ -24,20 +25,16 @@ const Customers = () => {
   const [entriesPerPage, setEntriesPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredCustomer, setFilteredCustomer] = useState([]);
-  const accessToken = localStorage.getItem("accessToken");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch customer data from API
   const fetchCustomers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         "https://meta.oxyglobal.tech/api/erice-service/user/allCustomerData",
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
       message.success("Data fetched successfully");
       setCustomers(response.data);

@@ -16,6 +16,7 @@ import {
 import { SearchOutlined, UserOutlined } from "@ant-design/icons";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import BASE_URL from "../../../core/config/Config";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
@@ -32,11 +33,11 @@ const AllEmployeesDailyPlans = () => {
   const [searchText, setSearchText] = useState("");
 
   const screens = useBreakpoint();
-
+const { accessToken } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const accessToken = localStorage.getItem("token");
+        
 
         const response = await fetch(
           `${BASE_URL}/ai-service/agent/planOftheDataEmployes`,

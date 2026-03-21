@@ -4,8 +4,10 @@ import { Table, Card, Spin, message, Input, Row, Col, Select } from "antd";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const getMaskedUserId = (userId) => {
+ 
   if (!userId) return "";
   const str = String(userId);
   return `#${str.slice(-4).padStart(4, "0")}`;
@@ -16,13 +18,14 @@ const WeHiringPage = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-
+ const { accessToken } = useAuth();
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const res = await fetch(
-          `${BASE_URL}/marketing-service/campgin/getAllInterestedUsres`
+          `${BASE_URL}/marketing-service/campgin/getAllInterestedUsres`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch data");
         const json = await res.json();

@@ -13,12 +13,13 @@ import {
   message,
 } from "antd";
 import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import useAuth from "../../../shared/hooks/useAuth";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -35,7 +36,7 @@ const EmployeeRegisteredUsers = () => {
   const fetchEmployees = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/user-service/getAllEmployees`,
       );
       const sorted = response.data.sort((a, b) =>
@@ -75,7 +76,7 @@ const EmployeeRegisteredUsers = () => {
     const testUser = !record.testUser; // toggle value to send
 
     try {
-      await axios.patch(
+      await axiosInstance.patch(
         `${BASE_URL}/user-service/updateEmployeeInActive`,
         {},
         {

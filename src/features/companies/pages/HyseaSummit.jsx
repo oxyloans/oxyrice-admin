@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, message, Typography, Image } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import CompaniesLayout from "../components/CompaniesLayout";
+import useAuth from '../../../shared/hooks/useAuth';
 
 const { Title } = Typography;
 
@@ -18,7 +19,7 @@ const HyseaSummit = () => {
   const fetchBusinessCards = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
+      const response = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/hyseaSummit`,
       );
       setCards(response.data.reverse());

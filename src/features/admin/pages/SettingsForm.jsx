@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Form, Input, InputNumber, Button, message, Row, Col } from "antd";
-import axios from "axios";
+import axiosInstance from "../../../core/config/axiosInstance";
 import AdminPanelLayout from "../components/AdminPanelLayout.jsx";
-const accessToken = localStorage.getItem("accessToken");
+import useAuth from '../../../shared/hooks/useAuth';
 const Settings = () => {
   const [loading, setLoading] = useState(false);
 
@@ -21,14 +21,11 @@ const Settings = () => {
     };
 
     try {
-      const response = await axios.patch(
+      const response = await axiosInstance.patch(
         "https://meta.oxyglobal.tech/api/erice-service/user/settings",
         payload,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
+                  },
       );
 
       if (response.status === 200) {

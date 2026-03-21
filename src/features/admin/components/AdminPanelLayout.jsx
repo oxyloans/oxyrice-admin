@@ -302,8 +302,10 @@ const AdminPanelLayout = ({ children }) => {
   };
 
   const handleSignOut = () => {
+    const currentPath = window.location.pathname + window.location.search;
     localStorage.clear();
     sessionStorage.clear();
+    localStorage.setItem("redirectAfterLogin_admin", currentPath);
     navigate("/");
   };
 
