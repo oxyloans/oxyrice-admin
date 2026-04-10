@@ -38,7 +38,7 @@ const AssistantsList = () => {
   // Table pagination (client view) + server cursor
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 80,
+    pageSize: 20,
     total: 0,
   });
   const [cursorAfter, setCursorAfter] = useState(null);
@@ -55,6 +55,7 @@ const AssistantsList = () => {
   const [toolForm] = Form.useForm();
   const [selectedTools, setSelectedTools] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
   const { accessToken, userId } = useAuth();
 
   // ---------- Utils ----------
@@ -116,7 +117,7 @@ const AssistantsList = () => {
   const handleToggleHideAgent = async (record, hide) => {
     if (!record?.agentId) {
       message.error("Missing agentId");
-      return;
+      return Promise.reject(new Error("Missing agentId"));
     }
 
     try {
@@ -133,20 +134,56 @@ const AssistantsList = () => {
 
       if (!res.ok) throw new Error("Failed to update hide status");
 
-      message.success(
-        hide ? "Agent hidden successfully" : "Agent is now visible",
-      );
-
-      // THIS LINE FIXES THE REFRESH ISSUE
       await fetchAssistants({
         limit: pagination.pageSize,
         replace: true,
         searchValue: searchTerm,
         status: statusFilter,
       });
+
+      message.success(
+        hide ? "Agent hidden successfully" : "Agent is now visible",
+      );
     } catch (err) {
       console.error(err);
       message.error("Failed to update visibility");
+      return Promise.reject(err);
+    }
+  };
+
+  // ---------- Toggle Radha View ----------
+  const handleToggleRadhaView = async (record, status) => {
+    if (!record?.agentId) {
+      message.error("Missing agentId");
+      return Promise.reject(new Error("Missing agentId"));
+    }
+
+    try {
+      const url = `${BASE_URL}/ai-service/agent/update-toview-radha?assistantId=${encodeURIComponent(
+        record.agentId,
+      )}&status=${status}`;
+
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!res.ok) throw new Error("Failed to update radha view status");
+
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter,
+      });
+
+      message.success(
+        status ? "Radha view enabled successfully" : "Radha view disabled successfully",
+      );
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to update radha view status");
+      return Promise.reject(err);
     }
   };
 
@@ -154,7 +191,7 @@ const AssistantsList = () => {
   const handlePermanentDeleteAgent = async (record) => {
     if (!record?.assistantId) {
       message.error("Missing assistantId");
-      return;
+      return Promise.reject(new Error("Missing assistantId"));
     }
 
     try {
@@ -171,54 +208,55 @@ const AssistantsList = () => {
 
       if (!res.ok) throw new Error("Failed to delete agent");
 
-      message.success("Agent Permanent deleted successfully");
-
-      // Refresh the list after deletion
       await fetchAssistants({
         limit: pagination.pageSize,
         replace: true,
         searchValue: searchTerm,
         status: statusFilter,
       });
+
+      message.success("Agent Permanent deleted successfully");
     } catch (err) {
       console.error(err);
       message.error("Failed to delete agent");
+      return Promise.reject(err);
     }
   };
- const handleStatusChanegDeleteAgent = async (record) => {
-   if (!record?.assistantId) {
-     message.error("Missing assistantId");
-     return;
-   }
 
-   try {
-     const url = `${BASE_URL}/ai-service/agent/deleteId/${encodeURIComponent(
-       record.assistantId,
-     )}`;
+  const handleStatusChanegDeleteAgent = async (record) => {
+    if (!record?.assistantId) {
+      message.error("Missing assistantId");
+      return Promise.reject(new Error("Missing assistantId"));
+    }
 
-     const res = await fetch(url, {
-       method: "DELETE",
-       headers: {
-         Authorization: `Bearer ${accessToken}`,
-       },
-     });
+    try {
+      const url = `${BASE_URL}/ai-service/agent/deleteId/${encodeURIComponent(
+        record.assistantId,
+      )}`;
 
-     if (!res.ok) throw new Error("Failed to delete agent");
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-     message.success("Agent Status deleted successfully");
+      if (!res.ok) throw new Error("Failed to delete agent");
 
-     // Refresh the list after deletion
-     await fetchAssistants({
-       limit: pagination.pageSize,
-       replace: true,
-       searchValue: searchTerm,
-       status: statusFilter,
-     });
-   } catch (err) {
-     console.error(err);
-     message.error("Failed to delete agent");
-   }
- };
+      await fetchAssistants({
+        limit: pagination.pageSize,
+        replace: true,
+        searchValue: searchTerm,
+        status: statusFilter,
+      });
+
+      message.success("Agent Status deleted successfully");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete agent");
+      return Promise.reject(err);
+    }
+  };
   // ---------- Fetching ----------
   const fetchAssistants = async ({
     limit,
@@ -433,7 +471,7 @@ const AssistantsList = () => {
   };
 
   const handleSaveStatus = async () => {
-    setLoading(true);
+    setStatusLoading(true);
     try {
       await form.validateFields();
       const values = form.getFieldsValue();
@@ -461,37 +499,16 @@ const AssistantsList = () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(payload),
         },
       );
-      // ─────── SMART SUCCESS DETECTION (This fixes your issue) ───────
-      const responseText = await response.text();
-
-      // Always refresh the list first
-      await fetchAssistants({
-        limit: pagination.pageSize,
-        replace: true,
-        searchValue: searchTerm,
-        status: statusFilter,
-      });
 
       if (!response.ok) throw new Error("Failed to update status");
-      if (values.status === "APPROVED") {
-        message.success("Agent approved successfully!");
-      } else if (values.status === "REJECTED") {
-        message.success("Agent rejected successfully!");
-      } else if (values.status === "PENDING") {
-        message.success("Agent marked as pending!");
-      } else if (values.status === "REQUESTED") {
-        message.success("Agent marked as requested!");
-      } else if (values.status === "DELETED") {
-        message.success("Agent deleted successfully!");
-      } else {
-        message.success("Agent status updated successfully!");
-      }
+
       setStatusModalVisible(false);
+      form.resetFields();
 
       setCursorAfter(null);
       setHasMore(false);
@@ -504,13 +521,21 @@ const AssistantsList = () => {
         searchValue: searchTerm,
         status: statusFilter,
       });
+
+      const successMessages = {
+        APPROVED: "Agent approved successfully!",
+        REJECTED: "Agent rejected successfully!",
+        PENDING: "Agent marked as pending!",
+        REQUESTED: "Agent marked as requested!",
+        DELETED: "Agent deleted successfully!",
+      };
+      message.success(successMessages[values.status] || "Agent status updated successfully!");
     } catch (err) {
       console.error(err);
-
       if (err.errorFields) return;
       message.error(err.message || "Error updating assistant status");
     } finally {
-      setLoading(false);
+      setStatusLoading(false);
     }
   };
 
@@ -842,10 +867,12 @@ const AssistantsList = () => {
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
+              flexWrap: "wrap",
               justifyContent: "center",
               alignItems: "center",
               gap: "8px",
+              maxWidth: "280px",
             }}
           >
             {/* Preview Button */}
@@ -931,6 +958,43 @@ const AssistantsList = () => {
                 }}
               >
                 Permanent Delete
+              </Button>
+            </Tooltip>
+
+            {/* Radha View Toggle Button */}
+            <Tooltip
+              title={
+                record.viewToRadha
+                  ? "Radha view is currently enabled"
+                  : "Radha view is currently disabled"
+              }
+            >
+              <Button
+                size="small"
+                style={{
+                  backgroundColor: record.viewToRadha ? "#722ed1" : "#d9d9d9",
+                  borderColor: record.viewToRadha ? "#722ed1" : "#d9d9d9",
+                  color: record.viewToRadha ? "white" : "#333",
+                  height: "32px",
+                  width: "120px",
+                  fontWeight: 500,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  Modal.confirm({
+                    title: record.viewToRadha
+                      ? "Disable Radha View?"
+                      : "Enable Radha View?",
+                    content: record.viewToRadha
+                      ? "This will disable radha view for this agent."
+                      : "This will enable radha view for this agent.",
+                    okText: record.viewToRadha ? "Disable" : "Enable",
+                    cancelText: "Cancel",
+                    onOk: () => handleToggleRadhaView(record, !record.viewToRadha),
+                  });
+                }}
+              >
+                {record.viewToRadha ? "Radha: ON" : "Radha: OFF"}
               </Button>
             </Tooltip>
 
@@ -1113,7 +1177,6 @@ const AssistantsList = () => {
                     height: "40px",
                     fontWeight: 500,
                   }}
-                  loading={loading}
                   disabled={!selectedAssistant}
                   aria-label="Update Agent status"
                 >
@@ -1449,8 +1512,8 @@ const AssistantsList = () => {
 
             <Button
               type="primary"
-              loading={loading}
-              disabled={loading}
+              loading={statusLoading}
+              disabled={statusLoading}
               style={{
                 backgroundColor: "#008cba",
                 borderColor: "#008cba",
@@ -1461,7 +1524,7 @@ const AssistantsList = () => {
               }}
               onClick={handleSaveStatus}
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {statusLoading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </Modal>

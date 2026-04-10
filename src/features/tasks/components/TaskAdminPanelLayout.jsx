@@ -54,7 +54,7 @@ const TaskAdminPanelLayout = ({ children }) => {
        {
          key: "dashboard-overview",
          label: "Overview",
-       
+
          link: "/taskmanagement/overview",
        },
      ],
@@ -68,12 +68,47 @@ const TaskAdminPanelLayout = ({ children }) => {
        {
          key: "assigned-tasks-list",
          label: "Assigned Tasks",
-      
+
          link: "/taskmanagement/tasks/assigned",
        },
      ],
    },
 
+   {
+     key: "employeeWorkLogs",
+     label: "WhatsApp Reports",
+     icon: <FileTextOutlined />,
+     dropdownItems: [
+       {
+         key: "todayWorkLog",
+         label: "Today POD/EOD",
+         link: "/taskmanagement/work-logs/today",
+       },
+       {
+         key: "workLogHistory",
+         label: "All Employee's Pod/Eod",
+         link: "/taskmanagement/work-logs/history",
+       },
+     ],
+   },
+
+   {
+     key: "dailyReports",
+     label: "System Reports",
+     icon: <BarChartOutlined />,
+     dropdownItems: [
+       {
+         key: "dailyWorkPlan",
+         label: "Daily Plan of the day",
+         link: "/taskmanagement/reports/daily-plan",
+       },
+       {
+         key: "dailyWorkSummary",
+         label: "Daily End of the day",
+         link: "/taskmanagement/reports/daily-summary",
+       },
+     ],
+   },
    {
      key: "teamAttendance",
      label: "Attendance Overview",
@@ -82,7 +117,7 @@ const TaskAdminPanelLayout = ({ children }) => {
        {
          key: "attendance-overview",
          label: "Attendance",
-       
+
          link: "/taskmanagement/attendance",
        },
      ],
@@ -96,48 +131,8 @@ const TaskAdminPanelLayout = ({ children }) => {
        {
          key: "leave-management",
          label: "Leave Management",
-       
+
          link: "/taskmanagement/leave-management",
-       },
-     ],
-   },
-
-   {
-     key: "employeeWorkLogs",
-     label: "Employee Work Logs",
-     icon: <FileTextOutlined />,
-     dropdownItems: [
-       {
-         key: "todayWorkLog",
-         label: "Today's POD/EOD",
-       
-         link: "/taskmanagement/work-logs/today",
-       },
-       {
-         key: "workLogHistory",
-         label: "All Employees Reports",
-        
-         link: "/taskmanagement/work-logs/history",
-       },
-     ],
-   },
-
-   {
-     key: "dailyReports",
-     label: "Daily Plans Reports",
-     icon: <BarChartOutlined />,
-     dropdownItems: [
-       {
-         key: "dailyWorkPlan",
-         label: "Daily Work Plan",
-       
-         link: "/taskmanagement/reports/daily-plan",
-       },
-       {
-         key: "dailyWorkSummary",
-         label: "Daily Work Summary",
-       
-         link: "/taskmanagement/reports/daily-summary",
        },
      ],
    },

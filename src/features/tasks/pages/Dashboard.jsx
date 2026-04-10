@@ -203,8 +203,8 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Employee Admin Dashboard
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              Employee's Admin Dashboard
             </h1>
             <div className="flex items-center text-gray-600 mt-1">
               <Clock className="w-5 h-5 mr-2" />
@@ -245,7 +245,7 @@ export default function Dashboard() {
             value={leaveCount}
             icon={<Home className="w-8 h-8 text-purple-600" />}
             color="purple"
-            onClick={() => navigate("/taskmanagement/employeeleaves")}
+            onClick={() => navigate("/taskmanagement/leave-management")}
             footer="Total leave requests"
             footerIcon={<Calendar className="w-4 h-4" />}
           />
@@ -256,7 +256,7 @@ export default function Dashboard() {
             value={podPosted}
             icon={<Calendar className="w-8 h-8 text-[#1ab394]" />}
             color="green"
-            onClick={() => navigate("/taskmanagement/planoftheday")}
+            onClick={() => navigate("/taskmanagement/reports/daily-plan")}
             footer={
               <div className="w-full">
                 <div className="flex justify-between text-xs mb-1.5">
@@ -279,7 +279,7 @@ export default function Dashboard() {
             value={eodTaskCount}
             icon={<Calendar className="w-8 h-8 text-orange-600" />}
             color="orange"
-            onClick={() => navigate("/taskmanagement/endoftheday")}
+            onClick={() => navigate("/taskmanagement/reports/daily-summary")}
             footer={
               <div className="w-full">
                 <div className="flex justify-between text-xs mb-1.5">

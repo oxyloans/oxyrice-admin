@@ -555,17 +555,15 @@ const AdminTasks = () => {
       title: "S.NO",
       key: "serial",
       align: "center",
-
+      width: 60,
       render: (_text, _record, index) =>
         (pagination.current - 1) * pagination.pageSize + (index + 1),
     },
-
     {
       title: "Task Information",
       key: "task_info",
       align: "center",
       render: (_, record) => {
-        // Handle assignedTo array
         const hasValidAssignee =
           Array.isArray(record.taskAssignTo) &&
           record.taskAssignTo.length > 0 &&
@@ -578,15 +576,8 @@ const AdminTasks = () => {
           : "N/A";
 
         return (
-          <div
-            style={{
-              padding: "8px 12px",
-              textAlign: "left",
-              display: "inline-block",
-              minWidth: 180,
-            }}
-          >
-            <div style={{ fontWeight: 600, color: "#351664", fontSize: 15 }}>
+          <div style={{ textAlign: "left", lineHeight: 1.7 }}>
+            <div style={{ fontWeight: 600, color: "#351664", fontSize: 14 }}>
               Task ID:{" "}
               <span style={{ color: "#008cba" }}>
                 {record.id ? `#${record.id.slice(-4)}` : "N/A"}
@@ -608,7 +599,6 @@ const AdminTasks = () => {
         );
       },
     },
-
     {
       title: "Task Name",
       dataIndex: "taskName",
@@ -617,17 +607,15 @@ const AdminTasks = () => {
       render: (text) => (
         <div
           style={{
-            width: "300px", // enforce width
-            maxWidth: "300px",
-
-            WebkitBoxOrient: "vertical",
-            display: "-webkit-box",
-            textAlign: "center",
-            margin: "0 auto",
-            maxHeight: " 11em", // approx 3 lines
-            overflowX: "auto", // horizontal scroll
+            maxWidth: 280,
+            maxHeight: "10em",
+            overflowY: "auto",
+            textAlign: "left",
+            fontSize: 13,
+            lineHeight: 1.6,
+            wordBreak: "break-word",
           }}
-          title={text} // show full text on hover
+          title={text}
         >
           {text}
         </div>
@@ -639,17 +627,9 @@ const AdminTasks = () => {
       align: "center",
       render: (_, record) => {
         const { tastCreatedDate, status } = record;
-
         return (
-          <div
-            style={{
-              padding: "8px 12px",
-              textAlign: "left",
-              display: "inline-block",
-              minWidth: 170,
-            }}
-          >
-            <div style={{ color: "#555", fontSize: 13, whiteSpace: "nowrap" }}>
+          <div style={{ textAlign: "left", lineHeight: 1.7, fontSize: 13 }}>
+            <div style={{ color: "#555", whiteSpace: "nowrap" }}>
               Assigned Date:{" "}
               <span style={{ color: "#008cba", fontWeight: 500 }}>
                 {record.taskAssignedDate
@@ -659,19 +639,7 @@ const AdminTasks = () => {
                     : "N/A"}
               </span>
             </div>
-
-            {/* <div style={{ color: "#555", fontSize: 13 }}>
-              Completed Date:{" "}
-              <span
-                style={{
-                  color: taskCompleteDate ? "#1ab394" : "#faad14",
-                  fontWeight: 500,
-                }}
-              >
-                {taskCompleteDate ? formatDate(taskCompleteDate) : "Pending"}
-              </span>
-            </div> */}
-            <div style={{ color: "#555", fontSize: 13, marginTop: 4 }}>
+            <div style={{ color: "#555", marginTop: 4 }}>
               Status:{" "}
               <span
                 style={{
@@ -691,37 +659,29 @@ const AdminTasks = () => {
         );
       },
     },
-
     {
       title: "Image & Files",
       dataIndex: "image",
-      width: 150,
       key: "image",
       align: "center",
+      width: 130,
       render: (url) => {
         if (!url) return "-";
-
         const fileUrl = url.toLowerCase();
-
-        // Image formats
         const isImage =
           fileUrl.endsWith(".jpg") ||
           fileUrl.endsWith(".jpeg") ||
           fileUrl.endsWith(".png") ||
           fileUrl.endsWith(".webp") ||
           fileUrl.endsWith(".gif");
-
-        // PDF
         const isPdf = fileUrl.endsWith(".pdf");
-
-        // Excel
         const isExcel = fileUrl.endsWith(".xls") || fileUrl.endsWith(".xlsx");
 
         if (isImage) {
           return (
             <Image
-              width={80}
-              height={80}
+              width={70}
+              height={70}
               src={url}
               preview
               style={{
@@ -732,7 +692,6 @@ const AdminTasks = () => {
             />
           );
         }
-
         return (
           <a
             href={url}
@@ -745,11 +704,12 @@ const AdminTasks = () => {
               fontWeight: 600,
               color: "#2563EB",
               textDecoration: "none",
+              fontSize: 13,
             }}
           >
-            {isPdf && "📄 PDF Document"}
-            {isExcel && "📊 Excel File"}
-            {!isPdf && !isExcel && "View Document"}
+            {isPdf && "📄 PDF"}
+            {isExcel && "📊 Excel"}
+            {!isPdf && !isExcel && "View"}
           </a>
         );
       },
@@ -762,48 +722,35 @@ const AdminTasks = () => {
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            gap: "3px",
-            flexWrap: "wrap",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          {/* Edit Button */}
           <Button
             style={{
               background: "#008cba",
               color: "white",
               fontWeight: 600,
               borderColor: "#008cba",
+              width: "100%",
+              minWidth: 140,
             }}
-            size="medium"
+            size="small"
             onClick={() => handleEdit(record)}
           >
             Re Assigned Task
           </Button>
-
-          {/* Add Comments Button */}
-          {/* <Button
-            icon={<CommentOutlined />}
-            style={{
-              background: "#1ab394",
-              color: "white",
-              borderColor: "#1ab394",
-            }}
-            size="small"
-            onClick={() => handleCommentsAdd(record)}
-          >
-            Admin Comments
-          </Button> */}
-
-          {/* View Button */}
           <Button
             onClick={() => handleViewComments(record)}
-            size="medium"
+            size="small"
             style={{
               background: "#351664",
               color: "#fff",
               borderColor: "#351664",
               fontWeight: 600,
+              width: "100%",
+              minWidth: 140,
             }}
           >
             View / Add Comments
@@ -812,49 +759,35 @@ const AdminTasks = () => {
       ),
     },
   ];
-  <>
-    <style>
-      {`
-      .task-mobile-meta {
-        display: none;
-      }
-
-      @media (max-width: 768px) {
-        .task-mobile-meta {
-          display: block;
-        }
-      }
-    `}
-    </style>
-  </>;
 
   return (
     <TaskAdminPanelLayout>
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: "12px 16px" }}>
         {/* Header */}
-        <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
-          <Col xs={24} lg={8}>
-            <Text strong style={{ fontSize: 20, color: "#008cba" }}>
+        <Row gutter={[12, 12]} align="middle" style={{ marginBottom: 16 }}>
+          <Col xs={24} md={10}>
+            <Text strong style={{ fontSize: 18, color: "#008cba" }}>
               Whatsapp Tasks Assigned Dashboard
             </Text>
           </Col>
-          <Col xs={24} lg={16}>
+          <Col xs={24} md={14}>
             <Row gutter={[8, 8]} justify="end">
-              <Col xs={24} sm={12} md={8}>
+              <Col xs={24} sm={14} md={14}>
                 <Input
                   prefix={<SearchOutlined />}
                   placeholder="Search by name, task..."
                   value={searchText}
                   onChange={(e) => handleSearch(e.target.value)}
                   allowClear
-                  size="large"
+                  size="middle"
+                  style={{ width: "100%" }}
                 />
               </Col>
-              <Col xs={12} sm={6} md={4}>
+              <Col xs={24} sm={10} md={10}>
                 <Select
                   value={statusFilter}
                   onChange={handleStatusFilter}
-                  size="large"
+                  size="middle"
                   style={{ width: "100%" }}
                   placeholder="Status"
                 >
@@ -877,7 +810,7 @@ const AdminTasks = () => {
               minHeight: "300px",
             }}
           >
-            <Spin tip="Loading tasks..." size="medium" />
+            <Spin tip="Loading tasks..." size="large" />
           </div>
         ) : (
           <Table
@@ -885,13 +818,15 @@ const AdminTasks = () => {
             dataSource={filteredTasks}
             rowKey={(record, index) => record.id || index}
             bordered
-            scroll={{ x: true, y: 600 }}
+            scroll={{ x: 600, y: 550 }}
+            size="small"
             pagination={{
               ...pagination,
               pageSizeOptions: ["100", "200", "500", "1000"],
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} of ${total} tasks`,
               position: ["bottomRight"],
+              responsive: true,
               onChange: (page, pageSize) => {
                 setPagination({ current: page, pageSize });
               },
@@ -1051,7 +986,7 @@ const AdminTasks = () => {
           setAdminComment("");
         }}
         footer={null}
-        width="90%"
+        width="95%"
         style={{ maxWidth: 600, top: 20 }}
       >
         {/* Existing comments */}
