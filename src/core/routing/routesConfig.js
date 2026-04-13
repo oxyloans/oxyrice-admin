@@ -246,6 +246,7 @@ const companyAdminRoutes = [
   { path: "fd-sales-images", element: FdSalesImagesPage},
   { path: "business-cards", element: BusinessCards },
   { path: "hysea-summit", element: HyseaSummit },
+  {path:"ai-jobs", element: lazy(() => import("../../features/companies/pages/Aijobspage"))}
 ].map((route) => ({
   loginPath: COMPANIES_LOGIN,
   ...route,

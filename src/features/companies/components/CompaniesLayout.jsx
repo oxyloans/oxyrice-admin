@@ -24,8 +24,7 @@ const CompaniesLayout = ({ children }) => {
   const [openKeys, setOpenKeys] = useState([]);
   const screens = useBreakpoint();
   const [, setIsMobile] = useState(false);
-  const navigate = useNavigate();
-  const entryPoint = localStorage.getItem("entryPoint") || "direct";
+ 
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -56,6 +55,35 @@ const sidebarItems = [
       },
     ],
   },
+
+  {
+    key: "jobs-management",
+    label: "Jobs Management",
+    icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "post-job",
+        label: "Post Job",
+        link: "/admin/jobsmanage",
+      },
+      {
+        key: "jobs-list",
+        label: "Jobs List",
+        link: "/admin/getalljobs",
+      },
+      {
+        key: "ai-jobs",
+        label: "AI Jobs",
+        link: "/admin/ai-jobs",
+      },
+      {
+        key: "we-are-hiring",
+        label: "We Are Hiring",
+        link: "/admin/wearehiring",
+      },
+    ],
+  },
   {
     key: "ibj-ibbs-fd-sales",
     label: "IBJ / IBBS / FD Sales",
@@ -76,30 +104,6 @@ const sidebarItems = [
         key: "manage-fd-sales-images",
         label: "FD Sales Images",
         link: "/admin/fd-sales-images",
-      },
-    ],
-  },
-
-  {
-    key: "job-management",
-    label: "Job Management",
-    icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "post-job",
-        label: "Post Job",
-        link: "/admin/jobsmanage",
-      },
-      {
-        key: "jobs-list",
-        label: "Jobs List",
-        link: "/admin/getalljobs",
-      },
-      {
-        key: "we-are-hiring",
-        label: "We Are Hiring",
-        link: "/admin/wearehiring",
       },
     ],
   },
