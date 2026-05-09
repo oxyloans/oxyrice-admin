@@ -10,10 +10,9 @@ import {
   TeamOutlined,
   BarChartOutlined,
   CalendarOutlined,
-  
+  BankOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
- 
 } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
@@ -131,8 +130,19 @@ const TaskAdminPanelLayout = ({ children }) => {
        {
          key: "leave-management",
          label: "Leave Management",
-
          link: "/taskmanagement/leave-management",
+       },
+     ],
+   },
+   {
+     key: "corporateData",
+     label: "Corporate Updates",
+     icon: <BankOutlined />,
+     dropdownItems: [
+       {
+         key: "corporate-data",
+         label: "POD & EOD Videos",
+         link: "/taskmanagement/corporate-data",
        },
      ],
    },

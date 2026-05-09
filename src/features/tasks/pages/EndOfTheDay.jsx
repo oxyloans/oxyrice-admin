@@ -26,6 +26,7 @@ import {
 } from "antd";
 import useAuth from "../../../shared/hooks/useAuth";
 import dayjs from "dayjs";
+import MediaViewer from "../components/MediaViewer";
 import {
   CalendarOutlined,
   FilterOutlined,
@@ -64,6 +65,7 @@ const EndOfTheDay = () => {
   const [currentTask, setCurrentTask] = useState(null);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [form] = Form.useForm();
+  const [newApiData, setNewApiData] = useState([]);
 
   // State for sorting and searching
   const [sortField, setSortField] = useState("taskAssignedBy"); // Default sort by name
@@ -83,77 +85,52 @@ const EndOfTheDay = () => {
     if (storedUserId) {
       setUserId(storedUserId);
     }
+    axiosInstance
+      .get(`${BASE_URL}/ai-service/agent/employeUserIdSaving`)
+      .catch(() => {});
   }, []);
 
-  // API call to fetch tasks by date
   const fetchTasksByDate = useCallback(async () => {
     if (!selectedDate) {
       showNotification("warning", "Missing Date", "Please select a date.");
       return;
     }
-
     setLoading(true);
     try {
       const formattedDate = selectedDate.format("YYYY-MM-DD");
-
-      const response = await axiosInstance.post(
-        `${BASE_URL}/user-service/write/get-task-by-date`,
-        {
-          taskStatus: status,
-          specificDate: formattedDate,
-        },
-        {
-          headers: {
-            accept: "*/*",
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const [response, newApiResponse] = await Promise.all([
+        axiosInstance.post(
+          `${BASE_URL}/user-service/write/get-task-by-date`,
+          { taskStatus: status, specificDate: formattedDate },
+          { headers: { accept: "*/*", "Content-Type": "application/json" } },
+        ),
+        axiosInstance.post(
+          `${BASE_URL}/ai-service/agent/planOfTheDayForAdmin`,
+          { startDate: formattedDate, endDate: formattedDate },
+          { headers: { "Content-Type": "application/json" } },
+        ).catch(() => ({ data: [] })),
+      ]);
 
       const filteredSameDateTasks = response.data.filter((task) => {
-        const createdDate = task.planCreatedAt
-          ? dayjs(task.planCreatedAt).format("YYYY-MM-DD")
-          : null;
-        const updatedDate = task.planUpdatedAt
-          ? dayjs(task.planUpdatedAt).format("YYYY-MM-DD")
-          : null;
+        const createdDate = task.planCreatedAt ? dayjs(task.planCreatedAt).format("YYYY-MM-DD") : null;
+        const updatedDate = task.planUpdatedAt ? dayjs(task.planUpdatedAt).format("YYYY-MM-DD") : null;
         return createdDate && updatedDate && createdDate === updatedDate;
       });
 
       setTasks(filteredSameDateTasks);
+      setNewApiData(Array.isArray(newApiResponse.data) ? newApiResponse.data : []);
 
-      // Update task statistics
       const taskCount = filteredSameDateTasks.length || 0;
-
-      // Update date task stats - only show plan of the day count
-      setDateTaskStats({
-        pending: taskCount,
-        total: taskCount,
-        date: selectedDate.toDate(),
-      });
+      setDateTaskStats({ pending: taskCount, total: taskCount, date: selectedDate.toDate() });
 
       if (taskCount === 0) {
-        showNotification(
-          "info",
-          "No Tasks Found",
-          `No completed tasks found for ${formattedDate}.`,
-          <FileSearchOutlined style={{ color: "#1890ff" }} />,
-        );
+        showNotification("info", "No Tasks Found", `No completed tasks found for ${formattedDate}.`, <FileSearchOutlined style={{ color: "#1890ff" }} />);
       } else {
-        showNotification(
-          "success",
-          "Tasks Found",
-          `Found ${taskCount} completed tasks for ${formattedDate}.`,
-          <CheckCircleOutlined style={{ color: "#52c41a" }} />,
-        );
+        showNotification("success", "Tasks Found", `Found ${taskCount} completed tasks for ${formattedDate}.`, <CheckCircleOutlined style={{ color: "#52c41a" }} />);
       }
     } catch (error) {
       console.error("Error fetching tasks by date:", error);
-      showNotification(
-        "error",
-        "Fetch Failed",
-        "Failed to fetch tasks. Please try again later.",
-      );
+      showNotification("error", "Fetch Failed", "Failed to fetch tasks. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -408,105 +385,121 @@ const EndOfTheDay = () => {
     }
   };
 
-  const renderTaskCard = (task) => (
-    <Card
-      key={task.id}
-      className="mb-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
-      headStyle={{
-        backgroundColor: "#f6ffed",
-        borderBottom: "1px solidrgba(246, 255, 237, 0.82)",
-        borderRadius: "8px 8px 0 0",
-        padding: "12px 20px",
-      }}
-      bodyStyle={{ padding: "16px 20px" }}
-      title={
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
-            <Avatar
-              icon={<UserOutlined />}
-              style={{
-                backgroundColor: "#52c41a",
-                color: "white",
-              }}
-            />
-            <div className="ml-2">
-              <div className="flex items-center flex-wrap gap-2">
-                {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
-                {task.taskAssignedBy && (
-                  <Tooltip title="Assigned by">
-                    <div className="flex items-center">
-                      <Tag color="blue" className="ml-1 flex items-center">
-                        <TeamOutlined className="mr-1" />
-                        {task.taskAssignedBy}
-                      </Tag>
-                      <span className="ml-2">
-                        Spent hours: {task.timeSpentHours || "N/A"}
-                      </span>
-                    </div>
-                  </Tooltip>
-                )}
-              </div>
-              <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
-                <span>ID: #{task.id.substring(task.id.length - 4)}</span>
-                <Divider type="vertical" className="mx-2" />
-                <span>Updated by: {task.updatedBy || "N/A"}</span>
+  const renderTaskCard = (task) => {
+    const newApiEntry = newApiData.find((d) => d.userId === task.userId);
+    return (
+      <Card
+        key={task.id}
+        className="mb-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+        headStyle={{
+          backgroundColor: "#f6ffed",
+          borderBottom: "1px solid rgba(246, 255, 237, 0.82)",
+          borderRadius: "8px 8px 0 0",
+          padding: "12px 20px",
+        }}
+        bodyStyle={{ padding: "16px 20px" }}
+        title={
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="flex items-center gap-2 mb-2 md:mb-0">
+              <Avatar
+                icon={<UserOutlined />}
+                style={{ backgroundColor: "#52c41a", color: "white" }}
+              />
+              <div className="ml-2">
+                <div className="flex items-center flex-wrap gap-2">
+                  {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
+                  {task.taskAssignedBy && (
+                    <Tooltip title="Assigned by">
+                      <div className="flex items-center">
+                        <Tag color="blue" className="ml-1 flex items-center">
+                          <TeamOutlined className="mr-1" />
+                          {task.taskAssignedBy}
+                        </Tag>
+                        <span className="ml-2">
+                          Spent hours: {task.timeSpentHours || "N/A"}
+                        </span>
+                      </div>
+                    </Tooltip>
+                  )}
+                </div>
+                <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
+                  <span>ID: #{task.id.substring(task.id.length - 4)}</span>
+                  <Divider type="vertical" className="mx-2" />
+                  <span>Updated by: {task.updatedBy || "N/A"}</span>
+                </div>
               </div>
             </div>
+            <Badge
+              status="success"
+              text={
+                <Tag color="success" icon={<ClockCircleOutlined />}>
+                  COMPLETED
+                </Tag>
+              }
+            />
           </div>
-          <Badge
-            status="success"
-            text={
-              <Tag color="success" icon={<ClockCircleOutlined />}>
-                COMPLETED
-              </Tag>
-            }
-          />
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+            <Text className="text-gray-600 font-medium block mb-2">Plan of the Day:</Text>
+            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words" style={{ height: 140, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              <Text className="text-gray-700" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                {task.planOftheDay || "No plan recorded"}
+              </Text>
+            </div>
+            {newApiEntry?.planOfTheDay && (
+              <div className="mt-3">
+                <video controls className="w-full rounded-lg border border-gray-200" style={{ width: "100%", aspectRatio: "16/9", objectFit: "contain", background: "#000", display: "block" }}>
+                  <source src={newApiEntry.planOfTheDay} type="video/mp4" />
+                </video>
+              </div>
+            )}
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+            <Text className="text-gray-600 font-medium block mb-2">End of the Day:</Text>
+            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words" style={{ height: 140, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              <Text className="text-gray-700" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                {task.endOftheDay || "No end-of-day report"}
+              </Text>
+            </div>
+            {newApiEntry?.endOfTheDay && (
+              <div className="mt-3">
+                <video controls className="w-full rounded-lg border border-gray-200" style={{ width: "100%", aspectRatio: "16/9", objectFit: "contain", background: "#000", display: "block" }}>
+                  <source src={newApiEntry.endOfTheDay} type="video/mp4" />
+                </video>
+              </div>
+            )}
+          </div>
         </div>
-      }
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <Text className="text-gray-600 font-medium block mb-2">
-            Plan of the Day:
-          </Text>
-          <div className="max-h-50 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
-            <Text className="whitespace-pre-wrap text-gray-700">
-              {task.planOftheDay || "No plan recorded"}
+
+        {newApiEntry && (
+          <div className="mt-2 text-right">
+            <Text className="text-xs text-gray-400">
+              Media by: {newApiEntry.name}
+            </Text>
+          </div>
+        )}
+
+        {renderPendingResponses(task.pendingUserTaskResponse)}
+
+        <Divider className="my-3" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center gap-2 text-gray-500">
+            <CalendarOutlined />
+            <Text>Created: {formatDate(task.planCreatedAt)}</Text>
+          </div>
+          <div className="flex items-center gap-2 text-gray-500">
+            <CalendarOutlined />
+            <Text>
+              Updated: {formatDate(task.planUpdatedAt || task.planCreatedAt)}
             </Text>
           </div>
         </div>
-
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <Text className="text-gray-600 font-medium block mb-2">
-            End of the Day:
-          </Text>
-          <div className="max-h-50 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
-            <Text className="whitespace-pre-wrap text-gray-700">
-              {task.endOftheDay || "No end-of-day report"}
-            </Text>
-          </div>
-        </div>
-      </div>
-
-      {renderPendingResponses(task.pendingUserTaskResponse)}
-
-      <Divider className="my-3" />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        <div className="flex items-center gap-2 text-gray-500">
-          <CalendarOutlined />
-          <Text>Created: {formatDate(task.planCreatedAt)}</Text>
-        </div>
-
-        <div className="flex items-center gap-2 text-gray-500">
-          <CalendarOutlined />
-          <Text>
-            Updated: {formatDate(task.planUpdatedAt || task.planCreatedAt)}
-          </Text>
-        </div>
-      </div>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   // Component to render date-specific task statistics
   const renderDateTaskStatistics = () => (

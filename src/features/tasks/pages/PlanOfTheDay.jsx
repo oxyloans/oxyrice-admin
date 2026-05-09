@@ -20,7 +20,7 @@ import {
   Form,
   Input,
   Tooltip,
-  Space,
+
   Statistic,
   Row,
   Col,
@@ -28,6 +28,7 @@ import {
 } from "antd";
 import useAuth from "../../../shared/hooks/useAuth";
 import dayjs from "dayjs";
+import MediaViewer from "../components/MediaViewer";
 import {
   CalendarOutlined,
   FilterOutlined,
@@ -56,7 +57,7 @@ const { Panel } = Collapse;
 const { TextArea } = Input;
 const { Search } = Input;
 
-// Custom styles for consistent buttons
+
 const buttonStyle = {
   width: "120px",
   height: "40px",
@@ -66,8 +67,8 @@ const buttonStyle = {
 };
 
 const PlanOfTheDay = () => {
-  // State variables - Set status to static "PENDING" value
-  const status = "PENDING"; // Static status value
+
+  const status = "PENDING"; 
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,33 +78,36 @@ const PlanOfTheDay = () => {
   const [currentTask, setCurrentTask] = useState(null);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [form] = Form.useForm();
+  const [newApiData, setNewApiData] = useState([]);
 
-  // State for sorting and searching
-  const [sortField, setSortField] = useState("taskAssignedBy"); // Default sort by name
-  const [sortOrder, setSortOrder] = useState("ascend"); // Default to ascending (A-Z)
+  
+  const [sortField, setSortField] = useState("taskAssignedBy"); 
+  const [sortOrder, setSortOrder] = useState("ascend"); 
   const [searchText, setSearchText] = useState("");
 
-  // State for task statistics specific to selected date
+
   const [dateTaskStats, setDateTaskStats] = useState({
     pending: 0,
     total: 0,
     date: null,
   });
 
-  // Fetch user ID on component mount
+  
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
       setUserId(storedUserId);
     }
+    axiosInstance
+      .get(`${BASE_URL}/ai-service/agent/employeUserIdSaving`)
+      .catch(() => {});
   }, []);
 
-  // Sort and filter tasks
   useEffect(() => {
     if (tasks.length > 0) {
       let result = [...tasks];
 
-      // Apply search filter
+     
       if (searchText) {
         const normalizedSearchText = searchText.toLowerCase();
         result = result.filter((task) => {
@@ -156,7 +160,7 @@ const PlanOfTheDay = () => {
     }
   }, [tasks, sortField, sortOrder, searchText]);
 
-  // Notification helpers
+  
   const showNotification = (type, message, description, icon) => {
     notification[type]({
       message,
@@ -177,32 +181,38 @@ const PlanOfTheDay = () => {
     try {
       const formattedDate = selectedDate.format("YYYY-MM-DD");
 
-      const response = await axiosInstance.post(
-        `${BASE_URL}/user-service/write/get-task-by-date`,
-        {
-          taskStatus: status,
-          specificDate: formattedDate,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
+      const [response, newApiResponse] = await Promise.all([
+        axiosInstance.post(
+          `${BASE_URL}/user-service/write/get-task-by-date`,
+          { taskStatus: status, specificDate: formattedDate },
+          { headers: { "Content-Type": "application/json" } },
+        ),
+        axiosInstance
+          .post(
+            `${BASE_URL}/ai-service/agent/planOfTheDayForAdmin`,
+            { startDate: formattedDate, endDate: formattedDate },
+            { headers: { "Content-Type": "application/json" } },
+          )
+          .catch(() => ({ data: [] })),
+      ]);
+
+      const pendingTasks = Array.isArray(response.data)
+        ? response.data.filter((task) => task.taskStatus === "PENDING")
+        : [];
+
+      setTasks(pendingTasks);
+      setNewApiData(
+        Array.isArray(newApiResponse.data) ? newApiResponse.data : [],
       );
 
-      setTasks(response.data);
-
-      // Update task statistics based on the fetched data
-      const taskCount = response.data.length || 0;
-
-      // Update date task stats - only show plan of the day count
+      const taskCount = pendingTasks.length || 0;
       setDateTaskStats({
         pending: taskCount,
         total: taskCount,
         date: selectedDate.toDate(),
       });
 
-      if (response.data.length === 0) {
+      if (taskCount === 0) {
         showNotification(
           "info",
           "No Tasks Found",
@@ -213,7 +223,7 @@ const PlanOfTheDay = () => {
         showNotification(
           "success",
           "Tasks Found",
-          `Found ${response.data.length} pending tasks for ${formattedDate}.`,
+          `Found ${taskCount} pending tasks for ${formattedDate}.`,
           <CheckCircleOutlined style={{ color: "#52c41a" }} />,
         );
       }
@@ -288,7 +298,7 @@ const PlanOfTheDay = () => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date || dayjs()); // Fallback to current date if null
-    // Note: No need to call fetchTasksByDate here as it will be triggered by the useEffect
+ 
   };
 
   const handleSortChange = (field) => {
@@ -297,7 +307,7 @@ const PlanOfTheDay = () => {
       setSortOrder(sortOrder === "ascend" ? "descend" : "ascend");
     } else {
       setSortField(field);
-      setSortOrder("descend"); // Default to descending
+      setSortOrder("descend"); 
     }
   };
 
@@ -492,101 +502,159 @@ const PlanOfTheDay = () => {
     );
   };
 
-  const renderTaskCard = (task) => (
-    <Card
-      key={task.id}
-      className="mb-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
-      headStyle={{
-        backgroundColor: "#fff7e6",
-        borderBottom: "1px solid #ffe58f",
-        borderRadius: "8px 8px 0 0",
-        padding: "12px 20px",
-      }}
-      bodyStyle={{ padding: "16px 20px" }}
-      title={
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
-            <Avatar
-              icon={<UserOutlined />}
-              style={{
-                backgroundColor: "#faad14",
-                color: "white",
-              }}
-            />
-            <div className="ml-2">
-              <div className="flex items-center flex-wrap gap-2">
-                {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
-                {task.taskAssignedBy && (
-                  <Tooltip title="Assigned by">
-                    <Tag color="blue" className="ml-1 flex items-center">
-                      <TeamOutlined className="mr-1" />
-                      {task.taskAssignedBy}
-                    </Tag>
-                  </Tooltip>
-                )}
-              </div>
-              <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
-                <span>ID: #{task.id.substring(task.id.length - 4)}</span>
-                <Divider type="vertical" className="mx-2" />
-                <span>Updated by: {task.updatedBy || "N/A"}</span>
+  const renderTaskCard = (task) => {
+    const newApiEntry = newApiData.find((d) => d.userId === task.userId);
+    return (
+      <Card
+        key={task.id}
+        className="mb-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+        headStyle={{
+          backgroundColor: "#fff7e6",
+          borderBottom: "1px solid #ffe58f",
+          borderRadius: "8px 8px 0 0",
+          padding: "12px 20px",
+        }}
+        bodyStyle={{ padding: "16px 20px" }}
+        title={
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div className="flex items-center gap-2 mb-2 md:mb-0">
+              <Avatar
+                icon={<UserOutlined />}
+                style={{ backgroundColor: "#faad14", color: "white" }}
+              />
+              <div className="ml-2">
+                <div className="flex items-center flex-wrap gap-2">
+                  {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
+                  {task.taskAssignedBy && (
+                    <Tooltip title="Assigned by">
+                      <Tag color="blue" className="ml-1 flex items-center">
+                        <TeamOutlined className="mr-1" />
+                        {task.taskAssignedBy}
+                      </Tag>
+                    </Tooltip>
+                  )}
+                </div>
+                <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
+                  <span>ID: #{task.id.substring(task.id.length - 4)}</span>
+                  <Divider type="vertical" className="mx-2" />
+                  <span>Updated by: {task.updatedBy || "N/A"}</span>
+                </div>
               </div>
             </div>
+            <Badge
+              status="warning"
+              text={
+                <Tag color="warning" icon={<ClockCircleOutlined />}>
+                  PENDING
+                </Tag>
+              }
+            />
           </div>
-          <Badge
-            status="warning"
-            text={
-              <Tag color="warning" icon={<ClockCircleOutlined />}>
-                PENDING
-              </Tag>
-            }
-          />
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+            <Text className="text-gray-600 font-medium block mb-2">
+              Plan of the Day:
+            </Text>
+            <div
+              className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words"
+              style={{
+                height: 140,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              <Text
+                className="text-gray-700"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+              >
+                {task.planOftheDay || "No plan recorded"}
+              </Text>
+            </div>
+            {newApiEntry?.planOfTheDay && (
+              <div className="mt-3">
+                <video
+                  controls
+                  className="w-full rounded-lg border border-gray-200"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "16/9",
+                    objectFit: "contain",
+                    background: "#000",
+                    display: "block",
+                  }}
+                >
+                  <source src={newApiEntry.planOfTheDay} type="video/mp4" />
+                </video>
+              </div>
+            )}
+          </div>
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+            <Text className="text-gray-600 font-medium block mb-2">
+              End of the Day:
+            </Text>
+            <div
+              className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words"
+              style={{
+                height: 140,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              <Text
+                className="text-gray-700"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+              >
+                {task.endOftheDay || "No end-of-day report"}
+              </Text>
+            </div>
+            {newApiEntry?.endOfTheDay && (
+              <div className="mt-3">
+                <video
+                  controls
+                  className="w-full rounded-lg border border-gray-200"
+                  style={{
+                    width: "100%",
+                    aspectRatio: "16/9",
+                    objectFit: "contain",
+                    background: "#000",
+                    display: "block",
+                  }}
+                >
+                  <source src={newApiEntry.endOfTheDay} type="video/mp4" />
+                </video>
+              </div>
+            )}
+          </div>
         </div>
-      }
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <Text className="text-gray-600 font-medium block mb-2">
-            Plan of the Day:
-          </Text>
-          <div className="max-h-40 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
-            <Text className="whitespace-pre-wrap text-gray-700">
-              {task.planOftheDay || "No plan recorded"}
+
+        {newApiEntry && (
+          <div className="mt-2 text-right">
+            <Text className="text-xs text-gray-400">
+              Media by: {newApiEntry.name}
             </Text>
           </div>
-        </div>
+        )}
 
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-          <Text className="text-gray-600 font-medium block mb-2">
-            End of the Day:
-          </Text>
-          <div className="max-h-40 overflow-y-auto bg-white p-3 rounded-md border border-gray-100">
-            <Text className="whitespace-pre-wrap text-gray-700">
-              {task.endOftheDay || "No end-of-day report"}
-            </Text>
+        {renderAdminCommentsBox(task)}
+        {renderPendingResponses(task.pendingUserTaskResponse)}
+
+        <Divider className="my-3" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center gap-2 text-gray-500">
+            <CalendarOutlined />
+            <Text>Created: {formatDate(task.planCreatedAt)}</Text>
+          </div>
+          <div className="flex items-center gap-2 text-gray-500">
+            <CalendarOutlined />
+            <Text>Updated: {formatDate(task.planUpdatedAt)}</Text>
           </div>
         </div>
-      </div>
-
-      {/* Render admin comments box for tasks */}
-      {renderAdminCommentsBox(task)}
-
-      {renderPendingResponses(task.pendingUserTaskResponse)}
-
-      <Divider className="my-3" />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        <div className="flex items-center gap-2 text-gray-500">
-          <CalendarOutlined />
-          <Text>Created: {formatDate(task.planCreatedAt)}</Text>
-        </div>
-
-        <div className="flex items-center gap-2 text-gray-500">
-          <CalendarOutlined />
-          <Text>Updated: {formatDate(task.planUpdatedAt)}</Text>
-        </div>
-      </div>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   const renderCommentModal = () => (
     <Modal

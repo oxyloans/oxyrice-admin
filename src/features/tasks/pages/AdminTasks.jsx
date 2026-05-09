@@ -1,9 +1,7 @@
 // /src/AdminTasks.jsx
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Table,
-  Spin,
   Image,
   Typography,
   Input,
@@ -11,12 +9,13 @@ import {
   Button,
   Row,
   Col,
-  Tag,
   Modal,
   Select,
   Empty,
+  Badge,
+  Tooltip,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
@@ -25,735 +24,354 @@ import useAuth from "../../../shared/hooks/useAuth";
 const { Text } = Typography;
 const { Option } = Select;
 
+const STATUS_COLORS = {
+  assigned: { bg: "#e6f4ff", color: "#1677ff", border: "#91caff" },
+  completed: { bg: "#f6ffed", color: "#52c41a", border: "#b7eb8f" },
+  rejected: { bg: "#fff2f0", color: "#ff4d4f", border: "#ffccc7" },
+  deleted: { bg: "#f5f5f5", color: "#8c8c8c", border: "#d9d9d9" },
+  pending: { bg: "#fffbe6", color: "#faad14", border: "#ffe58f" },
+};
+
+const StatusBadge = ({ status }) => {
+  const key = status?.toLowerCase() || "pending";
+  const style = STATUS_COLORS[key] || STATUS_COLORS.pending;
+  return (
+    <span
+      style={{
+        background: style.bg,
+        color: style.color,
+        border: `1px solid ${style.border}`,
+        borderRadius: 12,
+        padding: "2px 10px",
+        fontSize: 12,
+        fontWeight: 600,
+        textTransform: "capitalize",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {status || "Pending"}
+    </span>
+  );
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  try {
+    if (typeof dateString === "string" && dateString.includes("-") && dateString.includes(":")) {
+      const date = new Date(dateString);
+      if (!isNaN(date))
+        return date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+    }
+    if (typeof dateString === "string" && dateString.includes(" ")) {
+      const parts = dateString.split(" ");
+      const monthMap = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+      if (parts.length >= 2 && monthMap[parts[0]] !== undefined) {
+        const day = parseInt(parts[1]);
+        const taskMonth = monthMap[parts[0]];
+        const currentYear = new Date().getFullYear();
+        const year = taskMonth > new Date().getMonth() ? currentYear - 1 : currentYear;
+        return new Date(year, taskMonth, day).toLocaleDateString("en-IN", {
+          year: "numeric", month: "short", day: "numeric",
+        });
+      }
+      return dateString;
+    }
+    const date = new Date(dateString);
+    return isNaN(date) ? dateString : date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+  } catch {
+    return dateString;
+  }
+};
+
 const AdminTasks = () => {
+  const { accessToken } = useAuth();
+
   const [tasks, setTasks] = useState([]);
-  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [totalElements, setTotalElements] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [selectedEmployee, setSelectedEmployee] = useState(null); // ✅ single select
   const [statusFilter, setStatusFilter] = useState("All");
-  const [assignedToFilter, setAssignedToFilter] = useState("All");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
 
-  const getUniqueAssignees = () => {
-    const assignees = new Set();
-    tasks.forEach((task) => {
-      if (Array.isArray(task.taskAssignTo)) {
-        task.taskAssignTo.forEach((name) => {
-          if (name && name.trim()) assignees.add(name.trim());
-        });
-      } else if (task.taskAssignTo && task.taskAssignTo.trim()) {
-        assignees.add(task.taskAssignTo.trim());
-      }
-    });
-    return Array.from(assignees).sort();
-  };
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
 
-  const handleAssignedToFilter = (value) => {
-    setAssignedToFilter(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    applyFilters(searchText, statusFilter, value);
-  };
-
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 100,
-  });
-  const [commentsData, setCommentsData] = useState([]);
-  const [comments, setComments] = useState("");
   const [viewModalVisible, setViewModalVisible] = useState(false);
-
+  const [commentsData, setCommentsData] = useState([]);
   const [adminComment, setAdminComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+
+  const fetchTasks = useCallback(
+    async (page = 1, pageSize = 10) => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(
+          `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            params: { page: page - 1, size: pageSize }, 
+          },
+        );
+
+        const data = response.data;
+        // Handle both paginated { content: [] } and plain array responses
+        const content = Array.isArray(data) ? data : data.content || [];
+        const total = data.totalElements ?? content.length;
+
+        const validTasks = content.filter((task) => {
+          const assigned = task.taskAssignTo;
+          const hasValidAssignee = Array.isArray(assigned)
+            ? assigned.some((a) => a?.trim())
+            : typeof assigned === "string" && assigned.trim();
+          const hasValidTaskName = typeof task.taskName === "string" && task.taskName.trim();
+          return hasValidAssignee && hasValidTaskName;
+        });
+
+        setTasks(validTasks);
+        setTotalElements(total);
+      } catch (error) {
+        message.error("Failed to fetch tasks");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [accessToken],
+  );
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const response = await axiosInstance.get(`${BASE_URL}/user-service/getAllEmployees`);
+      setEmployees(response.data);
+    } catch {
+      message.error("Failed to load employee list");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasks(pagination.current, pagination.pageSize);
+    fetchEmployees();
+  }, []);
+
+  const handleTableChange = (pag) => {
+    setPagination({ current: pag.current, pageSize: pag.pageSize });
+    fetchTasks(pag.current, pag.pageSize);
+  };
 
   const handleViewComments = async (task) => {
+    setSelectedTask(task);
+    setAdminComment("");
+    setCommentsData([]);
+    setViewModalVisible(true);
+    setCommentsLoading(true);
     try {
-      setSelectedTask(task);
-      setAdminComment("");
-      setCommentsData([]);
-      setLoading(true);
-
       const res = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          params: { taskId: task.id },
-        },
+        { headers: { Authorization: `Bearer ${accessToken}` }, params: { taskId: task.id } },
       );
-
       setCommentsData(Array.isArray(res.data) ? res.data : []);
-      setViewModalVisible(true);
-    } catch (e) {
+    } catch {
       message.error("Failed to fetch comments");
     } finally {
-      setLoading(false);
+      setCommentsLoading(false);
     }
   };
+
   const submitAdminComment = async () => {
     if (!selectedTask?.id) return message.warning("Task not selected");
     if (!adminComment.trim()) return message.warning("Please enter a comment");
-
+    setSubmittingComment(true);
     try {
-      setSubmittingComment(true);
-
-      await axiosInstance.post(
-        `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
-        {
-          taskId: selectedTask.id,
-          comments: adminComment.trim(),
-          commentsBy: "ADMIN",
-        },
-      );
-
-      message.success("Admin comment added!");
+      await axiosInstance.post(`${BASE_URL}/ai-service/agent/userAndRadhaSirComments`, {
+        taskId: selectedTask.id,
+        comments: adminComment.trim(),
+        commentsBy: "ADMIN",
+      });
+      message.success("Comment added!");
       setAdminComment("");
-
-      // refresh comments
       const refreshed = await axiosInstance.get(
         `${BASE_URL}/ai-service/agent/taskedIdBasedOnComments`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          params: { taskId: selectedTask.id },
-        },
+        { headers: { Authorization: `Bearer ${accessToken}` }, params: { taskId: selectedTask.id } },
       );
-
       setCommentsData(Array.isArray(refreshed.data) ? refreshed.data : []);
-      fetchTasks(); // optional: refresh main table
-    } catch (e) {
+    } catch {
       message.error("Failed to add comment");
     } finally {
       setSubmittingComment(false);
     }
   };
 
-  const { accessToken } = useAuth();
-
-  const fetchTasks = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get(
-        `${BASE_URL}/ai-service/agent/getAllMessagesFromGroup`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      );
-
-      const reversedTasks = response.data.slice().reverse();
-
-      // ✅ Filter out invalid rows
-      const validTasks = reversedTasks.filter((task) => {
-        const assigned = task.taskAssignTo;
-        const taskName = task.taskName;
-
-        // Check for valid taskAssignTo
-        const hasValidAssignee = (() => {
-          if (!assigned) return false;
-          if (Array.isArray(assigned))
-            return assigned.some((a) => a && a.trim() !== "");
-          if (typeof assigned === "string") return assigned.trim() !== "";
-          return false;
-        })();
-
-        // Check for valid taskName
-        const hasValidTaskName =
-          typeof taskName === "string" && taskName.trim() !== "";
-
-        // ✅ Keep only rows that have both valid taskAssignTo AND valid taskName
-        return hasValidAssignee && hasValidTaskName;
-      });
-
-      validTasks.sort((a, b) => {
-        const parseDate = (dateStr) => {
-          if (!dateStr) return new Date(0);
-
-          // Handle ISO format like "2025-10-25 07:35:47.956"
-          if (
-            typeof dateStr === "string" &&
-            dateStr.includes("-") &&
-            dateStr.includes(":")
-          ) {
-            return new Date(dateStr);
-          }
-
-          if (typeof dateStr === "string" && dateStr.includes(" ")) {
-            const parts = dateStr.split(" ");
-            if (parts.length >= 2) {
-              const month = parts[0];
-              const day = parseInt(parts[1]);
-              const currentYear = new Date().getFullYear();
-              const currentMonth = new Date().getMonth();
-
-              const monthMap = {
-                Jan: 0,
-                Feb: 1,
-                Mar: 2,
-                Apr: 3,
-                May: 4,
-                Jun: 5,
-                Jul: 6,
-                Aug: 7,
-                Sep: 8,
-                Oct: 9,
-                Nov: 10,
-                Dec: 11,
-              };
-
-              if (monthMap[month] !== undefined && !isNaN(day)) {
-                const taskMonth = monthMap[month];
-                let year = currentYear;
-
-                if (taskMonth > currentMonth) {
-                  year = currentYear - 1;
-                }
-
-                return new Date(year, taskMonth, day);
-              }
-            }
-          }
-
-          return new Date(dateStr);
-        };
-
-        const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
-        const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
-        return dateB - dateA;
-      });
-      setTasks(validTasks);
-      setFilteredTasks(validTasks);
-      // ✅ Reset pagination to first page on initial load
-      setPagination({ current: 1, pageSize: 100 });
-    } catch (error) {
-      message.error("Failed to fetch tasks");
-      console.error("Task Fetch Error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ Fetch all employees
-  const fetchEmployees = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `${BASE_URL}/user-service/getAllEmployees`,
-      );
-      setEmployees(response.data);
-    } catch (error) {
-      console.error("Employee Fetch Error:", error);
-      message.error("Failed to load employee list");
-    }
-  };
-
-  useEffect(() => {
-    fetchTasks();
-    fetchEmployees();
-  }, []);
-
-  // ✅ Handle search
-  const handleSearch = (value) => {
-    setSearchText(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    applyFilters(value, statusFilter, assignedToFilter);
-  };
-
-  // ✅ Handle status filter
-  const handleStatusFilter = (value) => {
-    setStatusFilter(value);
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    applyFilters(searchText, value, assignedToFilter);
-  };
-
-  // ✅ Apply combined filters (search + status + assignedTo)
-  const applyFilters = (searchValue, statusValue, assignedToValue) => {
-    let filtered = [...tasks];
-
-    if (statusValue !== "All") {
-      filtered = filtered.filter(
-        (task) => task.status?.toLowerCase() === statusValue.toLowerCase(),
-      );
-    }
-
-    if (assignedToValue !== "All") {
-      filtered = filtered.filter((task) => {
-        if (Array.isArray(task.taskAssignTo)) {
-          return task.taskAssignTo.some(
-            (name) => name?.trim() === assignedToValue,
-          );
-        }
-        return task.taskAssignTo?.trim() === assignedToValue;
-      });
-    }
-
-    if (searchValue.trim()) {
-      filtered = filtered.filter(
-        (task) =>
-          task.taskAssignBy
-            ?.toLowerCase()
-            .includes(searchValue.toLowerCase()) ||
-          (task.taskAssignTo &&
-            (Array.isArray(task.taskAssignTo)
-              ? task.taskAssignTo.some((t) =>
-                  t?.toLowerCase().includes(searchValue.toLowerCase()),
-                )
-              : typeof task.taskAssignTo === "string" &&
-                task.taskAssignTo
-                  .toLowerCase()
-                  .includes(searchValue.toLowerCase()))) ||
-          task.taskName?.toLowerCase().includes(searchValue.toLowerCase()) ||
-          task.status?.toLowerCase().includes(searchValue.toLowerCase()),
-      );
-    }
-    // ✅ Consistent field name for sorting (tastCreatedDate)
-    filtered.sort((a, b) => {
-      const parseDate = (dateStr) => {
-        if (!dateStr) return new Date(0);
-
-        // Handle ISO format like "2025-10-25 07:35:47.956"
-        if (
-          typeof dateStr === "string" &&
-          dateStr.includes("-") &&
-          dateStr.includes(":")
-        ) {
-          return new Date(dateStr);
-        }
-
-        if (typeof dateStr === "string" && dateStr.includes(" ")) {
-          const parts = dateStr.split(" ");
-          if (parts.length >= 2) {
-            const month = parts[0];
-            const day = parseInt(parts[1]);
-            const currentYear = new Date().getFullYear();
-            const currentMonth = new Date().getMonth();
-
-            const monthMap = {
-              Jan: 0,
-              Feb: 1,
-              Mar: 2,
-              Apr: 3,
-              May: 4,
-              Jun: 5,
-              Jul: 6,
-              Aug: 7,
-              Sep: 8,
-              Oct: 9,
-              Nov: 10,
-              Dec: 11,
-            };
-
-            if (monthMap[month] !== undefined && !isNaN(day)) {
-              const taskMonth = monthMap[month];
-              let year = currentYear;
-
-              if (taskMonth > currentMonth) {
-                year = currentYear - 1;
-              }
-
-              return new Date(year, taskMonth, day);
-            }
-          }
-        }
-
-        return new Date(dateStr);
-      };
-
-      const dateA = parseDate(a.taskAssignedDate || a.tastCreatedDate);
-      const dateB = parseDate(b.taskAssignedDate || b.tastCreatedDate);
-      return dateB - dateA;
-    });
-    setFilteredTasks(filtered);
-  };
-
-  // ✅ Status tag renderer
-  const getStatusTag = (status) => {
-    let color, text;
-    switch (status?.toLowerCase()) {
-      case "assigned":
-        color = "blue";
-        text = "Assigned";
-        break;
-      case "completed":
-        color = "green";
-        text = "Completed";
-        break;
-      case "rejected":
-        color = "red";
-        text = "Rejected";
-        break;
-      case "deleted":
-        color = "gray";
-        text = "Deleted";
-        break;
-      default:
-        color = "gold";
-        text = "Pending";
-    }
-    return (
-      <Tag
-        color={color}
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          textTransform: "capitalize",
-          borderRadius: 8,
-          padding: "3px 10px",
-        }}
-      >
-        {text}
-      </Tag>
-    );
-  };
-
-  // ✅ Edit modal open
-  const handleEdit = (task) => {
-    setSelectedTask(task);
-    setSelectedEmployee(null);
-    setEditModalVisible(true);
-  };
-  const handleCommentsAdd = (task) => {
-    setSelectedTask(task);
-
-    setCommentsModalVisible(true);
-  };
-  const handleCommentsUpdate = async () => {
-    if (!comments.trim()) {
-      message.warning("Please enter a comment before submitting.");
-      return;
-    }
-
-    try {
-      await axiosInstance.post(
-        `${BASE_URL}/ai-service/agent/userAndRadhaSirComments`,
-        {
-          taskId: selectedTask.id,
-          comments: comments,
-          commentsBy: "ADMIN",
-        },
-        {},
-      );
-
-      message.success("Comments added successfully!");
-      setCommentsModalVisible(false);
-      setComments(""); // clear input
-      fetchTasks();
-    } catch (error) {
-      console.error("Update Error:", error);
-      message.error("Failed to add comment");
-    }
-  };
-
   const handleAssignUpdate = async () => {
-    if (!selectedTask || !selectedEmployee) {
-      message.warning("Please select one employee.");
-      return;
-    }
-
+    if (!selectedTask || !selectedEmployee) return message.warning("Please select one employee.");
     const emp = employees.find((e) => e.userId === selectedEmployee);
-    const selectedName = emp ? emp.name : "";
-
     try {
       await axiosInstance.patch(
         `${BASE_URL}/ai-service/agent/taskAssignedToRadhaSir`,
-        null, // no request body
-        {
-          params: {
-            id: selectedTask.id,
-            assignedTo: selectedName,
-            userId: selectedEmployee,
-          },
-        },
+        null,
+        { params: { id: selectedTask.id, assignedTo: emp?.name || "", userId: selectedEmployee } },
       );
-
-      message.success("Task updated successfully!");
+      message.success("Task reassigned successfully!");
       setEditModalVisible(false);
-      fetchTasks();
-    } catch (error) {
-      console.error("Update Error:", error);
+      fetchTasks(pagination.current, pagination.pageSize);
+    } catch {
       message.error("Failed to update task");
     }
   };
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
 
-    try {
-      // Handle ISO format like "2025-10-25 07:35:47.956"
-      if (
-        typeof dateString === "string" &&
-        dateString.includes("-") &&
-        dateString.includes(":")
-      ) {
-        const date = new Date(dateString);
-        if (!isNaN(date)) {
-          return date.toLocaleDateString("en-IN", {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-          });
-        }
-      }
+  // Client-side filter on current page data
+  const filteredTasks = tasks.filter((task) => {
+    const matchStatus =
+      statusFilter === "All" || task.status?.toLowerCase() === statusFilter.toLowerCase();
+    const q = searchText.toLowerCase().trim();
+    const matchSearch =
+      !q ||
+      task.taskAssignBy?.toLowerCase().includes(q) ||
+      task.taskName?.toLowerCase().includes(q) ||
+      task.status?.toLowerCase().includes(q) ||
+      (Array.isArray(task.taskAssignTo)
+        ? task.taskAssignTo.some((t) => t?.toLowerCase().includes(q))
+        : task.taskAssignTo?.toLowerCase().includes(q));
+    return matchStatus && matchSearch;
+  });
 
-      // Handle "Jan 23 Friday" format
-      if (typeof dateString === "string" && dateString.includes(" ")) {
-        const parts = dateString.split(" ");
-        if (parts.length >= 2) {
-          const month = parts[0];
-          const day = parseInt(parts[1]);
-          const currentYear = new Date().getFullYear();
-          const currentMonth = new Date().getMonth();
-
-          const monthMap = {
-            Jan: 0,
-            Feb: 1,
-            Mar: 2,
-            Apr: 3,
-            May: 4,
-            Jun: 5,
-            Jul: 6,
-            Aug: 7,
-            Sep: 8,
-            Oct: 9,
-            Nov: 10,
-            Dec: 11,
-          };
-
-          if (monthMap[month] !== undefined && !isNaN(day)) {
-            const taskMonth = monthMap[month];
-            let year = currentYear;
-
-            if (taskMonth > currentMonth) {
-              year = currentYear - 1;
-            }
-
-            const date = new Date(year, taskMonth, day);
-            return date.toLocaleDateString("en-IN", {
-              year: "numeric",
-              month: "numeric",
-              day: "numeric",
-            });
-          }
-        }
-        return dateString;
-      }
-
-      const date = new Date(dateString);
-      if (isNaN(date)) return dateString;
-
-      return date.toLocaleDateString("en-IN", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      });
-    } catch (error) {
-      return dateString;
-    }
-  };
-
-  // ✅ Table columns
   const columns = [
     {
-      title: "S.NO",
+      title: "#",
       key: "serial",
       align: "center",
-      width: 60,
-      render: (_text, _record, index) =>
-        (pagination.current - 1) * pagination.pageSize + (index + 1),
+      width: 55,
+      render: (_t, _r, index) =>
+        (pagination.current - 1) * pagination.pageSize + index + 1,
     },
     {
-      title: "Task Information",
+      title: "Task Info",
       key: "task_info",
-      align: "center",
       render: (_, record) => {
-        const hasValidAssignee =
-          Array.isArray(record.taskAssignTo) &&
-          record.taskAssignTo.length > 0 &&
-          record.taskAssignTo.some((a) => a && a.trim() !== "");
-
-        const assignedToText = hasValidAssignee
-          ? Array.isArray(record.taskAssignTo)
-            ? record.taskAssignTo.join(", ")
-            : record.taskAssignTo
-          : "N/A";
-
+        const assignedTo = Array.isArray(record.taskAssignTo)
+          ? record.taskAssignTo.join(", ")
+          : record.taskAssignTo || "N/A";
         return (
-          <div style={{ textAlign: "left", lineHeight: 1.7 }}>
-            <div style={{ fontWeight: 600, color: "#351664", fontSize: 14 }}>
-              Task ID:{" "}
-              <span style={{ color: "#008cba" }}>
-                {record.id ? `#${record.id.slice(-4)}` : "N/A"}
-              </span>
+          <div style={{ lineHeight: 1.8 }}>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+              ID:{" "}
+              <Text strong style={{ color: "#1677ff", fontSize: 12 }}>
+                #{record.id?.slice(-6) || "N/A"}
+              </Text>
             </div>
-            <div style={{ color: "#555", fontSize: 13 }}>
-              Assigned By:{" "}
-              <span style={{ fontWeight: 500, color: "#1ab394" }}>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+              By:{" "}
+              <Text strong style={{ color: "#1ab394", fontSize: 12 }}>
                 {record.taskAssignBy || "N/A"}
-              </span>
+              </Text>
             </div>
-            <div style={{ color: "#555", fontSize: 13 }}>
-              Assigned To:{" "}
-              <span style={{ fontWeight: 500, color: "#008cba" }}>
-                {assignedToText}
-              </span>
+            <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+              To:{" "}
+              <Tooltip title={assignedTo}>
+                <Text
+                  strong
+                  style={{
+                    color: "#1677ff",
+                    fontSize: 12,
+                    maxWidth: 180,
+                    display: "inline-block",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    verticalAlign: "bottom",
+                  }}
+                >
+                  {assignedTo}
+                </Text>
+              </Tooltip>
             </div>
           </div>
         );
       },
     },
     {
-      title: "Task Name",
+      title: "Task",
       dataIndex: "taskName",
       key: "taskName",
-      align: "center",
       render: (text) => (
         <div
           style={{
-            maxWidth: 280,
-            maxHeight: "10em",
+            maxWidth: 300,
+            maxHeight: "8em",
             overflowY: "auto",
-            textAlign: "left",
             fontSize: 13,
             lineHeight: 1.6,
             wordBreak: "break-word",
+            color: "#262626",
           }}
-          title={text}
         >
           {text}
         </div>
       ),
     },
     {
-      title: "Task Timeline",
-      key: "task_timeline",
+      title: "Date & Status",
+      key: "timeline",
       align: "center",
-      render: (_, record) => {
-        const { tastCreatedDate, status } = record;
-        return (
-          <div style={{ textAlign: "left", lineHeight: 1.7, fontSize: 13 }}>
-            <div style={{ color: "#555", whiteSpace: "nowrap" }}>
-              Assigned Date:{" "}
-              <span style={{ color: "#008cba", fontWeight: 500 }}>
-                {record.taskAssignedDate
-                  ? formatDate(record.taskAssignedDate)
-                  : tastCreatedDate
-                    ? formatDate(tastCreatedDate)
-                    : "N/A"}
-              </span>
-            </div>
-            <div style={{ color: "#555", marginTop: 4 }}>
-              Status:{" "}
-              <span
-                style={{
-                  color:
-                    status?.toLowerCase() === "assigned"
-                      ? "#008CBA"
-                      : status?.toLowerCase() === "completed"
-                        ? "#1AB394"
-                        : "#555",
-                  fontWeight: "bold",
-                }}
-              >
-                {status}
-              </span>
-            </div>
+      render: (_, record) => (
+        <div style={{ lineHeight: 2 }}>
+          <div style={{ fontSize: 12, color: "#8c8c8c" }}>
+            {formatDate(record.taskAssignedDate || record.tastCreatedDate)}
           </div>
-        );
-      },
+          <StatusBadge status={record.status} />
+        </div>
+      ),
     },
     {
-      title: "Image & Files",
+      title: "Attachment",
       dataIndex: "image",
       key: "image",
       align: "center",
-      width: 130,
+      width: 100,
       render: (url) => {
-        if (!url) return "-";
-        const fileUrl = url.toLowerCase();
-        const isImage =
-          fileUrl.endsWith(".jpg") ||
-          fileUrl.endsWith(".jpeg") ||
-          fileUrl.endsWith(".png") ||
-          fileUrl.endsWith(".webp") ||
-          fileUrl.endsWith(".gif");
-        const isPdf = fileUrl.endsWith(".pdf");
-        const isExcel = fileUrl.endsWith(".xls") || fileUrl.endsWith(".xlsx");
-
-        if (isImage) {
+        if (!url) return <Text type="secondary" style={{ fontSize: 12 }}>—</Text>;
+        const lower = url.toLowerCase();
+        const isImage = /\.(jpg|jpeg|png|webp|gif)$/.test(lower);
+        const isPdf = lower.endsWith(".pdf");
+        const isExcel = /\.xlsx?$/.test(lower);
+        if (isImage)
           return (
             <Image
-              width={70}
-              height={70}
+              width={60}
+              height={60}
               src={url}
               preview
-              style={{
-                borderRadius: "6px",
-                objectFit: "cover",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-              }}
+              style={{ borderRadius: 6, objectFit: "cover", boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}
             />
           );
-        }
         return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontWeight: 600,
-              color: "#2563EB",
-              textDecoration: "none",
-              fontSize: 13,
-            }}
-          >
-            {isPdf && "📄 PDF"}
-            {isExcel && "📊 Excel"}
-            {!isPdf && !isExcel && "View"}
+          <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 20 }}>
+            {isPdf ? "📄" : isExcel ? "📊" : "🔗"}
           </a>
         );
       },
     },
     {
-      title: "Action",
+      title: "Actions",
       key: "action",
       align: "center",
+      width: 160,
       render: (_, record) => (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <Button
-            style={{
-              background: "#008cba",
-              color: "white",
-              fontWeight: 600,
-              borderColor: "#008cba",
-              width: "100%",
-              minWidth: 140,
-            }}
             size="small"
-            onClick={() => handleEdit(record)}
+            style={{ background: "#1677ff", color: "#fff", border: "none", fontWeight: 600, borderRadius: 6 }}
+            onClick={() => { setSelectedTask(record); setSelectedEmployee(null); setEditModalVisible(true); }}
           >
-            Re Assigned Task
+            Reassign
           </Button>
           <Button
-            onClick={() => handleViewComments(record)}
             size="small"
-            style={{
-              background: "#351664",
-              color: "#fff",
-              borderColor: "#351664",
-              fontWeight: 600,
-              width: "100%",
-              minWidth: 140,
-            }}
+            style={{ background: "#351664", color: "#fff", border: "none", fontWeight: 600, borderRadius: 6 }}
+            onClick={() => handleViewComments(record)}
           >
-            View / Add Comments
+            Comments
           </Button>
         </div>
       ),
@@ -762,111 +380,112 @@ const AdminTasks = () => {
 
   return (
     <TaskAdminPanelLayout>
-      <div style={{ padding: "12px 16px" }}>
+      <div style={{ padding: "16px" }}>
         {/* Header */}
         <Row gutter={[12, 12]} align="middle" style={{ marginBottom: 16 }}>
-          <Col xs={24} md={10}>
-            <Text strong style={{ fontSize: 18, color: "#008cba" }}>
-              Whatsapp Tasks Assigned Dashboard
-            </Text>
+          <Col xs={24} md={8}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <Text strong style={{ fontSize: 17, color: "#000000" }}>
+                WhatsApp Tasks Dashboard
+              </Text>
+              <Badge
+                count={totalElements}
+                style={{ backgroundColor: "#ffffff" }}
+                overflowCount={9999}
+              />
+            </div>
           </Col>
-          <Col xs={24} md={14}>
+          <Col xs={24} md={16}>
             <Row gutter={[8, 8]} justify="end">
-              <Col xs={24} sm={14} md={14}>
+              <Col xs={24} sm={12} md={12}>
                 <Input
-                  prefix={<SearchOutlined />}
-                  placeholder="Search by name, task..."
+                  prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
+                  placeholder="Search task, name, status..."
                   value={searchText}
-                  onChange={(e) => handleSearch(e.target.value)}
+                  onChange={(e) => setSearchText(e.target.value)}
                   allowClear
-                  size="middle"
-                  style={{ width: "100%" }}
+                  style={{ borderRadius: 8 }}
                 />
               </Col>
-              <Col xs={24} sm={10} md={10}>
+              <Col xs={12} sm={8} md={7}>
                 <Select
                   value={statusFilter}
-                  onChange={handleStatusFilter}
-                  size="middle"
+                  onChange={setStatusFilter}
                   style={{ width: "100%" }}
-                  placeholder="Status"
                 >
-                  <Option value="All">ALL STATUS</Option>
-                  <Option value="assigned">ASSIGNED</Option>
-                  <Option value="completed">COMPLETED</Option>
+                  <Option value="All">All Status</Option>
+                  <Option value="assigned">Assigned</Option>
+                  <Option value="completed">Completed</Option>
+                  <Option value="rejected">Rejected</Option>
                 </Select>
+              </Col>
+              <Col xs={12} sm={4} md={5}>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={() => fetchTasks(pagination.current, pagination.pageSize)}
+                  loading={loading}
+                  style={{ width: "100%", borderRadius: 8 }}
+                >
+                  Refresh
+                </Button>
               </Col>
             </Row>
           </Col>
         </Row>
 
-        {/* Table */}
-        {loading ? (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: "300px",
-            }}
-          >
-            <Spin tip="Loading tasks..." size="large" />
-          </div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredTasks}
-            rowKey={(record, index) => record.id || index}
-            bordered
-            scroll={{ x: 600, y: 550 }}
-            size="small"
-            pagination={{
-              ...pagination,
-              pageSizeOptions: ["100", "200", "500", "1000"],
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} tasks`,
-              position: ["bottomRight"],
-              responsive: true,
-              onChange: (page, pageSize) => {
-                setPagination({ current: page, pageSize });
-              },
-              onShowSizeChange: (current, size) => {
-                setPagination({ current: 1, pageSize: size });
-              },
-            }}
-          />
-        )}
+        <Table
+          columns={columns}
+          dataSource={filteredTasks}
+          rowKey={(record, index) => record.id || index}
+          loading={loading}
+          bordered
+          size="small"
+          scroll={{ x: 700, y: 520 }}
+          rowClassName={(_, index) => (index % 2 === 0 ? "" : "ant-table-row-alt")}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: totalElements,
+            showSizeChanger: true,
+            pageSizeOptions: ["10", "20", "50", "100"],
+            showTotal: (total, range) => `${range[0]}–${range[1]} of ${total} tasks`,
+            position: ["bottomRight"],
+          }}
+          onChange={handleTableChange}
+        />
       </div>
 
-      {/* Edit Modal */}
+      {/* Reassign Modal */}
       <Modal
-        title="Edit Assigned User"
+        title={
+          <span>
+            Reassign Task{" "}
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              #{selectedTask?.id?.slice(-6)}
+            </Text>
+          </span>
+        }
         open={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         onOk={handleAssignUpdate}
-        okText="Update"
-        okButtonProps={{
-          style: {
-            backgroundColor: "#008cba",
-            color: "white",
-            border: "none",
-            fontWeight: 500,
-          },
-        }}
-        cancelButtonProps={{
-          style: {
-            fontWeight: 500,
-          },
-        }}
+        okText="Reassign"
+        okButtonProps={{ style: { backgroundColor: "#1677ff", border: "none" } }}
       >
-        <p style={{ marginBottom: 8, fontWeight: 500 }}>Select Employee:</p>
+        <div style={{ marginBottom: 8 }}>
+          <Text strong>Current Assignee: </Text>
+          <Text style={{ color: "#1ab394" }}>
+            {Array.isArray(selectedTask?.taskAssignTo)
+              ? selectedTask.taskAssignTo.join(", ")
+              : selectedTask?.taskAssignTo || "N/A"}
+          </Text>
+        </div>
+        <p style={{ marginBottom: 8, fontWeight: 500 }}>Select New Employee:</p>
         <Select
           showSearch
-          required
           style={{ width: "100%" }}
-          placeholder="Select employee"
+          placeholder="Search and select employee"
           value={selectedEmployee}
-          onChange={(value) => setSelectedEmployee(value)}
+          onChange={setSelectedEmployee}
           optionFilterProp="children"
           filterOption={(input, option) =>
             option.children.toLowerCase().includes(input.toLowerCase())
@@ -879,165 +498,113 @@ const AdminTasks = () => {
           ))}
         </Select>
       </Modal>
-      {/* <Modal
-  title={`Task Comments - ${
-    selectedTask ? `#${selectedTask.id.slice(-4)}` : ""
-  }`}
-  open={viewModalVisible}
-  onCancel={() => setViewModalVisible(false)}
-  footer={null}
-  width={700}
->
-  {commentsData.length > 0 ? (
-    <Table
-      dataSource={commentsData}
-      pagination={false}
-      bordered
-      scroll={{x:"true"}}
-      rowKey={(record, index) => index}
-      columns={[
-        {
-          title: "S.No",
-          key: "sno",
-          align: "center",
-          render: (_, __, index) => index + 1,
-          width: 70,
-         
-        },
-        {
-          title: "Comment By",
-          dataIndex: "commentsBy",
-          key: "commentsBy",
-          align: "center",
-          render: (text) => (
-            <span style={{ color: "#1ab394", fontWeight: 500 }}>{text}</span>
-          ),
-        },
-        {
-          title: "Comment",
-          dataIndex: "comments",
-          key: "comments",
-          align: "center",
-          render: (text) => (
-            <span style={{ color: "#333" }}>{text}</span>
-          ),
-        },
-        {
-          title: "Status",
-          dataIndex: "status",
-          key: "status",
-          align: "center" ,
-          render: (status) => {
-            let color = "blue";
-            if (status?.toLowerCase() === "completed") color = "green";
-            else if (status?.toLowerCase() === "rejected") color = "red";
 
-            return (
-              <Tag color={color} style={{ fontWeight: 500 }}>
-                {status || "N/A"}
-              </Tag>
-            );
-          },
-          width: 120,
-        },
-      ]}
-      style={{
-        marginTop: 10,
-      }}
-    />
-  ) : (
-    <Text type="secondary">No comments found for this task.</Text>
-  )}
-</Modal>
+      {/* Comments Modal */}
       <Modal
-        title="Add Comments"
-        open={commentsModalVisible}
-        onCancel={() => setCommentsModalVisible(false)}
-        onOk={handleCommentsUpdate}
-        okText="Add Comments"
-        okButtonProps={{
-          style: {
-            backgroundColor: "#008cba",
-            color: "white",
-            border: "none",
-            fontWeight: 500,
-          },
-        }}
-        cancelButtonProps={{
-          style: {
-            fontWeight: 500,
-          },
-        }}
-      >
-        <p style={{ marginBottom: 8, fontWeight: 500 }}>Enter Comments:</p>
-        <Input.TextArea
-          value={comments}
-          onChange={(e) => setComments(e.target.value)}
-          placeholder="Enter your comments"
-          required
-          rows={4}
-        />
-      </Modal> */}
-      <Modal
-        title={`Comments ${selectedTask?.id ? `- #${selectedTask.id.slice(-4)}` : ""}`}
+        title={
+          <span>
+            Comments{" "}
+            <Text type="secondary" style={{ fontSize: 13 }}>
+              #{selectedTask?.id?.slice(-6)}
+            </Text>
+            {commentsData.length > 0 && (
+              <Badge count={commentsData.length} style={{ marginLeft: 8, backgroundColor: "#1ab394" }} />
+            )}
+          </span>
+        }
         open={viewModalVisible}
-        onCancel={() => {
-          setViewModalVisible(false);
-          setAdminComment("");
-        }}
+        onCancel={() => { setViewModalVisible(false); setAdminComment(""); }}
         footer={null}
-        width="95%"
-        style={{ maxWidth: 600, top: 20 }}
+        width="min(95vw, 580px)"
+        style={{ top: 20 }}
       >
-        {/* Existing comments */}
-        {commentsData.length === 0 ? (
-          <Empty description="No comments" size="small" />
-        ) : (
-          <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 16 }}>
-            {commentsData.map((comment, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: 8,
-                  borderBottom: "1px solid #f0f0f0",
-                  fontSize: 13,
-                }}
-              >
-                <strong style={{ color: "#1ab394" }}>
-                  {comment.commentsBy}:
-                </strong>
-                <div style={{ marginTop: 4 }}>{comment.comments}</div>
-              </div>
-            ))}
+        {/* Task summary */}
+        {selectedTask && (
+          <div
+            style={{
+              background: "#f0f5ff",
+              border: "1px solid #adc6ff",
+              borderRadius: 8,
+              padding: "8px 12px",
+              marginBottom: 12,
+              fontSize: 13,
+            }}
+          >
+            <Text strong style={{ color: "#1677ff" }}>Task: </Text>
+            <Text style={{ color: "#262626" }}>{selectedTask.taskName}</Text>
           </div>
         )}
 
+        {/* Comments list */}
+        <div
+          style={{
+            maxHeight: 260,
+            overflowY: "auto",
+            marginBottom: 12,
+            border: "1px solid #f0f0f0",
+            borderRadius: 8,
+          }}
+        >
+          {commentsLoading ? (
+            <div style={{ padding: 24, textAlign: "center", color: "#8c8c8c" }}>Loading comments...</div>
+          ) : commentsData.length === 0 ? (
+            <Empty description="No comments yet" style={{ padding: 24 }} />
+          ) : (
+            commentsData.map((comment, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: "10px 14px",
+                  borderBottom: index < commentsData.length - 1 ? "1px solid #f5f5f5" : "none",
+                  background: comment.commentsBy === "ADMIN" ? "#f6ffed" : "#fff",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <Text
+                    strong
+                    style={{
+                      color: comment.commentsBy === "ADMIN" ? "#52c41a" : "#1677ff",
+                      fontSize: 12,
+                    }}
+                  >
+                    {comment.commentsBy}
+                  </Text>
+                  {comment.createdAt && (
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                      {formatDate(comment.createdAt)}
+                    </Text>
+                  )}
+                </div>
+                <div style={{ fontSize: 13, color: "#262626", lineHeight: 1.6 }}>
+                  {comment.comments}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Add comment */}
-        <div style={{ background: "#f9f9f9", padding: 12, borderRadius: 6 }}>
-          <div style={{ marginBottom: 8, fontWeight: 500, fontSize: 14 }}>
+        <div style={{ background: "#fafafa", padding: 12, borderRadius: 8, border: "1px solid #f0f0f0" }}>
+          <Text strong style={{ fontSize: 13, display: "block", marginBottom: 8 }}>
             Add Comment
-          </div>
+          </Text>
           <Input.TextArea
             value={adminComment}
             onChange={(e) => setAdminComment(e.target.value)}
-            placeholder="Type comment..."
-            rows={2}
+            placeholder="Type your comment here..."
+            rows={3}
             maxLength={500}
             showCount
+            style={{ borderRadius: 6 }}
           />
           <Button
             type="primary"
             loading={submittingComment}
             onClick={submitAdminComment}
-            style={{
-              marginTop: 8,
-              backgroundColor: "#008cba",
-              borderColor: "#008cba",
-              fontSize: 12,
-            }}
+            style={{ marginTop: 8, backgroundColor: "#1677ff", borderRadius: 6 }}
             size="small"
           >
-            Submit
+            Submit Comment
           </Button>
         </div>
       </Modal>

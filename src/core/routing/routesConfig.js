@@ -41,6 +41,9 @@ const TodayPlans = lazy(
 const AllEmployeesDailyPlans = lazy(
   () => import("../../features/tasks/pages/AllEmployeesDailyPlans"),
 );
+const CorporateData = lazy(
+  () => import("../../features/tasks/pages/CorporateData"),
+);
 
 // AdminPages
 const AllQueries = lazy(() => import("../../features/admin/pages/AllQueriesForAdmin"));
@@ -288,6 +291,7 @@ const taskManagementRoutes = [
   { path: "attendance", element: TeamAttendanceReport },
   { path: "employee_registered_users", element: EmployeeRegisteredUsers },
   { path: "overview", element: Dashboard },
+  { path: "corporate-data", element: CorporateData },
 ].map((route) => ({
   ...route,
   loginPath: TASK_LOGIN,
