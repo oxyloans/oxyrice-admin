@@ -19,10 +19,12 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
+import axiosInstance from "../../../core/config/axiosInstance";
+import BASE_URL from "../../../core/config/Config";
 
 const { Text, Title } = Typography;
 
-const API_URL = "http://65.0.147.157:9040/api/ai-service/agent/getCorporateData";
+const API_URL = `${BASE_URL}/ai-service/agent/getCorporateData`;
 
 // Extension-based detection
 const extImage = (url) => /\.(jpg|jpeg|png|webp|gif|bmp|svg)(\?|$)/i.test(url);
@@ -33,7 +35,7 @@ const hasExtension = (url) => /\.\w{2,5}(\?|$)/.test(url);
 // Read first 12 bytes and match magic bytes to detect real file type
 const detectTypeFromUrl = async (url) => {
   try {
-    const res = await fetch(url, { method: "GET", headers: { Range: "bytes=0-11" } });
+    const res = await axiosInstance.get(url, { headers: { Range: "bytes=0-11" } });
     // Prefer Content-Type from response headers first
     const ct = res.headers.get("content-type") || "";
     if (ct.startsWith("image/")) return "image";
@@ -145,7 +147,7 @@ const CorporateData = () => {
   const [loading, setLoading]     = useState(false);
   const [search, setSearch]       = useState("");
   const [current, setCurrent]     = useState(1);
-  const [pageSize, setPageSize]   = useState(10);
+  const [pageSize, setPageSize]   = useState(50);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -278,7 +280,7 @@ const CorporateData = () => {
             pageSize,
             total: filtered.length,
             showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
+            pageSizeOptions: ["50", "70", "100", "200"],
             showTotal: (total, range) =>
               `${range[0]}–${range[1]} of ${total} records`,
             position: ["bottomRight"],

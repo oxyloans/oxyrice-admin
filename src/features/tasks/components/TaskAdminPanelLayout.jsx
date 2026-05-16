@@ -110,12 +110,12 @@ const TaskAdminPanelLayout = ({ children }) => {
    },
    {
      key: "teamAttendance",
-     label: "Attendance Overview",
+     label: "Team Attendance",
      icon: <TeamOutlined />,
      dropdownItems: [
        {
          key: "attendance-overview",
-         label: "Attendance",
+         label: "Team Attendance",
 
          link: "/taskmanagement/attendance",
        },
@@ -134,18 +134,18 @@ const TaskAdminPanelLayout = ({ children }) => {
        },
      ],
    },
-   {
-     key: "corporateData",
-     label: "Corporate Updates",
-     icon: <BankOutlined />,
-     dropdownItems: [
-       {
-         key: "corporate-data",
-         label: "POD & EOD Videos",
-         link: "/taskmanagement/corporate-data",
-       },
-     ],
-   },
+  //  {
+  //    key: "corporateData",
+  //    label: "Corporate Updates",
+  //    icon: <BankOutlined />,
+  //    dropdownItems: [
+  //      {
+  //        key: "corporate-data",
+  //        label: "POD & EOD Videos",
+  //        link: "/taskmanagement/corporate-data",
+  //      },
+  //    ],
+  //  },
  ];
 
 

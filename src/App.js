@@ -32,6 +32,10 @@ const CompaniesLoginPage = lazy(() => import("./core/auth/CompaniesLogin"));
 const TaskManagementLoginPage = lazy(
   () => import("./features/tasks/pages/TaskManagementLogin"),
 );
+import Login from "./features/Superadmin/Auth/Login.jsx";
+import Dashboard from "./features/Superadmin/Dashboard.jsx";
+import EmployeeList from "./features/Superadmin/EmployeeList.jsx";
+import ProtectedRoutes from "./features/Superadmin/ProtectedRoutes.jsx";
 
 function App() {
   return (
@@ -44,6 +48,25 @@ function App() {
             {/* Public */}
             <Route path="/" element={<AdminLoginPage />} />
             <Route path="/admin/agentslogin" element={<AgentLoginPage />} />
+            <Route path="/superadmin/login" element={<Login />} />
+            <Route
+              path="/superadmin/dashboard"
+              element={
+                <ProtectedRoutes
+                  element={<Dashboard />}
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/employees"
+              element={
+                <ProtectedRoutes
+                  element={<EmployeeList />}
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
             <Route
               path="/admin/companieslogin"
               element={<CompaniesLoginPage />}
