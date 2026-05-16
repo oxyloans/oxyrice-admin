@@ -18,6 +18,11 @@ import {
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
+import Login from "./features/Superadmin/Auth/Login.jsx";
+import Dashboard from "./features/Superadmin/Dashboard.jsx";
+import EmployeeList from "./features/Superadmin/EmployeeList.jsx";
+import ProtectedRoutes from "./features/Superadmin/ProtectedRoutes.jsx";
+
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 
@@ -32,10 +37,7 @@ const CompaniesLoginPage = lazy(() => import("./core/auth/CompaniesLogin"));
 const TaskManagementLoginPage = lazy(
   () => import("./features/tasks/pages/TaskManagementLogin"),
 );
-import Login from "./features/Superadmin/Auth/Login.jsx";
-import Dashboard from "./features/Superadmin/Dashboard.jsx";
-import EmployeeList from "./features/Superadmin/EmployeeList.jsx";
-import ProtectedRoutes from "./features/Superadmin/ProtectedRoutes.jsx";
+
 
 function App() {
   return (

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { getSession, clearSession, fetchWithAuth } from "./auth";
 import CallsPanel from "./components/CallsPanel";
 import CommentModal from "./components/CommentModal";
+import logo from "../../assets/img/oxyglobal.png";
 
 const BASE = "https://meta.oxyloans.com";
 
@@ -75,13 +76,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#f0f2f8] flex flex-col">
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow">
-            <img src="/oxyglobal.png" alt="OxyGlobal" className="h-5 w-5 object-contain" />
+          <div className="w-110 h-15 rounded-lg bg-gradient-to-br flex items-center justify-center shadow">
+            <img src={logo} alt="OxyGlobal" className="h-10 w-25 object-contain" />
           </div>
-          <div>
+          {/* <div>
             <p className="font-bold text-gray-900 text-sm leading-none">OxyGlobal</p>
             <p className="text-[10px] text-gray-400 leading-none mt-0.5">Admin Console</p>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-3">
