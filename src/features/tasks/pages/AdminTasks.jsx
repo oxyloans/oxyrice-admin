@@ -92,7 +92,7 @@ const AdminTasks = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 50 });
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -105,7 +105,7 @@ const AdminTasks = () => {
   const [commentsLoading, setCommentsLoading] = useState(false);
 
   const fetchTasks = useCallback(
-    async (page = 1, pageSize = 10) => {
+    async (page = 1, pageSize = 50) => {
       setLoading(true);
       try {
         const response = await axiosInstance.get(
@@ -447,7 +447,7 @@ const AdminTasks = () => {
             pageSize: pagination.pageSize,
             total: totalElements,
             showSizeChanger: true,
-            pageSizeOptions: ["10", "20", "50", "100"],
+            pageSizeOptions: ["50", "100", "200"],
             showTotal: (total, range) => `${range[0]}–${range[1]} of ${total} tasks`,
             position: ["bottomRight"],
           }}

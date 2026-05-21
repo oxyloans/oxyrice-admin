@@ -30,6 +30,8 @@ export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [leaveCount, setLeaveCount] = useState(0);
   const [eodTaskCount, setEodTaskCount] = useState(0);
+  const [podVideoCount, setPodVideoCount] = useState(0);
+  const [eodVideoCount, setEodVideoCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -57,6 +59,26 @@ export default function Dashboard() {
       return true;
     } catch (err) {
       console.error("Leaves count error:", err);
+      return false;
+    }
+  }, []);
+
+  const fetchPodEodVideoCounts = useCallback(async () => {
+    const today = dayjs().format("YYYY-MM-DD");
+    try {
+      const res = await axiosInstance.post(
+        "/ai-service/agent/planOftheDataEmployes",
+        { startDate: today, endDate: today },
+        { headers: { "Content-Type": "application/json" } },
+      );
+      const groups = Array.isArray(res.data) ? res.data : [];
+      const allItems = groups.flatMap((g) => Array.isArray(g.list) ? g.list : []);
+      const pod = allItems.filter((i) => !!i.planOfTheDay).length;
+      const eod = allItems.filter((i) => !!i.endOfTheDay).length;
+      setPodVideoCount(pod);
+      setEodVideoCount(eod);
+      return true;
+    } catch {
       return false;
     }
   }, []);
@@ -104,6 +126,7 @@ export default function Dashboard() {
         fetchDashboardData(),
         fetchLeavesData(),
         fetchEodTasksToday(),
+        fetchPodEodVideoCounts(),
       ]);
 
       if (!statsOk || !leavesOk || !eodOk) {
@@ -113,7 +136,7 @@ export default function Dashboard() {
       setLoading(false);
       if (isRefresh) setIsRefreshing(false);
     },
-    [fetchDashboardData, fetchLeavesData, fetchEodTasksToday],
+    [fetchDashboardData, fetchLeavesData, fetchEodTasksToday, fetchPodEodVideoCounts],
   );
 
   useEffect(() => {
@@ -133,35 +156,29 @@ export default function Dashboard() {
 
   const totalEmployees = dashboardData?.totalRegisteredEmployees ?? 0;
   const podPosted = dashboardData?.podPostedEmployeesCount ?? 0;
-  const podRemaining = dashboardData?.reamingPODCount ?? 0; // note: typo in backend? → remainingPODCount
+  const podRemaining = dashboardData?.reamingPODCount ?? 0;
+
+  // Combine new API count + existing API count
+  const finalPodCount = podVideoCount + podPosted;
+  const finalEodCount = eodVideoCount + eodTaskCount;
 
   const podCompletionData = [
-    { name: "POD Posted", value: podPosted, color: "#10b981" },
-    { name: "Remaining", value: podRemaining, color: "#ef4444" },
+    { name: "POD Submitted", value: finalPodCount, color: "#10b981" },
+    { name: "Not Submitted", value: Math.max(0, totalEmployees - finalPodCount), color: "#ef4444" },
   ];
 
   const eodCompletionData = [
-    { name: "EOD Posted", value: eodTaskCount, color: "#10b981" },
-    {
-      name: "Remaining",
-      value: totalEmployees - eodTaskCount,
-      color: "#ef4444",
-    },
+    { name: "EOD Submitted", value: finalEodCount, color: "#10b981" },
+    { name: "Not Submitted", value: Math.max(0, totalEmployees - finalEodCount), color: "#ef4444" },
   ];
 
   const comparisonData = [
-    { name: "POD", completed: podPosted, remaining: podRemaining },
-    {
-      name: "EOD",
-      completed: eodTaskCount,
-      remaining: totalEmployees - eodTaskCount,
-    },
+    { name: "Morning Plan (POD)", completed: finalPodCount, remaining: Math.max(0, totalEmployees - finalPodCount) },
+    { name: "Evening Summary (EOD)", completed: finalEodCount, remaining: Math.max(0, totalEmployees - finalEodCount) },
   ];
 
-  const podPercentage =
-    totalEmployees > 0 ? Math.round((podPosted / totalEmployees) * 100) : 0;
-  const eodPercentage =
-    totalEmployees > 0 ? Math.round((eodTaskCount / totalEmployees) * 100) : 0;
+  const podPercentage = totalEmployees > 0 ? Math.round((finalPodCount / totalEmployees) * 100) : 0;
+  const eodPercentage = totalEmployees > 0 ? Math.round((finalEodCount / totalEmployees) * 100) : 0;
 
   const currentDate = dayjs().format("dddd, MMMM D, YYYY");
 
@@ -169,7 +186,7 @@ export default function Dashboard() {
     return (
       <TaskAdminPanelLayout>
         <div className="p-6 max-w-7xl mx-auto text-center">
-          <p className="text-gray-600 text-lg">Loading dashboard...</p>
+          <p className="text-gray-600 text-lg">Loading Workforce Dashboard...</p>
         </div>
       </TaskAdminPanelLayout>
     );
@@ -204,7 +221,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-              Employee's Admin Dashboard
+              Employee Task Management Dashboard
             </h1>
             <div className="flex items-center text-gray-600 mt-1">
               <Clock className="w-5 h-5 mr-2" />
@@ -228,39 +245,39 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Registered Users */}
           <StatCard
-            title="Registered Users"
+            title="Total Employees"
             value={totalEmployees}
             icon={<UserCheck className="w-8 h-8 text-[#008cba]" />}
             color="blue"
             onClick={() =>
               navigate("/taskmanagement/employee_registered_users")
             }
-            footer="View all users"
+            footer="View all employees"
             footerIcon={<TrendingUp className="w-4 h-4" />}
           />
 
           {/* Leave Requests */}
           <StatCard
-            title="Leave Requests"
+            title="Pending Leave Requests"
             value={leaveCount}
             icon={<Home className="w-8 h-8 text-purple-600" />}
             color="purple"
             onClick={() => navigate("/taskmanagement/leave-management")}
-            footer="Total leave requests"
+            footer="Manage leave approvals"
             footerIcon={<Calendar className="w-4 h-4" />}
           />
 
           {/* POD Completion */}
           <StatCard
-            title="Plan of the Day"
-            value={podPosted}
+            title="Morning Work Plans (POD)"
+            value={finalPodCount}
             icon={<Calendar className="w-8 h-8 text-[#1ab394]" />}
             color="green"
             onClick={() => navigate("/taskmanagement/reports/daily-plan")}
             footer={
               <div className="w-full">
                 <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-gray-600">Completion</span>
+                  <span className="text-gray-600">Submitted Today</span>
                   <span className="font-medium">{podPercentage}%</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -275,15 +292,15 @@ export default function Dashboard() {
 
           {/* EOD Completion */}
           <StatCard
-            title="End of the Day"
-            value={eodTaskCount}
+            title="Evening Work Summary (EOD)"
+            value={finalEodCount}
             icon={<Calendar className="w-8 h-8 text-orange-600" />}
             color="orange"
             onClick={() => navigate("/taskmanagement/reports/daily-summary")}
             footer={
               <div className="w-full">
                 <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-gray-600">Completion</span>
+                  <span className="text-gray-600">Submitted Today</span>
                   <span className="font-medium">{eodPercentage}%</span>
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -302,7 +319,7 @@ export default function Dashboard() {
           <div className="p-6 border-b">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <BarChartIcon className="w-5 h-5 text-[#008cba]" />
-              POD vs EOD Completion Overview
+              Morning Plan vs Evening Summary — Daily Completion
             </h3>
           </div>
           <div className="p-6 h-96">
@@ -317,14 +334,14 @@ export default function Dashboard() {
                 <Legend />
                 <Bar
                   dataKey="completed"
-                  name="Completed"
+                  name="Submitted"
                   stackId="a"
                   fill="#1ab394"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="remaining"
-                  name="Remaining"
+                  name="Not Submitted"
                   stackId="a"
                   fill="#ef4444"
                   radius={[4, 4, 0, 0]}
@@ -337,19 +354,19 @@ export default function Dashboard() {
         {/* Pie Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <CompletionPieCard
-            title="POD Completion Status"
+            title="Morning Work Plan — Submission Status"
             data={podCompletionData}
             iconColor="green-600"
-            postedCount={podPosted}
-            remainingCount={podRemaining}
+            postedCount={finalPodCount}
+            remainingCount={Math.max(0, totalEmployees - finalPodCount)}
           />
 
           <CompletionPieCard
-            title="EOD Completion Status"
+            title="Evening Work Summary — Submission Status"
             data={eodCompletionData}
             iconColor="orange-600"
-            postedCount={eodTaskCount}
-            remainingCount={totalEmployees - eodTaskCount}
+            postedCount={finalEodCount}
+            remainingCount={Math.max(0, totalEmployees - finalEodCount)}
           />
         </div>
       </div>
@@ -461,7 +478,7 @@ function CompletionPieCard({
         <div className="flex items-center">
           <div className="w-3 h-3 rounded-full bg-green-600 mr-2" />
           <div>
-            <p className="text-gray-500">Posted</p>
+            <p className="text-gray-500">Submitted</p>
             <p className="font-medium">{postedCount} users</p>
           </div>
         </div>

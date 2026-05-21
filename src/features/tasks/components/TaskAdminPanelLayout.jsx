@@ -5,14 +5,18 @@ import { useNavigate } from "react-router-dom";
 import { Layout, Menu, Row, Grid } from "antd";
 import {
   DashboardOutlined,
+  CheckSquareOutlined,
   WhatsAppOutlined,
-  FileTextOutlined,
-  TeamOutlined,
   BarChartOutlined,
+  TeamOutlined,
   CalendarOutlined,
   BankOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  ClockCircleOutlined,
+  FileTextOutlined,
+  FileDoneOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
@@ -47,13 +51,12 @@ const TaskAdminPanelLayout = ({ children }) => {
  const sidebarItems = [
    {
      key: "dashboard",
-     label: "Dashboard Overview",
+     label: "Employee Dashboard",
      icon: <DashboardOutlined />,
      dropdownItems: [
        {
          key: "dashboard-overview",
-         label: "Overview",
-
+         label: "Employee Overview",
          link: "/taskmanagement/overview",
        },
      ],
@@ -61,13 +64,12 @@ const TaskAdminPanelLayout = ({ children }) => {
 
    {
      key: "assignedTasks",
-     label: "Assign WhatsApp Tasks",
-     icon: <WhatsAppOutlined />,
+     label: "Task Assignment",
+     icon: <CheckSquareOutlined />,
      dropdownItems: [
        {
          key: "assigned-tasks-list",
          label: "Assigned Tasks",
-
          link: "/taskmanagement/tasks/assigned",
        },
      ],
@@ -76,18 +78,19 @@ const TaskAdminPanelLayout = ({ children }) => {
    {
      key: "employeeWorkLogs",
      label: "WhatsApp Reports",
-     icon: <FileTextOutlined />,
+     icon: <WhatsAppOutlined />,
      dropdownItems: [
        {
          key: "todayWorkLog",
-         label: "Today POD/EOD",
+         label: "Today's POD / EOD",
+         icon: <ClockCircleOutlined />,
          link: "/taskmanagement/work-logs/today",
        },
-       {
-         key: "workLogHistory",
-         label: "All Employee's Pod/Eod",
-         link: "/taskmanagement/work-logs/history",
-       },
+      //  {
+      //    key: "workLogHistory",
+      //    label: "All Employee's Pod/Eod",
+      //    link: "/taskmanagement/work-logs/history",
+      //  },
      ],
    },
 
@@ -98,25 +101,32 @@ const TaskAdminPanelLayout = ({ children }) => {
      dropdownItems: [
        {
          key: "dailyWorkPlan",
-         label: "Daily Plan of the day",
+         label: "Plan of the Day",
+         icon: <FileTextOutlined />,
          link: "/taskmanagement/reports/daily-plan",
        },
        {
          key: "dailyWorkSummary",
-         label: "Daily End of the day",
+         label: "End of the Day",
+         icon: <FileDoneOutlined />,
          link: "/taskmanagement/reports/daily-summary",
+       },
+       {
+         key: "podEodVideos",
+         label: "Pod & Eod Videos",
+         icon: <VideoCameraOutlined />,
+         link: "/taskmanagement/reports/pod-eod-videos",
        },
      ],
    },
    {
      key: "teamAttendance",
-     label: "Team Attendance",
+     label: "Attendance",
      icon: <TeamOutlined />,
      dropdownItems: [
        {
          key: "attendance-overview",
          label: "Team Attendance",
-
          link: "/taskmanagement/attendance",
        },
      ],
@@ -124,12 +134,12 @@ const TaskAdminPanelLayout = ({ children }) => {
 
    {
      key: "leaveManagement",
-     label: "Leave Administration",
+     label: "Leave Management",
      icon: <CalendarOutlined />,
      dropdownItems: [
        {
          key: "leave-management",
-         label: "Leave Management",
+         label: "Leave Requests",
          link: "/taskmanagement/leave-management",
        },
      ],

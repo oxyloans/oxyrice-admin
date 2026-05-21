@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
 import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
+import { toast } from "react-toastify";
 import {
   Card,
   Typography,
@@ -12,7 +13,6 @@ import {
   DatePicker,
   Tabs,
   Badge,
-  notification,
   Tag,
   Avatar,
   Collapse,
@@ -23,6 +23,7 @@ import {
   Row,
   Col,
   Select,
+  Grid,
 } from "antd";
 import useAuth from "../../../shared/hooks/useAuth";
 import dayjs from "dayjs";
@@ -46,6 +47,7 @@ import {
 } from "@ant-design/icons";
 
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -54,6 +56,9 @@ const { TextArea } = Input;
 const { Search } = Input;
 
 const EndOfTheDay = () => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   // State variables - Set status to static "COMPLETED" value
   const status = "COMPLETED"; // Static status value
   const [tasks, setTasks] = useState([]);
@@ -199,15 +204,12 @@ const EndOfTheDay = () => {
     fetchTasksByDate();
   }, [selectedDate, fetchTasksByDate]);
 
-  // Notification helpers
-  const showNotification = (type, message, description, icon) => {
-    notification[type]({
-      message,
-      description,
-      placement: "topRight",
-      duration: type === "error" ? 4 : 3,
-      icon: icon,
-    });
+  const showNotification = (type, message, description) => {
+    const text = `${message}${description ? ": " + description : ""}`;
+    if (type === "error") toast.error(text, { icon: "❌" });
+    else if (type === "success") toast.success(text, { icon: "✅" });
+    else if (type === "warning") toast.warn(text, { icon: "⚠️" });
+    else toast.info(text, { icon: "ℹ️" });
   };
 
   // Event handlers
@@ -253,7 +255,7 @@ const EndOfTheDay = () => {
     if (!responses || responses.length === 0) return null;
 
     return (
-      <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <div className="mt-4 bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
         <Collapse
           bordered={false}
           expandIcon={({ isActive }) => (
@@ -309,7 +311,7 @@ const EndOfTheDay = () => {
                     )}
 
                   <div>
-                    <div className="flex justify-between">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
                       <div>
                         <Text className="text-gray-600 block mb-1">
                           Updated By:
@@ -336,17 +338,17 @@ const EndOfTheDay = () => {
 
                 {response.adminFilePath && (
                   <div className="mt-3 pt-3 border-t border-gray-100">
-                    <div className="flex items-center">
-                      <FileTextOutlined className="text-blue-500 mr-2" />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                      <FileTextOutlined className="text-blue-500 mr-2 shrink-0" />
                       <a
                         href={response.adminFilePath}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:text-blue-700"
+                        className="text-blue-500 hover:text-blue-700 break-all"
                       >
                         {response.adminFileName || "View Attachment"}
                       </a>
-                      <Text className="text-xs text-gray-500 ml-3">
+                      <Text className="text-xs text-gray-500 sm:ml-3">
                         {response.adminFileCreatedDate
                           ? formatDate(response.adminFileCreatedDate)
                           : ""}
@@ -395,77 +397,78 @@ const EndOfTheDay = () => {
           backgroundColor: "#f6ffed",
           borderBottom: "1px solid rgba(246, 255, 237, 0.82)",
           borderRadius: "8px 8px 0 0",
-          padding: "12px 20px",
+          padding: "clamp(10px, 2.5vw, 12px) clamp(12px, 3vw, 20px)",
+          overflow: "visible",
         }}
-        bodyStyle={{ padding: "16px 20px" }}
+        bodyStyle={{ padding: "clamp(12px, 3vw, 16px) clamp(12px, 3vw, 20px)" }}
         title={
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div className="flex items-center gap-2 mb-2 md:mb-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 w-full min-w-0">
+            <div className="flex items-start gap-2 min-w-0 flex-1">
               <Avatar
                 icon={<UserOutlined />}
+                className="shrink-0"
                 style={{ backgroundColor: "#52c41a", color: "white" }}
               />
-              <div className="ml-2">
-                <div className="flex items-center flex-wrap gap-2">
-                  {task.taskAssignTo && <Text strong>{task.taskAssignTo}</Text>}
-                  {task.taskAssignedBy && (
-                    <Tooltip title="Assigned by">
-                      <div className="flex items-center">
-                        <Tag color="blue" className="ml-1 flex items-center">
-                          <TeamOutlined className="mr-1" />
-                          {task.taskAssignedBy}
-                        </Tag>
-                        <span className="ml-2">
-                          Spent hours: {task.timeSpentHours || "N/A"}
-                        </span>
-                      </div>
-                    </Tooltip>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                  {task.taskAssignTo && (
+                    <Text strong className="break-words text-base">
+                      {task.taskAssignTo}
+                    </Text>
                   )}
+                  <Text className="text-sm text-gray-600">
+                    Spent hours: {task.timeSpentHours ?? "N/A"}
+                  </Text>
                 </div>
-                <div className="flex mt-1 ml-2 items-center text-gray-500 text-sm flex-wrap">
+                {task.taskAssignedBy && (
+                  <Tooltip title="Assigned by">
+                    <Tag color="blue" className="mt-1 flex items-center w-fit max-w-full">
+                      <TeamOutlined className="mr-1 shrink-0" />
+                      <span className="truncate">{task.taskAssignedBy}</span>
+                    </Tag>
+                  </Tooltip>
+                )}
+                <div className="flex mt-1 items-center text-gray-500 text-xs sm:text-sm flex-wrap gap-x-2 gap-y-1">
                   <span>ID: #{task.id.substring(task.id.length - 4)}</span>
-                  <Divider type="vertical" className="mx-2" />
-                  <span>Updated by: {task.updatedBy || "N/A"}</span>
+                  <Divider type="vertical" className="hidden sm:inline" />
+                  <span className="break-words">
+                    Updated by: {task.updatedBy || "N/A"}
+                  </span>
                 </div>
               </div>
             </div>
-            <Badge
-              status="success"
-              text={
-                <Tag color="success" icon={<ClockCircleOutlined />}>
-                  COMPLETED
-                </Tag>
-              }
-            />
+            <Tag color="success" icon={<ClockCircleOutlined />} className="shrink-0 self-start">
+              COMPLETED
+            </Tag>
           </div>
         }
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+          <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100 flex flex-col">
             <Text className="text-gray-600 font-medium block mb-2">Plan of the Day:</Text>
-            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words" style={{ height: 140, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              <Text className="text-gray-700" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words min-h-[96px] max-h-[min(200px,40vh)] md:h-[140px] md:max-h-[140px] whitespace-pre-wrap">
+              <Text className="text-gray-700 whitespace-pre-wrap break-words">
                 {task.planOftheDay || "No plan recorded"}
               </Text>
             </div>
             {newApiEntry?.planOfTheDay && (
               <div className="mt-3">
-                <video controls className="w-full rounded-lg border border-gray-200" style={{ width: "100%", aspectRatio: "16/9", objectFit: "contain", background: "#000", display: "block" }}>
+                <video controls playsInline className="w-full max-w-full rounded-lg border border-gray-200 aspect-video bg-black">
                   <source src={newApiEntry.planOfTheDay} type="video/mp4" />
                 </video>
               </div>
             )}
           </div>
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col">
+          <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100 flex flex-col">
             <Text className="text-gray-600 font-medium block mb-2">End of the Day:</Text>
-            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words" style={{ height: 140, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              <Text className="text-gray-700" style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+            <div className="bg-white p-3 rounded-md border border-gray-100 overflow-y-auto break-words min-h-[96px] max-h-[min(200px,40vh)] md:h-[140px] md:max-h-[140px] whitespace-pre-wrap">
+              <Text className="text-gray-700 whitespace-pre-wrap break-words">
                 {task.endOftheDay || "No end-of-day report"}
               </Text>
             </div>
             {newApiEntry?.endOfTheDay && (
               <div className="mt-3">
-                <video controls className="w-full rounded-lg border border-gray-200" style={{ width: "100%", aspectRatio: "16/9", objectFit: "contain", background: "#000", display: "block" }}>
+                <video controls playsInline className="w-full max-w-full rounded-lg border border-gray-200 aspect-video bg-black">
                   <source src={newApiEntry.endOfTheDay} type="video/mp4" />
                 </video>
               </div>
@@ -504,40 +507,30 @@ const EndOfTheDay = () => {
   // Component to render date-specific task statistics
   const renderDateTaskStatistics = () => (
     <Card
-      className="mb-6 border-0 shadow-sm"
+      className="mb-6 border-0 shadow-sm w-full"
       title={
-        <div className="flex items-center flex-wrap">
-          <PieChartOutlined
-            className="mr-2 text-blue-500"
-            style={{ fontSize: "clamp(16px, 4vw, 18px)" }} // Responsive icon size
-          />
-          <Title
-            level={4}
-            className="!text-base sm:!text-lg md:!text-xl" // Responsive font size
-            style={{ margin: 0 }}
-          >
-            Daily End Of The Day{" "}
-            {selectedDate ? selectedDate.format("YYYY-MM-DD") : "Select a Date"}
+        <div className="flex items-center gap-3 flex-wrap">
+          <Title level={5} className="!m-0 !text-sm sm:!text-base md:!text-lg !leading-snug">
+            Daily End Of The Day
           </Title>
+          <Text className="text-xs mt-1 sm:text-sm text-gray-500 font-medium">
+            {selectedDate ? selectedDate.format("YYYY-MM-DD") : "Select a date"}
+          </Text>
         </div>
       }
-      extra={
-        <Button
-          icon={<ReloadOutlined />}
-          size="small"
-          type="primary"
-          onClick={fetchTasksByDate}
-          className="text-xs sm:text-sm" // Responsive button text
-        >
-          Refresh
-        </Button>
-      }
-      style={{ borderRadius: "8px", overflow: "hidden" }}
-      bodyStyle={{
-        padding: "clamp(12px, 3vw, 16px)", // Responsive padding
+      extra={null}
+      style={{ borderRadius: "8px" }}
+      styles={{
+        header: {
+          flexWrap: "wrap",
+          gap: 8,
+          alignItems: "flex-start",
+          overflow: "visible",
+        },
+        body: { padding: "clamp(12px, 3vw, 16px)" },
       }}
     >
-      <Row gutter={[16, 16]} justify="space-between">
+      <Row gutter={[12, 12]} justify="space-between">
         <Col xs={24} md={12}>
           <Card
             bordered={false}
@@ -550,7 +543,7 @@ const EndOfTheDay = () => {
             <Statistic
               title={<Text strong>End of the Day Tasks</Text>}
               value={dateTaskStats.pending || 0}
-              valueStyle={{ color: "#faad14", fontSize: "24px" }}
+              valueStyle={{ color: "#faad14", fontSize: "clamp(20px, 5vw, 24px)" }}
               prefix={<ClockCircleOutlined style={{ color: "#faad14" }} />}
             />
           </Card>
@@ -567,7 +560,7 @@ const EndOfTheDay = () => {
             <Statistic
               title={<Text strong>Total Tasks</Text>}
               value={dateTaskStats.total || 0}
-              valueStyle={{ color: "#1890ff", fontSize: "24px" }}
+              valueStyle={{ color: "#1890ff", fontSize: "clamp(20px, 5vw, 24px)" }}
               prefix={<FileSearchOutlined style={{ color: "#1890ff" }} />}
             />
           </Card>
@@ -578,30 +571,27 @@ const EndOfTheDay = () => {
 
   return (
     <TaskAdminPanelLayout>
-      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen max-w-full overflow-x-hidden">
         <Card
           className="shadow-md rounded-lg overflow-hidden border-0"
           bodyStyle={{ padding: 0 }}
         >
-          <div className="p-4">
+          <div className="p-3 sm:p-4">
             {/* Show date statistics only when tasks are loaded */}
             {tasks.length > 0 && renderDateTaskStatistics()}
 
             <Card className="bg-gray-50 mb-6 border border-gray-200">
-              <div className="flex flex-col md:flex-row md:items-end gap-4">
-                <div className="flex-1 md:max-w-xs">
-                  <Text className="text-gray-600 block mb-1 font-medium">
-                    <CalendarOutlined className="mr-1" /> Select Date
-                  </Text>
-                  <DatePicker
-                    value={selectedDate}
-                    onChange={handleDateChange}
-                    className="w-full"
-                    style={{ height: "40px" }}
-                    allowClear={false} // Prevent clearing the date
-                  />
-                </div>
-                {/* Search button removed as fetch is now automatic on date change */}
+              <div className="flex items-center gap-3">
+                <Text className="text-gray-600 font-medium whitespace-nowrap text-sm">
+                  <CalendarOutlined className="mr-1" /> Select Date
+                </Text>
+                <DatePicker
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  style={{ height: "32px", fontSize: "14px" }}
+                  className="text-sm"
+                  allowClear={false}
+                />
               </div>
             </Card>
 
@@ -612,12 +602,12 @@ const EndOfTheDay = () => {
                   {/* Search Area */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-0 w-full">
                         <Search
                           placeholder="Search by name or task content..."
                           allowClear
                           enterButton={<SearchOutlined />}
-                          size="middle"
+                          size={isMobile ? "large" : "middle"}
                           value={searchText}
                           onChange={(e) => setSearchText(e.target.value)}
                           onSearch={(value) => setSearchText(value)}
@@ -626,17 +616,17 @@ const EndOfTheDay = () => {
                     </div>
                   </div>
 
-                  {/* Sort Area */}
-                  <div className="flex flex-wrap gap-2">
+                
+                  <div className="grid grid-cols-2 sm:flex gap-2 w-full lg:w-auto">
                     <Button
                       type={sortOrder === "ascend" ? "default" : "default"}
                       icon={<SortAscendingOutlined />}
                       onClick={() => setSortOrder("ascend")}
-                      className={
+                      className={`w-full sm:w-auto ${
                         sortOrder === "ascend"
                           ? "bg-[#008CBA] text-white hover:bg-[#008CBA]"
                           : ""
-                      }
+                      }`}
                     >
                       Ascending
                     </Button>
@@ -644,11 +634,11 @@ const EndOfTheDay = () => {
                       type={sortOrder === "descend" ? "default" : "default"}
                       icon={<SortDescendingOutlined />}
                       onClick={() => setSortOrder("descend")}
-                      className={
+                      className={`w-full sm:w-auto ${
                         sortOrder === "descend"
                           ? "bg-[#008CBA] text-white hover:bg-[#008CBA]"
                           : ""
-                      }
+                      }`}
                     >
                       Descending
                     </Button>
@@ -657,7 +647,7 @@ const EndOfTheDay = () => {
                       onChange={(value) => {
                         setSortField(value);
                       }}
-                      style={{ width: 150 }}
+                      className="col-span-2 sm:col-span-1 w-full sm:!w-[150px]"
                     >
                       <Option value="taskAssignTo">Name</Option>
                       <Option value="planUpdatedAt">Updated Date</Option>
@@ -669,10 +659,10 @@ const EndOfTheDay = () => {
                 <div className="mt-4 pt-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                   <div className="flex items-center mb-2 sm:mb-0">
                     <Badge status="processing" />
-                    <Text className="ml-2">
+                    <Text className="ml-2 text-sm sm:text-base">
                       Showing {filteredTasks.length} of {tasks.length} tasks
                       {searchText && (
-                        <Tag color="blue" className="ml-2">
+                        <Tag color="blue" className="ml-2 max-w-full truncate">
                           <SearchOutlined className="mr-1" />
                           Search: "{searchText}"
                         </Tag>

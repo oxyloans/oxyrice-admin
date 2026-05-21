@@ -19,6 +19,9 @@ const RadhaInstructionView = lazy(
 const PlanOfTheDay = lazy(
   () => import("../../features/tasks/pages/PlanOfTheDay"),
 );
+const PlanOfTheDayVideos = lazy(
+  () => import("../../features/tasks/pages/PlanOfTheDayVideos"),
+);
 const EndOfTheDay = lazy(
   () => import("../../features/tasks/pages/EndOfTheDay"),
 );
@@ -286,6 +289,7 @@ const taskManagementRoutes = [
   { path: "chatview/:id", element: RadhaInstructionView },
   { path: "reports/daily-plan", element: PlanOfTheDay },
   { path: "reports/daily-summary", element: EndOfTheDay },
+  { path: "reports/pod-eod-videos", element: PlanOfTheDayVideos },
   { path: "user-task-details/:userId", element: UserTaskDetailsPage },
   { path: "leave-management", element: LeaveManagement },
   { path: "attendance", element: TeamAttendanceReport },
