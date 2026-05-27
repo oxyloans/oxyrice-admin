@@ -29,7 +29,6 @@ import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 import BASE_URL from "../../../core/config/Config";
 import TaskAdminPanelLayout from "../components/TaskAdminPanelLayout";
-import useAuth from "../../../shared/hooks/useAuth";
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -42,6 +41,7 @@ const LeaveManagement = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState("all");
+  const [searchText, setSearchText] = useState("");
   const [actionModal, setActionModal] = useState({
     visible: false,
     leaveId: null,
@@ -183,6 +183,33 @@ const LeaveManagement = () => {
       (leave) => !leave.adminStatus || leave.adminStatus === "PENDING",
     ).length;
   };
+
+  const filteredLeaves = React.useMemo(() => {
+    const query = searchText.trim().toLowerCase();
+    if (!query) return leaves;
+    return leaves.filter((leave) => {
+      const name = leave?.name?.toLowerCase() || "";
+      const userId = leave?.userId?.toLowerCase() || "";
+      const status = (leave?.adminStatus || leave?.status || "").toLowerCase();
+      const reason = leave?.requestSummary?.toLowerCase() || "";
+      return (
+        name.includes(query) ||
+        userId.includes(query) ||
+        status.includes(query) ||
+        reason.includes(query)
+      );
+    });
+  }, [leaves, searchText]);
+
+  const approvedCount = React.useMemo(
+    () => leaves.filter((leave) => leave.adminStatus === "APPROVED").length,
+    [leaves],
+  );
+
+  const rejectedCount = React.useMemo(
+    () => leaves.filter((leave) => leave.adminStatus === "REJECTED").length,
+    [leaves],
+  );
 
   const columns = [
     {
@@ -336,17 +363,18 @@ const LeaveManagement = () => {
       );
     }
 
-    if (leaves.length === 0) {
+    if (filteredLeaves.length === 0) {
       return (
         <Empty
           description={
             <span className="text-gray-600">
-              No leave requests found
-              {activeTab === "byDate"
-                ? selectedDate.isSame(dayjs(), "day")
+              {leaves.length === 0
+                ? "No leave requests found"
+                : `No results found for "${searchText.trim()}"`}
+              {activeTab === "byDate" &&
+                (selectedDate.isSame(dayjs(), "day")
                   ? " for today"
-                  : ` for ${formatDate(selectedDate.format("YYYY-MM-DD"))}`
-                : ""}
+                  : ` for ${formatDate(selectedDate.format("YYYY-MM-DD"))}`)}
             </span>
           }
           className="my-10"
@@ -356,7 +384,7 @@ const LeaveManagement = () => {
 
     return (
       <Table
-        dataSource={leaves}
+        dataSource={filteredLeaves}
         columns={columns}
         rowKey="id"
         pagination={{
@@ -379,13 +407,14 @@ const LeaveManagement = () => {
             <Table.Summary.Row>
               <Table.Summary.Cell index={0} colSpan={8}>
                 <Text type="secondary" className="text-gray-600">
-                  Total: {leaves.length} leave request
-                  {leaves.length !== 1 ? "s" : ""}
+                  Total: {filteredLeaves.length} leave request
+                  {filteredLeaves.length !== 1 ? "s" : ""}
                   {activeTab === "byDate"
                     ? selectedDate.isSame(dayjs(), "day")
                       ? " for today"
                       : ` for ${formatDate(selectedDate.format("YYYY-MM-DD"))}`
                     : " across all dates"}
+                  {searchText.trim() ? ` (filtered by "${searchText.trim()}")` : ""}
                 </Text>
               </Table.Summary.Cell>
             </Table.Summary.Row>
@@ -431,6 +460,15 @@ const LeaveManagement = () => {
             </Col>
             <Col xs={24} sm={12}>
               <Row justify="end" gutter={[8, 8]} wrap>
+                <Col xs={24} sm={12} md={10} lg={8}>
+                  <Input
+                    allowClear
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    placeholder="Search employee name..."
+                    aria-label="Search leave requests"
+                  />
+                </Col>
                 <Col xs={12} sm={6}>
                   {renderDatePicker()}
                 </Col>
@@ -450,6 +488,23 @@ const LeaveManagement = () => {
         }
         bodyStyle={{ padding: "16px", overflow: "auto" }}
       >
+        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+          <Col>
+            <Tag color="gold">Pending: {getPendingCount()}</Tag>
+          </Col>
+          <Col>
+            <Tag color="green">Approved: {approvedCount}</Tag>
+          </Col>
+          <Col>
+            <Tag color="red">Rejected: {rejectedCount}</Tag>
+          </Col>
+          <Col>
+            <Tag color="blue">
+              Showing: {filteredLeaves.length}/{leaves.length}
+            </Tag>
+          </Col>
+        </Row>
+
         <Tabs
           activeKey={activeTab}
           onChange={handleTabChange}

@@ -72,6 +72,11 @@ const AdminPanelLayout = ({ children }) => {
             label: "Item Offers List",
             link: "/admin/items-offerlists",
           },
+           {
+            key: "agentCampaignOffers",
+            label: "AI Campaign Offers",
+            link: "/admin/agent-campaign-offers",
+          },
         ],
       },
       {

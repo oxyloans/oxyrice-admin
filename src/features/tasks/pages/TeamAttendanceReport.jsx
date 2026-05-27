@@ -12,6 +12,8 @@ import {
   Row,
   Col,
   Select,
+  Empty,
+  Tag,
 } from "antd";
 import {
   UserOutlined,
@@ -61,6 +63,26 @@ const valueStyle = {
 };
 
 const iconStyle = { fontSize: 20, color: "#1890ff", marginRight: 8 };
+const metricRowStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  lineHeight: 1.8,
+};
+const metricValueStyle = {
+  ...valueStyle,
+  marginLeft: "auto",
+  textAlign: "right",
+  wordBreak: "break-word",
+};
+
+const formatTeamLabel = (team) =>
+  team === "ALL"
+    ? "All Teams"
+    : team
+        .replace(/TEAM$/i, " Team")
+        .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+        .replace(/([a-z])([A-Z])/g, "$1 $2");
 
 const TeamAttendanceReport = () => {
   const [data, setData] = useState([]);
@@ -186,15 +208,20 @@ const TeamAttendanceReport = () => {
           </Space>
         }
         extra={
-          <Space wrap>
+          <Space wrap size={10}>
+            <Tag color="blue" style={{ borderRadius: 16, marginInlineEnd: 0 }}>
+              {filteredData.length} Employees
+            </Tag>
             <Select
               value={selectedTeam}
               onChange={(value) => setSelectedTeam(value)}
-              style={{ width: 200 }}
+              style={{ width: 210 }}
+              showSearch
+              optionFilterProp="children"
             >
               {TEAM_OPTIONS.map((team) => (
                 <Option key={team} value={team}>
-                  {team === "ALL" ? "All Teams" : team}
+                  {formatTeamLabel(team)}
                 </Option>
               ))}
             </Select>
@@ -250,10 +277,10 @@ const TeamAttendanceReport = () => {
         )}
 
         <Search
-          placeholder="Search by name"
+          placeholder="Search employee by name"
           allowClear
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ marginBottom: 20, maxWidth: 320 }}
+          style={{ marginBottom: 20, maxWidth: 360 }}
         />
 
         {loading ? (
@@ -268,7 +295,26 @@ const TeamAttendanceReport = () => {
             <Spin size="medium" />
           </div>
         ) : filteredData.length === 0 ? (
-          <Text type="danger">No data available.</Text>
+          <Card
+            bordered={false}
+            style={{
+              borderRadius: 12,
+              background: "#fafafa",
+              textAlign: "center",
+            }}
+            bodyStyle={{ padding: "30px 16px" }}
+          >
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span>
+                  No attendance data found for this filter.
+                  <br />
+                  Try another team, month, or clear search text.
+                </span>
+              }
+            />
+          </Card>
         ) : (
           <Row gutter={[24, 24]} justify="start">
             {filteredData.map((user) => (
@@ -295,6 +341,7 @@ const TeamAttendanceReport = () => {
                     boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
                     width: "100%",
                     transition: "transform 0.2s ease-in-out",
+                    cursor: "pointer",
                   }}
                   bodyStyle={{ padding: 16 }}
                   hoverable
@@ -304,49 +351,49 @@ const TeamAttendanceReport = () => {
                     })
                   }
                 >
-                  <div style={{ lineHeight: 2 }}>
-                    <div>
+                  <div>
+                    <div style={metricRowStyle}>
                       <ApartmentOutlined style={iconStyle} />
                       <span style={labelStyle}>Department:</span>
-                      <span style={valueStyle}>{user.department || ""}</span>
+                      <span style={metricValueStyle}>{user.department || "-"}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <CalendarTwoTone
                         twoToneColor="#eb2f96"
                         style={iconStyle}
                       />
                       <span style={labelStyle}>Leave Days:</span>
-                      <span style={valueStyle}>{user.leaveDaysInMonth}</span>
+                      <span style={metricValueStyle}>{user.leaveDaysInMonth}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>POD Updates:</span>
-                      <span style={valueStyle}>{user.podUpdateReport}</span>
+                      <span style={metricValueStyle}>{user.podUpdateReport}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EOD Updates:</span>
-                      <span style={valueStyle}>{user.eodUpdationEntries}</span>
+                      <span style={metricValueStyle}>{user.eodUpdationEntries}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EOD Missing:</span>
-                      <span style={valueStyle}>{user.eodMissingEntries}</span>
+                      <span style={metricValueStyle}>{user.eodMissingEntries}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EMP Working Days:</span>
-                      <span style={valueStyle}>{user.employeeWorkingDays}</span>
+                      <span style={metricValueStyle}>{user.employeeWorkingDays}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <ClockCircleOutlined style={iconStyle} />
                       <span style={labelStyle}>Avg/Day Hrs Spent:</span>
-                      <span style={valueStyle}>{user.avgPerDaySpentHours}</span>
+                      <span style={metricValueStyle}>{user.avgPerDaySpentHours}</span>
                     </div>
-                    <div>
+                    <div style={metricRowStyle}>
                       <ScheduleOutlined style={iconStyle} />
                       <span style={labelStyle}>Monthly Hrs Spent:</span>
-                      <span style={valueStyle}>
+                      <span style={metricValueStyle}>
                         {user.employeeMonthlySpentHours}
                       </span>
                     </div>

@@ -1008,6 +1008,7 @@ import { Link } from "react-router-dom";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import useAuth from '../../../shared/hooks/useAuth';
+import axios from "axios";
 import {
 
   UploadOutlined,
@@ -1061,8 +1062,7 @@ const ItemList = () => {
     try {
       const response = await axiosInstance.get(
         `${BASE_URL}/product-service/getItemsData`,
-        {
-                  },
+        {},
       );
       message.success("Data Fetched Successfully");
 

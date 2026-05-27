@@ -466,15 +466,15 @@ function CompletionPieCard({
               ))}
             </Pie>
             <Tooltip formatter={(val) => [`${val} users`, ""]} />
-            <Legend
+            {/* <Legend
               layout="horizontal"
               verticalAlign="bottom"
               iconType="circle"
-            />
+            /> */}
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <div className="p-6 bg-gray-50 border-t grid grid-cols-2 gap-4 text-sm">
+      <div className="p-4 bg-gray-50 border-t grid grid-cols-2 gap-4 text-sm">
         <div className="flex items-center">
           <div className="w-3 h-3 rounded-full bg-green-600 mr-2" />
           <div>

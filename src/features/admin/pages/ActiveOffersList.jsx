@@ -16,7 +16,7 @@ import {
 import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import AdminPanelLayout from "../components/AdminPanelLayout";
-
+import axios from "axios";
 import { data } from "autoprefixer";
 import useAuth from '../../../shared/hooks/useAuth';
 

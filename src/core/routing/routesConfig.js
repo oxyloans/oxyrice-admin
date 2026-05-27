@@ -92,6 +92,9 @@ const AllReferralsData = lazy(
 const ActiveOffersList = lazy(
   () => import("../../features/admin/pages/ActiveOffersList"),
 );
+const AgentCampaignOffers = lazy(
+  () => import("../../features/admin/pages/AgentCampaignOffers"),
+);
 const StudentApplications = lazy(
   () => import("../../features/admin/pages/StudentApplications"),
 );
@@ -216,6 +219,7 @@ const adminRoutes = [
   { path: "items", element: ItemList },
   { path: "items-lists", element: ItemsLists },
   { path: "items-offerlists", element: ActiveOffersList },
+  { path: "agent-campaign-offers", element: AgentCampaignOffers },
   { path: "orders-details", element: Ordersdetails },
   { path: "orders-details/:id", element: OrdersDetailsCustomerId },
   { path: "orders-pending", element: OrdersPending },
