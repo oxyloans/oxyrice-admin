@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import AssignedTasksStatusBased from "../../features/tasks/pages/AssignedTasksStatusBased";
 
 
 
@@ -300,6 +301,7 @@ const taskManagementRoutes = [
   { path: "employee_registered_users", element: EmployeeRegisteredUsers },
   { path: "overview", element: Dashboard },
   { path: "corporate-data", element: CorporateData },
+  { path: "assigned-tasks-status-based", element: AssignedTasksStatusBased },
 ].map((route) => ({
   ...route,
   loginPath: TASK_LOGIN,

@@ -67,10 +67,15 @@ const TaskAdminPanelLayout = ({ children }) => {
      label: "Task Assignment",
      icon: <CheckSquareOutlined />,
      dropdownItems: [
+      //  {
+      //    key: "assigned-tasks-list",
+      //    label: "Assigned Tasks",
+      //    link: "/taskmanagement/tasks/assigned",
+      //  },
        {
-         key: "assigned-tasks-list",
+         key: "assigned-tasks-status-based",
          label: "Assigned Tasks",
-         link: "/taskmanagement/tasks/assigned",
+         link: "/taskmanagement/assigned-tasks-status-based",
        },
      ],
    },
