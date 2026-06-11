@@ -17,6 +17,7 @@ import {
   Input,
   message,
   Tabs,
+  Select,
 } from "antd";
 import {
   ReloadOutlined,
@@ -24,6 +25,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   FileTextOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
@@ -42,6 +44,7 @@ const LeaveManagement = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState("all");
   const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [actionModal, setActionModal] = useState({
     visible: false,
     leaveId: null,
@@ -141,6 +144,11 @@ const LeaveManagement = () => {
   };
 
   const handleLeaveAction = async () => {
+    if (actionModal.action === "reject" && !actionModal.comments.trim()) {
+      message.error("Please provide a reason for rejection before submitting.");
+      return;
+    }
+
     setActionModal({ ...actionModal, processing: true });
 
     try {
@@ -185,12 +193,26 @@ const LeaveManagement = () => {
   };
 
   const filteredLeaves = React.useMemo(() => {
+    let filtered = [...leaves];
+
+    if (statusFilter !== "ALL") {
+      filtered = filtered.filter((leave) => {
+        const status = leave?.adminStatus || leave?.status || "PENDING";
+        return status === statusFilter;
+      });
+    }
+
     const query = searchText.trim().toLowerCase();
-    if (!query) return leaves;
-    return leaves.filter((leave) => {
+    if (!query) return filtered;
+
+    return filtered.filter((leave) => {
       const name = leave?.name?.toLowerCase() || "";
       const userId = leave?.userId?.toLowerCase() || "";
-      const status = (leave?.adminStatus || leave?.status || "").toLowerCase();
+      const status = (
+        leave?.adminStatus ||
+        leave?.status ||
+        "PENDING"
+      ).toLowerCase();
       const reason = leave?.requestSummary?.toLowerCase() || "";
       return (
         name.includes(query) ||
@@ -199,7 +221,7 @@ const LeaveManagement = () => {
         reason.includes(query)
       );
     });
-  }, [leaves, searchText]);
+  }, [leaves, searchText, statusFilter]);
 
   const approvedCount = React.useMemo(
     () => leaves.filter((leave) => leave.adminStatus === "APPROVED").length,
@@ -318,22 +340,22 @@ const LeaveManagement = () => {
         <Space size="small" wrap className="flex justify-center">
           <Button
             type="primary"
-            size="small"
+            size="middle"
             icon={<CheckCircleOutlined />}
             onClick={() => showActionModal(record.id, record.userId, "approve")}
             disabled={record.adminStatus === "APPROVED"}
-            className="bg-[#008CBA] hover:bg-[#008CBA] transition-colors duration-200"
+            className="bg-[#008CBA] hover:bg-[#007ab8] transition-colors duration-200 rounded-md"
             aria-label={`Approve leave request for ${record.name}`}
           >
             Approve
           </Button>
           <Button
             danger
-            size="small"
+            size="middle"
             icon={<CloseCircleOutlined />}
             onClick={() => showActionModal(record.id, record.userId, "reject")}
             disabled={record.adminStatus === "REJECTED"}
-            className="bg-[#f44336] hover:[#f44336] transition-colors duration-200"
+            className="bg-[#f44336] hover:bg-[#d32f2f] transition-colors duration-200 rounded-md"
             aria-label={`Reject leave request for ${record.name}`}
           >
             Reject
@@ -414,7 +436,9 @@ const LeaveManagement = () => {
                       ? " for today"
                       : ` for ${formatDate(selectedDate.format("YYYY-MM-DD"))}`
                     : " across all dates"}
-                  {searchText.trim() ? ` (filtered by "${searchText.trim()}")` : ""}
+                  {searchText.trim()
+                    ? ` (filtered by "${searchText.trim()}")`
+                    : ""}
                 </Text>
               </Table.Summary.Cell>
             </Table.Summary.Row>
@@ -428,6 +452,7 @@ const LeaveManagement = () => {
     if (activeTab === "byDate") {
       return (
         <DatePicker
+          size="middle"
           value={selectedDate}
           onChange={handleDateChange}
           allowClear={false}
@@ -447,10 +472,10 @@ const LeaveManagement = () => {
           <Row
             justify="space-between"
             align="middle"
-            gutter={[8, 16]}
+            gutter={[16, 16]}
             className="w-full"
           >
-            <Col xs={24} sm={12}>
+            <Col xs={24} md={8}>
               <Title
                 level={4}
                 className="mb-0 text-lg sm:text-xl md:text-2xl text-gray-800 font-bold"
@@ -458,25 +483,36 @@ const LeaveManagement = () => {
                 Leave Management
               </Title>
             </Col>
-            <Col xs={24} sm={12}>
-              <Row justify="end" gutter={[8, 8]} wrap>
-                <Col xs={24} sm={12} md={10} lg={8}>
+
+            <Col xs={24} md={16}>
+              <Row
+                justify="end"
+                align="middle"
+                gutter={[8, 8]}
+                wrap={false}
+                className="leave-header-actions"
+              >
+                <Col flex="260px">
                   <Input
                     allowClear
+                    suffix={<SearchOutlined className="text-gray-400" />}
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     placeholder="Search employee name..."
                     aria-label="Search leave requests"
                   />
                 </Col>
-                <Col xs={12} sm={6}>
-                  {renderDatePicker()}
-                </Col>
-                <Col xs={12} sm={6}>
+
+                {activeTab === "byDate" && (
+                  <Col flex="150px">{renderDatePicker()}</Col>
+                )}
+
+                <Col flex="110px">
                   <Button
+                    size="middle"
                     icon={<ReloadOutlined />}
                     onClick={handleRefresh}
-                    className="w-full bg-[#008CBA] hover:bg-[#008CBA] text-white transition-colors duration-200 rounded-lg"
+                    className="w-full bg-[#008CBA] hover:bg-[#007ab8] text-white transition-colors duration-200 rounded-md"
                     aria-label="Refresh leave data"
                   >
                     Refresh
@@ -488,20 +524,43 @@ const LeaveManagement = () => {
         }
         bodyStyle={{ padding: "16px", overflow: "auto" }}
       >
-        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-          <Col>
-            <Tag color="gold">Pending: {getPendingCount()}</Tag>
+        <Row
+          gutter={[8, 8]}
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 12 }}
+        >
+          <Col xs={24} md={16}>
+            <Space wrap>
+              <Tag color="gold" className="font-medium text-sm px-3">
+                Pending: {getPendingCount()}
+              </Tag>
+              <Tag color="green" className="font-medium text-sm px-3">
+                Approved: {approvedCount}
+              </Tag>
+              <Tag color="red" className="font-medium text-sm px-3">
+                Rejected: {rejectedCount}
+              </Tag>
+              <Tag color="blue" className="font-medium text-sm px-3">
+                Showing: {filteredLeaves.length}/{leaves.length}
+              </Tag>
+            </Space>
           </Col>
-          <Col>
-            <Tag color="green">Approved: {approvedCount}</Tag>
-          </Col>
-          <Col>
-            <Tag color="red">Rejected: {rejectedCount}</Tag>
-          </Col>
-          <Col>
-            <Tag color="blue">
-              Showing: {filteredLeaves.length}/{leaves.length}
-            </Tag>
+
+          <Col xs={24} md={8} className="leave-status-filter-col">
+            <Select
+              size="middle"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="leave-status-filter"
+              aria-label="Filter leave requests by status"
+              options={[
+                { value: "ALL", label: "All" },
+                { value: "PENDING", label: "Pending" },
+                { value: "APPROVED", label: "Approved" },
+                { value: "REJECTED", label: "Rejected" },
+              ]}
+            />
           </Col>
         </Row>
 
@@ -563,15 +622,17 @@ const LeaveManagement = () => {
         footer={[
           <Button
             key="cancel"
+            size="middle"
             onClick={closeActionModal}
             disabled={actionModal.processing}
-            className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-lg"
+            className="border-gray-300 text-gray-600 hover:text-gray-800 rounded-md"
             aria-label="Cancel action"
           >
             Cancel
           </Button>,
           <Button
             key="submit"
+            size="middle"
             type={actionModal.action === "approve" ? "primary" : "danger"}
             onClick={handleLeaveAction}
             loading={actionModal.processing}
@@ -584,8 +645,8 @@ const LeaveManagement = () => {
             }
             className={
               actionModal.action === "approve"
-                ? "bg-green-600 hover:bg-green-700 rounded-lg"
-                : "bg-red-600 hover:bg-red-700 rounded-lg"
+                ? "bg-green-600 hover:bg-green-700 rounded-md"
+                : "bg-red-600 hover:bg-red-700 rounded-md"
             }
             aria-label={`${actionModal.action === "approve" ? "Approve" : "Reject"} leave request`}
           >
@@ -594,6 +655,13 @@ const LeaveManagement = () => {
         ]}
         className="rounded-lg"
       >
+        <div className="mb-3">
+          <Text type="secondary">
+            {actionModal.action === "approve"
+              ? "Please confirm approval and optionally add any notes for the employee."
+              : "A comment is required when rejecting a leave request so the employee understands why."}
+          </Text>
+        </div>
         <div className="mb-4">
           <Text strong className="text-gray-700">
             Comments:
@@ -602,7 +670,13 @@ const LeaveManagement = () => {
             rows={4}
             value={actionModal.comments}
             onChange={handleCommentsChange}
-            placeholder={`Enter comments for ${actionModal.action} (optional)`}
+            placeholder={
+              actionModal.action === "reject"
+                ? "Enter the rejection reason here"
+                : "Add an optional note for approval"
+            }
+            maxLength={300}
+            showCount
             className="mt-2 border-gray-300 rounded-lg hover:border-blue-400 transition-colors"
             aria-label="Enter comments for leave action"
           />
@@ -640,11 +714,39 @@ const LeaveManagement = () => {
         .ant-table-row:hover {
           background-color: #f1f5f9 !important;
         }
+           .leave-header-actions {
+    width: 100%;
+  }
+
+  .leave-header-actions .ant-picker,
+  .leave-header-actions .ant-input-affix-wrapper {
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    .leave-header-actions {
+      flex-wrap: wrap !important;
+      justify-content: flex-start !important;
+    }
+
+    .leave-header-actions .ant-col {
+      flex: 1 1 100% !important;
+      max-width: 100% !important;
+    }
+  }
         .ant-card {
           border: 1px solid #e5e7eb;
         }
         .ant-modal {
           max-width: 90%;
+        }
+
+        .leave-status-filter-col {
+          display: flex;
+          justify-content: flex-end;
+        }
+        .leave-status-filter {
+          width: 220px;
         }
         @media (max-width: 768px) {
           .leave-tabs .ant-tabs-tab {
@@ -654,6 +756,13 @@ const LeaveManagement = () => {
           .ant-table {
             font-size: 12px;
           }
+          .leave-status-filter-col {
+            justify-content: stretch;
+          }
+          .leave-status-filter {
+            width: 100%;
+          }
+
           .ant-table-tbody > tr > td {
             padding: 8px;
           }

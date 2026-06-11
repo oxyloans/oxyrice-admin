@@ -230,6 +230,7 @@ export default function CampaignForm() {
       const uploadUrl = `${BASE_URL}/upload-service/upload?id=45880e62-acaf-4645-a83e-d1c8498e923e&fileType=aadhar`;
 
       const res = await fetch(uploadUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` },
         method: "POST",
         body: uploadForm,
       });
@@ -323,6 +324,7 @@ export default function CampaignForm() {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
               },
               body: JSON.stringify(payload),
             });

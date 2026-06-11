@@ -209,9 +209,9 @@ const TeamAttendanceReport = () => {
         }
         extra={
           <Space wrap size={10}>
-            <Tag color="blue" style={{ borderRadius: 16, marginInlineEnd: 0 }}>
+            {/* <Tag color="blue" style={{ borderRadius: 16, marginInlineEnd: 0 }}>
               {filteredData.length} Employees
-            </Tag>
+            </Tag> */}
             <Select
               value={selectedTeam}
               onChange={(value) => setSelectedTeam(value)}
@@ -346,16 +346,23 @@ const TeamAttendanceReport = () => {
                   bodyStyle={{ padding: 16 }}
                   hoverable
                   onClick={() =>
-                    navigate(`/user-task-details/${user.userid}`, {
-                      state: { selectedMonth: selectedMonth.format("YYYY-MM") },
-                    })
+                    navigate(
+                      `/taskmanagement/user-task-details/${user.userid}`,
+                      {
+                        state: {
+                          selectedMonth: selectedMonth.format("YYYY-MM"),
+                        },
+                      },
+                    )
                   }
                 >
                   <div>
                     <div style={metricRowStyle}>
                       <ApartmentOutlined style={iconStyle} />
                       <span style={labelStyle}>Department:</span>
-                      <span style={metricValueStyle}>{user.department || "-"}</span>
+                      <span style={metricValueStyle}>
+                        {user.department || "-"}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <CalendarTwoTone
@@ -363,32 +370,44 @@ const TeamAttendanceReport = () => {
                         style={iconStyle}
                       />
                       <span style={labelStyle}>Leave Days:</span>
-                      <span style={metricValueStyle}>{user.leaveDaysInMonth}</span>
+                      <span style={metricValueStyle}>
+                        {user.leaveDaysInMonth}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>POD Updates:</span>
-                      <span style={metricValueStyle}>{user.podUpdateReport}</span>
+                      <span style={metricValueStyle}>
+                        {user.podUpdateReport}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EOD Updates:</span>
-                      <span style={metricValueStyle}>{user.eodUpdationEntries}</span>
+                      <span style={metricValueStyle}>
+                        {user.eodUpdationEntries}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EOD Missing:</span>
-                      <span style={metricValueStyle}>{user.eodMissingEntries}</span>
+                      <span style={metricValueStyle}>
+                        {user.eodMissingEntries}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <UserOutlined style={iconStyle} />
                       <span style={labelStyle}>EMP Working Days:</span>
-                      <span style={metricValueStyle}>{user.employeeWorkingDays}</span>
+                      <span style={metricValueStyle}>
+                        {user.employeeWorkingDays}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <ClockCircleOutlined style={iconStyle} />
                       <span style={labelStyle}>Avg/Day Hrs Spent:</span>
-                      <span style={metricValueStyle}>{user.avgPerDaySpentHours}</span>
+                      <span style={metricValueStyle}>
+                        {user.avgPerDaySpentHours}
+                      </span>
                     </div>
                     <div style={metricRowStyle}>
                       <ScheduleOutlined style={iconStyle} />
