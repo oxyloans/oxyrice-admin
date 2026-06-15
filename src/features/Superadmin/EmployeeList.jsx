@@ -29,6 +29,8 @@ export default function EmployeeList() {
   const [hasMore, setHasMore] = useState(true);
   const navigate = useNavigate();
   const session = getSession();
+  const query = new URLSearchParams(window.location.search);
+  const companyIdParam = query.get('companyId');
 
   const fetchCommentCounts = (rows) => {
     Promise.all(
@@ -47,19 +49,23 @@ export default function EmployeeList() {
 
   const fetchPage = (p) => {
     setLoading(true);
-    fetchWithAuth(`${BASE}/api/user-service/write/get-all-company-employees-data?page=${p}&size=${PAGE_SIZE}`)
+    const url = companyIdParam
+      ? `${BASE}/api/user-service/write/company-employees/${companyIdParam}`
+      : `${BASE}/api/user-service/write/get-all-company-employees-data?page=${p}&size=${PAGE_SIZE}`;
+
+    fetchWithAuth(url)
       .then((r) => { if (!r.ok) throw new Error("Failed to fetch"); return r.json(); })
       .then((rows) => {
         const list = Array.isArray(rows) ? rows : [];
         setData((prev) => p === 0 ? list : [...prev, ...list]);
-        setHasMore(list.length === PAGE_SIZE);
+        setHasMore(!companyIdParam && list.length === PAGE_SIZE);
         fetchCommentCounts(list);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchPage(0); }, []);
+  useEffect(() => { fetchPage(0); }, [companyIdParam]);
 
   const loadMore = () => {
     const next = page + 1;
@@ -89,58 +95,29 @@ export default function EmployeeList() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f2f8] flex flex-col">
-      {/* Navbar */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow">
-            <img src="/oxyglobal.png" alt="OxyGlobal" className="h-5 w-5 object-contain" />
-          </div>
-          <div>
-            <p className="font-bold text-gray-900 text-sm leading-none">OxyGlobal</p>
-            <p className="text-[10px] text-gray-400 leading-none mt-0.5">Admin Console</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/superadmin/dashboard")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 px-4 py-2 rounded-xl shadow-md shadow-slate-200 transition-all hover:scale-105 active:scale-95"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
-            Bank Contacts
-          </button>
-          {session && (
-            <div className="flex items-center gap-2.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold">
-                {session.name?.[0]?.toUpperCase()}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-xs font-semibold text-gray-700 leading-none">{session.name}</p>
-                <p className="text-[10px] text-blue-500 leading-none mt-0.5">{session.primaryType}</p>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={logout}
-            className="flex items-center gap-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 px-3 py-2 rounded-xl transition-all shadow-sm shadow-red-200"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <div className="flex-1 p-5 space-y-5 max-w-screen-2xl mx-auto w-full">
-        {/* Title */}
-        <div className="flex items-center justify-between">
+    <div className="space-y-5 max-w-screen-2xl mx-auto w-full">
+      {/* Title */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Company Employees</h1>
-            <p className="text-sm text-gray-400 mt-0.5">Manage and track all employee contacts</p>
+            <p className="text-sm text-gray-400 mt-0.5">
+              {companyIdParam ? 'Viewing employees for selected company' : 'Manage and track all employee contacts'}
+            </p>
           </div>
-          <div className="text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-          </div>
+          {companyIdParam && (
+            <button
+              onClick={() => navigate('/superadmin/employees')}
+              className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-all"
+            >
+              Show All Employees
+            </button>
+          )}
         </div>
+        <div className="text-xs text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+          {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+        </div>
+      </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -309,7 +286,6 @@ export default function EmployeeList() {
             <CallsPanel />
           </div>
         </div>
-      </div>
 
       {selectedUser && (
         <CommentModal

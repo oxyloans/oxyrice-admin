@@ -73,49 +73,8 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f2f8] flex flex-col">
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-110 h-15 rounded-lg bg-gradient-to-br flex items-center justify-center shadow">
-            <img src={logo} alt="OxyGlobal" className="h-10 w-25 object-contain" />
-          </div>
-          {/* <div>
-            <p className="font-bold text-gray-900 text-sm leading-none">OxyGlobal</p>
-            <p className="text-[10px] text-gray-400 leading-none mt-0.5">Admin Console</p>
-          </div> */}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <Link
-            to="/superadmin/employees"
-            className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 px-4 py-2 rounded-xl shadow-md shadow-indigo-200 transition-all hover:scale-105 active:scale-95"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            Employees
-          </Link>
-          {session && (
-            <div className="flex items-center gap-2.5 bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold">
-                {session.name?.[0]?.toUpperCase()}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-xs font-semibold text-gray-700 leading-none">{session.name}</p>
-                <p className="text-[10px] text-blue-500 leading-none mt-0.5">{session.primaryType}</p>
-              </div>
-            </div>
-          )}
-          <button
-            onClick={logout}
-            className="flex items-center gap-1.5 text-xs font-medium text-white bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 px-3 py-2 rounded-xl transition-all shadow-sm shadow-red-200"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-            Logout
-          </button>
-        </div>
-      </header>
-
-      <div className="flex-1 p-5 space-y-5 max-w-screen-2xl mx-auto w-full">
-        <div className="flex items-center justify-between">
+    <div className="space-y-5 max-w-screen-2xl mx-auto w-full">
+      <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Bank Contacts</h1>
             <p className="text-sm text-gray-400 mt-0.5">Manage and track all banking contacts</p>
@@ -139,7 +98,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-1 gap-5">
           <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -267,11 +226,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="xl:col-span-1">
+          {/* <div className="xl:col-span-1">
             <CallsPanel />
-          </div>
+          </div> */}
         </div>
-      </div>
 
       {selectedUser && (
         <CommentModal

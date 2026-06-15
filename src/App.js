@@ -22,6 +22,16 @@ import Login from "./features/Superadmin/Auth/Login.jsx";
 import Dashboard from "./features/Superadmin/Dashboard.jsx";
 import EmployeeList from "./features/Superadmin/EmployeeList.jsx";
 import ProtectedRoutes from "./features/Superadmin/ProtectedRoutes.jsx";
+import SuperadminLayout from "./features/Superadmin/components/SuperadminLayout.jsx";
+import AddCompany from "./features/Superadmin/components/AddCompany.jsx";
+import AddBank from "./features/Superadmin/components/AddBank.jsx";
+import AddEmployee from "./features/Superadmin/components/AddEmployee.jsx";
+import AddPresentation from "./features/Superadmin/components/AddPresentation.jsx";
+import AddDemo from "./features/Superadmin/components/AddDemo.jsx";
+import CompanyList from "./features/Superadmin/components/CompanyList.jsx";
+import BankList from "./features/Superadmin/components/BankList.jsx";
+import CompanyEmployees from "./features/Superadmin/CompanyEmployees.jsx";
+import BankEmployees from "./features/Superadmin/BankEmployees.jsx";
 
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
@@ -55,7 +65,7 @@ function App() {
               path="/superadmin/dashboard"
               element={
                 <ProtectedRoutes
-                  element={<Dashboard />}
+                  element={<SuperadminLayout><Dashboard /></SuperadminLayout>}
                   loginPath={"/superadmin/login"}
                 />
               }
@@ -64,11 +74,92 @@ function App() {
               path="/superadmin/employees"
               element={
                 <ProtectedRoutes
-                  element={<EmployeeList />}
+                  element={<SuperadminLayout><EmployeeList /></SuperadminLayout>}
                   loginPath={"/superadmin/login"}
                 />
               }
             />
+             <Route
+                          path="/superadmin/companies"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><CompanyList /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/banks"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><BankList /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/companies/:companyId/employees"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><CompanyEmployees /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/banks/:bankId/employees"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><BankEmployees /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/add-company"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><AddCompany /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/add-bank"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><AddBank /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/add-employee"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><AddEmployee /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/add-presentation"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><AddPresentation /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
+                        <Route
+                          path="/superadmin/add-demo"
+                          element={
+                            <ProtectedRoutes
+                              element={<SuperadminLayout><AddDemo /></SuperadminLayout>}
+                              loginPath={"/superadmin/login"}
+                            />
+                          }
+                        />
             <Route
               path="/admin/companieslogin"
               element={<CompaniesLoginPage />}
