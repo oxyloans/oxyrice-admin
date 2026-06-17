@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, notification } from 'antd';
 import { addBank } from '../api/superadminService';
 import styles from '../styles/glass.module.css';
 
@@ -30,13 +30,13 @@ const AddBank = ({ onSuccess, isModal = false }) => {
     setSubmitting(true);
     try {
       await addBank({ ...values, classification: "BANK" });
-      message.success('Bank added successfully');
+      notification.success({ message: 'Success', description: 'Bank added successfully' });
       form.resetFields();
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.message || 'Failed to add bank';
-      message.error(msg);
+      notification.error({ message: 'Error', description: msg });
     } finally {
       setSubmitting(false);
     }

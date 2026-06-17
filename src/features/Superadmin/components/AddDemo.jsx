@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Switch, message } from 'antd';
+import { Form, Input, Button, Switch, notification } from 'antd';
 import { addDemo } from '../api/superadminService';
 import styles from '../styles/glass.module.css';
 
@@ -34,7 +34,7 @@ const AddDemo = ({ companyId, onSuccess, isModal = false, initialValues = null }
     setSubmitting(true);
     try {
       await addDemo(values);
-      message.success('Demo information added successfully');
+      notification.success({ message: 'Success', description: 'Demo information added successfully' });
       form.resetFields();
       if (companyId) {
         form.setFieldsValue({ companyId });
@@ -43,7 +43,7 @@ const AddDemo = ({ companyId, onSuccess, isModal = false, initialValues = null }
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.message || 'Failed to add demo information';
-      message.error(msg);
+      notification.error({ message: 'Error', description: msg });
     } finally {
       setSubmitting(false);
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, message } from 'antd';
+import { Form, Input, Button, Upload, notification } from 'antd';
 import { UploadOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { addPresentation, uploadFile } from '../api/superadminService';
 import styles from '../styles/glass.module.css';
@@ -33,10 +33,10 @@ const AddPresentation = ({ companyId, onSuccess, isModal = false }) => {
       console.log(res);
       form.setFieldsValue({ presentationUrl: res.documentPath });
       setUploadedFileName(file.name);
-      message.success('File uploaded successfully');
+      notification.success({ message: 'Success', description: 'File uploaded successfully' });
       onUploadSuccess?.('ok');
     } catch (e) {
-      message.error('File upload failed');
+      notification.error({ message: 'Error', description: 'File upload failed' });
       onError?.(e);
     } finally {
       setUploading(false);
@@ -52,13 +52,13 @@ const AddPresentation = ({ companyId, onSuccess, isModal = false }) => {
     setSubmitting(true);
     try {
       await addPresentation(values);
-      message.success('Presentation added successfully');
+      notification.success({ message: 'Success', description: 'Presentation added successfully' });
       form.resetFields();
       setUploadedFileName('');
       if (companyId) form.setFieldsValue({ companyId });
       if (onSuccess) onSuccess();
     } catch (err) {
-      message.error(err?.response?.data?.message || 'Failed to add presentation');
+      notification.error({ message: 'Error', description: err?.response?.data?.message || 'Failed to add presentation' });
     } finally {
       setSubmitting(false);
     }

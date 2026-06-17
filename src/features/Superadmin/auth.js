@@ -1,5 +1,7 @@
+import { Modal } from 'antd';
+
 const SESSION_KEY = "admin_session";
-const BASE = "http://65.0.147.157:9024";
+const BASE = "https://meta.oxyloans.com";
 
 export const saveSession = (data) =>
   localStorage.setItem(SESSION_KEY, JSON.stringify(data));
@@ -49,7 +51,14 @@ export const refreshAccessToken = async () => {
     return newToken;
   } catch {
     clearSession();
-    window.location.href = "/admin";
+    Modal.error({
+      title: 'Session Expired',
+      content: 'Your session has expired. Please log in again to continue.',
+      okText: 'Login',
+      onOk() {
+        window.location.href = "/superadmin/login";
+      }
+    });
     return null;
   } finally {
     isRefreshing = false;
@@ -58,7 +67,14 @@ export const refreshAccessToken = async () => {
 
 const forceLogout = () => {
   clearSession();
-  window.location.href = "/admin";
+  Modal.error({
+    title: 'Session Expired',
+    content: 'Your session has expired. Please log in again to continue.',
+    okText: 'Login',
+    onOk() {
+      window.location.href = "/superadmin/login";
+    }
+  });
 };
 
 export const fetchWithAuth = async (url, options = {}) => {

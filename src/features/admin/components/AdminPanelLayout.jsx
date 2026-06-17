@@ -180,6 +180,11 @@ const AdminPanelLayout = ({ children }) => {
             label: "Orders by Coupon",
             link: "/admin/ordersByCoupon",
           },
+          {
+            key: "bulkGeneratedCoupons",
+            label: "Bulk Generated Coupons",
+            link: "/admin/bulk-generated-coupons",
+          },
         ],
       },
       {
@@ -230,6 +235,11 @@ const AdminPanelLayout = ({ children }) => {
             key: "studentRegistrations",
             label: "Student Registrations",
             link: "/admin/student-registrations",
+          },
+          {
+            key: "citySummury",
+            label: "City Summary",
+            link: "/admin/city-summary",
           },
         ],
       },

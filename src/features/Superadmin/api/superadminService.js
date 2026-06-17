@@ -1,5 +1,6 @@
 import axios from "axios";
-import { getToken } from "../auth";
+import { getToken, refreshAccessToken, clearSession } from "../auth";
+import { Modal } from "antd";
 
 const BASE_URL = 'https://meta.oxyloans.com/api/user-service/write';
 
@@ -14,6 +15,38 @@ superadminAxios.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+superadminAxios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          return superadminAxios(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
+      }
+      
+      // If we got here, refresh token failed or returned null
+      clearSession();
+      Modal.error({
+        title: 'Session Expired',
+        content: 'Your session has expired. Please log in again to continue.',
+        okText: 'Login',
+        onOk() {
+          window.location.href = "/superadmin/login";
+        }
+      });
+      return Promise.reject(error);
+    }
     return Promise.reject(error);
   }
 );
@@ -44,6 +77,10 @@ export const addBankInfo = async (payload) => {
 };
 
 // ---------- Read (GET) ----------
+export const fetchDashboardStats = async () => {
+  return superadminAxios.get(`${BASE_URL}/dashboard`);
+};
+
 export const fetchCompanies = async (page = 0, size = 10) => {
   return superadminAxios.get(`${BASE_URL}/get-all-companies?page=${page}&size=${size}`);
 };
@@ -62,7 +99,7 @@ export const fetchCompanyEmployees = async (companyId) => {
 
 export const fetchBankEmployees = async (bankId) => {
   return superadminAxios.get(`${BASE_URL}/bank-employees/${bankId}`);
-}
+};
 
 export const fetchCompanyPresentations = async (companyId) => {
   return superadminAxios.get(`${BASE_URL}/get-presentations/${companyId}`);
@@ -72,6 +109,14 @@ export const fetchCompanyDemos = async (companyId) => {
   return superadminAxios.get(`${BASE_URL}/company-demos/${companyId}`);
 };
 
+// ---------- Delete ----------
+export const deleteEmployee = async (employeeId) => {
+  return superadminAxios.delete(`${BASE_URL}/delete-employee/${employeeId}`);
+};
+
+export const deleteDemo = async (companyId, demoId) => {
+  return superadminAxios.delete(`${BASE_URL}/delete-demo/${companyId}`);
+};
 
 // --------- Upload File --------
 export const uploadFile = async (companyId, file) => {
@@ -88,6 +133,6 @@ export const uploadFile = async (companyId, file) => {
       },
     }
   );
-  
+
   return res.data;
-}
+};

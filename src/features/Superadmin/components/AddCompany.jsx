@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, Button, notification } from 'antd';
 import { addCompany } from '../api/superadminService';
 import styles from '../styles/glass.module.css';
 
@@ -33,13 +33,13 @@ const AddCompany = ({ onSuccess, isModal = false }) => {
     try {
       // add company classification
       await addCompany({ ...values, classification: "COMPANY" });
-      message.success('Company added successfully');
+      notification.success({ message: 'Success', description: 'Company added successfully' });
       form.resetFields();
       if (onSuccess) onSuccess();
     } catch (err) {
       console.error(err);
       const msg = err?.response?.data?.message || 'Failed to add company';
-      message.error(msg);
+      notification.error({ message: 'Error', description: msg });
     } finally {
       setSubmitting(false);
     }

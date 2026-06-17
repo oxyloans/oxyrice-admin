@@ -1,5 +1,7 @@
 import { lazy } from "react";
 import AssignedTasksStatusBased from "../../features/tasks/pages/AssignedTasksStatusBased";
+import BulkGeneratedCoupons from "../../features/admin/pages/BulkGeneratedCoupons";
+import StudyAbroadCitySummury from "../../features/admin/pages/StudyAbroadCitySummury";
 
 
 
@@ -202,10 +204,12 @@ const adminRoutes = [
   { path: "bulkinvites", element: BulkInviteCampaign },
   { path: "categories", element: Categories },
   { path: "pincodesdata", element: PincodesData },
+  { path: "city-summary", element: StudyAbroadCitySummury },
   { path: "initiatedamountlist", element: InitiatedAmountList },
   { path: "approvedamountlist", element: ApprovedAmountList },
   { path: "withdrawaluserlist", element: WithdrawalRequests },
   { path: "coupons", element: Coupons },
+  { path: "bulk-generated-coupons", element: BulkGeneratedCoupons },
   { path: "ordersByCoupon", element: OrdersByCoupon },
   { path: "studentapplications", element: StudentApplications },
   { path: "student-registrations", element: StudentRegistrations },
