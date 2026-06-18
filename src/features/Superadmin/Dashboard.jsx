@@ -51,7 +51,7 @@ export default function Dashboard() {
         setStats({
           companiesCount: dashboardStats.totalCompanies || companiesRes?.data?.totalElements || companies.length,
           banksCount: dashboardStats.totalBanks || banksRes?.data?.totalElements || banks.length,
-          companyContactsCount: dashboardStats.totalCompanyContacts || 0,
+          companyContactsCount: dashboardStats.totalEmployeeContacts || 0,
           commentsCount: dashboardStats.totalComments || 0,
         });
 
@@ -83,7 +83,7 @@ export default function Dashboard() {
       link: "/superadmin/banks"
     },
     {
-      label: "Total Company Contacts",
+      label: "Total Contacts",
       value: stats.companyContactsCount,
       icon: "👥",
       gradient: "from-emerald-500 to-teal-600",
