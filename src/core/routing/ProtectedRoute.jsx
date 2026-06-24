@@ -7,6 +7,7 @@ const loginPathToRedirectKey = {
   "/admin/agentslogin": "redirectAfterLogin_agents",
   "/admin/companieslogin": "redirectAfterLogin_companies",
   "/admin/taskmanagementlogin": "redirectAfterLogin_task",
+  "/admin/studyabroadlogin": "redirectAfterLogin_studyabroad",
 };
 
 const ProtectedRoute = ({ element, loginPath = "/" }) => {

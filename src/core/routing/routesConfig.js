@@ -1,7 +1,6 @@
 import { lazy } from "react";
 import AssignedTasksStatusBased from "../../features/tasks/pages/AssignedTasksStatusBased";
 import BulkGeneratedCoupons from "../../features/admin/pages/BulkGeneratedCoupons";
-import StudyAbroadCitySummury from "../../features/admin/pages/StudyAbroadCitySummury";
 
 
 
@@ -51,6 +50,20 @@ const CorporateData = lazy(
   () => import("../../features/tasks/pages/CorporateData"),
 );
 
+// Study Abroad Admin
+const StudyAbroadCitySummury = lazy(
+  () => import("../../features/study-abroad/pages/StudyAbroadCitySummury"),
+);
+const StudentApplications = lazy(
+  () => import("../../features/study-abroad/pages/StudentApplications"),
+);
+const StudentRegistrations = lazy(
+  () => import("../../features/study-abroad/pages/StudentRegistrations"),
+);
+const AllStudents = lazy(
+  () => import("../../features/study-abroad/pages/AllStudents"),
+);
+
 // AdminPages
 const AllQueries = lazy(() => import("../../features/admin/pages/AllQueriesForAdmin"));
 const Categories = lazy(() => import("../../features/admin/pages/CategoryList"));
@@ -98,16 +111,13 @@ const ActiveOffersList = lazy(
 const AgentCampaignOffers = lazy(
   () => import("../../features/admin/pages/AgentCampaignOffers"),
 );
-const StudentApplications = lazy(
-  () => import("../../features/admin/pages/StudentApplications"),
-);
+// const OfferUsageByPincode = lazy(
+//   () => import("../../features/admin/pages/OfferUsageByPincode"),
+// );
 const Services = lazy(() => import("../../features/admin/pages/ServicesList"));
 const ServiceList = lazy(() => import("../../features/admin/pages/ServiceList"));
 const OrdersByCoupon = lazy(() => import("../../features/admin/pages/OrdersByCoupon"));
 const NBFCDataList = lazy(() => import("../../features/admin/pages/NBFCDataList"));
-const StudentRegistrations = lazy(
-  () => import("../../features/admin/pages/StudentRegistrations"),
-);
 const InitiatedAmountList = lazy(
   () => import("../../features/admin/pages/InitiatedAmountList"),
 );
@@ -189,10 +199,12 @@ const FreelancersList = lazy(
 
 const ADMIN_BASE = "/admin";
 const TASK_BASE = "/taskmanagement";
+const STUDY_ABROAD_BASE = "/studyabroad";
 const ADMIN_LOGIN = "/";
 const COMPANIES_LOGIN = `${ADMIN_BASE}/companieslogin`;
 const AGENTS_LOGIN = `${ADMIN_BASE}/agentslogin`;
 const TASK_LOGIN = `${ADMIN_BASE}/taskmanagementlogin`;
+const STUDY_ABROAD_LOGIN = `${ADMIN_BASE}/studyabroadlogin`;
 
 const adminRoutes = [
   { path: "fuel-expenses", element: FuelExpenses },
@@ -204,15 +216,12 @@ const adminRoutes = [
   { path: "bulkinvites", element: BulkInviteCampaign },
   { path: "categories", element: Categories },
   { path: "pincodesdata", element: PincodesData },
-  { path: "city-summary", element: StudyAbroadCitySummury },
   { path: "initiatedamountlist", element: InitiatedAmountList },
   { path: "approvedamountlist", element: ApprovedAmountList },
   { path: "withdrawaluserlist", element: WithdrawalRequests },
   { path: "coupons", element: Coupons },
   { path: "bulk-generated-coupons", element: BulkGeneratedCoupons },
   { path: "ordersByCoupon", element: OrdersByCoupon },
-  { path: "studentapplications", element: StudentApplications },
-  { path: "student-registrations", element: StudentRegistrations },
   { path: "customers", element: Customers },
   { path: "customer-updation", element: CustomerUpdation },
   { path: "services", element: Services },
@@ -225,6 +234,7 @@ const adminRoutes = [
   { path: "items-lists", element: ItemsLists },
   { path: "items-offerlists", element: ActiveOffersList },
   { path: "agent-campaign-offers", element: AgentCampaignOffers },
+  // { path: "offer-usage-by-pincode", element: OfferUsageByPincode },
   { path: "orders-details", element: Ordersdetails },
   { path: "orders-details/:id", element: OrdersDetailsCustomerId },
   { path: "orders-pending", element: OrdersPending },
@@ -311,15 +321,28 @@ const taskManagementRoutes = [
   loginPath: TASK_LOGIN,
 }));
 
+const studyAbroadRoutes = [
+  { path: "studentapplications", element: StudentApplications },
+  { path: "student-registrations", element: StudentRegistrations },
+  { path: "all-students", element: AllStudents },
+  { path: "city-summary", element: StudyAbroadCitySummury },
+].map((route) => ({
+  ...route,
+  loginPath: STUDY_ABROAD_LOGIN,
+}));
+
 export {
   ADMIN_BASE,
   TASK_BASE,
+  STUDY_ABROAD_BASE,
   ADMIN_LOGIN,
   COMPANIES_LOGIN,
   AGENTS_LOGIN,
   TASK_LOGIN,
+  STUDY_ABROAD_LOGIN,
   adminRoutes,
   companyAdminRoutes,
   agentsAdminRoutes,
   taskManagementRoutes,
+  studyAbroadRoutes,
 };

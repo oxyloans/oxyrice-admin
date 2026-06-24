@@ -1,11 +1,13 @@
 import {
   ADMIN_BASE,
   TASK_BASE,
+  STUDY_ABROAD_BASE,
   ADMIN_LOGIN,
   adminRoutes,
   companyAdminRoutes,
   agentsAdminRoutes,
   taskManagementRoutes,
+  studyAbroadRoutes,
 } from "./core/routing/routesConfig";
 
 import React, { Suspense, lazy } from "react";
@@ -38,16 +40,22 @@ import { Notifications } from "@mantine/notifications";
 
 const LoadingSpinner = lazy(() => import("./shared/components/LoadingSpinner"));
 const ProtectedRoute = lazy(() => import("./core/routing/ProtectedRoute"));
-const EntryPointTracker = lazy(() => import("./core/routing/EntryPointTracker"));
+const EntryPointTracker = lazy(
+  () => import("./core/routing/EntryPointTracker"),
+);
 
 const Email = lazy(() => import("./features/admin/pages/Emailcampaign"));
 const AdminLoginPage = lazy(() => import("./core/auth/AdminLogin"));
-const AgentLoginPage = lazy(() => import("./core/auth/AgentsLogin"));
+const AgentLoginPage = lazy(
+  () => import("./features/agents/pages/AgentsLogin"),
+);
 const CompaniesLoginPage = lazy(() => import("./core/auth/CompaniesLogin"));
 const TaskManagementLoginPage = lazy(
   () => import("./features/tasks/pages/TaskManagementLogin"),
 );
-
+const StudyAbroadLoginPage = lazy(
+  () => import("./features/study-abroad/pages/StudyAbroadLogin"),
+);
 
 function App() {
   return (
@@ -65,7 +73,11 @@ function App() {
               path="/superadmin/dashboard"
               element={
                 <ProtectedRoutes
-                  element={<SuperadminLayout><Dashboard /></SuperadminLayout>}
+                  element={
+                    <SuperadminLayout>
+                      <Dashboard />
+                    </SuperadminLayout>
+                  }
                   loginPath={"/superadmin/login"}
                 />
               }
@@ -74,92 +86,132 @@ function App() {
               path="/superadmin/employees"
               element={
                 <ProtectedRoutes
-                  element={<SuperadminLayout><EmployeeList /></SuperadminLayout>}
+                  element={
+                    <SuperadminLayout>
+                      <EmployeeList />
+                    </SuperadminLayout>
+                  }
                   loginPath={"/superadmin/login"}
                 />
               }
             />
-             <Route
-                          path="/superadmin/companies"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><CompanyList /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/banks"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><BankList /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/companies/:companyId/employees"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><CompanyEmployees /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/banks/:bankId/employees"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><BankEmployees /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/add-company"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><AddCompany /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/add-bank"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><AddBank /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/add-employee"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><AddEmployee /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/add-presentation"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><AddPresentation /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
-                        <Route
-                          path="/superadmin/add-demo"
-                          element={
-                            <ProtectedRoutes
-                              element={<SuperadminLayout><AddDemo /></SuperadminLayout>}
-                              loginPath={"/superadmin/login"}
-                            />
-                          }
-                        />
+            <Route
+              path="/superadmin/companies"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <CompanyList />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/banks"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <BankList />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/companies/:companyId/employees"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <CompanyEmployees />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/banks/:bankId/employees"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <BankEmployees />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/add-company"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <AddCompany />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/add-bank"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <AddBank />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/add-employee"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <AddEmployee />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/add-presentation"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <AddPresentation />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
+            <Route
+              path="/superadmin/add-demo"
+              element={
+                <ProtectedRoutes
+                  element={
+                    <SuperadminLayout>
+                      <AddDemo />
+                    </SuperadminLayout>
+                  }
+                  loginPath={"/superadmin/login"}
+                />
+              }
+            />
             <Route
               path="/admin/companieslogin"
               element={<CompaniesLoginPage />}
@@ -167,6 +219,10 @@ function App() {
             <Route
               path="/admin/taskmanagementlogin"
               element={<TaskManagementLoginPage />}
+            />
+            <Route
+              path="/admin/studyabroadlogin"
+              element={<StudyAbroadLoginPage />}
             />
             {/* === COMPANIES ADMIN - PROTECTED === */}
             {companyAdminRoutes.map(({ path, element, loginPath }) => {
@@ -191,6 +247,22 @@ function App() {
                 <Route
                   key={`${TASK_BASE}/${path}`}
                   path={`${TASK_BASE}/${path}`}
+                  element={
+                    <ProtectedRoute
+                      element={Comp ? <Comp /> : null}
+                      loginPath={loginPath}
+                    />
+                  }
+                />
+              );
+            })}
+            {/* === STUDY ABROAD - PROTECTED === */}
+            {studyAbroadRoutes.map(({ path, element, loginPath }) => {
+              const Comp = element;
+              return (
+                <Route
+                  key={`${STUDY_ABROAD_BASE}/${path}`}
+                  path={`${STUDY_ABROAD_BASE}/${path}`}
                   element={
                     <ProtectedRoute
                       element={Comp ? <Comp /> : null}
@@ -238,12 +310,7 @@ function App() {
         </Suspense>
       </MantineProvider>
     </Router>
-    
   );
 }
 
 export default App;
-
-
-
-

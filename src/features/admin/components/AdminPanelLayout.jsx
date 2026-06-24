@@ -11,7 +11,6 @@ import {
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
 import {
   FaBoxes,
-  FaUserGraduate,
   FaTachometerAlt,
   FaGasPump,
   FaBoxOpen,
@@ -76,6 +75,11 @@ const AdminPanelLayout = ({ children }) => {
             key: "agentCampaignOffers",
             label: "AI Campaign Offers",
             link: "/admin/agent-campaign-offers",
+          },
+          {
+            key: "offerUsageByPincode",
+            label: "Offers by Pincode",
+            link: "/admin/offer-usage-by-pincode",
           },
         ],
       },
@@ -218,28 +222,6 @@ const AdminPanelLayout = ({ children }) => {
             key: "timeSlotsList",
             label: "Time Slots List",
             link: "/admin/timeslots",
-          },
-        ],
-      },
-      {
-        key: "studyAbroad",
-        label: "Study Abroad Admin",
-        icon: <FaUserGraduate />,
-        dropdownItems: [
-          {
-            key: "studentApplications",
-            label: "Student Applications",
-            link: "/admin/studentapplications",
-          },
-          {
-            key: "studentRegistrations",
-            label: "Student Registrations",
-            link: "/admin/student-registrations",
-          },
-          {
-            key: "citySummury",
-            label: "City Summary",
-            link: "/admin/city-summary",
           },
         ],
       },

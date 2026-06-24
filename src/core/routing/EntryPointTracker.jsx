@@ -6,6 +6,7 @@ const validEntryPoints = [
   "/admin/agentslogin",
   "/admin/comapanieslogin",
   "/admin/taskmanagementlogin",
+  "/admin/studyabroadlogin",
 ];
 
 function EntryPointTracker() {
