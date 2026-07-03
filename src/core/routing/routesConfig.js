@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import AssignedTasksStatusBased from "../../features/tasks/pages/AssignedTasksStatusBased";
 import BulkGeneratedCoupons from "../../features/admin/pages/BulkGeneratedCoupons";
+import StudyAbroadFailedEmails from "../../features/study-abroad/pages/StudyAbroadFailedEmails";
 
 
 
@@ -63,6 +64,10 @@ const StudentRegistrations = lazy(
 const AllStudents = lazy(
   () => import("../../features/study-abroad/pages/AllStudents"),
 );
+const StudyAbroadCityDetails = lazy(
+  () => import("../../features/study-abroad/pages/StudyAbroadCityDetails"),
+);
+const StudyAbroadResponses = lazy(() => import("../../features/study-abroad/pages/StudyAbroadResponses"),);
 
 // AdminPages
 const AllQueries = lazy(() => import("../../features/admin/pages/AllQueriesForAdmin"));
@@ -134,6 +139,9 @@ const BulkInviteCampaign = lazy(
 const CampaignUpload = lazy(() => import("../../features/admin/pages/CampaignUpload"));
 const CampaignForm = lazy(() => import("../../features/admin/pages/CampaignForm"));
 const PincodesData = lazy(() => import("../../features/admin/pages/PincodesData"));
+const WhatsAppCampaign = lazy(() => import("../../features/admin/pages/WhatsAppCampaign"));
+const WhatsAppCampaignRecipients = lazy(() => import("../../features/admin/pages/WhatsAppCampaignRecipients"));
+const PdfUploadCampaign = lazy(() => import("../../features/admin/pages/PdfUploadCampaign"));
 
 // Companies Admin
 const CompanyList = lazy(() => import("../../features/companies/pages/CompanyList"));
@@ -196,6 +204,10 @@ const AgentStoreManager = lazy(
 const FreelancersList = lazy(
   () => import("../../features/agents/pages/Freelancer"),
 );
+ 
+const SystemConfiguration = lazy(
+  () => import("../../features/companies/pages/SystemConfiguration"),
+);
 
 const ADMIN_BASE = "/admin";
 const TASK_BASE = "/taskmanagement";
@@ -216,6 +228,9 @@ const adminRoutes = [
   { path: "bulkinvites", element: BulkInviteCampaign },
   { path: "categories", element: Categories },
   { path: "pincodesdata", element: PincodesData },
+  { path: "whatsapp-campaign", element: WhatsAppCampaign },
+  { path: "whatsapp-campaign-recipients/:campaignId", element: WhatsAppCampaignRecipients },
+  { path: "pdf-upload-campaign", element: PdfUploadCampaign },
   { path: "initiatedamountlist", element: InitiatedAmountList },
   { path: "approvedamountlist", element: ApprovedAmountList },
   { path: "withdrawaluserlist", element: WithdrawalRequests },
@@ -265,13 +280,16 @@ const companyAdminRoutes = [
   { path: "wearehiring", element: WeHiringPage },
   { path: "getalljobs", element: GetAllJobs },
   { path: "campaignwithcomments", element: CampaignsWithComments },
-  
+  { path: "system-configuration", element: SystemConfiguration },
   { path: "ibj-official", element: IbjOfficialPage },
   { path: "iibs-summit", element: IibsSummitPage },
-  { path: "fd-sales-images", element: FdSalesImagesPage},
+  { path: "fd-sales-images", element: FdSalesImagesPage },
   { path: "business-cards", element: BusinessCards },
   { path: "hysea-summit", element: HyseaSummit },
-  {path:"ai-jobs", element: lazy(() => import("../../features/companies/pages/Aijobspage"))}
+  {
+    path: "ai-jobs",
+    element: lazy(() => import("../../features/companies/pages/Aijobspage")),
+  },
 ].map((route) => ({
   loginPath: COMPANIES_LOGIN,
   ...route,
@@ -321,11 +339,17 @@ const taskManagementRoutes = [
   loginPath: TASK_LOGIN,
 }));
 
+
+
+
 const studyAbroadRoutes = [
   { path: "studentapplications", element: StudentApplications },
   { path: "student-registrations", element: StudentRegistrations },
   { path: "all-students", element: AllStudents },
   { path: "city-summary", element: StudyAbroadCitySummury },
+  { path: "city-details/:city", element: StudyAbroadCityDetails },
+  { path: "failed-emails", element: StudyAbroadFailedEmails },
+  { path: "responses", element: StudyAbroadResponses },
 ].map((route) => ({
   ...route,
   loginPath: STUDY_ABROAD_LOGIN,

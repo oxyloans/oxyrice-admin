@@ -120,6 +120,7 @@ const GetAllJobs = () => {
       dataIndex: "userName",
       key: "userName",
       align: "center",
+      width:"150px",
       render: (userName) => userName || "N/A",
     },
     {
@@ -127,6 +128,7 @@ const GetAllJobs = () => {
       dataIndex: "jobTitle",
       key: "jobTitle",
       align: "center",
+      width:"220px",
       render: (jobTitle) => jobTitle || "N/A",
     },
     {

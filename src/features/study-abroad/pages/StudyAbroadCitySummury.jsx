@@ -16,16 +16,15 @@ import {
 import {
   DownloadOutlined,
   ReloadOutlined,
-  TeamOutlined,
   MailOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
   SendOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import StudyAbroadAdminLayout from "../components/StudyAbroadAdminLayout";
-import { FaBuildingColumns } from "react-icons/fa6";
 import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
+
 const { Title, Text } = Typography;
 
 const formatDateTime = (value) => {
@@ -39,74 +38,81 @@ const formatDateTime = (value) => {
   });
 };
 
+const getCitySlug = (city) =>
+  encodeURIComponent(
+    String(city || "")
+      .trim()
+      .toLowerCase(),
+  );
+
 const StudyAbroadCitySummury = () => {
+  const navigate = useNavigate();
   const [summaryData, setSummaryData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [totalElements, setTotalElements] = useState(0);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
-  const fetchCitySummary = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const fetchCitySummary = useCallback(
+    async (page = currentPage, size = pageSize) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const apiPage = page - 1;
+        const { data } = await axiosInstance.get(
+          `${BASE_URL}/ai-automation/reports/city-summary?page=${apiPage}&size=${size}`,
+        );
+        setSummaryData(Array.isArray(data?.content) ? data.content : []);
+        setTotalElements(data?.totalElements || 0);
+      } catch (err) {
+        const errorMessage =
+          err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to fetch city summary.";
+        setError(errorMessage);
+        setSummaryData([]);
+        setTotalElements(0);
+        message.error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentPage, pageSize],
+  );
 
-    try {
-      const { data } = await axiosInstance.get(
-        `${BASE_URL}/ai-automation/reports/city-summary`,
-      );
-
-      const resultData = Array.isArray(data)
-        ? data
-        : data?.data
-          ? data.data
-          : [];
-      setSummaryData(resultData);
-    } catch (err) {
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to fetch city summary.";
-      setSummaryData([]);
-      setError(errorMessage);
-      message.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  useEffect(() => {
+    fetchCitySummary(currentPage, pageSize);
+  }, [fetchCitySummary, currentPage, pageSize]);
 
   const handleDownloadPdf = async () => {
     setPdfLoading(true);
     try {
       const response = await axiosInstance.get(
         `${BASE_URL}/ai-automation/reports/city-summary/pdf`,
-        {
-          responseType: "blob",
-        },
+        { responseType: "blob" },
       );
-
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      const fileName = "city-summary-report.pdf";
-      link.setAttribute("download", fileName);
+      link.setAttribute("download", "city-summary-report.pdf");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       message.success("PDF downloaded successfully.");
     } catch (err) {
-      const errorMessage =
+      message.error(
         err?.response?.data?.message ||
-        err?.message ||
-        "Failed to download PDF.";
-      message.error(errorMessage);
+          err?.message ||
+          "Failed to download PDF.",
+      );
     } finally {
       setPdfLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchCitySummary();
-  }, [fetchCitySummary]);
 
   const aggregatedStats = useMemo(() => {
     return summaryData.reduce(
@@ -117,8 +123,6 @@ const StudyAbroadCitySummury = () => {
         acc.totalSent += Number(item.sent) || 0;
         acc.totalResponses += Number(item.responses) || 0;
         acc.totalFailed += Number(item.failed) || 0;
-        acc.totalFollowUp1 += Number(item.followUp1) || 0;
-        acc.totalFollowUp2 += Number(item.followUp2) || 0;
         return acc;
       },
       {
@@ -128,8 +132,6 @@ const StudyAbroadCitySummury = () => {
         totalSent: 0,
         totalResponses: 0,
         totalFailed: 0,
-        totalFollowUp1: 0,
-        totalFollowUp2: 0,
       },
     );
   }, [summaryData]);
@@ -139,17 +141,15 @@ const StudyAbroadCitySummury = () => {
       {
         title: "S.No",
         key: "serialNumber",
-        width: 60,
-        align: "center",
 
-        render: (_, __, index) => index + 1,
+        align: "center",
+        render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
       },
       {
         title: "City",
         dataIndex: "city",
         key: "city",
         align: "center",
-
         render: (value) => (
           <Tag color="blue" className="font-semibold text-sm px-3 py-1">
             {value || "-"}
@@ -161,35 +161,40 @@ const StudyAbroadCitySummury = () => {
         dataIndex: "colleges",
         key: "colleges",
         align: "center",
-        render: (value) => (
-          <Space>
-            {/* <FaBuildingColumns  style={{ color: "#1890ff" }} /> */}
-            <Text strong>{Number(value) || 0}</Text>
-          </Space>
-        ),
+        render: (value) => <Text strong>{Number(value) || 0}</Text>,
       },
       {
         title: "Consultancies",
         dataIndex: "consultancies",
         key: "consultancies",
         align: "center",
-        render: (value) => (
-          <Space>
-            {/* <TeamOutlined style={{ color: "#722ed1" }} /> */}
-            <Text strong>{Number(value) || 0}</Text>
-          </Space>
-        ),
+        render: (value) => <Text strong>{Number(value) || 0}</Text>,
       },
       {
         title: "Total Emails",
         dataIndex: "totalEmails",
         key: "totalEmails",
         align: "center",
-        render: (value) => (
-          <Space>
-            {/* <MailOutlined style={{ color: "#fa8c16" }} /> */}
-            <Text strong>{Number(value) || 0}</Text>
-          </Space>
+        render: (value, record) => (
+          <Button
+            type="primary"
+            size="small"
+            disabled={!Number(value)}
+            style={{
+              background: "#1677ff", // Ant Design Blue
+              borderColor: "#1677ff",
+              borderRadius: 6,
+              fontWeight: 600,
+              minWidth: 95,
+            }}
+            onClick={() =>
+              navigate(
+                `/studyabroad/city-details/${getCitySlug(record.city)}?type=totalEmails&cityName=${encodeURIComponent(record.city || "")}`,
+              )
+            }
+          >
+            {Number(value)} View
+          </Button>
         ),
       },
       {
@@ -197,32 +202,81 @@ const StudyAbroadCitySummury = () => {
         dataIndex: "sent",
         key: "sent",
         align: "center",
-        render: (value) => <Tag color="green">{Number(value) || 0}</Tag>,
+        render: (value, record) => (
+          <Button
+            type="primary"
+            size="small"
+            disabled={!Number(value)}
+            style={{
+              background: "#52c41a", // Ant Design Green
+              borderColor: "#52c41a",
+              borderRadius: 6,
+              fontWeight: 600,
+              minWidth: 95,
+            }}
+            onClick={() =>
+              navigate(
+                `/studyabroad/city-details/${getCitySlug(record.city)}?type=sent&cityName=${encodeURIComponent(record.city || "")}`,
+              )
+            }
+          >
+            {Number(value)} View
+          </Button>
+        ),
       },
       {
         title: "Responses",
         dataIndex: "responses",
         key: "responses",
         align: "center",
-        render: (value) => (
-          <Space>
-            {/* <CheckCircleOutlined style={{ color: "#52c41a" }} /> */}
-            <Text strong>{Number(value) || 0}</Text>
-          </Space>
+        render: (value, record) => (
+          <Button
+            type="primary"
+            size="small"
+            disabled={!Number(value)}
+            style={{
+              background: "#722ed1", // Ant Design Purple
+              borderColor: "#722ed1",
+              borderRadius: 6,
+              fontWeight: 600,
+              minWidth: 95,
+            }}
+            onClick={() =>
+              navigate(
+                `/studyabroad/responses?city=${encodeURIComponent(record.city || "")}`,
+              )
+            }
+          >
+            {Number(value)} View
+          </Button>
         ),
       },
       {
         title: "Failed",
-        dataIndex: "failed",
-        key: "failed",
+        dataIndex: "Failed",
+        key: "Failed",
         align: "center",
-        render: (value) => (
-          <Space>
-            {/* <CloseCircleOutlined style={{ color: "#ff4d4f" }} /> */}
-            <Text type="danger" strong>
-              {Number(value) || 0}
-            </Text>
-          </Space>
+        render: (value, record) => (
+          <Button
+            type="primary"
+            size="small"
+            disabled={!Number(value)}
+            style={{
+              background: "#1ab394", // Ant Design Green
+              borderColor: "#1ab394",
+              borderRadius: 6,
+              fontWeight: 600,
+              minWidth: 95,
+              color:"white"
+            }}
+            onClick={() =>
+              navigate(
+                `/studyabroad/failed-emails?city=${encodeURIComponent(record.city || "")}`,
+              )
+            }
+          >
+            {Number(value)} View
+          </Button>
         ),
       },
       {
@@ -230,37 +284,35 @@ const StudyAbroadCitySummury = () => {
         dataIndex: "followUp1",
         key: "followUp1",
         align: "center",
-        render: (value) => <Tag color="purple">{Number(value) || 0}</Tag>,
+        render: (value) => <Tag color="purple">{Number(value)}</Tag>,
       },
       {
         title: "Follow Up 2",
         dataIndex: "followUp2",
         key: "followUp2",
         align: "center",
-        render: (value) => <Tag color="orange">{Number(value) || 0}</Tag>,
+        render: (value) => <Tag color="orange">{Number(value)}</Tag>,
       },
       {
         title: "Last Sent",
         dataIndex: "lastSentDateTime",
         key: "lastSentDateTime",
         align: "center",
-
         render: (value) => (
-          <Text type="secondary" style={{ fontSize: "12px" }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
             {formatDateTime(value)}
           </Text>
         ),
       },
     ],
-    [],
+    [currentPage, pageSize, navigate],
   );
 
   return (
     <StudyAbroadAdminLayout>
       <div className="p-4 sm:p-6">
         <div className="shadow-sm rounded-xl">
-          {/* Header */}
-          <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm border border-gray-100">
+          <div className="mb-5 p-4  border border-slate-50">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <Title level={3} className="!mb-1 !text-gray-800">
@@ -270,7 +322,6 @@ const StudyAbroadCitySummury = () => {
                   City-wise email campaign performance overview
                 </Text>
               </div>
-
               <Space wrap className="w-full lg:w-auto">
                 <Button
                   icon={<DownloadOutlined />}
@@ -287,10 +338,9 @@ const StudyAbroadCitySummury = () => {
                 >
                   Download PDF
                 </Button>
-
                 <Button
                   icon={<ReloadOutlined />}
-                  onClick={fetchCitySummary}
+                  onClick={() => fetchCitySummary(currentPage, pageSize)}
                   loading={loading}
                   size="large"
                   className="w-full sm:w-auto"
@@ -343,7 +393,6 @@ const StudyAbroadCitySummury = () => {
               ].map((item) => (
                 <Col xs={24} sm={12} md={8} lg={4} key={item.title}>
                   <Card
-                    hoverable
                     bordered={false}
                     className="rounded-xl text-center shadow-sm"
                     style={{
@@ -371,7 +420,6 @@ const StudyAbroadCitySummury = () => {
             </Row>
           )}
 
-          {/* Error */}
           {error && (
             <Alert
               message="Unable to load city summary"
@@ -382,8 +430,7 @@ const StudyAbroadCitySummury = () => {
             />
           )}
 
-          {/* Table */}
-          <div className="bg-white shadow-sm overflow-hidden">
+          <Card bordered={false} className="shadow-sm overflow-hidden">
             <Table
               rowKey={(record, index) => record.city || `${index}`}
               loading={loading}
@@ -405,21 +452,21 @@ const StudyAbroadCitySummury = () => {
                 ),
               }}
               pagination={{
-                pageSize: 10,
+                current: currentPage,
+                pageSize,
+                total: totalElements,
                 showSizeChanger: true,
-                pageSizeOptions: ["10", "20", "50", "100"],
-                responsive: true,
-                showQuickJumper: true,
+                pageSizeOptions: ["10", "20", "30", "50"],
+                // showQuickJumper: true,
                 showTotal: (total, range) =>
-                  `Showing ${range[0]} - ${range[1]} of ${total} Cities`,
-              }}
-              onRow={() => ({
-                style: {
-                  cursor: "pointer",
+                  `${range[0]}-${range[1]} of ${total} cities`,
+                onChange: (page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
                 },
-              })}
+              }}
             />
-          </div>
+          </Card>
         </div>
       </div>
     </StudyAbroadAdminLayout>

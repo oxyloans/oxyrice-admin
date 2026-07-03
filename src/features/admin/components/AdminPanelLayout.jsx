@@ -71,16 +71,16 @@ const AdminPanelLayout = ({ children }) => {
             label: "Item Offers List",
             link: "/admin/items-offerlists",
           },
-           {
+          {
             key: "agentCampaignOffers",
             label: "AI Campaign Offers",
             link: "/admin/agent-campaign-offers",
           },
-          {
-            key: "offerUsageByPincode",
-            label: "Offers by Pincode",
-            link: "/admin/offer-usage-by-pincode",
-          },
+          // {
+          //   key: "offerUsageByPincode",
+          //   label: "Offers by Pincode",
+          //   link: "/admin/offer-usage-by-pincode",
+          // },
         ],
       },
       {
@@ -114,6 +114,16 @@ const AdminPanelLayout = ({ children }) => {
             key: "emailCampaign",
             label: "Email Campaign",
             link: "/admin/emailcampaign",
+          },
+          {
+            key: "whatsappCampaign",
+            label: "WhatsApp Campaign",
+            link: "/admin/whatsapp-campaign",
+          },
+          {
+            key: "pdfUploadCampaign",
+            label: "PDF Upload Campaign",
+            link: "/admin/pdf-upload-campaign",
           },
         ],
       },
