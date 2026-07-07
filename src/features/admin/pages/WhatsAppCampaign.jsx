@@ -326,14 +326,25 @@ const ScorecardsTab = ({ navigate }) => {
   const [scorecards, setScorecards] = useState([]);
   const [scoreLoading, setScoreLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+  const [summaryStats, setSummaryStats] = useState({ total: 0, completed: 0, totalSent: 0, totalFailed: 0 });
 
-  const fetchScorecards = useCallback(async () => {
+  const fetchScorecards = useCallback(async (page = 0, size = 10) => {
     setScoreLoading(true);
     try {
-      const res = await axiosInstance.get(`${AI_BASE}/admin/whatsapp/campaigns/scorecards`);
-      const data = res.data.reverse();
-      if (Array.isArray(data)) setScorecards(data);
-      else message.error("Failed to load scorecards");
+      const res = await axiosInstance.get(
+        `${AI_BASE}/admin/whatsapp/campaigns/scorecards?page=${page}&size=${size}`
+      );
+      const paged = res.data;
+      const content = paged.content || [];
+      setScorecards(content);
+      setPagination((p) => ({ ...p, total: paged.totalElements || 0 }));
+      // summary: accumulate across all loaded pages isn't possible server-side;
+      // use current page totals for sent/failed, totalElements for campaigns count
+      const completed = content.filter((r) => r.status === "COMPLETED").length;
+      const totalSent = content.reduce((s, r) => s + (r.sent || 0), 0);
+      const totalFailed = content.reduce((s, r) => s + (r.failed || 0), 0);
+      setSummaryStats({ total: paged.totalElements || 0, completed, totalSent, totalFailed });
     } catch {
       message.error("Error fetching scorecards");
     } finally {
@@ -342,8 +353,15 @@ const ScorecardsTab = ({ navigate }) => {
   }, []);
 
   useEffect(() => {
-    fetchScorecards();
+    fetchScorecards(0, pagination.pageSize);
   }, [fetchScorecards]);
+
+  const handleTableChange = (pag) => {
+    const newPage = pag.current - 1;
+    const newSize = pag.pageSize;
+    setPagination((p) => ({ ...p, current: pag.current, pageSize: newSize }));
+    fetchScorecards(newPage, newSize);
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -356,11 +374,7 @@ const ScorecardsTab = ({ navigate }) => {
     );
   }, [scorecards, search]);
 
-  // summary stats
-  const total = scorecards.length;
-  const completed = scorecards.filter((r) => r.status === "COMPLETED").length;
-  const totalSent = scorecards.reduce((s, r) => s + (r.sent || 0), 0);
-  const totalFailed = scorecards.reduce((s, r) => s + (r.failed || 0), 0);
+  const { total, completed, totalSent, totalFailed } = summaryStats;
 
   const columns = [
     {
@@ -480,10 +494,10 @@ const ScorecardsTab = ({ navigate }) => {
       {/* Summary cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         {[
-          { title: "Total Campaigns", value: total, color: "#008cab" },
-          { title: "Completed", value: completed, color: "#52c41a" },
-          { title: "Total Sent", value: totalSent, color: "#1ab394" },
-          { title: "Total Failed", value: totalFailed, color: "#ff4d4f" },
+          { title: "Total Campaigns", value: summaryStats.total, color: "#008cab" },
+          { title: "Completed", value: summaryStats.completed, color: "#52c41a" },
+          { title: "Total Sent", value: summaryStats.totalSent, color: "#1ab394" },
+          { title: "Total Failed", value: summaryStats.totalFailed, color: "#ff4d4f" },
         ].map((s) => (
           <Col xs={12} sm={6} key={s.title}>
             <Card
@@ -529,7 +543,7 @@ const ScorecardsTab = ({ navigate }) => {
           />
           <Button
             icon={<ReloadOutlined />}
-            onClick={fetchScorecards}
+            onClick={() => fetchScorecards(pagination.current - 1, pagination.pageSize)}
             loading={scoreLoading}
             style={{ borderColor: "#008cba", color: "#008cba" }}
           >
@@ -546,9 +560,13 @@ const ScorecardsTab = ({ navigate }) => {
           bordered
           size="middle"
           scroll={{ x: true }}
+          onChange={handleTableChange}
           pagination={{
-            pageSize: 10,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20"],
             showTotal: (t, r) => `${r[0]}-${r[1]} of ${t} campaigns`,
           }}
           locale={{ emptyText: search ? "No campaigns match your search" : "No campaigns found" }}

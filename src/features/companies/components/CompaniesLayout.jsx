@@ -64,12 +64,12 @@ const sidebarItems = [
     dropdownItems: [
       {
         key: "post-job",
-        label: "Add New Job Posting",
+        label: "Add New Job",
         link: "/admin/jobsmanage",
       },
       {
-        key: "jobs-list",
-        label: "Jobs List",
+        key: "job-applicants",
+        label: "Job Applicants",
         link: "/admin/getalljobs",
       },
       {
