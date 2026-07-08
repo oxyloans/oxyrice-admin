@@ -1,2 +1,0 @@
-"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[4120],{24120(a,i,e){e.r(i),e.d(i,{default:()=>h});e(65043);var l=e(82806),t=e(55165),s=e(40243),c=(e(51642),e(70579));const h=()=>(0,c.jsx)(l.A,{children:(0,c.jsx)(s.A,{title:"IBJ Official Dashboard",apiUrl:`${t.A}/ai-service/agent/ibjOffical`})})}}]);
-//# sourceMappingURL=4120.afaec85b.chunk.js.map

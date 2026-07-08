@@ -1,2 +1,0 @@
-"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[4754],{34754(a,e,s){s.r(e),s.d(e,{default:()=>h});s(65043);var l=s(82806),t=s(55165),i=s(40243),d=(s(51642),s(70579));const h=()=>(0,d.jsx)(l.A,{children:(0,d.jsx)(i.A,{title:"FD Sales Dashboard",apiUrl:`${t.A}/ai-service/agent/fdSalesImages`})})}}]);
-//# sourceMappingURL=4754.9885c436.chunk.js.map

@@ -1,2 +1,0 @@
-"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[1628],{41628(a,i,e){e.r(i),e.d(i,{default:()=>h});e(65043);var t=e(82806),s=e(55165),l=e(40243),m=(e(51642),e(70579));const h=()=>(0,m.jsx)(t.A,{children:(0,m.jsx)(l.A,{title:"IIBS Summit Dashboard",apiUrl:`${s.A}/ai-service/agent/iibsSummit`})})}}]);
-//# sourceMappingURL=1628.97729910.chunk.js.map

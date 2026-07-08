@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
-import { ApartmentOutlined, BarChartOutlined, ReadOutlined, IdcardOutlined } from "@ant-design/icons";
+import {  SettingOutlined, RobotOutlined, SolutionOutlined, TeamOutlined, DashboardOutlined } from "@ant-design/icons";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  FileTextOutlined,
-  BankOutlined,
  
   AppstoreOutlined,
 } from "@ant-design/icons";
@@ -43,9 +41,36 @@ const CompaniesLayout = ({ children }) => {
   }, [screens]);
 const sidebarItems = [
   {
-    key: "company-management",
-    label: "Company Management",
-    icon: <ApartmentOutlined style={{ fontSize: "18px" }} />,
+    key: "jobs-analytics",
+    label: "Jobs Analytics",
+    icon: <DashboardOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "jobs-analytics-dashboard",
+        label: "Dashboard",
+        link: "/admin/exam-flow-dashboard",
+      },
+    ],
+  },
+  {
+    key: "job-applications",
+    label: "Job Applications",
+    icon: <TeamOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
+      {
+        key: "job-applicants",
+        label: "All Applications",
+        link: "/admin/getalljobs",
+      },
+    ],
+  },
+
+  {
+    key: "job-management",
+    label: "Job Management",
+    icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
     style: { fontSize: "16px", fontWeight: 500 },
     dropdownItems: [
       {
@@ -53,135 +78,148 @@ const sidebarItems = [
         label: "Manage Companies",
         link: "/admin/companylist",
       },
+      {
+        key: "post-job",
+        label: "Add New Job Post",
+        link: "/admin/jobsmanage",
+      },
     ],
   },
 
   {
-    key: "jobs-management",
-    label: "Jobs Management",
-    icon: <AppstoreOutlined style={{ fontSize: "18px" }} />,
+    key: "ai-jobs",
+    label: "AI Job Management",
+    icon: <RobotOutlined style={{ fontSize: "18px" }} />,
     style: { fontSize: "16px", fontWeight: 500 },
     dropdownItems: [
-      {
-        key: "post-job",
-        label: "Add New Job",
-        link: "/admin/jobsmanage",
-      },
-      {
-        key: "job-applicants",
-        label: "Job Applicants",
-        link: "/admin/getalljobs",
-      },
       {
         key: "ai-jobs",
         label: "AI Jobs",
         link: "/admin/ai-jobs",
       },
+    ],
+  },
+
+  {
+    key: "careers",
+    label: "Careers",
+    icon: <SolutionOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
       {
         key: "we-are-hiring",
-        label: "We Are Hiring",
+        label: "We're Hiring",
         link: "/admin/wearehiring",
       },
+    ],
+  },
+
+  {
+    key: "system-settings",
+    label: "System Configuration",
+    icon: <SettingOutlined style={{ fontSize: "18px" }} />,
+    style: { fontSize: "16px", fontWeight: 500 },
+    dropdownItems: [
       {
         key: "system-configuration",
-        label: "System Configuration",
+        label: "Configuration",
         link: "/admin/system-configuration",
       },
     ],
   },
-  {
-    key: "ibj-ibbs-fd-sales",
-    label: "IBJ / IBBS / FD Sales",
-    icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "manage-ibj-official",
-        label: "IBJ Official",
-        link: "/admin/ibj-official",
-      },
-      {
-        key: "manage-iibs-summit",
-        label: "IIBS Summit",
-        link: "/admin/iibs-summit",
-      },
-      {
-        key: "manage-fd-sales-images",
-        label: "FD Sales Images",
-        link: "/admin/fd-sales-images",
-      },
-    ],
-  },
+  // {
+  //   key: "ibj-ibbs-fd-sales",
+  //   label: "IBJ / IBBS / FD Sales",
+  //   icon: <BarChartOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "manage-ibj-official",
+  //       label: "IBJ Official",
+  //       link: "/admin/ibj-official",
+  //     },
+  //     {
+  //       key: "manage-iibs-summit",
+  //       label: "IIBS Summit",
+  //       link: "/admin/iibs-summit",
+  //     },
+  //     {
+  //       key: "manage-fd-sales-images",
+  //       label: "FD Sales Images",
+  //       link: "/admin/fd-sales-images",
+  //     },
+  //   ],
+  // },
 
-  {
-    key: "content-management",
-    label: "Content Management",
-    icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "news-papers",
-        label: "News Papers",
-        link: "/admin/news-papers",
-      },
-      {
-        key: "digital-investment",
-        label: "Digital Investment",
-        link: "/admin/digitalinvestment",
-      },
-      {
-        key: "rotary-data",
-        label: "Rotary Data",
-        link: "/admin/rotarydata",
-      },
-      {
-        key: "student-sales-data",
-        label: "Student Sales Data",
-        link: "/admin/studentsalesdata",
-      },
-    ],
-  },
+  // {
+  //   key: "content-management",
+  //   label: "Content Management",
+  //   icon: <FileTextOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "news-papers",
+  //       label: "News Papers",
+  //       link: "/admin/news-papers",
+  //     },
+  //     {
+  //       key: "digital-investment",
+  //       label: "Digital Investment",
+  //       link: "/admin/digitalinvestment",
+  //     },
+  //     {
+  //       key: "rotary-data",
+  //       label: "Rotary Data",
+  //       link: "/admin/rotarydata",
+  //     },
+  //     {
+  //       key: "student-sales-data",
+  //       label: "Student Sales Data",
+  //       link: "/admin/studentsalesdata",
+  //     },
+  //   ],
+  // },
 
-  {
-    key: "blog-management",
-    label: "Manage Blogs",
-    icon: <ReadOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "campaign-comments",
-        label: "Comments & Likes",
-        link: "/admin/campaignwithcomments",
-      },
-    ],
-  },
+  // {
+  //   key: "blog-management",
+  //   label: "Manage Blogs",
+  //   icon: <ReadOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "campaign-comments",
+  //       label: "Comments & Likes",
+  //       link: "/admin/campaignwithcomments",
+  //     },
+  //   ],
+  // },
 
-  {
-    key: "business-cards",
-    label: "Business Cards",
-    icon: <IdcardOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "manage-business-cards",
-        label: "Business Cards",
-        link: "/admin/business-cards",
-      },
-    ],
-  },
-  {
-    key: "summit",
-    label: "Summit",
-    icon: <BankOutlined style={{ fontSize: "18px" }} />,
-    style: { fontSize: "16px", fontWeight: 500 },
-    dropdownItems: [
-      {
-        key: "hysea-summit",
-        label: "Summit",
-        link: "/admin/hysea-summit",
-      },
-    ],
-  },
+  // {
+  //   key: "business-cards",
+  //   label: "Business Cards",
+  //   icon: <IdcardOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "manage-business-cards",
+  //       label: "Business Cards",
+  //       link: "/admin/business-cards",
+  //     },
+  //   ],
+  // },
+  // {
+  //   key: "summit",
+  //   label: "Summit",
+  //   icon: <BankOutlined style={{ fontSize: "18px" }} />,
+  //   style: { fontSize: "16px", fontWeight: 500 },
+  //   dropdownItems: [
+  //     {
+  //       key: "hysea-summit",
+  //       label: "Summit",
+  //       link: "/admin/hysea-summit",
+  //     },
+  //   ],
+  // },
 ];
 
 
