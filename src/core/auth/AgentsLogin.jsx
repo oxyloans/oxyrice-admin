@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
-import axiosInstance from "../config/axiosInstance";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import BASE_URL from "../config/Config";
 
 function AgentsLogin() {
   const [form] = Form.useForm();
@@ -52,8 +53,8 @@ function AgentsLogin() {
 
       const payload = { email: values.email.trim(), password: values.password };
 
-      const response = await axiosInstance.post(
-        `/user-service/userEmailPassword`,
+      const response = await axios.post(
+        `${BASE_URL}/user-service/userEmailPassword`,
         payload,
         { headers: { "Content-Type": "application/json" } },
       );

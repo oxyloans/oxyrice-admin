@@ -174,18 +174,18 @@ const ExamFlowDashboard = () => {
 
   const { eligibilityStats: eli, examStatusStats: exam } = data || {};
 
-  const eligibilityBarData = data
-    ? [
-        { name: "Total Applied", value: eli?.totalApplied || 0 },
-        { name: "Selected", value: eli?.selected || 0 },
-        { name: "Not Selected", value: eli?.notSelected || 0 },
-      ]
-    : [];
+ const eligibilityBarData = data
+   ? [
+       { name: "Total Applications", value: eli?.totalApplied || 0 },
+       { name: "ATS Qualified", value: eli?.selected || 0 },
+       { name: "ATS Not Qualified", value: eli?.notSelected || 0 },
+     ]
+   : [];
 
   const eligibilityPieData = data
     ? [
-        { name: "Selected", value: eli?.selected || 0 },
-        { name: "Not Selected", value: eli?.notSelected || 0 },
+        { name: "ATS Qualified", value: eli?.selected || 0 },
+        { name: "ATS Not Qualified", value: eli?.notSelected || 0 },
       ]
     : [];
 
@@ -211,19 +211,19 @@ const ExamFlowDashboard = () => {
 
   const eligibilityStatCards = [
     {
-      title: "Total Applicants",
+      title: "Total Applications",
       value: eli?.totalApplied,
       icon: <TeamOutlined />,
       color: "#008cab",
     },
     {
-      title: "Selected",
+      title: "ATS Qualified",
       value: eli?.selected,
       icon: <CheckCircleOutlined />,
       color: "#52c41a",
     },
     {
-      title: "Not Selected",
+      title: "ATS Not Qualified",
       value: eli?.notSelected,
       icon: <CloseCircleOutlined />,
       color: "#ff4d4f",
@@ -408,7 +408,7 @@ const ExamFlowDashboard = () => {
         {!loading && data && (
           <>
             {/* ══ ELIGIBILITY SECTION ══ */}
-            <SectionHeader title="Eligibility Overview" />
+            <SectionHeader title="ATS Resume Eligibility Overview" />
             <Divider style={{ margin: "10px 0 16px" }} />
 
             <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
@@ -432,7 +432,7 @@ const ExamFlowDashboard = () => {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <BarChartOutlined style={{ color: "#008cab" }} />
-                      <Text strong>Applicant Eligibility — Bar View</Text>
+                      <Text strong>ATS Resume Eligibility Overview</Text>
                     </div>
                   }
                 >
@@ -475,7 +475,7 @@ const ExamFlowDashboard = () => {
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
                     >
                       <PieChartOutlined style={{ color: "#52c41a" }} />
-                      <Text strong>Selected vs. Not Selected</Text>
+                      <Text strong>ATS Qualified vs. ATS Not Qualified</Text>
                     </div>
                   }
                 >
@@ -510,7 +510,7 @@ const ExamFlowDashboard = () => {
             </Row>
 
             {/* ══ EXAM STATUS SECTION ══ */}
-            <SectionHeader title="Exam Status Overview" />
+            <SectionHeader title="Assessment Progress Overview" />
             <Divider style={{ margin: "10px 0 16px" }} />
 
             {/* 5 cards — full width one row */}

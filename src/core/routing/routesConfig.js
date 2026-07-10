@@ -165,6 +165,7 @@ const FdSalesImagesPage = lazy(() => import("../../features/companies/pages/FdSa
 const BusinessCards = lazy(() => import("../../features/companies/pages/BusinessCards"));
 const HyseaSummit = lazy(() => import("../../features/companies/pages/HyseaSummit"));
 const ExamFlowDashboard = lazy(() => import("../../features/companies/pages/ExamFlowDashboard"));
+const InterviewRounds = lazy(() => import("../../features/companies/pages/InterviewRounds"));
 // Agents Admin
 const AgentsAdminLayout = lazy(
   () => import("../../features/agents/components/AgentsAdminLayout"),
@@ -288,6 +289,7 @@ const companyAdminRoutes = [
   { path: "business-cards", element: BusinessCards },
   { path: "hysea-summit", element: HyseaSummit },
   { path: "exam-flow-dashboard", element: ExamFlowDashboard },
+  { path: "interview-rounds/:id", element: InterviewRounds },
   {
     path: "ai-jobs",
     element: lazy(() => import("../../features/companies/pages/Aijobspage")),

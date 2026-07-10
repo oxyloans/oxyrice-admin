@@ -13,10 +13,12 @@ import {
   DatePicker,
   Space,
 } from "antd";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../core/config/axiosInstance";
 import CompaniesLayout from "../components/CompaniesLayout";
 import BASE_URL from "../../../core/config/Config";
 import dayjs from "dayjs";
+import { Form } from "antd";
 import {
   PlusOutlined,
   FileTextOutlined,
@@ -31,6 +33,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const GetAllJobs = () => {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +57,38 @@ const GetAllJobs = () => {
   // Resume modal
   const [resumeModal, setResumeModal] = useState(false);
   const [resumeUrl, setResumeUrl] = useState("");
+
+  // Round modal
+  const [roundModal, setRoundModal] = useState(false);
+  const [roundJobId, setRoundJobId] = useState(null);
+  const [roundLoading, setRoundLoading] = useState(false);
+  const [roundForm] = Form.useForm();
+
+  const openRoundModal = (id) => {
+    setRoundJobId(id);
+    roundForm.resetFields();
+    setRoundModal(true);
+  };
+
+  const submitRound = async (values) => {
+    setRoundLoading(true);
+    try {
+      await axiosInstance.patch(
+        `${BASE_URL}/marketing-service/campgin/job-applications/rounds`,
+        { ...values, jobAppliedId: roundJobId }
+      );
+      message.success("Round added successfully");
+      setRoundModal(false);
+    } catch {
+      message.error("Failed to add round");
+    } finally {
+      setRoundLoading(false);
+    }
+  };
+
+  // Job detail modal
+  const [jobDetailModal, setJobDetailModal] = useState(false);
+  const [jobDetail, setJobDetail] = useState(null);
 
   // Result modal
   const [resultModal, setResultModal] = useState(false);
@@ -182,16 +217,16 @@ const GetAllJobs = () => {
   const isSearchActive = searchFiltered || dateFiltered;
 
   const columns = [
-    {
-      title: "S.NO",
-      key: "serial",
-      align: "center",
-      width: 70,
-      render: (_text, _record, index) =>
-        isSearchActive
-          ? (clientPage - 1) * pageSize + index + 1
-          : page * pageSize + index + 1,
-    },
+    // {
+    //   title: "S.NO",
+    //   key: "serial",
+    //   align: "center",
+     
+    //   render: (_text, _record, index) =>
+    //     isSearchActive
+    //       ? (clientPage - 1) * pageSize + index + 1
+    //       : page * pageSize + index + 1,
+    // },
     {
       title: "Name",
       dataIndex: "userName",
@@ -205,8 +240,7 @@ const GetAllJobs = () => {
       dataIndex: "jobTitle",
       key: "jobTitle",
       align: "center",
-     
-      render: (v) => v,
+      
     },
     {
       title: "Mobile Number",
@@ -274,6 +308,30 @@ const GetAllJobs = () => {
         >
           Result
         </Button>
+      ),
+    },
+    {
+      title: "Rounds",
+      key: "actions",
+      align: "center",
+  
+      render: (_, record) => (
+        <div style={{ display: "flex", flexDirection: "row", gap: 6, justifyContent: "center", flexWrap: "nowrap" }}>
+          <Button
+            size="small"
+            style={{ background: "#008cba", borderColor: "#008cba", color: "#fff", whiteSpace: "nowrap" }}
+            onClick={() => openRoundModal(record.id)}
+          >
+            Add
+          </Button>
+          <Button
+            size="small"
+            style={{ background: "#f0ad4e", borderColor: "#f0ad4e", color: "#fff", whiteSpace: "nowrap" }}
+            onClick={() => navigate(`/admin/interview-rounds/${record.id}`)}
+          >
+            View
+          </Button>
+        </div>
       ),
     },
   ];
@@ -344,7 +402,7 @@ const GetAllJobs = () => {
               style={{ width: 140 }}
             />
             <Input
-              placeholder="Search by name, mobile number"
+              placeholder="Search by name,title,mobile number"
               value={searchText}
               allowClear
               prefix={<SearchOutlined />}
@@ -421,6 +479,31 @@ const GetAllJobs = () => {
             className="max-w-7xl mx-auto"
           />
         )}
+
+        {/* Add Round Modal */}
+        <Modal
+          title="Add Interview Round"
+          open={roundModal}
+          onCancel={() => setRoundModal(false)}
+          onOk={() => roundForm.submit()}
+          okText="Submit"
+          confirmLoading={roundLoading}
+        >
+          <Form form={roundForm} layout="vertical" onFinish={submitRound}>
+            <Form.Item name="roundName" label="Round Name" rules={[{ required: true, message: "Required" }]}>
+              <Input placeholder="e.g. HR Round" />
+            </Form.Item>
+            <Form.Item name="takenBy" label="Taken By" rules={[{ required: true, message: "Required" }]}>
+              <Input placeholder="Interviewer name" />
+            </Form.Item>
+            <Form.Item name="score" label="Score">
+              <Input placeholder="e.g. 8/10" />
+            </Form.Item>
+            <Form.Item name="comments" label="Comments">
+              <Input.TextArea rows={3} placeholder="Any comments..." />
+            </Form.Item>
+          </Form>
+        </Modal>
 
         {/* Resume Modal */}
         <Modal

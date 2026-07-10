@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
-import axiosInstance from "../config/axiosInstance";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import BASE_URL from "../config/Config";
 
 function CompaniesLogin() {
   const [form] = Form.useForm();
@@ -52,8 +53,8 @@ function CompaniesLogin() {
 
       const payload = { email: values.email.trim(), password: values.password };
 
-      const response = await axiosInstance.post(
-        `/user-service/userEmailPassword`,
+      const response = await axios.post(
+        `${BASE_URL}/user-service/userEmailPassword`,
         payload,
         { headers: { "Content-Type": "application/json" } },
       );
@@ -75,7 +76,9 @@ function CompaniesLogin() {
         if (primaryType === allowedType) {
           message.success({ content: "Login successful! Redirecting...", duration: 2 });
           setTimeout(() => {
-            const redirect = localStorage.getItem("redirectAfterLogin_companies") || "/admin/companylist";
+            const redirect =
+              localStorage.getItem("redirectAfterLogin_companies") ||
+              "/admin/exam-flow-dashboard";
             localStorage.removeItem("redirectAfterLogin_companies");
             navigate(redirect);
           }, 1000);

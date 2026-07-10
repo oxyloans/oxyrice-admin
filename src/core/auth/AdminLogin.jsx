@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Spin } from "antd";
-import axiosInstance from "../config/axiosInstance";
+import axios from "axios"
+import BASE_URL from "../config/Config";
 import { useNavigate } from "react-router-dom";
 
 function AdminLogin() {
@@ -66,8 +67,8 @@ function AdminLogin() {
       };
 
       // Get the current BASE_URL which should reflect the active environment
-      const response = await axiosInstance.post(
-        `/user-service/userEmailPassword`,
+      const response = await axios.post(
+        `${BASE_URL}/user-service/userEmailPassword`,
         payload,
         { headers: { "Content-Type": "application/json" } },
       );
