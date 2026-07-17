@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 // ✅ correct
 import { useNavigate } from "react-router-dom";
-import {  SettingOutlined, RobotOutlined, SolutionOutlined, TeamOutlined, DashboardOutlined } from "@ant-design/icons";
+import {  SettingOutlined, RobotOutlined, SolutionOutlined, TeamOutlined, DashboardOutlined, BellOutlined } from "@ant-design/icons";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
@@ -40,6 +40,7 @@ const CompaniesLayout = ({ children }) => {
     }
   }, [screens]);
 const sidebarItems = [
+ 
   {
     key: "jobs-analytics",
     label: "Jobs Analytics",
@@ -124,6 +125,11 @@ const sidebarItems = [
         key: "system-configuration",
         label: "Configuration",
         link: "/admin/system-configuration",
+      },
+      {
+        key: "daily-notifications",
+        label: "Daily Notifications",
+        link: "/admin/daily-notifications",
       },
     ],
   },

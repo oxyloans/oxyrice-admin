@@ -17,6 +17,7 @@ import {
   FileTextOutlined,
   FileDoneOutlined,
   VideoCameraOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 
 import { Link } from "react-router-dom";
@@ -149,18 +150,18 @@ const TaskAdminPanelLayout = ({ children }) => {
        },
      ],
    },
-  //  {
-  //    key: "corporateData",
-  //    label: "Corporate Updates",
-  //    icon: <BankOutlined />,
-  //    dropdownItems: [
-  //      {
-  //        key: "corporate-data",
-  //        label: "POD & EOD Videos",
-  //        link: "/taskmanagement/corporate-data",
-  //      },
-  //    ],
-  //  },
+  {
+    key: "corporateImages",
+    label: "Corporate Images",
+    icon: <PictureOutlined />,
+    dropdownItems: [
+      {
+        key: "radha-sir-corporate-images",
+        label: "Radha Sir's Images",
+        link: "/taskmanagement/radha-sir-corporate-images",
+      },
+    ],
+  },
  ];
 
 

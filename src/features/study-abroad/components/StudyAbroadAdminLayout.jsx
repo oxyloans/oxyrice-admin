@@ -43,6 +43,19 @@ const sidebarItems = [
         link: `${STUDY_ABROAD_BASE}/all-students`,
       },
       {
+        key: "sevenDaysOffersApplications",
+        label: "7 Day Offer Applications",
+        icon: <FileTextOutlined />,
+        link: `${STUDY_ABROAD_BASE}/seven-days-offers-applications`,
+      },
+    ],
+  },
+  {
+    key: "studyAbroadReports",
+    label: "Study Abroad Reports",
+    icon: <BarChartOutlined />,
+    dropdownItems: [
+      {
         key: "citySummary",
         label: "City Summary",
         icon: <BarChartOutlined />,

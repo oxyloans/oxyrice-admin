@@ -2,6 +2,7 @@ import { lazy } from "react";
 import AssignedTasksStatusBased from "../../features/tasks/pages/AssignedTasksStatusBased";
 import BulkGeneratedCoupons from "../../features/admin/pages/BulkGeneratedCoupons";
 import StudyAbroadFailedEmails from "../../features/study-abroad/pages/StudyAbroadFailedEmails";
+import StudySevenDaysApplications from "../../features/study-abroad/pages/StudySevenDaysApplications";
 
 
 
@@ -49,6 +50,9 @@ const AllEmployeesDailyPlans = lazy(
 );
 const CorporateData = lazy(
   () => import("../../features/tasks/pages/CorporateData"),
+);
+const RadhaSirCorporateImages = lazy(
+  () => import("../../features/tasks/pages/RadhaSirCorporateImages"),
 );
 
 // Study Abroad Admin
@@ -166,6 +170,7 @@ const BusinessCards = lazy(() => import("../../features/companies/pages/Business
 const HyseaSummit = lazy(() => import("../../features/companies/pages/HyseaSummit"));
 const ExamFlowDashboard = lazy(() => import("../../features/companies/pages/ExamFlowDashboard"));
 const InterviewRounds = lazy(() => import("../../features/companies/pages/InterviewRounds"));
+const DailyNotifications = lazy(() => import("../../features/companies/pages/DailyNotifications"));
 // Agents Admin
 const AgentsAdminLayout = lazy(
   () => import("../../features/agents/components/AgentsAdminLayout"),
@@ -290,6 +295,7 @@ const companyAdminRoutes = [
   { path: "hysea-summit", element: HyseaSummit },
   { path: "exam-flow-dashboard", element: ExamFlowDashboard },
   { path: "interview-rounds/:id", element: InterviewRounds },
+  { path: "daily-notifications", element: DailyNotifications },
   {
     path: "ai-jobs",
     element: lazy(() => import("../../features/companies/pages/Aijobspage")),
@@ -337,6 +343,7 @@ const taskManagementRoutes = [
   { path: "employee_registered_users", element: EmployeeRegisteredUsers },
   { path: "overview", element: Dashboard },
   { path: "corporate-data", element: CorporateData },
+  { path: "radha-sir-corporate-images", element: RadhaSirCorporateImages },
   { path: "assigned-tasks-status-based", element: AssignedTasksStatusBased },
 ].map((route) => ({
   ...route,
@@ -354,6 +361,10 @@ const studyAbroadRoutes = [
   { path: "city-details/:city", element: StudyAbroadCityDetails },
   { path: "failed-emails", element: StudyAbroadFailedEmails },
   { path: "responses", element: StudyAbroadResponses },
+  {
+    path: "seven-days-offers-applications",
+    element: StudySevenDaysApplications,
+  },
 ].map((route) => ({
   ...route,
   loginPath: STUDY_ABROAD_LOGIN,
