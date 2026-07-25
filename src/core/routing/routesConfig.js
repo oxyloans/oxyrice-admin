@@ -146,6 +146,12 @@ const PincodesData = lazy(() => import("../../features/admin/pages/PincodesData"
 const WhatsAppCampaign = lazy(() => import("../../features/admin/pages/WhatsAppCampaign"));
 const WhatsAppCampaignRecipients = lazy(() => import("../../features/admin/pages/WhatsAppCampaignRecipients"));
 const PdfUploadCampaign = lazy(() => import("../../features/admin/pages/PdfUploadCampaign"));
+const CommunityComments = lazy(
+  () => import("../../features/admin/pages/CommunityComments"),
+);
+const CommunityQueries = lazy(
+  () => import("../../features/admin/pages/CommunityQueries"),
+);
 
 // Companies Admin
 const CompanyList = lazy(() => import("../../features/companies/pages/CompanyList"));
@@ -226,6 +232,8 @@ const TASK_LOGIN = `${ADMIN_BASE}/taskmanagementlogin`;
 const STUDY_ABROAD_LOGIN = `${ADMIN_BASE}/studyabroadlogin`;
 
 const adminRoutes = [
+  { path: "community-comments", element: CommunityComments },
+  { path: "community-queries", element: CommunityQueries },
   { path: "fuel-expenses", element: FuelExpenses },
   { path: "dashboard", element: DashboardTest },
   { path: "all-referrals", element: AllReferralsData },

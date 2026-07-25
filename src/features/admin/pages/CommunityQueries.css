@@ -1,0 +1,92 @@
+.community-thread-list {
+  display: grid;
+  gap: 18px;
+  max-height: min(520px, 60vh);
+  padding-right: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: #94a3b8 #f1f5f9;
+  scrollbar-width: thin;
+}
+
+.community-thread-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.community-thread-list::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #f1f5f9;
+}
+
+.community-thread-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.community-thread-list::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.community-thread-item {
+  position: relative;
+  padding: 2px 0;
+}
+
+.community-thread-avatar-column {
+  position: relative;
+  display: flex;
+  align-self: stretch;
+  flex-direction: column;
+  align-items: center;
+}
+
+.community-thread-connector {
+  width: 2px;
+  min-height: 18px;
+  flex: 1;
+  margin-top: 7px;
+  border-radius: 2px;
+  background: #d9d9d9;
+}
+
+.community-thread-children {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+  margin-left: 17px;
+  padding-left: 27px;
+  border-left: 2px solid #e5e7eb;
+}
+
+.community-thread-actions .ant-tag {
+  margin: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.community-reply-composer {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #ccfbf1;
+  border-radius: 12px;
+  background: #f0fdfa;
+}
+
+.community-reply-composer .ant-input {
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+@media (max-width: 575px) {
+  .community-thread-list {
+    max-height: 55vh;
+    padding-right: 4px;
+  }
+
+  .community-thread-children {
+    margin-left: 14px;
+    padding-left: 16px;
+  }
+}

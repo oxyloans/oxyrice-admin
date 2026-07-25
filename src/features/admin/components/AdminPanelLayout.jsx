@@ -6,6 +6,7 @@ import {
   MenuFoldOutlined,
   WalletOutlined,
   AppstoreOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 
 import { MdLogout, MdSubscriptions, MdInventory } from "react-icons/md";
@@ -47,6 +48,24 @@ const AdminPanelLayout = ({ children }) => {
             label: "Dashboard Home",
             link: "/admin/dashboard",
           },
+        ],
+      },
+      {
+        key: "community",
+        label: "Community Feedback",
+        icon: <CommentOutlined />,
+        dropdownItems: [
+          {
+            key: "communityQueries",
+            label: "Community Queries",
+            link: "/admin/community-queries",
+          },
+          {
+            key: "communityComments",
+            label: "Community Comments",
+            link: "/admin/community-comments",
+          },
+          
         ],
       },
       {

@@ -38,7 +38,7 @@ const StudySevenDaysApplications = () => {
       setError("");
 
       const response = await axiosInstance.get(
-        `${BASE_URL}/user-service/applications/getAllApplications`,
+        `${BASE_URL}/user-service/applications`,
       );
 
       const responseData = response?.data;
