@@ -33,6 +33,7 @@ import {
 } from "@ant-design/icons";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import {
+  deleteCommunityComment,
   deleteCommunityQuery,
   getCommunityQueries,
   getCommunityQueryComments,
@@ -44,6 +45,7 @@ const { Paragraph, Text, Title } = Typography;
 const { useBreakpoint } = Grid;
 
 const CATEGORY_OPTIONS = [
+  { label: "All Categories", value: "" },
   { label: "Artificial Intelligence", value: "AI" },
   { label: "Blockchain & Crypto", value: "BLOCKCHAIN_AND_CRYPTO" },
   { label: "CA & CS", value: "CA_AND_CS" },
@@ -98,11 +100,15 @@ const CommentThread = ({
   onReplyCancel,
   onReplyTextChange,
   onReplySubmit,
+  deletingCommentId,
+  onCommentDelete,
 }) => {
+  const [repliesOpen, setRepliesOpen] = useState(false);
   if (!comment) return null;
   const replies = Array.isArray(comment.replies)
     ? comment.replies.filter(Boolean)
     : [];
+  const replyCount = Math.max(Number(comment.totalReplies) || 0, replies.length);
 
   return (
     <div
@@ -115,7 +121,7 @@ const CommentThread = ({
             icon={<UserOutlined />}
             className="shrink-0 bg-teal-100 text-teal-700"
           />
-          {replies.length > 0 && (
+          {repliesOpen && replies.length > 0 && (
             <div className="community-thread-connector" aria-hidden="true" />
           )}
         </div>
@@ -133,9 +139,30 @@ const CommentThread = ({
                 </Tag>
               )}
             </Space>
-            <Text type="secondary" className="text-xs">
-              {formatDate(comment.createdAt)}
-            </Text>
+            <Space size={4}>
+              <Text type="secondary" className="text-xs">
+                {formatDate(comment.createdAt)}
+              </Text>
+              <Tooltip title="Delete comment">
+                <Popconfirm
+                  title="Delete this comment?"
+                  description="This comment and its replies may be removed."
+                  okText="Delete"
+                  cancelText="Cancel"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => onCommentDelete(comment.id)}
+                >
+                  <Button
+                    danger
+                    type="text"
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    loading={deletingCommentId === comment.id}
+                    aria-label={`Delete comment ${comment.id}`}
+                  />
+                </Popconfirm>
+              </Tooltip>
+            </Space>
           </Flex>
           <Paragraph className="!mb-2 !mt-2 whitespace-pre-wrap !text-[14px] !leading-6 !text-slate-700">
             {comment.comment}
@@ -147,10 +174,19 @@ const CommentThread = ({
             <Tag bordered={false} icon={<DislikeOutlined />}>
               {comment.reactions?.totalDislikes || 0}
             </Tag>
-            <Text type="secondary" className="px-1 text-xs">
-              <CommentOutlined /> {comment.totalReplies || replies.length}{" "}
-              {comment.totalReplies === 1 ? "reply" : "replies"}
-            </Text>
+            {replyCount > 0 && (
+              <Button
+                type="text"
+                size="small"
+                className="!h-7 !px-2 !text-xs !font-medium !text-slate-600"
+                icon={<CommentOutlined />}
+                onClick={() => setRepliesOpen((current) => !current)}
+              >
+                {repliesOpen
+                  ? "Hide replies"
+                  : `View ${replyCount} ${replyCount === 1 ? "reply" : "replies"}`}
+              </Button>
+            )}
             <Button
               type="text"
               size="small"
@@ -214,7 +250,7 @@ const CommentThread = ({
         </div>
       </Flex>
 
-      {replies.length > 0 && (
+      {repliesOpen && replies.length > 0 && (
         <div className="community-thread-children">
           {replies.map((reply) => (
             <CommentThread
@@ -228,6 +264,8 @@ const CommentThread = ({
               onReplyCancel={onReplyCancel}
               onReplyTextChange={onReplyTextChange}
               onReplySubmit={onReplySubmit}
+              deletingCommentId={deletingCommentId}
+              onCommentDelete={onCommentDelete}
             />
           ))}
         </div>
@@ -239,7 +277,7 @@ const CommentThread = ({
 function CommunityQueries() {
   const screens = useBreakpoint();
   const [queries, setQueries] = useState([]);
-  const [category, setCategory] = useState("AI");
+  const [category, setCategory] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -251,6 +289,7 @@ function CommunityQueries() {
   const [replyingToId, setReplyingToId] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [postingReply, setPostingReply] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState(null);
 
   const loadQueries = useCallback(
     async () => {
@@ -324,6 +363,32 @@ function CommunityQueries() {
     }
   };
 
+  const removeComment = async (commentId) => {
+    if (!selectedQuery) return;
+
+    setDeletingCommentId(commentId);
+    try {
+      await deleteCommunityComment(commentId);
+      message.success("Comment deleted successfully");
+      const response = await getCommunityQueryComments(selectedQuery.id);
+      setComments(Array.isArray(response.data?.data) ? response.data.data : []);
+      setQueries((current) =>
+        current.map((query) =>
+          query.id === selectedQuery.id
+            ? {
+                ...query,
+                totalComments: Math.max(0, (query.totalComments || 0) - 1),
+              }
+            : query,
+        ),
+      );
+    } catch (error) {
+      message.error(getErrorMessage(error, "Unable to delete comment"));
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
   const removeQuery = async (queryId) => {
     setDeletingId(queryId);
     try {
@@ -360,7 +425,7 @@ function CommunityQueries() {
           },
         }}
       >
-        <main className="mx-auto max-w-7xl rounded-2xl bg-slate-50 p-3 sm:p-5 lg:p-6">
+        <main className="mx-auto max-w-7xl rounded-2xl bg-white p-3 sm:p-5 lg:p-6">
           <Row
             gutter={[16, 16]}
             align="middle"
@@ -415,7 +480,11 @@ function CommunityQueries() {
           ) : queries.length === 0 ? (
             <Empty
               className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-14"
-              description={`No ${category.toLowerCase()} queries found`}
+              description={
+                category
+                  ? `No ${CATEGORY_OPTIONS.find((item) => item.value === category)?.label || category} queries found`
+                  : "No community queries found"
+              }
             />
           ) : (
             <div className="grid gap-4">
@@ -581,6 +650,8 @@ function CommunityQueries() {
                                       }}
                                       onReplyTextChange={setReplyText}
                                       onReplySubmit={submitReply}
+                                      deletingCommentId={deletingCommentId}
+                                      onCommentDelete={removeComment}
                                     />
                                   ))}
                               </div>

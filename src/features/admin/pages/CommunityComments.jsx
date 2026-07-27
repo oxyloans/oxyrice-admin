@@ -66,6 +66,112 @@ const badgeColor = (badge) => {
   return "orange";
 };
 
+const ReplyItem = ({ reply }) => {
+  const [repliesOpen, setRepliesOpen] = useState(false);
+  if (!reply) return null;
+
+  const nestedReplies = Array.isArray(reply.replies)
+    ? reply.replies.filter(Boolean)
+    : [];
+  const replyCount = Math.max(
+    Number(reply.totalReplies) || 0,
+    nestedReplies.length,
+  );
+
+  return (
+    <div className="community-reply">
+      <Flex align="flex-start" gap={10}>
+        <Avatar
+          size={30}
+          icon={<UserOutlined />}
+          className="community-reply-avatar"
+        />
+        <div className="community-reply-content">
+          <div className="community-comment-meta">
+            <Text strong>{reply.user?.name || "Community user"}</Text>
+            {reply.user?.badge && (
+              <Tag bordered={false} color={badgeColor(reply.user.badge)}>
+                {reply.user.badge.replaceAll("_", " ")}
+              </Tag>
+            )}
+            <span>{formatDate(reply.createdAt)}</span>
+          </div>
+          <p>{reply.comment}</p>
+          <Space size={8} wrap>
+            <Tag bordered={false} icon={<LikeOutlined />}>
+              {reply.reactions?.totalLikes || 0}
+            </Tag>
+            <Tag bordered={false} icon={<DislikeOutlined />}>
+              {reply.reactions?.totalDislikes || 0}
+            </Tag>
+            {replyCount > 0 && (
+              <Button
+                type="link"
+                size="small"
+                icon={<MessageOutlined />}
+                onClick={() => setRepliesOpen((current) => !current)}
+              >
+                {repliesOpen
+                  ? "Hide replies"
+                  : `View ${replyCount} ${replyCount === 1 ? "reply" : "replies"}`}
+              </Button>
+            )}
+          </Space>
+        </div>
+      </Flex>
+
+      {repliesOpen && nestedReplies.length > 0 && (
+        <div className="community-nested-replies">
+          {nestedReplies.map((nestedReply) => (
+            <ReplyItem key={nestedReply.id} reply={nestedReply} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CommentReplies = ({ replies, totalReplies }) => {
+  const [repliesOpen, setRepliesOpen] = useState(false);
+  const availableReplies = Array.isArray(replies)
+    ? replies.filter(Boolean)
+    : [];
+  const replyCount = Math.max(
+    Number(totalReplies) || 0,
+    availableReplies.length,
+  );
+
+  if (replyCount === 0) return null;
+
+  return (
+    <div className="community-replies-section">
+      <Button
+        type="link"
+        size="small"
+        icon={<MessageOutlined />}
+        onClick={() => setRepliesOpen((current) => !current)}
+      >
+        {repliesOpen
+          ? "Hide replies"
+          : `View ${replyCount} ${replyCount === 1 ? "reply" : "replies"}`}
+      </Button>
+      {repliesOpen && (
+        <div className="community-replies">
+          {availableReplies.length > 0 ? (
+            availableReplies.map((reply) => (
+              <ReplyItem key={reply.id} reply={reply} />
+            ))
+          ) : (
+            <Text type="secondary" className="text-xs">
+              Replies are unavailable.
+            </Text>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 function CommunityComments() {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -309,41 +415,10 @@ function CommunityComments() {
                     </Badge>
                   </div>
 
-                  {Array.isArray(item.replies) && item.replies.length > 0 && (
-                    <div className="community-replies">
-                      <Text strong>
-                        Replies ({item.replies.length})
-                      </Text>
-                      {item.replies.filter(Boolean).map((reply) => (
-                        <div className="community-reply" key={reply.id}>
-                          <Flex align="flex-start" gap={10}>
-                            <Avatar
-                              size={30}
-                              icon={<UserOutlined />}
-                              className="community-reply-avatar"
-                            />
-                            <div>
-                              <div className="community-comment-meta">
-                                <Text strong>
-                                  {reply.user?.name || "Community user"}
-                                </Text>
-                                {reply.user?.badge && (
-                                  <Tag
-                                    bordered={false}
-                                    color={badgeColor(reply.user.badge)}
-                                  >
-                                    {reply.user.badge.replaceAll("_", " ")}
-                                  </Tag>
-                                )}
-                                <span>{formatDate(reply.createdAt)}</span>
-                              </div>
-                              <p>{reply.comment}</p>
-                            </div>
-                          </Flex>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <CommentReplies
+                    replies={item.replies}
+                    totalReplies={item.totalReplies}
+                  />
                   </div>
                 </div>
               );

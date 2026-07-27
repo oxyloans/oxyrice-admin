@@ -136,10 +136,35 @@
   border-top: 1px solid #edf2f7;
 }
 
+.community-replies-section {
+  margin-top: 10px;
+  border-top: 1px solid #edf2f7;
+  padding-top: 8px;
+}
+
+.community-replies-section > .ant-btn {
+  padding-left: 0;
+  font-weight: 600;
+}
+
 .community-reply {
   padding: 12px 14px;
   border-radius: 10px;
   background: #f7fafc;
+}
+
+.community-reply-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.community-nested-replies {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  margin-left: 14px;
+  padding-left: 16px;
+  border-left: 2px solid #dbe7e4;
 }
 
 .community-reply > .ant-flex > div:last-child {
