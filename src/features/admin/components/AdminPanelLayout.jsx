@@ -29,6 +29,8 @@ const AdminPanelLayout = ({ children }) => {
   const screens = useBreakpoint();
   const navigate = useNavigate();
   const location = useLocation();
+  const primaryType = localStorage.getItem("adminPrimaryType");
+  const isEmployee = primaryType === "EMPLOYEE";
 
   useEffect(() => {
     if (screens.xs) setCollapsed(true);
@@ -36,8 +38,8 @@ const AdminPanelLayout = ({ children }) => {
   }, [screens]);
 
   // ---- Your sidebar structure (same as you wrote) ----
-  const sidebarItems = useMemo(
-    () => [
+  const sidebarItems = useMemo(() => {
+    const items = [
       {
         key: "dashboard",
         label: "Dashboard",
@@ -64,6 +66,11 @@ const AdminPanelLayout = ({ children }) => {
             key: "communityComments",
             label: "Community Comments",
             link: "/admin/community-comments",
+          },
+          {
+            key: "communityCategories",
+            label: "Community Categories",
+            link: "/admin/community-categories",
           },
           
         ],
@@ -271,9 +278,13 @@ const AdminPanelLayout = ({ children }) => {
           },
         ],
       },
-    ],
-    [],
-  );
+    ];
+
+    // Employees only have access to the Community Feedback menu.
+    return isEmployee
+      ? items.filter((item) => item.key === "community")
+      : items;
+  }, [isEmployee]);
 
   // ---- Convert sidebarItems -> antd Menu `items` ----
   const menuItems = useMemo(() => {
@@ -362,7 +373,7 @@ const AdminPanelLayout = ({ children }) => {
               style={{ fontSize: 24 }}
             >
               <Link
-                to="/admin/dashboard"
+                // to="/admin/dashboard"
                 style={{
                   fontSize: "20px",
                   color: "#fff",
@@ -385,7 +396,9 @@ const AdminPanelLayout = ({ children }) => {
           style={{ textAlign: "center", marginTop: "0px" }}
           className="bg-gray-800 text-white my-5 h-6"
         >
-          <Link to="/admin/dashboard" style={{ textDecoration: "none" }}>
+          <Link
+            // to="/admin/dashboard"
+            style={{ textDecoration: "none" }}>
             <strong className="my-6" style={{ fontSize: "14px" }}>
               {collapsed ? "A" : "Admin"}
             </strong>

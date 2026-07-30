@@ -152,6 +152,9 @@ const CommunityComments = lazy(
 const CommunityQueries = lazy(
   () => import("../../features/admin/pages/CommunityQueries"),
 );
+const CommunityCategories = lazy(
+  () => import("../../features/admin/pages/CommunityCategories"),
+);
 
 // Companies Admin
 const CompanyList = lazy(() => import("../../features/companies/pages/CompanyList"));
@@ -232,6 +235,7 @@ const TASK_LOGIN = `${ADMIN_BASE}/taskmanagementlogin`;
 const STUDY_ABROAD_LOGIN = `${ADMIN_BASE}/studyabroadlogin`;
 
 const adminRoutes = [
+  { path: "community-categories", element: CommunityCategories },
   { path: "community-comments", element: CommunityComments },
   { path: "community-queries", element: CommunityQueries },
   { path: "fuel-expenses", element: FuelExpenses },

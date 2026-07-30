@@ -88,17 +88,35 @@ function AdminLogin() {
 
         // Check for different permission requirements based on environment
         if (currentMode === "live") {
-          // Live environment requires HELPDESKSUPERADMIN
-          if (primaryType === "HELPDESKSUPERADMIN") {
+          // Live environment allows super admins and community employees.
+          if (
+            primaryType === "HELPDESKSUPERADMIN" ||
+            primaryType === "EMPLOYEE"
+          ) {
             // Success animation
             message.success({ content: "Login successful! Redirecting...", duration: 2 });
             setTimeout(() => {
-              const redirect = localStorage.getItem("redirectAfterLogin_admin") || "/admin/dashboard";
+              const defaultRedirect =
+                primaryType === "EMPLOYEE"
+                  ? "/admin/community-queries"
+                  : "/admin/dashboard";
+              const savedRedirect = localStorage.getItem(
+                "redirectAfterLogin_admin",
+              );
+              const isEmployeeCommunityRedirect =
+                savedRedirect === "/admin/community-queries" ||
+                savedRedirect === "/admin/community-comments";
+              const redirect =
+                primaryType === "EMPLOYEE" && !isEmployeeCommunityRedirect
+                  ? defaultRedirect
+                  : savedRedirect || defaultRedirect;
               localStorage.removeItem("redirectAfterLogin_admin");
               navigate(redirect);
             }, 1000);
           } else {
-            setError("Access denied. Only HELPDESKSUPERADMIN users can access Live environment.");
+            setError(
+              "Access denied. Only HELPDESKSUPERADMIN and EMPLOYEE users can access Live environment.",
+            );
             triggerShakeAnimation();
           }
         } else if (currentMode === "test") {

@@ -39,32 +39,11 @@ import {
   getCommunityQueryComments,
   replyToCommunityComment,
 } from "../api/communityCommentsApi";
+import { getCommunityCategories } from "../api/communityCategoriesApi";
 import "./CommunityQueries.css";
 
 const { Paragraph, Text, Title } = Typography;
 const { useBreakpoint } = Grid;
-
-const CATEGORY_OPTIONS = [
-  { label: "All Categories", value: "" },
-  { label: "Artificial Intelligence", value: "AI" },
-  { label: "Blockchain & Crypto", value: "BLOCKCHAIN_AND_CRYPTO" },
-  { label: "CA & CS", value: "CA_AND_CS" },
-  { label: "Fractional Ownership", value: "FRACTIONAL_OWNERSHIP" },
-  { label: "Freelance Marketplace", value: "FREELANCE_MARKETPLACE" },
-  { label: "GCC Mate", value: "GCC_MATE" },
-  { label: "GLMS", value: "GLMS" },
-  { label: "Gold", value: "GOLD" },
-  { label: "Jobs", value: "JOBS" },
-  { label: "Loans", value: "LOANS" },
-  { label: "Loans & Investments", value: "LOANS_AND_INVESTMENTS" },
-  { label: "90-Day Job Plan", value: "NINETY_DAY_JOB_PLAN" },
-  { label: "Nyaya GPT", value: "NYAYA_GPT" },
- 
-  { label: "Real Estate", value: "REALSTATE" },
-  { label: "Study", value: "STUDY" },
-  { label: "Study Abroad", value: "STUDY_ABROAD" },
-  { label: "Other", value: "OTHER" }
-];
 
 const getErrorMessage = (error, fallback) =>
   error.response?.data?.message ||
@@ -277,7 +256,11 @@ const CommentThread = ({
 function CommunityQueries() {
   const screens = useBreakpoint();
   const [queries, setQueries] = useState([]);
-  const [category, setCategory] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState([
+    { label: "All Categories", value: "" },
+  ]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -296,7 +279,7 @@ function CommunityQueries() {
       setLoading(true);
       try {
         const response = await getCommunityQueries({
-          category,
+          categoryId,
           pageNumber: page - 1,
           pageSize,
         });
@@ -316,12 +299,47 @@ function CommunityQueries() {
         setLoading(false);
       }
     },
-    [category, page, pageSize],
+    [categoryId, page, pageSize],
   );
 
   useEffect(() => {
     loadQueries();
   }, [loadQueries]);
+
+  useEffect(() => {
+    const loadCategoryOptions = async () => {
+      setCategoriesLoading(true);
+      try {
+        const response = await getCommunityCategories();
+        const categoryData = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+        setCategoryOptions([
+          { label: "All Categories", value: "" },
+          ...categoryData
+            .filter(
+              (item) =>
+                item.active === true &&
+                item.id != null &&
+                item.categoryName?.trim(),
+            )
+            .map((item) => ({
+              label: item.categoryName.trim(),
+              value: item.id,
+            })),
+        ]);
+      } catch (error) {
+        setCategoryOptions([{ label: "All Categories", value: "" }]);
+        message.error(
+          getErrorMessage(error, "Unable to load community categories"),
+        );
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    loadCategoryOptions();
+  }, []);
 
   const openComments = async (query) => {
     if (selectedQuery?.id === query.id) {
@@ -452,12 +470,14 @@ function CommunityQueries() {
                 <Select
                   aria-label="Filter community queries by category"
                   className="w-full"
-                  showSearch={false}
-                  value={category}
-                  options={CATEGORY_OPTIONS}
+                  showSearch
+                  optionFilterProp="label"
+                  loading={categoriesLoading}
+                  value={categoryId}
+                  options={categoryOptions}
                   suffixIcon={<FilterOutlined />}
                   onChange={(value) => {
-                    setCategory(value);
+                    setCategoryId(value);
                     setPage(1);
                     setTotal(0);
                   }}
@@ -481,8 +501,8 @@ function CommunityQueries() {
             <Empty
               className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-14"
               description={
-                category
-                  ? `No ${CATEGORY_OPTIONS.find((item) => item.value === category)?.label || category} queries found`
+                categoryId
+                  ? `No ${categoryOptions.find((item) => item.value === categoryId)?.label || "category"} queries found`
                   : "No community queries found"
               }
             />

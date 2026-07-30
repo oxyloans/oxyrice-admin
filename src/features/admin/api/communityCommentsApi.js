@@ -19,13 +19,13 @@ export const deleteCommunityComment = (commentId) =>
 const QUERIES_PATH = "/user-service/admin/community/queries";
 
 export const getCommunityQueries = ({
-  category,
+  categoryId,
   pageNumber = 0,
   pageSize = 10,
 } = {}) =>
   axiosInstance.get(QUERIES_PATH, {
     params: {
-      ...(category ? { category } : {}),
+      ...(categoryId ? { categoryId } : {}),
       page: pageNumber,
       size: pageSize,
     },
