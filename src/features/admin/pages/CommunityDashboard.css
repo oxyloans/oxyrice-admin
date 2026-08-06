@@ -1,0 +1,75 @@
+.community-dashboard-page { max-width: 1440px; margin: 0 auto; padding: 12px 4px 28px; overflow: hidden; }
+.community-dashboard-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.community-dashboard-header .ant-typography { margin-bottom: 4px; }
+.community-metric-card, .community-activity-card, .community-dashboard-panel { height: 100%; border: 1px solid #e8edf3; box-shadow: 0 5px 18px rgba(15, 23, 42, .05); }
+.community-metric-card { position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .2s ease; }
+.community-metric-card::after { position: absolute; right: -22px; bottom: -28px; width: 82px; height: 82px; border-radius: 50%; background: currentColor; content: ""; opacity: .055; }
+.community-metric-card:hover { transform: translateY(-2px); box-shadow: 0 9px 24px rgba(15, 23, 42, .09); }
+.community-metric-card.tone-blue { background: linear-gradient(135deg, #f0f9ff, #e0f2fe); color: #0284c7; border-color: #bae6fd; }
+.community-metric-card.tone-purple { background: linear-gradient(135deg, #faf5ff, #f3e8ff); color: #7e22ce; border-color: #e9d5ff; }
+.community-metric-card.tone-cyan { background: linear-gradient(135deg, #ecfeff, #cffafe); color: #0e7490; border-color: #a5f3fc; }
+.community-metric-card.tone-green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); color: #15803d; border-color: #bbf7d0; }
+.community-metric-card.tone-orange { background: linear-gradient(135deg, #fff7ed, #ffedd5); color: #c2410c; border-color: #fed7aa; }
+.community-metric-card.tone-teal { background: linear-gradient(135deg, #f0fdfa, #ccfbf1); color: #0f766e; border-color: #99f6e4; }
+.community-metric-card .ant-card-body { display: flex; align-items: center; gap: 13px; padding: 18px; }
+.community-metric-icon { display: grid; flex: 0 0 44px; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: #e6f7ff; color: #008cba; font-size: 19px; }
+.tone-purple .community-metric-icon { background: #f3e8ff; color: #7e22ce; }
+.tone-cyan .community-metric-icon { background: #cffafe; color: #0e7490; }
+.tone-green .community-metric-icon, .tone-teal .community-metric-icon { background: #d1fae5; color: #047857; }
+.tone-orange .community-metric-icon { background: #ffedd5; color: #c2410c; }
+.community-metric-card .ant-statistic-title { margin-bottom: 1px; color: #64748b; font-size: 12px; }
+.community-metric-card .ant-statistic-content { color: #0f172a; font-size: 25px; font-weight: 700; }
+.community-activity-card { margin: 24px 0; }
+.community-activity-card { background: linear-gradient(120deg, #ffffff 55%, #f0fdfa); }
+.community-activity-card .ant-statistic { padding: 12px; border: 1px solid #eef2f7; border-radius: 10px; background: rgba(255, 255, 255, .82); }
+.community-activity-card .ant-statistic-content { color: #0f172a; font-size: 21px; font-weight: 700; }
+.community-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.community-section-heading .ant-typography { margin: 0; }
+.community-dashboard-panel { margin-bottom: 16px; }
+.community-chart-row { margin-top: 0; margin-bottom: 8px; }
+.community-detail-section { margin-top: 24px; }
+.community-detail-section-last { padding-bottom: 12px; }
+.community-chart-card { min-height: 390px; }
+.community-chart { width: 100%; height: 300px; min-width: 0; }
+.community-chart-empty { display: grid; height: 100%; place-items: center; }
+.community-dashboard-panel .ant-card-head { min-height: 54px; }
+.community-dashboard-panel .ant-list-item { gap: 10px; }
+.community-rank { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 8px; background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700; }
+.community-progress-row { margin-bottom: 18px; }
+.community-progress-row:last-child { margin-bottom: 0; }
+.community-progress-row > div { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 5px; }
+.community-progress-row .ant-progress { line-height: 1; }
+.community-performance-card { height: 440px; }
+.community-performance-card .ant-card-body { height: calc(100% - 55px); overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #94a3b8 #f1f5f9; scrollbar-width: thin; }
+.community-performance-card .ant-card-body::-webkit-scrollbar { width: 6px; }
+.community-performance-card .ant-card-body::-webkit-scrollbar-track { border-radius: 999px; background: #f1f5f9; }
+.community-performance-card .ant-card-body::-webkit-scrollbar-thumb { border-radius: 999px; background: #94a3b8; }
+.community-performance-card .ant-card-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
+.community-performance-card .ant-list-item:first-child { padding-top: 0; }
+.community-performance-card .ant-list-item:last-child { padding-bottom: 0; border-block-end: 0; }
+@media (max-width: 575px) {
+  .community-dashboard-page { padding: 8px 0 20px; }
+  .community-dashboard-header { align-items: center; }
+  .community-dashboard-header h2 { font-size: 22px; }
+  .community-dashboard-header p { display: none; }
+  .community-metric-card .ant-card-body { padding: 14px; }
+  .community-metric-card .ant-card-body { align-items: flex-start; flex-direction: column; gap: 9px; }
+  .community-metric-card .ant-statistic-content { font-size: 22px; }
+  .community-metric-card:hover { transform: none; }
+  .community-dashboard-panel .ant-card-body { padding: 14px; }
+  .community-dashboard-panel .ant-card-extra { display: none; }
+  .community-progress-row > div { flex-direction: column; gap: 1px; }
+  .community-chart-card { min-height: 330px; }
+  .community-chart { height: 245px; }
+  .community-activity-card .ant-card-body { padding: 14px; }
+  .community-activity-card { margin: 18px 0; }
+  .community-detail-section { margin-top: 18px; }
+  .community-detail-section-last { padding-bottom: 6px; }
+  .community-activity-card .ant-statistic { padding: 10px; }
+  .community-activity-card .ant-statistic-title { min-height: 36px; font-size: 11px; }
+  .community-performance-card { height: 380px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-metric-card { transition: none; }
+}

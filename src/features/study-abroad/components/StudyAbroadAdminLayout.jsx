@@ -37,19 +37,34 @@ const sidebarItems = [
         link: `${STUDY_ABROAD_BASE}/student-registrations`,
       },
       {
-        key: "allStudents",
+        key: "internshipApplications",
         label: "Internship Applications",
         icon: <TeamOutlined />,
         link: `${STUDY_ABROAD_BASE}/all-students`,
       },
+    ],
+  },
+
+  {
+    key: "studyAbroadServices",
+    label: "Study Abroad Services",
+    icon: <TeamOutlined />,
+    dropdownItems: [
       {
         key: "sevenDaysOffersApplications",
         label: "7 Day Offer Applications",
         icon: <FileTextOutlined />,
         link: `${STUDY_ABROAD_BASE}/seven-days-offers-applications`,
       },
+      {
+        key: "counselorRequests",
+        label: "Counselor Requests",
+        icon: <TeamOutlined />,
+        link: `${STUDY_ABROAD_BASE}/counselor-requests`,
+      },
     ],
   },
+
   {
     key: "studyAbroadReports",
     label: "Study Abroad Reports",

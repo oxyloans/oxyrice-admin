@@ -104,14 +104,14 @@ const StudySevenDaysApplications = () => {
       title: "Student Name",
       dataIndex: "fullName",
       key: "fullName",
-      align: "center",
+      // align: "center",
 
       render: (name) => <Text strong>{name || "Not provided"}</Text>,
     },
     {
       title: "Contact Information",
       key: "contactInformation",
-      align: "center",
+     
       render: (_, record) => (
         <Space direction="vertical" size={1}>
           <Text>{record.email || "Not provided"}</Text>
@@ -123,7 +123,7 @@ const StudySevenDaysApplications = () => {
       title: "Course Level",
       dataIndex: "courseLevel",
       key: "courseLevel",
-      align: "center",
+      // align: "center",
 
       render: (courseLevel) =>
         courseLevel ? <Tag color="blue">{courseLevel}</Tag> : "Not provided",
@@ -132,14 +132,14 @@ const StudySevenDaysApplications = () => {
       title: "Preferred Course",
       dataIndex: "preferredCourse",
       key: "preferredCourse",
-      align: "center",
+      // align: "center",
       render: (course) => course || "Not provided",
     },
     {
       title: "Preferred Intake",
       dataIndex: "preferredIntake",
       key: "preferredIntake",
-      align: "center",
+      // align: "center",
       render: (intake) => intake || "Not provided",
     },
     {
@@ -147,25 +147,25 @@ const StudySevenDaysApplications = () => {
       dataIndex: "twelfthPercentage",
       key: "twelfthPercentage",
 
-      align: "center",
+      // align: "center",
       render: (percentage) =>
         percentage !== null && percentage !== undefined
           ? `${percentage}%`
-          : "N/A",
+          : "",
     },
     {
       title: "Graduation CGPA",
       dataIndex: "graduationCgpa",
       key: "graduationCgpa",
 
-      align: "center",
+      // align: "center",
       render: (cgpa) =>
-        cgpa !== null && cgpa !== undefined ? cgpa : "N/A",
+        cgpa !== null && cgpa !== undefined ? cgpa : "",
     },
     {
       title: "English Test",
       key: "englishTest",
-      align: "center",
+      // align: "center",
       render: (_, record) =>
         record.englishTest ? (
           <Space size={6}>

@@ -125,15 +125,15 @@ const AllStudents = () => {
       title: "Student Name",
       dataIndex: "studentName",
       key: "studentName",
-      align: "center",
+      // align: "center",
       render: (name) => name || "—",
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      align: "center",
-      ellipsis: true,
+      // align: "center",
+      // ellipsis: true,
       render: (email) => email || "—",
     },
     {
@@ -141,7 +141,7 @@ const AllStudents = () => {
       dataIndex: "phoneNo",
       key: "phoneNo",
       
-      align: "center",
+      // align: "center",
       render: (phone) => phone || "—",
     },
     {
@@ -149,7 +149,7 @@ const AllStudents = () => {
       dataIndex: "internshipType",
       key: "internshipType",
      
-      align: "center",
+      // align: "center",
       render: (type) =>
         type ? (
           <Tag color={INTERNSHIP_COLORS[type] || "blue"}>
@@ -164,7 +164,7 @@ const AllStudents = () => {
       dataIndex: "resumeUrl",
       key: "resumeUrl",
     
-      align: "center",
+      // align: "center",
       render: (url) => {
         const link = formatResumeUrl(url);
         return link ? (

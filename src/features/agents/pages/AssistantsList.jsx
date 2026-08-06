@@ -267,7 +267,7 @@ const AssistantsList = () => {
   }) => {
     try {
       setLoading(true);
-      let url = `${BASE_URL}/ai-service/agent/getAllAssistants?limit=${encodeURIComponent(
+      let url = `${BASE_URL}/ai-service/new-agent/getAllAssistants?limit=${encodeURIComponent(
         String(limit),
       )}`;
 

@@ -79,6 +79,21 @@
   background: #ffffff;
 }
 
+.community-query-reply-composer {
+  padding: 4px 0;
+}
+
+.community-query-reply-composer .ant-input {
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.community-query-reply-composer-bordered {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
 @media (max-width: 575px) {
   .community-thread-list {
     max-height: 55vh;

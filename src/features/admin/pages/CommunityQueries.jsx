@@ -273,6 +273,9 @@ function CommunityQueries() {
   const [replyText, setReplyText] = useState("");
   const [postingReply, setPostingReply] = useState(false);
   const [deletingCommentId, setDeletingCommentId] = useState(null);
+  const [replyingToQueryId, setReplyingToQueryId] = useState(null);
+  const [queryReplyText, setQueryReplyText] = useState("");
+  const [postingQueryReply, setPostingQueryReply] = useState(false);
 
   const loadQueries = useCallback(
     async () => {
@@ -378,6 +381,30 @@ function CommunityQueries() {
       message.error(getErrorMessage(error, "Unable to post reply"));
     } finally {
       setPostingReply(false);
+    }
+  };
+
+  const submitQueryReply = async (queryId) => {
+    const value = queryReplyText.trim();
+    if (!value || postingQueryReply) return;
+
+    setPostingQueryReply(true);
+    try {
+      await replyToCommunityComment(queryId, value);
+      message.success("Reply posted successfully");
+      setReplyingToQueryId(null);
+      setQueryReplyText("");
+      await loadQueries();
+      if (selectedQuery?.id === queryId) {
+        const response = await getCommunityQueryComments(queryId);
+        setComments(
+          Array.isArray(response.data?.data) ? response.data.data : [],
+        );
+      }
+    } catch (error) {
+      message.error(getErrorMessage(error, "Unable to post reply"));
+    } finally {
+      setPostingQueryReply(false);
     }
   };
 
@@ -589,7 +616,66 @@ function CommunityQueries() {
                     <Text type="secondary">
                       <CommentOutlined /> {query.totalComments || 0} comments
                     </Text>
+                    {(Number(query.totalComments) || 0) === 0 && (
+                      <Button
+                        type="link"
+                        size="small"
+                        className="!h-auto !p-0 !font-semibold !text-teal-700"
+                        icon={<SendOutlined />}
+                        onClick={() => {
+                          setReplyingToQueryId(query.id);
+                          setQueryReplyText("");
+                        }}
+                      >
+                        Reply
+                      </Button>
+                    )}
                   </Space>
+
+                  {replyingToQueryId === query.id && (
+                    <div className="community-reply-composer">
+                      <Text type="secondary" className="mb-2 block text-xs">
+                        Replying to this query
+                      </Text>
+                      <Input.TextArea
+                        autoFocus
+                        value={queryReplyText}
+                        maxLength={1000}
+                        showCount
+                        autoSize={{ minRows: 2, maxRows: 5 }}
+                        placeholder="Post your admin reply"
+                        onChange={(event) =>
+                          setQueryReplyText(event.target.value)
+                        }
+                        onPressEnter={(event) => {
+                          if (!event.shiftKey) {
+                            event.preventDefault();
+                            submitQueryReply(query.id);
+                          }
+                        }}
+                      />
+                      <Flex justify="flex-end" gap={8} className="mt-3">
+                        <Button
+                          disabled={postingQueryReply}
+                          onClick={() => {
+                            setReplyingToQueryId(null);
+                            setQueryReplyText("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="primary"
+                          icon={<SendOutlined />}
+                          loading={postingQueryReply}
+                          disabled={!queryReplyText.trim()}
+                          onClick={() => submitQueryReply(query.id)}
+                        >
+                          Post reply
+                        </Button>
+                      </Flex>
+                    </div>
+                  )}
 
                   <Collapse
                     className="mt-4 overflow-hidden rounded-lg border-slate-200 bg-slate-50"

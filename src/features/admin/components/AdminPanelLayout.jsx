@@ -58,6 +58,11 @@ const AdminPanelLayout = ({ children }) => {
         icon: <CommentOutlined />,
         dropdownItems: [
           {
+            key: "communityDashboard",
+            label: "Community Dashboard",
+            link: "/admin/community-dashboard",
+          },
+          {
             key: "communityQueries",
             label: "Community Queries",
             link: "/admin/community-queries",

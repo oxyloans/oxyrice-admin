@@ -217,7 +217,7 @@ function CategoriesContent() {
       title: "Status",
       dataIndex: "active",
       key: "active",
-      width: 125,
+      
       align: "center",
       render: (active) => (
         <Tag
