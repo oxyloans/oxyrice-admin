@@ -4,8 +4,6 @@ import BulkGeneratedCoupons from "../../features/admin/pages/BulkGeneratedCoupon
 import StudyAbroadFailedEmails from "../../features/study-abroad/pages/StudyAbroadFailedEmails";
 import StudySevenDaysApplications from "../../features/study-abroad/pages/StudySevenDaysApplications";
 
-
-
 // Task Management
 const TaskCreation = lazy(
   () => import("../../features/tasks/pages/TaskCreation"),
@@ -71,30 +69,50 @@ const AllStudents = lazy(
 const StudyAbroadCityDetails = lazy(
   () => import("../../features/study-abroad/pages/StudyAbroadCityDetails"),
 );
-const StudyAbroadResponses = lazy(() => import("../../features/study-abroad/pages/StudyAbroadResponses"),);
+const StudyAbroadResponses = lazy(
+  () => import("../../features/study-abroad/pages/StudyAbroadResponses"),
+);
 const CounselorRequests = lazy(
   () => import("../../features/study-abroad/pages/CounselorRequests"),
 );
 
 // AdminPages
-const AllQueries = lazy(() => import("../../features/admin/pages/AllQueriesForAdmin"));
-const Categories = lazy(() => import("../../features/admin/pages/CategoryList"));
+const AllQueries = lazy(
+  () => import("../../features/admin/pages/AllQueriesForAdmin"),
+);
+const Categories = lazy(
+  () => import("../../features/admin/pages/CategoryList"),
+);
 const Coupons = lazy(() => import("../../features/admin/pages/CouponList"));
 const Customers = lazy(() => import("../../features/admin/pages/CustomerList"));
 const CustomerUpdation = lazy(
   () => import("../../features/admin/pages/CustomerUpdationDetails"),
 );
-const DashboardTest = lazy(() => import("../../features/admin/pages/Dashboard"));
-const DeliveryBoys = lazy(() => import("../../features/admin/pages/DeliveryBoyList"));
-const ExchangeOrders = lazy(() => import("../../features/admin/pages/ExchangeOrderList"));
+const DashboardTest = lazy(
+  () => import("../../features/admin/pages/Dashboard"),
+);
+const DeliveryBoys = lazy(
+  () => import("../../features/admin/pages/DeliveryBoyList"),
+);
+const ExchangeOrders = lazy(
+  () => import("../../features/admin/pages/ExchangeOrderList"),
+);
 const ItemList = lazy(() => import("../../features/admin/pages/ItemsLists"));
-const ItemsLists = lazy(() => import("../../features/admin/pages/ItemRequiremnet"));
-const Ordersdetails = lazy(() => import("../../features/admin/pages/OrdersList"));
+const ItemsLists = lazy(
+  () => import("../../features/admin/pages/ItemRequiremnet"),
+);
+const Ordersdetails = lazy(
+  () => import("../../features/admin/pages/OrdersList"),
+);
 const OrdersDetailsCustomerId = lazy(
   () => import("../../features/admin/pages/OrdersListbyCustomerId"),
 );
-const OrdersPending = lazy(() => import("../../features/admin/pages/PendingOrders"));
-const SellerItems = lazy(() => import("../../features/admin/pages/SellerItemsList"));
+const OrdersPending = lazy(
+  () => import("../../features/admin/pages/PendingOrders"),
+);
+const SellerItems = lazy(
+  () => import("../../features/admin/pages/SellerItemsList"),
+);
 const Sellers = lazy(() => import("../../features/admin/pages/SellersList"));
 const Settings = lazy(() => import("../../features/admin/pages/SettingsForm"));
 const SubscriptionPlanListustomerId = lazy(
@@ -103,7 +121,9 @@ const SubscriptionPlanListustomerId = lazy(
 const SubscriberDetailslist = lazy(
   () => import("../../features/admin/pages/SubscriberDetails"),
 );
-const Subscribers = lazy(() => import("../../features/admin/pages/SubscribersList"));
+const Subscribers = lazy(
+  () => import("../../features/admin/pages/SubscribersList"),
+);
 const SubscriptionPlansList = lazy(
   () => import("../../features/admin/pages/SubscriptionPlanList"),
 );
@@ -127,9 +147,15 @@ const AgentCampaignOffers = lazy(
 //   () => import("../../features/admin/pages/OfferUsageByPincode"),
 // );
 const Services = lazy(() => import("../../features/admin/pages/ServicesList"));
-const ServiceList = lazy(() => import("../../features/admin/pages/ServiceList"));
-const OrdersByCoupon = lazy(() => import("../../features/admin/pages/OrdersByCoupon"));
-const NBFCDataList = lazy(() => import("../../features/admin/pages/NBFCDataList"));
+const ServiceList = lazy(
+  () => import("../../features/admin/pages/ServiceList"),
+);
+const OrdersByCoupon = lazy(
+  () => import("../../features/admin/pages/OrdersByCoupon"),
+);
+const NBFCDataList = lazy(
+  () => import("../../features/admin/pages/NBFCDataList"),
+);
 const InitiatedAmountList = lazy(
   () => import("../../features/admin/pages/InitiatedAmountList"),
 );
@@ -139,16 +165,30 @@ const ApprovedAmountList = lazy(
 const WithdrawalRequests = lazy(
   () => import("../../features/admin/pages/WithdrawalUsersList"),
 );
-const FuelExpenses = lazy(() => import("../../features/admin/pages/FuelExpenses"));
+const FuelExpenses = lazy(
+  () => import("../../features/admin/pages/FuelExpenses"),
+);
 const BulkInviteCampaign = lazy(
   () => import("../../features/admin/pages/BulkInviteCampaign"),
 );
-const CampaignUpload = lazy(() => import("../../features/admin/pages/CampaignUpload"));
-const CampaignForm = lazy(() => import("../../features/admin/pages/CampaignForm"));
-const PincodesData = lazy(() => import("../../features/admin/pages/PincodesData"));
-const WhatsAppCampaign = lazy(() => import("../../features/admin/pages/WhatsAppCampaign"));
-const WhatsAppCampaignRecipients = lazy(() => import("../../features/admin/pages/WhatsAppCampaignRecipients"));
-const PdfUploadCampaign = lazy(() => import("../../features/admin/pages/PdfUploadCampaign"));
+const CampaignUpload = lazy(
+  () => import("../../features/admin/pages/CampaignUpload"),
+);
+const CampaignForm = lazy(
+  () => import("../../features/admin/pages/CampaignForm"),
+);
+const PincodesData = lazy(
+  () => import("../../features/admin/pages/PincodesData"),
+);
+const WhatsAppCampaign = lazy(
+  () => import("../../features/admin/pages/WhatsAppCampaign"),
+);
+const WhatsAppCampaignRecipients = lazy(
+  () => import("../../features/admin/pages/WhatsAppCampaignRecipients"),
+);
+const PdfUploadCampaign = lazy(
+  () => import("../../features/admin/pages/PdfUploadCampaign"),
+);
 const CommunityComments = lazy(
   () => import("../../features/admin/pages/CommunityComments"),
 );
@@ -163,29 +203,57 @@ const CommunityDashboard = lazy(
 );
 
 // Companies Admin
-const CompanyList = lazy(() => import("../../features/companies/pages/CompanyList"));
-const JobsManagement = lazy(() => import("../../features/companies/pages/JobsManage"));
-const GetAllJobs = lazy(() => import("../../features/companies/pages/GetAllJobs"));
-const WeHiringPage = lazy(() => import("../../features/companies/pages/WeHiringPage"));
-const NewsPapers = lazy(() => import("../../features/companies/pages/NewsPapers"));
+const CompanyList = lazy(
+  () => import("../../features/companies/pages/CompanyList"),
+);
+const JobsManagement = lazy(
+  () => import("../../features/companies/pages/JobsManage"),
+);
+const GetAllJobs = lazy(
+  () => import("../../features/companies/pages/GetAllJobs"),
+);
+const WeHiringPage = lazy(
+  () => import("../../features/companies/pages/WeHiringPage"),
+);
+const NewsPapers = lazy(
+  () => import("../../features/companies/pages/NewsPapers"),
+);
 const DigitalInvestment = lazy(
   () => import("../../features/companies/pages/DigitalInvestment"),
 );
-const RotaryData = lazy(() => import("../../features/companies/pages/RotaryData"));
+const RotaryData = lazy(
+  () => import("../../features/companies/pages/RotaryData"),
+);
 const CampaignsWithComments = lazy(
   () => import("../../features/companies/pages/CampaignsWithComments"),
 );
 const StudentSalesData = lazy(
   () => import("../../features/companies/pages/StudentSalesData"),
 );
-const IbjOfficialPage = lazy(() => import("../../features/companies/pages/IbjOfficialPage"));
-const IibsSummitPage = lazy(() => import("../../features/companies/pages/IibsSummitPage"));
-const FdSalesImagesPage = lazy(() => import("../../features/companies/pages/FdSalesImagesPage"));
-const BusinessCards = lazy(() => import("../../features/companies/pages/BusinessCards"));
-const HyseaSummit = lazy(() => import("../../features/companies/pages/HyseaSummit"));
-const ExamFlowDashboard = lazy(() => import("../../features/companies/pages/ExamFlowDashboard"));
-const InterviewRounds = lazy(() => import("../../features/companies/pages/InterviewRounds"));
-const DailyNotifications = lazy(() => import("../../features/companies/pages/DailyNotifications"));
+const IbjOfficialPage = lazy(
+  () => import("../../features/companies/pages/IbjOfficialPage"),
+);
+const IibsSummitPage = lazy(
+  () => import("../../features/companies/pages/IibsSummitPage"),
+);
+const FdSalesImagesPage = lazy(
+  () => import("../../features/companies/pages/FdSalesImagesPage"),
+);
+const BusinessCards = lazy(
+  () => import("../../features/companies/pages/BusinessCards"),
+);
+const HyseaSummit = lazy(
+  () => import("../../features/companies/pages/HyseaSummit"),
+);
+const ExamFlowDashboard = lazy(
+  () => import("../../features/companies/pages/ExamFlowDashboard"),
+);
+const InterviewRounds = lazy(
+  () => import("../../features/companies/pages/InterviewRounds"),
+);
+const DailyNotifications = lazy(
+  () => import("../../features/companies/pages/DailyNotifications"),
+);
 // Agents Admin
 const AgentsAdminLayout = lazy(
   () => import("../../features/agents/components/AgentsAdminLayout"),
@@ -197,7 +265,9 @@ const PlansList = lazy(() => import("../../features/agents/pages/PlansList"));
 const AgentsList = lazy(
   () => import("../../features/agents/pages/AgentStatusList"),
 );
-const GeminiUsers = lazy(() => import("../../features/agents/pages/GeminiUsers"));
+const GeminiUsers = lazy(
+  () => import("../../features/agents/pages/GeminiUsers"),
+);
 const ConversationsList = lazy(
   () => import("../../features/agents/pages/ConversationsList"),
 );
@@ -226,7 +296,7 @@ const AgentStoreManager = lazy(
 const FreelancersList = lazy(
   () => import("../../features/agents/pages/Freelancer"),
 );
- 
+
 const SystemConfiguration = lazy(
   () => import("../../features/companies/pages/SystemConfiguration"),
 );
@@ -234,11 +304,13 @@ const SystemConfiguration = lazy(
 const ADMIN_BASE = "/admin";
 const TASK_BASE = "/taskmanagement";
 const STUDY_ABROAD_BASE = "/studyabroad";
+const OXYONE_BASE = "/oxyone";
 const ADMIN_LOGIN = "/";
 const COMPANIES_LOGIN = `${ADMIN_BASE}/companieslogin`;
 const AGENTS_LOGIN = `${ADMIN_BASE}/agentslogin`;
 const TASK_LOGIN = `${ADMIN_BASE}/taskmanagementlogin`;
 const STUDY_ABROAD_LOGIN = `${ADMIN_BASE}/studyabroadlogin`;
+const OXYONE_LOGIN = `${ADMIN_BASE}/oxyonelogin`;
 
 const adminRoutes = [
   { path: "community-dashboard", element: CommunityDashboard },
@@ -255,7 +327,10 @@ const adminRoutes = [
   { path: "categories", element: Categories },
   { path: "pincodesdata", element: PincodesData },
   { path: "whatsapp-campaign", element: WhatsAppCampaign },
-  { path: "whatsapp-campaign-recipients/:campaignId", element: WhatsAppCampaignRecipients },
+  {
+    path: "whatsapp-campaign-recipients/:campaignId",
+    element: WhatsAppCampaignRecipients,
+  },
   { path: "pdf-upload-campaign", element: PdfUploadCampaign },
   { path: "initiatedamountlist", element: InitiatedAmountList },
   { path: "approvedamountlist", element: ApprovedAmountList },
@@ -369,8 +444,48 @@ const taskManagementRoutes = [
   loginPath: TASK_LOGIN,
 }));
 
-
-
+const oxyOneRoutes = [
+  {
+    path: "",
+    element: lazy(() => import("../../features/oxyone/pages/DashboardHome")),
+  },
+  {
+    path: "lender",
+    element: lazy(() => import("../../features/oxyone/pages/OxyLoansLender")),
+  },
+  {
+    path: "borrower",
+    element: lazy(() => import("../../features/oxyone/pages/OxyLoansBorrower")),
+  },
+  {
+    path: "askoxy",
+    element: lazy(() => import("../../features/oxyone/pages/AskOxyUsers")),
+  },
+  {
+    path: "oxybricks",
+    element: lazy(() => import("../../features/oxyone/pages/OxyBricksUsers")),
+  },
+  {
+    path: "oxygold",
+    element: lazy(() => import("../../features/oxyone/pages/OxyGoldUsers")),
+  },
+  {
+    path: "partner",
+    element: lazy(() => import("../../features/oxyone/pages/PartnerUsers")),
+  },
+  {
+    path: "interested",
+    element: lazy(() => import("../../features/oxyone/pages/InterestedPage")),
+  },
+  {
+    path: "settings",
+    element: lazy(() => import("../../features/oxyone/pages/SettingsPage")),
+  },
+  {
+    path: ":section",
+    element: lazy(() => import("../../features/oxyone/pages/SectionPage")),
+  },
+].map((route) => ({ ...route, loginPath: OXYONE_LOGIN }));
 
 const studyAbroadRoutes = [
   { path: "studentapplications", element: StudentApplications },
@@ -394,14 +509,17 @@ export {
   ADMIN_BASE,
   TASK_BASE,
   STUDY_ABROAD_BASE,
+  OXYONE_BASE,
   ADMIN_LOGIN,
   COMPANIES_LOGIN,
   AGENTS_LOGIN,
   TASK_LOGIN,
   STUDY_ABROAD_LOGIN,
+  OXYONE_LOGIN,
   adminRoutes,
   companyAdminRoutes,
   agentsAdminRoutes,
   taskManagementRoutes,
   studyAbroadRoutes,
+  oxyOneRoutes,
 };

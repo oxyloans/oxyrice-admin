@@ -8,6 +8,7 @@ const loginPathToRedirectKey = {
   "/admin/companieslogin": "redirectAfterLogin_companies",
   "/admin/taskmanagementlogin": "redirectAfterLogin_task",
   "/admin/studyabroadlogin": "redirectAfterLogin_studyabroad",
+  "/admin/oxyonelogin": "redirectAfterLogin_oxyone",
 };
 
 const ProtectedRoute = ({ element, loginPath = "/" }) => {

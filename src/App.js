@@ -2,12 +2,14 @@ import {
   ADMIN_BASE,
   TASK_BASE,
   STUDY_ABROAD_BASE,
+  OXYONE_BASE,
   ADMIN_LOGIN,
   adminRoutes,
   companyAdminRoutes,
   agentsAdminRoutes,
   taskManagementRoutes,
   studyAbroadRoutes,
+  oxyOneRoutes,
 } from "./core/routing/routesConfig";
 
 import React, { Suspense, lazy } from "react";
@@ -55,6 +57,10 @@ const TaskManagementLoginPage = lazy(
 );
 const StudyAbroadLoginPage = lazy(
   () => import("./features/study-abroad/pages/StudyAbroadLogin"),
+);
+const OxyoneLoginPage = lazy(() => import("./core/auth/OxyoneLogin"));
+const OxyoneDashboardLayout = lazy(
+  () => import("./features/oxyone/components/DashboardLayout"),
 );
 
 function App() {
@@ -224,6 +230,28 @@ function App() {
               path="/admin/studyabroadlogin"
               element={<StudyAbroadLoginPage />}
             />
+            <Route path="/admin/oxyonelogin" element={<OxyoneLoginPage />} />
+            <Route
+              path={OXYONE_BASE}
+              element={
+                <ProtectedRoute
+                  element={<OxyoneDashboardLayout />}
+                  loginPath="/admin/oxyonelogin"
+                />
+              }
+            >
+              {oxyOneRoutes.map(({ path, element }) => {
+                const Comp = element;
+                return (
+                  <Route
+                    key={path || "index"}
+                    index={!path}
+                    path={path || undefined}
+                    element={<Comp />}
+                  />
+                );
+              })}
+            </Route>
             {/* === COMPANIES ADMIN - PROTECTED === */}
             {companyAdminRoutes.map(({ path, element, loginPath }) => {
               const Comp = element;

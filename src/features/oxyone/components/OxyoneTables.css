@@ -1,0 +1,7 @@
+.oxyone-square-table .ant-table,
+.oxyone-square-table .ant-table-container,
+.oxyone-square-table .ant-table-content,
+.oxyone-square-table .ant-table-thead > tr:first-child > th:first-child,
+.oxyone-square-table .ant-table-thead > tr:first-child > th:last-child {
+  border-radius: 0 !important;
+}
