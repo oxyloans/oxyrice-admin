@@ -11,25 +11,7 @@ import {
 import UserStatCard from "../components/UserStatCard";
 
 const API_BASE = "/oxygold-api/auth/viewAllUsers";
-const LOGIN_URL = "/oxygold-api/auth/adminLogin";
-const GOLD_EMAIL = import.meta.env.VITE_OXYGOLD_EMAIL;
-const GOLD_PASS = import.meta.env.VITE_OXYGOLD_PASS;
 const PAGE_SIZE = 10;
-
-let goldToken = null;
-let goldTokenExp = 0;
-
-async function getGoldToken() {
-  if (goldToken && Date.now() < goldTokenExp - 10_000) return goldToken;
-  const res = await adminApi.post(
-    LOGIN_URL,
-    { email: GOLD_EMAIL, password: GOLD_PASS },
-    { headers: { "Content-Type": "application/json" } },
-  );
-  goldToken = res.data.data.accessToken;
-  goldTokenExp = Date.now() + (res.data.data.expiresInSeconds ?? 900) * 1000;
-  return goldToken;
-}
 
 function PageSkeleton() {
   return (
@@ -137,13 +119,8 @@ export default function OxyGoldUsers() {
   const fetchData = useCallback(async (pg = 0) => {
     setLoading(true);
     try {
-      const token = await getGoldToken();
       const res = await adminApi.get(API_BASE, {
         params: { page: pg, size: PAGE_SIZE },
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
       });
       const pagination = res.data?.data ?? res.data ?? {};
       const rows = Array.isArray(pagination.content)
