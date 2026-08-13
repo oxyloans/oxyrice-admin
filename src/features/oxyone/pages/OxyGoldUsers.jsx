@@ -1,31 +1,35 @@
-import { useState, useEffect, useCallback } from "react";
-import adminApi from "../../../core/config/axiosInstance";
-import { Table, Button, Input, Skeleton } from "antd";
+import { useState, useEffect, useCallback, useRef } from "react";
+import axios from "axios";
+import { Table, DatePicker, Button, Input, Skeleton, Tabs } from "antd";
 import {
-  ReloadOutlined,
   UserOutlined,
   SearchOutlined,
   TeamOutlined,
-  GoldOutlined,
+  RiseOutlined,
+  HistoryOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import UserStatCard from "../components/UserStatCard";
 
-const API_BASE = "/oxygold-api/auth/viewAllUsers";
+const API_BASE = "https://meta.oxyloans.com/api/oxygold-api/auth/viewAllUsers";
+const API_KEY = "bwjpL6+95jM2BFkBQfHteyT7eSVNQpLKBPuHQihGzNo=";
 const PAGE_SIZE = 10;
 
 function PageSkeleton() {
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[420px]">
-        {[1, 2].map((i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="rounded-xl overflow-hidden shadow-sm">
             <div className="h-9 bg-gradient-to-br from-slate-200 to-slate-300" />
             <div className="h-14 bg-white border-l-[3px] border-l-slate-200 border border-slate-200 relative overflow-hidden">
               <div
                 className="absolute inset-0"
                 style={{
-                  background:
-                    "linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent)",
+                  background: "linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent)",
                   animation: "shimmer 1.4s ease-in-out infinite",
                 }}
               />
@@ -33,34 +37,54 @@ function PageSkeleton() {
           </div>
         ))}
       </div>
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <Skeleton active paragraph={{ rows: 8 }} />
+      <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col gap-3">
+        <Skeleton active paragraph={{ rows: 1 }} title={{ width: 200 }} />
+        <Skeleton active paragraph={{ rows: 6 }} />
       </div>
     </div>
   );
 }
 
-const STAT_META = {
+// Match AskOxy card colors exactly
+const CARD_META = {
   total: {
     label: "Total Users",
-    accent: "#d97706",
-    grad: "linear-gradient(135deg,#d97706,#f59e0b)",
+    accent: "#0f172a",
+    grad: "linear-gradient(135deg,#0f172a,#1e293b)",
     sub: "All registered OxyGold users",
     icon: <TeamOutlined />,
   },
-  pages: {
-    label: "Total Pages",
-    accent: "#b45309",
-    grad: "linear-gradient(135deg,#b45309,#d97706)",
-    sub: "Server-side pages",
-    icon: <GoldOutlined />,
+  today: {
+    label: "Today",
+    accent: "#0891b2",
+    grad: "linear-gradient(135deg,#0891b2,#06b6d4)",
+    sub: "New registrations",
+    icon: <RiseOutlined />,
+  },
+  yesterday: {
+    label: "Yesterday",
+    accent: "#7c3aed",
+    grad: "linear-gradient(135deg,#7c3aed,#a855f7)",
+    sub: "Previous day",
+    icon: <HistoryOutlined />,
+  },
+  week: {
+    label: "This Week",
+    accent: "#059669",
+    grad: "linear-gradient(135deg,#059669,#10b981)",
+    sub: "Last 7 days",
+    icon: <BarChartOutlined />,
+  },
+  month: {
+    label: "This Month",
+    accent: "#d97706",
+    grad: "linear-gradient(135deg,#d97706,#f59e0b)",
+    sub: "Month to date",
+    icon: <LineChartOutlined />,
   },
 };
 
-function StatCard({ id, value, loading }) {
-  return <UserStatCard meta={STAT_META[id]} value={value} loading={loading} />;
-}
-
+// Match AskOxy table header/row colors exactly
 const TABLE_COMPONENTS = {
   header: {
     cell: (props) => (
@@ -99,80 +123,187 @@ const TABLE_COMPONENTS = {
       <tr
         {...props}
         style={{ ...props.style, transition: "background .15s" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#fffbeb")}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "")}
       />
     ),
   },
 };
 
+function filterByCard(rows, cardId) {
+  const todayStr = dayjs().format("YYYY-MM-DD");
+  const yesterdayStr = dayjs().subtract(1, "day").format("YYYY-MM-DD");
+  const weekStart = dayjs().subtract(6, "day").startOf("day");
+  const monthStart = dayjs().startOf("month").startOf("day");
+  return rows.filter((r) => {
+    const d = r.createdAt ? r.createdAt.slice(0, 10) : null;
+    if (!d) return false;
+    const dt = dayjs(d);
+    if (cardId === "today") return d === todayStr;
+    if (cardId === "yesterday") return d === yesterdayStr;
+    if (cardId === "week") return !dt.isBefore(weekStart, "day");
+    if (cardId === "month") return !dt.isBefore(monthStart, "day");
+    return true;
+  });
+}
+
+function filterByDate(rows, from, to) {
+  const f = from.format("YYYY-MM-DD");
+  const t = to.format("YYYY-MM-DD");
+  return rows.filter((r) => {
+    const d = r.createdAt ? r.createdAt.slice(0, 10) : null;
+    return d && d >= f && d <= t;
+  });
+}
+
 export default function OxyGoldUsers() {
+  const today = dayjs();
+  const [allUsers, setAllUsers] = useState([]);
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [page, setPage] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [activeCard, setActiveCard] = useState(null);
+  const [activeTab, setActiveTab] = useState("date");
+  const [fromDate, setFromDate] = useState(today.subtract(6, "day"));
+  const [toDate, setToDate] = useState(today);
+  const [mobileInput, setMobileInput] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [stats, setStats] = useState({ total: null, today: null, yesterday: null, week: null, month: null });
+  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fetchData = useCallback(async (pg = 0) => {
-    setLoading(true);
-    try {
-      const res = await adminApi.get(API_BASE, {
-        params: { page: pg, size: PAGE_SIZE },
-      });
-      const pagination = res.data?.data ?? res.data ?? {};
-      const rows = Array.isArray(pagination.content)
-        ? pagination.content
-        : Array.isArray(pagination.data)
-          ? pagination.data
-          : [];
-      const serverTotal = Number(pagination.totalElements);
-      const serverSize = Number(pagination.size) || PAGE_SIZE;
-      const total = Number.isFinite(serverTotal) ? serverTotal : rows.length;
-      const pagesFromResponse = Number(pagination.totalPages);
-      const pages = Number.isFinite(pagesFromResponse)
-        ? pagesFromResponse
-        : Math.ceil(total / serverSize);
-      const serverPage = Number(pagination.number ?? pagination.page);
+  const fromRef = useRef(fromDate);
+  const toRef = useRef(toDate);
+  fromRef.current = fromDate;
+  toRef.current = toDate;
 
-      setData(rows);
-      setTotalElements(total);
-      setTotalPages(pages);
-      setPage(Number.isFinite(serverPage) ? serverPage : pg);
-    } catch {
-      setData([]);
-    } finally {
-      setLoading(false);
-      setInitialLoad(false);
-    }
+  const paginate = useCallback((rows, pg = 0) => {
+    const start = pg * PAGE_SIZE;
+    setData(rows.slice(start, start + PAGE_SIZE));
+    setTotalElements(rows.length);
+    setPage(pg);
   }, []);
 
-  useEffect(() => {
-    fetchData(0);
-  }, [fetchData]);
+  const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
+    setLoading(true);
+    try {
+      const first = await axios.get(API_BASE, {
+        params: { page: 0, size: 100 },
+        headers: { "X-Api-Key": API_KEY },
+      });
+      const pagination = first.data?.data ?? first.data ?? {};
+      const totalEl = Number(pagination.totalElements) || 0;
+      const totalPages = Number(pagination.totalPages) || 1;
+      const firstRows = Array.isArray(pagination.content) ? pagination.content : [];
 
-  // client-side search within current page
-  const filtered = search
-    ? data.filter((r) =>
-        [
-          r.firstName,
-          r.lastName,
-          r.email,
-          r.phoneNumber,
-          r.whatsappNumber,
-        ].some((v) => v?.toLowerCase().includes(search.toLowerCase())),
-      )
-    : data;
+      let allRows = [...firstRows];
+      if (totalPages > 1) {
+        const rest = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, i) =>
+            axios.get(API_BASE, {
+              params: { page: i + 1, size: 100 },
+              headers: { "X-Api-Key": API_KEY },
+            }).then((r) => {
+              const p = r.data?.data ?? r.data ?? {};
+              return Array.isArray(p.content) ? p.content : [];
+            }).catch(() => [])
+          )
+        );
+        allRows = allRows.concat(rest.flat());
+      }
+
+      setAllUsers(allRows);
+
+      const todayStr = dayjs().format("YYYY-MM-DD");
+      const yesterdayStr = dayjs().subtract(1, "day").format("YYYY-MM-DD");
+      const weekStart = dayjs().subtract(6, "day").startOf("day");
+      const monthStart = dayjs().startOf("month").startOf("day");
+
+      let todayCount = 0, yesterdayCount = 0, weekCount = 0, monthCount = 0;
+      for (const row of allRows) {
+        const d = row.createdAt ? row.createdAt.slice(0, 10) : null;
+        if (!d) continue;
+        const dt = dayjs(d);
+        if (d === todayStr) todayCount++;
+        if (d === yesterdayStr) yesterdayCount++;
+        if (!dt.isBefore(weekStart, "day")) weekCount++;
+        if (!dt.isBefore(monthStart, "day")) monthCount++;
+      }
+
+      setStats({ total: totalEl, today: todayCount, yesterday: yesterdayCount, week: weekCount, month: monthCount });
+
+      // Default: show all users
+      paginate(allRows, 0);
+      setInitialLoad(false);
+    } catch {
+      /* keep nulls */
+    } finally {
+      setStatsLoading(false);
+      setLoading(false);
+    }
+  }, [paginate]);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  // Card click — sets card filter, switches to date tab, clears search
+  const handleCardClick = useCallback((cardId) => {
+    setMobileInput("");
+    setMobile("");
+    if (cardId === "total") {
+      setActiveCard(null);
+      setActiveTab("date");
+      paginate(allUsers, 0);
+      return;
+    }
+    setActiveCard(cardId);
+    setActiveTab("date");
+    paginate(filterByCard(allUsers, cardId), 0);
+  }, [allUsers, paginate]);
+
+  const handleRemoveFilter = useCallback(() => {
+    setActiveCard(null);
+    setMobileInput("");
+    setMobile("");
+    paginate(allUsers, 0);
+  }, [allUsers, paginate]);
+
+  // Date search — clears card filter
+  const handleDateSearch = useCallback(() => {
+    setActiveCard(null);
+    setMobileInput("");
+    setMobile("");
+    paginate(filterByDate(allUsers, fromRef.current, toRef.current), 0);
+  }, [allUsers, paginate]);
+
+  // Mobile search — works within active card filter if set
+  const handleMobileSearch = useCallback((num) => {
+    const n = num?.trim();
+    setMobile(n || "");
+    const base = activeCard ? filterByCard(allUsers, activeCard) : allUsers;
+    if (!n) { paginate(base, 0); return; }
+    paginate(base.filter((r) => r.phoneNumber?.includes(n) || r.whatsappNumber?.includes(n)), 0);
+  }, [allUsers, activeCard, paginate]);
+
+  const handlePageChange = useCallback((pg) => {
+    if (mobile) {
+      const base = activeCard ? filterByCard(allUsers, activeCard) : allUsers;
+      paginate(base.filter((r) => r.phoneNumber?.includes(mobile) || r.whatsappNumber?.includes(mobile)), pg - 1);
+    } else if (activeCard) {
+      paginate(filterByCard(allUsers, activeCard), pg - 1);
+    } else {
+      paginate(allUsers, pg - 1);
+    }
+  }, [allUsers, activeCard, mobile, paginate]);
 
   const columns = [
     {
       title: "S.No",
-      width: 60,
+      width: 55,
       align: "center",
       render: (_, __, i) => (
-        <span className="inline-flex items-center justify-center w-7 h-[22px] rounded-[6px] bg-slate-100 text-slate-800 text-[11px] font-black">
+        <span className="font-semibold text-xs text-slate-500">
           {page * PAGE_SIZE + i + 1}
         </span>
       ),
@@ -182,33 +313,32 @@ export default function OxyGoldUsers() {
       dataIndex: "userId",
       width: 80,
       align: "center",
-      render: (v) => (
-        <span className="font-mono text-[11px] font-bold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-[5px] text-amber-800">
-          #{v}
-        </span>
-      ),
+      render: (v) =>
+        v ? (
+          <span className="font-mono text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded whitespace-nowrap">
+            #{v}
+          </span>
+        ) : "—",
     },
     {
       title: "User Details",
-      width: 210,
+      width: 220,
       render: (_, row) => {
         const name = [row.firstName, row.lastName].filter(Boolean).join(" ");
         return (
           <div className="flex items-center gap-2">
             <div
-              className="w-[30px] h-[30px] rounded-lg flex-shrink-0 grid place-items-center text-white font-black text-xs"
-              style={{ background: "linear-gradient(135deg,#d97706,#f59e0b)" }}
+              className="w-8 h-8 rounded-lg flex-shrink-0 grid place-items-center text-white font-black text-xs"
+              style={{ background: "linear-gradient(135deg,#0891b2,#06b6d4)" }}
             >
               {(name || row.phoneNumber || "?")[0]?.toUpperCase()}
             </div>
             <div className="min-w-0">
               <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[160px]">
-                {name || (
-                  <span className="text-slate-400 font-normal">No Name</span>
-                )}
+                {name || <span className="text-slate-400 font-normal italic">No Name</span>}
               </div>
-              <div className="text-[11px] text-slate-500 mt-0.5 font-medium truncate max-w-[160px]">
-                {row.email || "—"}
+              <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[160px]">
+                {row.email || <span className="text-slate-300">No email</span>}
               </div>
             </div>
           </div>
@@ -216,75 +346,43 @@ export default function OxyGoldUsers() {
       },
     },
     {
-      title: "Phone",
-      dataIndex: "phoneNumber",
-      align: "center",
-      render: (v) =>
-        v ? (
-          <span className="font-mono text-xs font-bold text-slate-900">
-            {v}
-          </span>
-        ) : (
-          "—"
-        ),
-    },
-    {
-      title: "WhatsApp",
-      dataIndex: "whatsappNumber",
-      align: "center",
-      render: (v) =>
-        v ? (
-          <span className="font-mono text-xs font-bold text-emerald-700">
-            {v}
-          </span>
-        ) : (
-          "—"
-        ),
-    },
-    {
-      title: "Alt. Number",
-      dataIndex: "alternativeNumber",
-      align: "center",
-      render: (v) =>
-        v ? <span className="font-mono text-xs text-slate-600">{v}</span> : "—",
-    },
-    {
-      title: "Gender",
-      dataIndex: "gender",
-      align: "center",
-      render: (v) => {
-        if (!v) return "—";
-        const map = {
-          male: "bg-blue-50 text-blue-600 border-blue-200",
-          female: "bg-pink-50 text-pink-600 border-pink-200",
-        };
-        return (
-          <span
-            className={`border px-2.5 py-0.5 rounded-full text-[11px] font-bold capitalize ${map[v.toLowerCase()] || "bg-slate-50 text-slate-500 border-slate-200"}`}
-          >
-            {v}
-          </span>
-        );
-      },
+      title: "Contact",
+      width: 180,
+      render: (_, row) => (
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-slate-400 w-[52px] shrink-0">Mobile</span>
+            <span className="font-mono text-xs font-semibold text-slate-800">
+              {row.phoneNumber || <span className="text-slate-300 font-normal">—</span>}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] text-slate-400 w-[52px] shrink-0">WhatsApp</span>
+            <span className="font-mono text-xs font-semibold text-emerald-600">
+              {row.whatsappNumber || <span className="text-slate-300 font-normal">—</span>}
+            </span>
+          </div>
+          {row.alternativeNumber && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-slate-400 w-[52px] shrink-0">Alt.</span>
+              <span className="font-mono text-xs text-slate-500">{row.alternativeNumber}</span>
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       title: "Registered On",
       dataIndex: "createdAt",
+      width: 120,
       align: "center",
-      width: 140,
       render: (v) =>
         v ? (
-          <div>
-            <div className="text-xs font-bold text-slate-900">
-              {v.slice(0, 10)}
-            </div>
-            <div className="text-[11px] text-slate-500 mt-0.5">
-              {v.slice(11, 16)}
-            </div>
+          <div className="text-center">
+            <div className="text-xs font-semibold text-slate-800">{v.slice(0, 10)}</div>
+            <div className="text-[11px] text-slate-400 mt-0.5">{v.slice(11, 16)}</div>
           </div>
-        ) : (
-          "—"
-        ),
+        ) : <span className="text-slate-300">—</span>,
     },
   ];
 
@@ -292,121 +390,186 @@ export default function OxyGoldUsers() {
 
   return (
     <div className="flex flex-col gap-3.5">
-      {/* ── Header: title+subtitle left | refresh right ── */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div>
-            <div className="text-[15px] font-black text-slate-900 tracking-tight leading-tight">
-              OxyGold — Users
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">
-              All registered OxyGold investment users
-            </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {["total", "today", "yesterday", "week", "month"].map((id) => (
+          <div
+            key={id}
+            onClick={() => handleCardClick(id)}
+            className="cursor-pointer"
+            style={{ outline: activeCard === id ? `2px solid ${CARD_META[id].accent}` : "none", borderRadius: 12 }}
+          >
+            <UserStatCard meta={CARD_META[id]} value={stats[id]} loading={statsLoading} />
           </div>
-        </div>
-        <Button
-          icon={<ReloadOutlined />}
-          onClick={() => fetchData(page)}
-          style={{
-            borderRadius: 8,
-            height: 32,
-            fontWeight: 600,
-            fontSize: 12,
-            border: "1px solid #e2e8f0",
-            flexShrink: 0,
-          }}
-        >
-          Refresh
-        </Button>
+        ))}
       </div>
 
-      {/* ── Stat Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[420px]">
-        <StatCard
-          id="total"
-          value={totalElements}
-          loading={loading && page === 0}
-        />
-        <StatCard
-          id="pages"
-          value={totalPages}
-          loading={loading && page === 0}
-        />
-      </div>
-
-      {/* ── Table Card ── */}
+      {/* Table Card */}
       <div className="bg-white border border-slate-200 shadow-sm min-w-0">
-        {/* Toolbar: label+count left | search right */}
-        <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+        {/* Tabs — match AskOxy slate-50 bg */}
+        <div className="px-3 pt-1 bg-slate-50 border-b border-slate-100">
+          <Tabs
+            activeKey={activeTab}
+            onChange={(k) => { setActiveTab(k); setActiveCard(null); }}
+            size="small"
+            items={[
+              { key: "date", label: "Search by Date" },
+              { key: "mobile", label: "Search by Mobile" },
+            ]}
+            style={{ marginBottom: -1 }}
+          />
+        </div>
+
+        {/* Filter controls */}
+        <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+          {activeTab === "date" ? (
+            <>
+              {/* Active card filter badge */}
+              {activeCard && (
+                <span className="flex items-center gap-1.5 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 px-2.5 py-0.5 rounded-full">
+                  {CARD_META[activeCard].label}
+                  <CloseCircleOutlined
+                    className="cursor-pointer hover:text-red-500"
+                    onClick={handleRemoveFilter}
+                  />
+                </span>
+              )}
+              {!activeCard && (
+                <>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">From</span>
+                    <DatePicker
+                      value={fromDate}
+                      onChange={(v) => { setFromDate(v); fromRef.current = v; }}
+                      format="YYYY-MM-DD"
+                      allowClear={false}
+                      disabledDate={(d) => toDate && d.isAfter(toDate, "day")}
+                      style={{ borderRadius: 7, height: 30, width: 130 }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold text-slate-500">To</span>
+                    <DatePicker
+                      value={toDate}
+                      onChange={(v) => { setToDate(v); toRef.current = v; }}
+                      format="YYYY-MM-DD"
+                      allowClear={false}
+                      disabledDate={(d) => fromDate && d.isBefore(fromDate, "day")}
+                      style={{ borderRadius: 7, height: 30, width: 130 }}
+                    />
+                  </div>
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    onClick={handleDateSearch}
+                    style={{
+                      background: "linear-gradient(135deg,#0891b2,#0e7490)",
+                      border: "none",
+                      borderRadius: 7,
+                      height: 30,
+                      fontWeight: 600,
+                      paddingInline: 12,
+                      fontSize: 11,
+                      boxShadow: "0 2px 8px #0891b230",
+                    }}
+                  >
+                    Get Data
+                  </Button>
+                </>
+              )}
+              {totalElements > 0 && (
+                <span className="text-[11px] text-cyan-600 font-bold bg-cyan-50 px-2.5 py-0.5 rounded-full">
+                  {totalElements.toLocaleString()} records
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <Input
+                prefix={<UserOutlined style={{ color: "#94a3b8" }} />}
+                placeholder="Enter mobile / WhatsApp number..."
+                value={mobileInput}
+                onChange={(e) => {
+                  setMobileInput(e.target.value);
+                  if (!e.target.value) handleMobileSearch("");
+                }}
+                onPressEnter={() => handleMobileSearch(mobileInput)}
+                allowClear
+                style={{ width: 240, borderRadius: 7, height: 30 }}
+              />
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => handleMobileSearch(mobileInput)}
+                style={{
+                  background: "linear-gradient(135deg,#0891b2,#0e7490)",
+                  border: "none",
+                  borderRadius: 7,
+                  height: 30,
+                  fontWeight: 600,
+                  paddingInline: 12,
+                  fontSize: 11,
+                  boxShadow: "0 2px 8px #0891b230",
+                }}
+              >
+                Search
+              </Button>
+              {mobile && (
+                <Button
+                  onClick={() => { setMobileInput(""); handleMobileSearch(""); }}
+                  style={{ borderRadius: 7, height: 30, fontWeight: 600, fontSize: 11 }}
+                >
+                  Clear
+                </Button>
+              )}
+              {totalElements > 0 && mobile && (
+                <span className="text-[11px] text-cyan-600 font-bold bg-cyan-50 px-2.5 py-0.5 rounded-full">
+                  {totalElements.toLocaleString()} records
+                </span>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Toolbar */}
+        <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-xs text-slate-900">
-              User Records
-            </span>
-            <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-              {totalElements.toLocaleString()} total
-            </span>
-            {loading && (
-              <span className="text-[11px] text-amber-700 font-semibold flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-full border-2 border-amber-200 border-t-amber-700 inline-block"
-                  style={{ animation: "spin .7s linear infinite" }}
-                />
-                Loading...
+            <span className="font-bold text-xs text-slate-900">User Records</span>
+            {totalElements > 0 && (
+              <span className="bg-sky-50 text-cyan-600 border border-sky-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                {data.length} / {totalElements.toLocaleString()}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <Input
-              prefix={<UserOutlined style={{ color: "#94a3b8" }} />}
-              placeholder="Search name, phone, email..."
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value);
-                setSearch(e.target.value);
-              }}
-              allowClear
-              style={{ width: 220, borderRadius: 7, height: 30 }}
-            />
-            <Button
-              icon={<SearchOutlined />}
-              type="primary"
-              onClick={() => setSearch(searchInput)}
-              style={{
-                background: "linear-gradient(135deg,#d97706,#b45309)",
-                border: "none",
-                borderRadius: 7,
-                height: 30,
-                fontWeight: 600,
-                fontSize: 11,
-              }}
-            >
-              Search
-            </Button>
-          </div>
+          {loading && (
+            <span className="text-[11px] text-cyan-600 font-semibold flex items-center gap-1.5">
+              <span
+                className="w-2.5 h-2.5 rounded-full border-2 border-sky-200 border-t-cyan-600 inline-block"
+                style={{ animation: "spin .7s linear infinite" }}
+              />
+              Loading...
+            </span>
+          )}
         </div>
 
         <Table
           className="oxyone-square-table"
           rowKey="userId"
           columns={columns}
-          dataSource={filtered}
-          loading={loading}
+          dataSource={data}
+          loading={false}
           pagination={{
             current: page + 1,
             pageSize: PAGE_SIZE,
             total: totalElements,
             showSizeChanger: false,
             showTotal: (t) => `Total ${t.toLocaleString()} users`,
-            onChange: (p) => {
-              setSearch("");
-              setSearchInput("");
-              fetchData(p - 1);
-            },
+            onChange: handlePageChange,
             style: { padding: "8px 12px 10px", margin: 0 },
           }}
           scroll={{ x: true }}
           size="small"
-          style={{ width: "100%" }}
+          tableLayout="fixed"
           components={TABLE_COMPONENTS}
         />
       </div>

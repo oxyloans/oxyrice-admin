@@ -229,6 +229,21 @@ export default function DashboardLayout() {
         }}
       >
         <SidebarContent />
+        {/* Desktop collapse toggle — fixed at bottom of sidebar */}
+        <button
+          className="hidden md:flex items-center justify-center w-full h-11 text-white/50 hover:text-white hover:bg-white/10 transition-all border-none border-t border-white/10 bg-transparent cursor-pointer flex-shrink-0"
+          onClick={() => setSidebarCollapsed((c) => !c)}
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          style={{ borderTop: "1px solid rgba(255,255,255,.08)" }}
+        >
+          {sidebarCollapsed
+            ? <MenuUnfoldOutlined style={{ fontSize: 16 }} />
+            : <>
+                <MenuFoldOutlined style={{ fontSize: 16 }} />
+                <span className="ml-2 text-[12px] font-semibold">Collapse</span>
+              </>}
+        </button>
       </aside>
 
       {/* ── Mobile sidebar drawer ── */}
@@ -250,27 +265,42 @@ export default function DashboardLayout() {
         style={{
           background: "#fff",
           borderBottom: "1px solid #f0f0f0",
-          boxShadow: "0 1px 4px rgba(0,0,0,.1)",
+          boxShadow: "0 1px 6px rgba(0,0,0,.08)",
         }}
       >
         {/* Hamburger — mobile only */}
         <button
-          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-[#1AB394] hover:text-[#1AB394] hover:bg-slate-100 transition-all border-none bg-transparent cursor-pointer flex-shrink-0"
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-[#1AB394] hover:bg-slate-100 transition-all border-none bg-transparent cursor-pointer flex-shrink-0"
           onClick={() => setSidebarOpen(true)}
           aria-label="Open menu"
         >
           <MenuUnfoldOutlined style={{ fontSize: 18 }} />
         </button>
 
-        {/* Desktop sidebar toggle */}
-        <button
-          className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-[#1AB394] hover:text-[#1AB394] hover:bg-slate-100 transition-all border border-slate-200 bg-white cursor-pointer flex-shrink-0"
-          onClick={() => setSidebarCollapsed((c) => !c)}
-          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {sidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </button>
+        {/* Active page title */}
+        {SECTIONS[activeSection] && (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span
+              className="w-9 h-9 rounded-xl grid place-items-center text-base flex-shrink-0"
+              style={{
+                background: SECTIONS[activeSection].color + "18",
+                color: SECTIONS[activeSection].color,
+              }}
+            >
+              {SECTIONS[activeSection].icon}
+            </span>
+            <div className="flex flex-col leading-tight min-w-0">
+              <span className="text-[17px] font-extrabold text-slate-900 truncate tracking-tight">
+                {SECTIONS[activeSection].title}
+              </span>
+              {SECTIONS[activeSection].subtitle && (
+                <span className="text-[11px] text-slate-400 font-medium truncate">
+                  {SECTIONS[activeSection].subtitle}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Title */}
         {/* {activeSection === "dashboard" ? (
