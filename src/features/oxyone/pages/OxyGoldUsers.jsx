@@ -236,10 +236,10 @@ export default function OxyGoldUsers() {
 
       // Default: show all users
       paginate(allRows, 0);
-      setInitialLoad(false);
     } catch {
       /* keep nulls */
     } finally {
+      setInitialLoad(false);
       setStatsLoading(false);
       setLoading(false);
     }
