@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import BASE_URL from "../config/Config";
+import logo from "../../assets/img/OXYONE-mark.png";
 const MailIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
     <path
@@ -75,18 +76,6 @@ const EyeIcon = ({ off }) =>
     </svg>
   );
 
-const CheckIcon = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-    <path
-      d="M20 6 9 17l-5-5"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const ArrowIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
     <path
@@ -105,9 +94,8 @@ function Login() {
   );
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [remember, setRemember] = useState(
-    () => !!localStorage.getItem("admin_rememberedEmail"),
-  );
+  const remember =
+    () => !!localStorage.getItem("admin_rememberedEmail")
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [ripples, setRipples] = useState([]);
@@ -236,7 +224,7 @@ function Login() {
             backgroundColor: "#0b1b38",
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0b1b38]/75 via-[#0f2f4f]/30 to-transparent" />
+          {/* <div className="absolute inset-0 bg-gradient-to-r from-[#0b1b38]/75 via-[#0f2f4f]/30 to-transparent" />
           <div className="relative z-10 flex h-full w-full items-start justify-center p-6">
             <div className="text-center pt-7">
               <div
@@ -255,7 +243,7 @@ function Login() {
                 Portal
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right Panel */}
@@ -284,10 +272,14 @@ function Login() {
             {/* Head */}
             <div className="mb-5">
               <div
-                className="text-xl font-black tracking-[0.18em] mb-2.5"
+                className="text-xl font-black tracking-[0.18em] mb-2.5 top-[-3px] relative"
                 style={{ color: "#0b1b38" }}
               >
-                OXYONE
+                <img
+                  src={logo}
+                  alt="Oxyone Logo"
+                  className="w-38 h-10 inline-block mr-2"
+                />
               </div>
               <h2
                 className="text-xl font-black tracking-tight mb-1"
@@ -361,30 +353,6 @@ function Login() {
                 </div>
               </div>
 
-              {/* Row */}
-              <div className="flex items-center justify-between mt-1 mb-4">
-                <label className="flex items-center gap-2 text-xs font-medium text-slate-500 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                  />
-                  <span
-                    className={`w-4 h-4 rounded-[5px] flex-shrink-0 border-[1.5px] grid place-items-center transition-all ${remember ? "bg-[#0a6fb4] border-[#0a6fb4] text-white" : "border-slate-300 text-transparent"}`}
-                  >
-                    <CheckIcon />
-                  </span>
-                  Remember me
-                </label>
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-[#0a6fb4] bg-transparent border-none cursor-pointer hover:underline hover:opacity-70 transition-opacity"
-                >
-                  Forgot password?
-                </button>
-              </div>
-
               {/* Error */}
               {error && (
                 <div
@@ -404,7 +372,7 @@ function Login() {
                 ref={btnRef}
                 type="submit"
                 disabled={loading}
-                className="w-full border-none rounded-[9px] py-2.5 text-white text-sm font-bold cursor-pointer relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full border-none rounded-[9px] py-2.5 mt-4 text-white text-sm font-bold cursor-pointer relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
                 style={{
                   background:
                     "linear-gradient(135deg, #0b1b38 0%, #0a6fb4 48%, #1a9ad6 100%)",
@@ -447,16 +415,6 @@ function Login() {
               </button>
             </form>
 
-            <div className="text-center mt-4 text-xs text-slate-400">
-              Need access?{" "}
-              <button
-                type="button"
-                className="font-semibold bg-transparent border-none cursor-pointer hover:underline"
-                style={{ color: "#0a6fb4" }}
-              >
-                Contact your administrator
-              </button>
-            </div>
           </div>
         </div>
       </div>

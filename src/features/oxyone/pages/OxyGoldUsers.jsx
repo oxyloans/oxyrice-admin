@@ -10,6 +10,7 @@ import {
   BarChartOutlined,
   LineChartOutlined,
   CloseCircleOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import UserStatCard from "../components/UserStatCard";
@@ -328,10 +329,14 @@ export default function OxyGoldUsers() {
         return (
           <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 rounded-lg flex-shrink-0 grid place-items-center text-white font-black text-xs"
+              className="w-8 h-8 rounded-lg flex-shrink-0 grid place-items-center text-white"
               style={{ background: "linear-gradient(135deg,#0891b2,#06b6d4)" }}
             >
-              {(name || row.phoneNumber || "?")[0]?.toUpperCase()}
+              {name ? (
+                <span className="font-black text-xs">{name[0].toUpperCase()}</span>
+              ) : (
+                <UserOutlined style={{ fontSize: 13 }} />
+              )}
             </div>
             <div className="min-w-0">
               <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[160px]">
@@ -348,28 +353,30 @@ export default function OxyGoldUsers() {
     {
       title: "Contact",
       width: 180,
-      render: (_, row) => (
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-400 w-[52px] shrink-0">Mobile</span>
-            <span className="font-mono text-xs font-semibold text-slate-800">
-              {row.phoneNumber || <span className="text-slate-300 font-normal">—</span>}
-            </span>
+      render: (_, row) => {
+        const sameAsMobile = row.whatsappNumber && row.whatsappNumber === row.phoneNumber;
+        return (
+          <div className="flex flex-col gap-1">
+            {row.phoneNumber ? (
+              <span className="inline-flex items-center gap-1 font-mono text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md w-fit">
+                {row.phoneNumber}
+              </span>
+            ) : (
+              <span className="text-slate-300 text-xs">—</span>
+            )}
+            {row.whatsappNumber && !sameAsMobile && (
+              <span className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md w-fit">
+                WA {row.whatsappNumber}
+              </span>
+            )}
+            {row.alternativeNumber && (
+              <span className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md w-fit">
+                Alt {row.alternativeNumber}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-slate-400 w-[52px] shrink-0">WhatsApp</span>
-            <span className="font-mono text-xs font-semibold text-emerald-600">
-              {row.whatsappNumber || <span className="text-slate-300 font-normal">—</span>}
-            </span>
-          </div>
-          {row.alternativeNumber && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-slate-400 w-[52px] shrink-0">Alt.</span>
-              <span className="font-mono text-xs text-slate-500">{row.alternativeNumber}</span>
-            </div>
-          )}
-        </div>
-      ),
+        );
+      },
     },
     {
       title: "Registered On",
@@ -379,8 +386,11 @@ export default function OxyGoldUsers() {
       render: (v) =>
         v ? (
           <div className="text-center">
-            <div className="text-xs font-semibold text-slate-800">{v.slice(0, 10)}</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">{v.slice(11, 16)}</div>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md">
+              <CalendarOutlined style={{ fontSize: 10, color: "#0891b2" }} />
+              {v.slice(0, 10)}
+            </span>
+            <div className="text-[11px] text-slate-400 mt-1">{v.slice(11, 16)}</div>
           </div>
         ) : <span className="text-slate-300">—</span>,
     },

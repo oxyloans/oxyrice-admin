@@ -28,14 +28,13 @@ export const NAV_SECTIONS = [
       { icon: "askoxy", label: "AskOxy.AI", key: "askoxy" },
       { icon: "oxybricks", label: "OxyBricks", key: "oxybricks" },
       { icon: "oxygold", label: "OxyGold", key: "oxygold" },
-      { icon: "partner", label: "Partner", key: "partner" },
+      { icon: "partnerlender", label: "Partner", key: "partnerlender" },
       { icon: "interested", label: "Interested", key: "interested" },
     ],
   },
   {
     label: "System",
     items: [
-      { icon: "settings", label: "Settings", key: "settings" },
       { icon: "logout", label: "Logout", key: "logout", danger: true },
     ],
   },
@@ -95,21 +94,14 @@ export const SECTIONS = {
     color: "#d97706",
     icon: <TrophyOutlined />,
   },
-  partner: {
+  partnerlender: {
     title: "Partner",
     subtitle: "Registered partner accounts",
     color: "#059669",
     icon: <TeamOutlined />,
     endpoint: "/user-service/partners",
     columns: ["Name", "Email", "Mobile", "Type", "Status", "Joined"],
-    rowKeys: [
-      "name",
-      "email",
-      "mobile",
-      "partnerType",
-      "status",
-      "createdDate",
-    ],
+    rowKeys: ["name", "email", "mobile", "partnerType", "status", "createdDate"],
   },
   interested: {
     title: "Interested",

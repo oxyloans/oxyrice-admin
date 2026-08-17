@@ -474,10 +474,6 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/PartnerUsers")),
   },
   {
-    path: "partnerlender",
-    element: lazy(() => import("../../features/oxyone/pages/PartnerLenderUsers")),
-  },
-  {
     path: "interested",
     element: lazy(() => import("../../features/oxyone/pages/InterestedPage")),
   },
