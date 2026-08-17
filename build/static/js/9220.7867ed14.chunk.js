@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[9220],{9220(e,a,t){t.r(a),t.d(a,{default:()=>p});var l=t(56149),n=t(70579);function p(){return(0,n.jsx)(l.A,{projectType:"ASKOXY"})}}}]);
+//# sourceMappingURL=9220.7867ed14.chunk.js.map

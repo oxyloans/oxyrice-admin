@@ -462,8 +462,16 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/AskOxyUsers")),
   },
   {
+    path: "queriesAskoxy",
+    element: lazy(() => import("../../features/oxyone/pages/QueriesUsers")),
+  },
+  {
     path: "oxybricks",
     element: lazy(() => import("../../features/oxyone/pages/OxyBricksUsers")),
+  },
+  {
+    path: "queriesOxybricks",
+    element: lazy(() => import("../../features/oxyone/pages/QueriesOxyBricks")),
   },
   {
     path: "oxygold",

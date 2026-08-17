@@ -7,6 +7,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  RightOutlined,
   RobotOutlined,
   SettingOutlined,
   StarOutlined,
@@ -109,23 +110,23 @@ export default function DashboardLayout() {
       <div className="flex flex-col h-full pt-4">
         {/* Logo */}
         <div
-          className={`flex items-center gap-3 px-4 pb-4 mb-1 flex-shrink-0 ${collapsed ? "justify-center px-3" : ""}`}
+          className={`flex items-center gap-3 px-4 pb-4 mb-2 flex-shrink-0 border-b border-white/[0.08] ${collapsed ? "justify-center px-3" : ""}`}
         >
           <div
-            className="w-8 h-8 rounded-xl grid place-items-center flex-shrink-0"
+            className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0"
             style={{
-              background: "#1AB394",
-              boxShadow: "0 3px 10px rgba(26,179,148,.3)",
+              background: "linear-gradient(135deg, #1AB394, #0f8a72)",
+              boxShadow: "0 4px 14px rgba(26,179,148,.4)",
             }}
           >
             <OxyMark />
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-none">
-              <span className="text-[13px] font-black text-white tracking-wide">
+              <span className="text-[14.5px] font-black text-white tracking-wide">
                 OXYONE
               </span>
-              <span className="text-[9px] font-semibold tracking-widest uppercase text-white/40 mt-0.5">
+              <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 mt-1">
                 Admin Panel
               </span>
             </div>
@@ -149,13 +150,15 @@ export default function DashboardLayout() {
         </div>
 
         {/* Nav — scrollable middle */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 flex flex-col gap-0.5">
+        <nav className="oxyone-sidebar-nav flex-1 overflow-y-auto overflow-x-hidden py-1 flex flex-col">
           {NAV_SECTIONS.map((sec) => (
-            <div key={sec.label} className="mb-1">
+            <div key={sec.label}>
               {/* Section label — hidden when collapsed */}
               {!collapsed && (
-                <div className="text-[9px] font-black tracking-[1.6px] uppercase text-white/30 px-3 pt-3 pb-1.5 select-none">
-                  {sec.label}
+                <div className="px-4 pt-3.5 pb-1 select-none">
+                  <span className="text-[10px] font-bold tracking-[1.2px] uppercase text-white/35">
+                    {sec.label}
+                  </span>
                 </div>
               )}
               {collapsed && (
@@ -168,34 +171,50 @@ export default function DashboardLayout() {
                     key={n.key}
                     onClick={() => handleNav(n.key)}
                     title={collapsed ? n.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-all duration-150 border-none text-left mb-0.5 ${
+                    className={`w-full flex items-center gap-2.5 px-4 py-1.5 cursor-pointer transition-all duration-150 border-none text-left ${
                       collapsed ? "justify-center px-0" : ""
                     }
                       ${
                         isActive
                           ? "text-white font-bold"
                           : n.danger
-                            ? "text-white/60 hover:text-white font-medium"
-                            : "text-white/70 hover:text-white font-medium"
+                            ? "text-white/70 hover:text-white font-medium"
+                            : "text-white/80 hover:text-white font-medium"
                       }`}
-                    style={isActive ? { background: "#2d3748" } : {}}
+                    style={{
+                      background: isActive ? "#2d3748" : "transparent",
+                    }}
                     onMouseEnter={(e) => {
                       if (!isActive)
                         e.currentTarget.style.background = n.danger
-                          ? "rgba(239,68,68,.12)"
-                          : "#2d3748";
+                          ? "rgba(239,68,68,.1)"
+                          : "rgba(255,255,255,.05)";
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) e.currentTarget.style.background = "";
                     }}
                   >
-                    <span className="w-5 h-5 grid place-items-center flex-shrink-0 text-[17px] text-white">
+                    <span
+                      className="grid place-items-center flex-shrink-0 text-[15px]"
+                      style={{
+                        color: n.danger ? "#f87171" : "rgba(255,255,255,.9)",
+                      }}
+                    >
                       {SIDEBAR_ICONS[n.icon]}
                     </span>
                     {!collapsed && (
-                      <span className="text-[12.5px] text-white truncate">
+                      <span className="text-[12.5px] truncate flex-1">
                         {n.label}
                       </span>
+                    )}
+                    {!collapsed && (
+                      <RightOutlined
+                        style={{
+                          fontSize: 9,
+                          color: "rgba(255,255,255,.25)",
+                          flexShrink: 0,
+                        }}
+                      />
                     )}
                   </button>
                 );
@@ -222,7 +241,7 @@ export default function DashboardLayout() {
 
       {/* ── Desktop sidebar — fixed, full height ── */}
       <aside
-        className={`hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-[100] transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-16" : "w-60"}`}
+        className={`hidden md:flex flex-col fixed top-0 left-0 bottom-0 z-[100] transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-16" : "w-64"}`}
         style={{
           background: "#1A202C",
           borderRight: "1px solid #1A202C",
@@ -232,17 +251,19 @@ export default function DashboardLayout() {
         <SidebarContent />
         {/* Desktop collapse toggle — fixed at bottom of sidebar */}
         <button
-          className="hidden md:flex items-center justify-center w-full h-11 text-white/50 hover:text-white hover:bg-white/10 transition-all border-none border-t border-white/10 bg-transparent cursor-pointer flex-shrink-0"
+          className="hidden md:flex items-center justify-center w-full h-12 text-white/60 hover:text-white transition-all border-none bg-transparent cursor-pointer flex-shrink-0 group"
           onClick={() => setSidebarCollapsed((c) => !c)}
           aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           style={{ borderTop: "1px solid rgba(255,255,255,.08)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,.06)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
         >
           {sidebarCollapsed
-            ? <MenuUnfoldOutlined style={{ fontSize: 16 }} />
+            ? <MenuUnfoldOutlined style={{ fontSize: 15 }} />
             : <>
-                <MenuFoldOutlined style={{ fontSize: 16 }} />
-                <span className="ml-2 text-[12px] font-semibold">Collapse</span>
+                <MenuFoldOutlined style={{ fontSize: 15 }} />
+                <span className="ml-2 text-[12px] font-bold tracking-wide">Collapse</span>
               </>}
         </button>
       </aside>
@@ -262,7 +283,7 @@ export default function DashboardLayout() {
 
       {/* ── Fixed header ── */}
       <header
-        className={`fixed top-0 left-0 right-0 h-16 flex items-center px-4 gap-3 z-50 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "md:left-16" : "md:left-60"}`}
+        className={`fixed top-0 left-0 right-0 h-16 flex items-center px-4 gap-3 z-50 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "md:left-16" : "md:left-64"}`}
         style={{
           background: "#fff",
           borderBottom: "1px solid #f0f0f0",
@@ -422,7 +443,7 @@ export default function DashboardLayout() {
 
       {/* ── Page body — offset sidebar + header ── */}
       <main
-        className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? "md:ml-16" : "md:ml-60"}`}
+        className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? "md:ml-16" : "md:ml-64"}`}
       >
         <div className="pt-24 px-4 pb-4 flex flex-col gap-3.5">
           <Outlet />

@@ -5,3 +5,18 @@
 .oxyone-square-table .ant-table-thead > tr:first-child > th:last-child {
   border-radius: 0 !important;
 }
+
+/* Sidebar nav scrollbar */
+.oxyone-sidebar-nav::-webkit-scrollbar {
+  width: 5px;
+}
+.oxyone-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.oxyone-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+.oxyone-sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}

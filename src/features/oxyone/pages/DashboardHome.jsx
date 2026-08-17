@@ -46,7 +46,7 @@ function ProductCard({ item, i, navigate, count, loading, label }) {
           {cfg.icon}
         </div>
         <div className="min-w-0">
-          <div className="text-xs font-medium text-slate-500 truncate">{cfg.title}</div>
+          <div className="text-sm font-medium text-slate-800 truncate">{cfg.title}</div>
           {label && <div className="text-[10px] font-bold mt-0.5" style={{ color }}>{label}</div>}
           {loading ? (
             <div className="h-7 w-16 bg-white/60 animate-pulse mt-1" />

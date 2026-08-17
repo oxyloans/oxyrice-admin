@@ -17,19 +17,25 @@ import {
 /* ── Sidebar nav ─────────────────────────────────────────── */
 export const NAV_SECTIONS = [
   {
-    label: "Overview",
-    items: [{ icon: "dashboard", label: "Dashboard", key: "dashboard" }],
-  },
-  {
-    label: "Products",
+    label: "USERS REGISTRATIONS",
     items: [
+      { icon: "dashboard", label: "Dashboard", key: "dashboard" },
       { icon: "lender", label: "OxyLoans Lender", key: "lender" },
       { icon: "borrower", label: "OxyLoans Borrower", key: "borrower" },
       { icon: "askoxy", label: "AskOxy.AI", key: "askoxy" },
       { icon: "oxybricks", label: "OxyBricks", key: "oxybricks" },
       { icon: "oxygold", label: "OxyGold", key: "oxygold" },
-      { icon: "partnerlender", label: "Partner", key: "partnerlender" },
+      { icon: "partnerlender", label: "Oxyloans Partner", key: "partnerlender" },
       { icon: "interested", label: "Interested", key: "interested" },
+    ],
+  },
+  {
+    label: "Queries",
+    items: [
+      { icon: "dashboard", label: "Dashboard", key: "queriesDashboard" },
+      { icon: "askoxy", label: "AskOxy.AI", key: "queriesAskoxy" },
+      { icon: "oxybricks", label: "OxyBricks", key: "queriesOxybricks" },
+      { icon: "lender", label: "OxyLoans Lender", key: "queriesLender" },
     ],
   },
   {
@@ -114,6 +120,30 @@ export const SECTIONS = {
     subtitle: "Admin panel settings",
     color: "#475569",
     icon: <SettingOutlined />,
+  },
+  queriesDashboard: {
+    title: "Queries Dashboard",
+    subtitle: "Overview of all queries",
+    color: "#2563eb",
+    icon: <DashboardOutlined />,
+  },
+  queriesAskoxy: {
+    title: "AskOxy.AI Queries",
+    subtitle: "Queries raised via AskOxy.AI",
+    color: "#0891b2",
+    icon: <RobotOutlined />,
+  },
+  queriesOxybricks: {
+    title: "OxyBricks Queries",
+    subtitle: "Queries raised via OxyBricks",
+    color: "#b45309",
+    icon: <BuildOutlined />,
+  },
+  queriesLender: {
+    title: "OxyLoans Lender Queries",
+    subtitle: "Queries raised by lenders",
+    color: "#2563eb",
+    icon: <BankOutlined />,
   },
 };
 
