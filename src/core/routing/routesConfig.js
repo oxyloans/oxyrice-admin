@@ -462,6 +462,10 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/AskOxyUsers")),
   },
   {
+    path: "queriesDashboard",
+    element: lazy(() => import("../../features/oxyone/pages/QueriesDashboard")),
+  },
+  {
     path: "queriesAskoxy",
     element: lazy(() => import("../../features/oxyone/pages/QueriesUsers")),
   },
@@ -472,6 +476,14 @@ const oxyOneRoutes = [
   {
     path: "queriesOxybricks",
     element: lazy(() => import("../../features/oxyone/pages/QueriesOxyBricks")),
+  },
+  {
+    path: "queriesLender",
+    element: lazy(() => import("../../features/oxyone/pages/QueriesLender")),
+  },
+  {
+    path: "queriesBorrower",
+    element: lazy(() => import("../../features/oxyone/pages/QueriesBorrower")),
   },
   {
     path: "oxygold",

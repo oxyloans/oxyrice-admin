@@ -36,6 +36,7 @@ export const NAV_SECTIONS = [
       { icon: "askoxy", label: "AskOxy.AI", key: "queriesAskoxy" },
       { icon: "oxybricks", label: "OxyBricks", key: "queriesOxybricks" },
       { icon: "lender", label: "OxyLoans Lender", key: "queriesLender" },
+      { icon: "borrower", label: "OxyLoans Borrower", key: "queriesBorrower" },
     ],
   },
   {
@@ -145,8 +146,13 @@ export const SECTIONS = {
     color: "#2563eb",
     icon: <BankOutlined />,
   },
+  queriesBorrower: {
+    title: "OxyLoans Borrower Queries",
+    subtitle: "Queries raised by borrowers",
+    color: "#7c3aed",
+    icon: <WalletOutlined />,
+  },
 };
-
 /* ── Dashboard Overview stats ────────────────────────────────
    `value` is a placeholder until these are wired to real counts
    (e.g. per-section record totals from the API).            ── */

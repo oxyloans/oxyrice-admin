@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[4104],{74104(e,t,a){a.r(t),a.d(t,{default:()=>n});var i=a(56149),s=a(70579);function n(){return(0,s.jsx)(i.A,{projectType:"OXYBRICKS",endpoint:"https://meta.oxyloans.com/api/write-to-us/student/getQueries1",apiKey:"oxybricks@123456"})}}}]);
+//# sourceMappingURL=4104.d973da07.chunk.js.map

@@ -1,2 +1,0 @@
-"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[4104],{74104(e,a,t){t.r(a),t.d(a,{default:()=>p});var l=t(56149),n=t(70579);function p(){return(0,n.jsx)(l.A,{projectType:"OXYBRICKS"})}}}]);
-//# sourceMappingURL=4104.4d34f493.chunk.js.map

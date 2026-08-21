@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import axios from "axios";
 import adminApi from "../../../core/config/axiosInstance";
 import { Table, Input, Tag, Skeleton, Tabs, DatePicker, Button, Empty } from "antd";
 import {
@@ -176,14 +177,49 @@ const TABLE_COMPONENTS = {
   },
 };
 
+// Some (status, primaryType) combos — e.g. Lender "Completed" — genuinely
+// return a multi-MB payload that takes ~18-22s server-side regardless of page
+// size (confirmed against the live API). Keep this comfortably above that so
+// a real-but-slow response isn't mistaken for a hang and dropped.
+const REQUEST_TIMEOUT_MS = 45_000;
 const PAGE_SIZE = 20;
+// This backend's per-call latency is dominated by server-side work, not
+// payload size or round-trip count — a 100-row page and a 2000-row page
+// take about the same ~18-19s for a large status. So fetch in as few
+// requests as possible: one large page covers realistic volumes, and the
+// loop only kicks in as a safety net if a status ever exceeds that.
+const FETCH_PAGE_SIZE = 5000;
+const MAX_FETCH_PAGES = 5;
+
+const defaultBuildRequestBody = (projectType) => (status) => ({
+  projectType,
+  queryStatus: status,
+});
+const defaultExtractRows = (data) => (Array.isArray(data) ? data : []);
+const defaultNormalizeRow = (row) => row;
 
 // Generic "Pending / Completed / Cancelled" query dashboard for a given
 // projectType, backed by POST /user-service/write/getAllQueries. Mirrors the
 // look/behaviour of AskOxyUsers.jsx / OxyBricksUsers.jsx (Registered tab):
 // AntD tabs up top, 5 always-visible stat cards, a date-range + search
 // filter row, then the table — nothing gated behind an extra click.
-export default function QueriesStatusPage({ projectType }) {
+//
+// Some backends (e.g. the OxyLoans Lender queries API) use a differently
+// shaped request/response and paginate server-side. `paginated` + the
+// `buildRequestBody` / `extractRows` / `normalizeRow` overrides let a caller
+// adapt those without forking this component — see QueriesLender.jsx.
+export default function QueriesStatusPage({
+  projectType,
+  endpoint = "/user-service/write/getAllQueries",
+  apiKey,
+  paginated = false,
+  buildRequestBody,
+  extractRows,
+  normalizeRow,
+}) {
+  const buildBody = buildRequestBody || defaultBuildRequestBody(projectType);
+  const getRows = extractRows || defaultExtractRows;
+  const mapRow = normalizeRow || defaultNormalizeRow;
   const cachePrefix = `oxyoneQueries${projectType}Cache:`;
   const today = dayjs();
 
@@ -219,12 +255,32 @@ export default function QueriesStatusPage({ projectType }) {
       const requestId = (requestIdRef.current[status] ?? 0) + 1;
       requestIdRef.current[status] = requestId;
       try {
-        const res = await adminApi.post("/user-service/write/getAllQueries", {
-          projectType,
-          queryStatus: status,
-        });
+        const headers = apiKey
+          ? { "X-Api-Key": apiKey, "Content-Type": "application/json" }
+          : undefined;
+        // This backend occasionally hangs on a given status with no response
+        // at all. Without a timeout, that single call leaves this status
+        // stuck "loading" forever — cap it so a hang degrades to "no data
+        // yet, try again" instead of spinning indefinitely.
+        const post = (body) =>
+          apiKey
+            ? axios.post(endpoint, body, { headers, timeout: REQUEST_TIMEOUT_MS })
+            : adminApi.post(endpoint, body, { timeout: REQUEST_TIMEOUT_MS });
+
+        let rows = [];
+        if (paginated) {
+          for (let pageNo = 1; pageNo <= MAX_FETCH_PAGES; pageNo++) {
+            const res = await post(buildBody(status, pageNo, FETCH_PAGE_SIZE));
+            const pageRows = getRows(res.data);
+            rows = rows.concat(pageRows.map(mapRow));
+            if (pageRows.length < FETCH_PAGE_SIZE) break;
+          }
+        } else {
+          const res = await post(buildBody(status));
+          rows = getRows(res.data).map(mapRow);
+        }
+
         if (requestIdRef.current[status] !== requestId) return;
-        const rows = Array.isArray(res.data) ? res.data : [];
         writeCache(cachePrefix, status, rows);
         setRowsByStatus((prev) => ({ ...prev, [status]: rows }));
       } catch {
@@ -237,7 +293,7 @@ export default function QueriesStatusPage({ projectType }) {
         }
       }
     },
-    [projectType, cachePrefix],
+    [cachePrefix, endpoint, apiKey, paginated, buildBody, getRows, mapRow],
   );
 
   useEffect(() => {
@@ -245,7 +301,7 @@ export default function QueriesStatusPage({ projectType }) {
     fetchStatus("COMPLETED");
     fetchStatus("CANCELLED");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectType]);
+  }, [projectType, endpoint, apiKey]);
 
   const activeRows = useMemo(
     () => rowsByStatus[activeStatus] ?? [],
@@ -602,7 +658,15 @@ export default function QueriesStatusPage({ projectType }) {
             )}
           </div>
 
-          {displayed.length === 0 ? (
+          {activeLoading ? (
+            <div className="py-12 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs">
+              <span
+                className="w-6 h-6 rounded-full border-[3px] border-sky-200 border-t-cyan-700 inline-block"
+                style={{ animation: "spin .7s linear infinite" }}
+              />
+              Loading {STATUS_LABEL[activeStatus].toLowerCase()} queries...
+            </div>
+          ) : displayed.length === 0 ? (
             <div className="py-12">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}

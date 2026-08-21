@@ -16,6 +16,8 @@ const OXYLOANS_LENDER_URL =
   "https://fintech.oxyloans.com/oxyloans/v1/user/admin/lenderContactList";
 const OXYLOANS_BORROWER_URL =
   "https://fintech.oxyloans.com/oxyloans/v1/user/admin/borrowerContactList";
+const OXYLOANS_PARTNER_URL =
+  "https://fintech.oxyloans.com/oxyloans/v1/user/admin/partnerContactList";
 
 const fetchOxyLoansCount = async (url) => {
   const res = await axios.post(
@@ -117,17 +119,8 @@ export const PRODUCT_COUNTS = [
   },
   {
     key: "partnerlender",
-    fetchCount: async () => {
-      const res = await adminApi.get("/user-service/partners", { params: { page: 0, size: 1, partnerType: "LENDER" } });
-      const d = res.data ?? {};
-      return toCount(d.totalElements ?? d.totalCount ?? d.count);
-    },
-    fetchTodayCount: async () => {
-      const res = await adminApi.get("/user-service/partners", { params: { page: 0, size: 200, partnerType: "LENDER" } });
-      const rows = Array.isArray(res.data?.content) ? res.data.content : [];
-      const t = todayStr();
-      return rows.filter((r) => (r.createdAt || r.registeredDate || r.created_at || "").slice(0, 10) === t).length;
-    },
+    fetchCount: () => fetchOxyLoansCount(OXYLOANS_PARTNER_URL),
+    fetchTodayCount: () => fetchOxyLoansTodayCount(OXYLOANS_PARTNER_URL),
   },
   {
     key: "interested",
