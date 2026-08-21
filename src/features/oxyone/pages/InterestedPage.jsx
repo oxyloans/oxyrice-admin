@@ -200,16 +200,18 @@ export default function InterestedPage() {
     return true;
   });
 
-  const filtered = dateFiltered.filter((r) => {
-    const q = search.toLowerCase();
-    return (
-      (r.mobileNumber || "").includes(q) ||
-      (r.userId || "").toLowerCase().includes(q) ||
-      (r.projectType || "").toLowerCase().includes(q) ||
-      (r.askOxyOfers || "").toLowerCase().includes(q) ||
-      (r.journeyName || "").toLowerCase().includes(q)
-    );
-  });
+  const filtered = dateFiltered
+    .filter((r) => {
+      const q = search.toLowerCase();
+      return (
+        (r.mobileNumber || "").includes(q) ||
+        (r.userId || "").toLowerCase().includes(q) ||
+        (r.projectType || "").toLowerCase().includes(q) ||
+        (r.askOxyOfers || "").toLowerCase().includes(q) ||
+        (r.journeyName || "").toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
 
   /* ── Fetch the latest comment for each row on the visible page only ── */
   const visibleIdsKey = filtered

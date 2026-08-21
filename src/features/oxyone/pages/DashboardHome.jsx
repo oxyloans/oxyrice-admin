@@ -203,7 +203,7 @@ export default function DashboardHome() {
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm min-w-0">
         <div className="mb-4">
           <div className="text-sm font-bold text-slate-900">Product User Analytics</div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Registered users across the OXYONE ecosystem</div>
+          <div className="text-[11px] text-slate-400 mt-0.5">Registered users across the OXYONE</div>
         </div>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">

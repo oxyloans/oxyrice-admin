@@ -88,7 +88,9 @@ export default function DashboardLayout() {
 
   const searchableItems = useMemo(
     () =>
-      NAV_SECTIONS.flatMap((s) => s.items).filter((i) => i.key !== "logout"),
+      NAV_SECTIONS.flatMap((s) =>
+        s.items.map((i) => ({ ...i, sectionLabel: s.label })),
+      ).filter((i) => i.key !== "logout"),
     [],
   );
   const searchResults = useMemo(() => {
@@ -402,6 +404,23 @@ export default function DashboardLayout() {
               className="bg-transparent border-none outline-none text-slate-700 text-xs w-40 placeholder:text-slate-400"
               style={{ fontFamily: "inherit" }}
             />
+            {query && (
+              <svg
+                onClick={() => setQuery("")}
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-slate-400 hover:text-slate-600 flex-shrink-0 cursor-pointer"
+              >
+                <path
+                  d="M18 6 6 18M6 6l12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
           </div>
           {searchFocused && query.trim() && (
             <div
@@ -432,7 +451,12 @@ export default function DashboardLayout() {
                     >
                       {SECTIONS[r.key]?.icon}
                     </span>
-                    {r.label}
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate">{r.label}</span>
+                      <span className="text-[10px] text-slate-400 font-medium truncate">
+                        {r.sectionLabel}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}

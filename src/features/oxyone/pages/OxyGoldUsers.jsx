@@ -215,6 +215,9 @@ export default function OxyGoldUsers() {
         allRows = allRows.concat(rest.flat());
       }
 
+      allRows.sort(
+        (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf(),
+      );
       setAllUsers(allRows);
 
       const todayStr = dayjs().format("YYYY-MM-DD");

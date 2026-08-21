@@ -280,6 +280,12 @@ export default function QueriesStatusPage({
           rows = getRows(res.data).map(mapRow);
         }
 
+        rows.sort(
+          (a, b) =>
+            (parseServerDate(b.createdAt)?.getTime() ?? 0) -
+            (parseServerDate(a.createdAt)?.getTime() ?? 0),
+        );
+
         if (requestIdRef.current[status] !== requestId) return;
         writeCache(cachePrefix, status, rows);
         setRowsByStatus((prev) => ({ ...prev, [status]: rows }));

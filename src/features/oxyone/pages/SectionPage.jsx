@@ -136,6 +136,11 @@ function SectionTable({ cfg }) {
             : await adminApi.get(tabCfg.endpoint);
         if (requestIdRef.current !== requestId) return; // a newer tab/request superseded this one
         const rows = Array.isArray(res.data) ? res.data : [];
+        rows.sort(
+          (a, b) =>
+            (parseServerDate(b.createdAt)?.getTime() ?? 0) -
+            (parseServerDate(a.createdAt)?.getTime() ?? 0),
+        );
         cacheRef.current[cacheKey] = rows;
         writeSessionCache(storageKey, rows);
         setData(rows);

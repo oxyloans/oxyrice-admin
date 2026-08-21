@@ -97,6 +97,7 @@ async function fetchMobilePages(mob, onChunk, signal) {
 
   const raw = res.data?.activeUsersResponse ?? res.data?.data ?? [];
   const rows = Array.isArray(raw) ? raw.map(normalizeUserRow) : [];
+  rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   onChunk(rows, rows.length);
   return rows;
 }
@@ -141,7 +142,10 @@ export default function AskOxyUsers() {
       const res = await adminApi.get(
         `/user-service/date-rangeuserdetails?startDate=${f}&endDate=${t}&page=${pg}&size=${PAGE_SIZE}`
       );
-      setData(res.data?.content ?? []);
+      const rows = res.data?.content ?? [];
+      const rowDate = (r) => r.created_at || r.createdAt || r.userRegisterCreatedDate || 0;
+      rows.sort((a, b) => new Date(rowDate(b)) - new Date(rowDate(a)));
+      setData(rows);
       setTotal(res.data?.totalElements ?? 0);
       setPage(pg);
     } catch {
