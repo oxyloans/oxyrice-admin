@@ -183,6 +183,9 @@ const PincodesData = lazy(
 const WhatsAppCampaign = lazy(
   () => import("../../features/admin/pages/WhatsAppCampaign"),
 );
+const CustomerCampaigns = lazy(
+  () => import("../../features/admin/pages/AudienceCampaigns"),
+);
 const WhatsAppCampaignRecipients = lazy(
   () => import("../../features/admin/pages/WhatsAppCampaignRecipients"),
 );
@@ -327,6 +330,7 @@ const adminRoutes = [
   { path: "categories", element: Categories },
   { path: "pincodesdata", element: PincodesData },
   { path: "whatsapp-campaign", element: WhatsAppCampaign },
+  { path: "campaign-customers", element: CustomerCampaigns },
   {
     path: "whatsapp-campaign-recipients/:campaignId",
     element: WhatsAppCampaignRecipients,

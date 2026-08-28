@@ -132,6 +132,11 @@ const AdminPanelLayout = ({ children }) => {
         icon: <FaBoxes />,
         dropdownItems: [
           {
+            key: "campaignAudiences",
+            label: "Customer Campaigns",
+            link: "/admin/campaign-customers",
+          },
+          {
             key: "campaignUpload",
             label: "Campaign Upload",
             link: "/admin/campaign-inventory",

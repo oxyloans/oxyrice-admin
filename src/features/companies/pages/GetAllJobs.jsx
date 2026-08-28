@@ -217,56 +217,45 @@ const GetAllJobs = () => {
   const isSearchActive = searchFiltered || dateFiltered;
 
   const columns = [
-    // {
-    //   title: "S.NO",
-    //   key: "serial",
-    //   align: "center",
-     
-    //   render: (_text, _record, index) =>
-    //     isSearchActive
-    //       ? (clientPage - 1) * pageSize + index + 1
-    //       : page * pageSize + index + 1,
-    // },
     {
-      title: "Name",
-      dataIndex: "userName",
-      key: "userName",
+      title: "S.NO",
+      key: "serial",
       align: "center",
      
-      render: (v) => v ,
+      render: (_text, _record, index) =>
+        isSearchActive
+          ? (clientPage - 1) * pageSize + index + 1
+          : page * pageSize + index + 1,
+    },
+    {
+      title: "Applicant",
+      key: "applicant",
+     align: "left",
+      render: (_, record) => (
+        <Space direction="vertical" size={4} >
+          <Text strong style={{ fontSize: 14 }}>{record.userName || "—"}</Text>
+          <Text style={{ fontSize: 14 }}>{record.mobileNumber || "—"}</Text>
+          <Text style={{ fontSize: 14 }}>{record.noticePeriod || "—"}</Text>
+        </Space>
+      ),
     },
     {
       title: "Job Title",
       dataIndex: "jobTitle",
       key: "jobTitle",
       align: "center",
-      
-    },
-    {
-      title: "Mobile Number",
-      dataIndex: "mobileNumber",
-      key: "mobileNumber",
-      align: "center",
-      render: (v) => v ,
     },
     {
       title: "Cover Letter",
       dataIndex: "coverLetter",
       key: "coverLetter",
       align: "center",
-      responsive: ["md"],
+      
       render: (text) => (
         <Button size="small" icon={<FileTextOutlined />} onClick={() => openCoverLetter(text)}>
           View
         </Button>
       ),
-    },
-    {
-      title: "Notice Period",
-      dataIndex: "noticePeriod",
-      key: "noticePeriod",
-      align: "center",
-      render: (v) => v ,
     },
     {
       title: "Resume",
@@ -277,7 +266,7 @@ const GetAllJobs = () => {
         url ? (
           <Button
             size="small"
-            style={{ color: "#1677ff", borderColor: "#1677ff" }}
+            style={{ color: "#008cba", borderColor: "#008cba" }}
             onClick={() => { setResumeUrl(""); setTimeout(() => { setResumeUrl(url); setResumeModal(true); }, 0); }}
           >
             View Resume
@@ -296,6 +285,22 @@ const GetAllJobs = () => {
       defaultSortOrder: "descend",
     },
     {
+      title: "Contact Details",
+      key: "contactDetails",
+      align: "left",
+      render: (_, record) => {
+        const mj = record.marketingJobs || {};
+        return (
+          <Space direction="vertical" size={4} style={{ textAlign: "left" }}>
+            <Text strong style={{ fontSize: 14 }}>{mj.contactPersonName || "—"}</Text>
+            <Text style={{ fontSize: 14 }}>{mj.contactPersonRole || "—"}</Text>
+            <Text style={{ fontSize: 14 }}>{mj.contactPersonEmail || "—"}</Text>
+            <Text strong style={{ fontSize: 14, color: "#008cba" }}>{mj.hideCompanyName || "—"}</Text>
+          </Space>
+        );
+      },
+    },
+    {
       title: "View Result",
       key: "viewResult",
       align: "center",
@@ -303,37 +308,37 @@ const GetAllJobs = () => {
         <Button
           size="small"
           icon={<TrophyOutlined />}
-          style={{ background: "#1ab394", borderColor: "#1ab394", color: "#fff" }}
+          style={{ background: "#08979c", borderColor: "#08979c", color: "#fff" }}
           onClick={() => openViewResult(record.atsScoreViewerId)}
         >
           Result
         </Button>
       ),
     },
-    {
-      title: "Rounds",
-      key: "actions",
-      align: "center",
+    // {
+    //   title: "Rounds",
+    //   key: "actions",
+    //   align: "center",
   
-      render: (_, record) => (
-        <div style={{ display: "flex", flexDirection: "row", gap: 6, justifyContent: "center", flexWrap: "nowrap" }}>
-          <Button
-            size="small"
-            style={{ background: "#008cba", borderColor: "#008cba", color: "#fff", whiteSpace: "nowrap" }}
-            onClick={() => openRoundModal(record.id)}
-          >
-            Add
-          </Button>
-          <Button
-            size="small"
-            style={{ background: "#f0ad4e", borderColor: "#f0ad4e", color: "#fff", whiteSpace: "nowrap" }}
-            onClick={() => navigate(`/admin/interview-rounds/${record.id}`)}
-          >
-            View
-          </Button>
-        </div>
-      ),
-    },
+    //   render: (_, record) => (
+    //     <div style={{ display: "flex", flexDirection: "row", gap: 6, justifyContent: "center", flexWrap: "nowrap" }}>
+    //       <Button
+    //         size="small"
+    //         style={{ background: "#008cba", borderColor: "#008cba", color: "#fff", whiteSpace: "nowrap" }}
+    //         onClick={() => openRoundModal(record.id)}
+    //       >
+    //         Add
+    //       </Button>
+    //       <Button
+    //         size="small"
+    //         style={{ background: "#f0ad4e", borderColor: "#f0ad4e", color: "#fff", whiteSpace: "nowrap" }}
+    //         onClick={() => navigate(`/admin/interview-rounds/${record.id}`)}
+    //       >
+    //         View
+    //       </Button>
+    //     </div>
+    //   ),
+    // },
   ];
 
   return (
@@ -444,7 +449,7 @@ const GetAllJobs = () => {
 
         {loading ? (
           <div className="flex justify-center items-center py-16">
-            <Spin size="medium" tip="Loading jobs..." />
+            <Spin size="large" tip="Loading jobs..." />
           </div>
         ) : filteredJobs.length === 0 ? (
           <Empty description="No jobs found." />
@@ -470,7 +475,7 @@ const GetAllJobs = () => {
                     total: totalElements,
                     showSizeChanger: false,
                  
-                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} jobs`,
+                    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} applied jobs`,
                     onChange: (newPage) => setPage(newPage - 1),
                   }
             }
