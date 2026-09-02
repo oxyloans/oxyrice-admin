@@ -1,39 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Navigate } from "react-router-dom";
-import adminApi from "../../../core/config/axiosInstance";
 import { SECTIONS } from "./config.jsx";
-
-const CACHE_PREFIX = "oxyoneSectionCache:";
-const CACHE_TTL_MS = 5 * 60 * 1000;
-
-function readSessionCache(key) {
-  try {
-    const raw = sessionStorage.getItem(CACHE_PREFIX + key);
-    if (!raw) return null;
-    const { ts, rows } = JSON.parse(raw);
-    if (Date.now() - ts > CACHE_TTL_MS) return null;
-    return rows;
-  } catch {
-    return null;
-  }
-}
-
-function writeSessionCache(key, rows) {
-  try {
-    sessionStorage.setItem(
-      CACHE_PREFIX + key,
-      JSON.stringify({ ts: Date.now(), rows }),
-    );
-  } catch {
-    // storage unavailable/full — safe to ignore, it's only a perf cache
-  }
-}
-
-function parseServerDate(value) {
-  if (!value) return null;
-  const d = new Date(String(value).replace(" ", "T"));
-  return Number.isNaN(d.getTime()) ? null : d;
-}
+import {
+  readSessionCache,
+  writeSessionCache,
+  fetchSectionRows,
+  parseServerDate,
+} from "./sectionData.js";
 
 function formatDate(value) {
   const d = parseServerDate(value);
@@ -73,21 +46,21 @@ export default function SectionPage() {
 
 function EmptySection({ cfg }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      <div className="flex items-center gap-3.5 px-4 py-3.5 border-b border-slate-100">
+    <div className="oxyone-section-card">
+      <div className="oxyone-section-header">
         <div
-          className="w-9 h-9 rounded-[10px] grid place-items-center text-lg flex-shrink-0"
+          className="oxyone-section-icon"
           style={{ background: cfg.color + "18", color: cfg.color }}
         >
           {cfg.icon}
         </div>
         <div>
-          <div className="text-sm font-bold text-slate-900">{cfg.title}</div>
-          <div className="text-xs text-slate-400 mt-0.5">{cfg.subtitle}</div>
+          <div className="oxyone-section-title">{cfg.title}</div>
+          <div className="oxyone-section-subtitle">{cfg.subtitle}</div>
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center gap-3 py-20 px-6 text-sm text-slate-400">
-        <span className="text-4xl opacity-50">🗂️</span>
+      <div className="oxyone-empty-state">
+        <span className="oxyone-empty-state-icon">🗂️</span>
         <span>No data available yet.</span>
       </div>
     </div>
@@ -98,6 +71,7 @@ function SectionTable({ cfg }) {
   const [activeTab, setActiveTab] = useState(cfg.tabs ? cfg.tabs[0].key : null);
   const tabCfg = cfg.tabs ? cfg.tabs.find((t) => t.key === activeTab) : cfg;
   const [data, setData] = useState([]);
+  const [totalRecords, setTotalRecords] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -118,7 +92,8 @@ function SectionTable({ cfg }) {
       // Show cached data instantly (if any) instead of blocking on the network.
       if (cached) {
         cacheRef.current[cacheKey] = cached;
-        setData(cached);
+        setData(cached.rows);
+        setTotalRecords(cached.total ?? cached.rows.length);
         setError("");
         setLoading(false);
       } else {
@@ -130,20 +105,12 @@ function SectionTable({ cfg }) {
       // cached snapshot, or surface loading/error state when we didn't.
       const requestId = ++requestIdRef.current;
       try {
-        const res =
-          tabCfg.method === "POST"
-            ? await adminApi.post(tabCfg.endpoint, tabCfg.body ?? {})
-            : await adminApi.get(tabCfg.endpoint);
+        const { rows, total } = await fetchSectionRows(tabCfg);
         if (requestIdRef.current !== requestId) return; // a newer tab/request superseded this one
-        const rows = Array.isArray(res.data) ? res.data : [];
-        rows.sort(
-          (a, b) =>
-            (parseServerDate(b.createdAt)?.getTime() ?? 0) -
-            (parseServerDate(a.createdAt)?.getTime() ?? 0),
-        );
-        cacheRef.current[cacheKey] = rows;
-        writeSessionCache(storageKey, rows);
+        cacheRef.current[cacheKey] = { rows, total };
+        writeSessionCache(storageKey, rows, total);
         setData(rows);
+        setTotalRecords(total);
         setError("");
       } catch {
         if (requestIdRef.current !== requestId) return;
@@ -183,38 +150,86 @@ function SectionTable({ cfg }) {
     return map[String(val).toLowerCase()] || "bg-slate-100 text-slate-600";
   };
 
+  const loadedCount = data.length;
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 flex-wrap gap-2.5">
-        <div className="flex items-center gap-3.5">
-          <div
-            className="w-9 h-9 rounded-[10px] grid place-items-center text-lg flex-shrink-0"
-            style={{ background: cfg.color + "18", color: cfg.color }}
-          >
-            {cfg.icon}
-          </div>
+      {/* Toolbar — title/icon already shown in the fixed top bar. Total
+          Records, search, and refresh all live in one row directly above
+          the table, so there's no dead space between the stat and the
+          data. The total comes straight from the API's own reported
+          total on every fetch/refresh. */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex-wrap gap-3">
+        <div
+          className="flex items-center gap-3 rounded-lg border px-4 py-2.5"
+          style={{ background: cfg.color + "0d", borderColor: cfg.color + "33" }}
+        >
           <div>
-            <div className="text-sm font-bold text-slate-900">{cfg.title}</div>
-            <div className="text-xs text-slate-400 mt-0.5">{cfg.subtitle}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-slate-500 leading-none">
+              Total Records
+            </div>
+            <div
+              className="text-2xl font-extrabold leading-tight tabular-nums mt-0.5"
+              style={{ color: cfg.color }}
+            >
+              {loading && totalRecords == null
+                ? "…"
+                : Number(totalRecords ?? loadedCount).toLocaleString()}
+            </div>
           </div>
         </div>
+
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-            {data.length} total
-          </span>
-          <input
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-            className="h-9 px-3 border border-slate-200 rounded-[9px] text-sm text-slate-800 outline-none bg-slate-50 w-44 transition-all focus:border-slate-300 focus:bg-white focus:shadow-[0_0_0_3px_rgba(17,17,20,.05)] placeholder:text-slate-400"
-          />
+          <div className="relative">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            >
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+              <path
+                d="m21 21-4.35-4.35"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <input
+              placeholder="Search loaded records..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="h-9 pl-9 pr-8 border border-slate-200 rounded-[9px] text-sm text-slate-900 outline-none bg-white w-64 transition-all focus:border-slate-300 focus:shadow-[0_0_0_3px_rgba(17,17,20,.05)] placeholder:text-slate-400"
+            />
+            {search && (
+              <svg
+                onClick={() => {
+                  setSearch("");
+                  setPage(1);
+                }}
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <path
+                  d="M18 6 6 18M6 6l12 12"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+          </div>
           <button
             onClick={() => fetchData(true)}
-            className="w-9 h-9 rounded-[9px] border border-slate-200 bg-slate-50 text-base cursor-pointer grid place-items-center transition-all hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:rotate-90"
+            title="Refresh"
+            className="w-9 h-9 rounded-[9px] border border-slate-200 bg-white text-base cursor-pointer grid place-items-center transition-all hover:bg-slate-900 hover:text-white hover:border-slate-900 hover:rotate-90"
           >
             ↻
           </button>
@@ -223,7 +238,7 @@ function SectionTable({ cfg }) {
 
       {/* Tabs */}
       {cfg.tabs && (
-        <div className="flex items-center gap-1.5 px-6 py-3.5 border-b border-slate-100 flex-wrap">
+        <div className="flex items-center gap-1.5 px-5 py-3 border-b border-slate-100 flex-wrap">
           {cfg.tabs.map((t) => (
             <button
               key={t.key}
@@ -247,13 +262,13 @@ function SectionTable({ cfg }) {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th className="text-[10.5px] font-bold tracking-[.7px] uppercase text-slate-400 px-4 py-3 text-left bg-slate-50 border-b border-slate-100 whitespace-nowrap">
+                <th className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap">
                   #
                 </th>
                 {tabCfg.columns.map((c) => (
                   <th
                     key={c}
-                    className="text-[10.5px] font-bold tracking-[.7px] uppercase text-slate-400 px-4 py-3 text-left bg-slate-50 border-b border-slate-100 whitespace-nowrap"
+                    className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap"
                   >
                     {c}
                   </th>
@@ -263,11 +278,11 @@ function SectionTable({ cfg }) {
             <tbody>
               {Array.from({ length: 6 }, (_, i) => (
                 <tr key={i}>
-                  <td className="px-4 py-3 text-xs text-slate-400 border-b border-slate-100">
+                  <td className="px-3 py-2 text-xs text-slate-400 border-b border-slate-100">
                     {i + 1}
                   </td>
                   {tabCfg.columns.map((c) => (
-                    <td key={c} className="px-4 py-3 border-b border-slate-100">
+                    <td key={c} className="px-3 py-2 border-b border-slate-100">
                       <div
                         className="h-3 rounded w-full"
                         style={{
@@ -304,13 +319,13 @@ function SectionTable({ cfg }) {
           <table className="w-full border-collapse">
             <thead>
               <tr>
-                <th className="text-[10.5px] font-bold tracking-[.7px] uppercase text-slate-400 px-4 py-3 text-left bg-slate-50 border-b border-slate-100 whitespace-nowrap">
+                <th className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap">
                   #
                 </th>
                 {tabCfg.columns.map((c) => (
                   <th
                     key={c}
-                    className="text-[10.5px] font-bold tracking-[.7px] uppercase text-slate-400 px-4 py-3 text-left bg-slate-50 border-b border-slate-100 whitespace-nowrap"
+                    className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap"
                   >
                     {c}
                   </th>
@@ -319,14 +334,19 @@ function SectionTable({ cfg }) {
             </thead>
             <tbody>
               {paginated.map((row, i) => (
-                <tr key={i} className="transition-colors hover:bg-slate-50/80">
-                  <td className="px-4 py-3 text-xs text-slate-400 border-b border-slate-100 whitespace-nowrap">
-                    {(page - 1) * PER_PAGE + i + 1}
+                <tr
+                  key={i}
+                  className={`transition-colors hover:bg-slate-100/70 ${i % 2 === 1 ? "bg-slate-50/50" : ""}`}
+                >
+                  <td className="px-3 py-2 border-b border-slate-100 whitespace-nowrap">
+                    <span className="inline-flex items-center justify-center w-7 h-[22px] rounded-[6px] bg-slate-100 text-slate-800 text-[11px] font-black">
+                      {(page - 1) * PER_PAGE + i + 1}
+                    </span>
                   </td>
                   {tabCfg.rowKeys.map((k) => (
                     <td
                       key={k}
-                      className={`px-4 py-3 text-sm text-slate-700 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : "whitespace-nowrap"}`}
+                      className={`px-3 py-2 text-xs text-slate-900 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : "whitespace-nowrap"}`}
                     >
                       {k === "status" || k === "queryStatus" ? (
                         <span
@@ -340,6 +360,12 @@ function SectionTable({ cfg }) {
                         >
                           {String(row[k]) === "true" ? "Yes" : "No"}
                         </span>
+                      ) : k === "isActive" ? (
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-0.5 rounded-full inline-block ${String(row[k]) === "true" ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}
+                        >
+                          {String(row[k]) === "true" ? "Active" : "Inactive"}
+                        </span>
                       ) : k === "query" ? (
                         <span className="block max-w-[420px]">
                           {row[k] || "—"}
@@ -350,6 +376,14 @@ function SectionTable({ cfg }) {
                         <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full inline-block">
                           {formatAge(row)}
                         </span>
+                      ) : String(row[k] ?? "").includes("\n") ? (
+                        <div className="flex flex-col gap-0.5">
+                          {String(row[k])
+                            .split("\n")
+                            .map((line, li) => (
+                              <span key={li}>{line}</span>
+                            ))}
+                        </div>
                       ) : (
                         row[k] || "—"
                       )}
@@ -364,7 +398,7 @@ function SectionTable({ cfg }) {
 
       {/* Pagination */}
       {!loading && !error && filtered.length > PER_PAGE && (
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-slate-100 flex-wrap gap-2">
+        <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex-wrap gap-2">
           <span className="text-xs text-slate-400">
             Showing {(page - 1) * PER_PAGE + 1}–
             {Math.min(page * PER_PAGE, filtered.length)} of {filtered.length}

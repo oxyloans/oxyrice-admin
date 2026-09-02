@@ -4,6 +4,7 @@ import {
   BankOutlined,
   BuildOutlined,
   DashboardOutlined,
+  DatabaseOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -32,6 +33,7 @@ const SIDEBAR_ICONS = {
   interested: <StarOutlined />,
   settings: <SettingOutlined />,
   logout: <LogoutOutlined />,
+  database: <DatabaseOutlined />,
 };
 
 function useActiveSection() {

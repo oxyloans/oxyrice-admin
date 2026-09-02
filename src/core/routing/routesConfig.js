@@ -470,6 +470,10 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/QueriesDashboard")),
   },
   {
+    path: "campaignDashboard",
+    element: lazy(() => import("../../features/oxyone/pages/CampaignDashboard")),
+  },
+  {
     path: "queriesAskoxy",
     element: lazy(() => import("../../features/oxyone/pages/QueriesUsers")),
   },

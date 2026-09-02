@@ -12,24 +12,48 @@ const getTokenExpiry = (token) => {
   }
 };
 
+const getPreferredAccessToken = () =>
+  localStorage.getItem("accessToken") ||
+  localStorage.getItem("adminAccessToken") ||
+  localStorage.getItem("askoxyAccessToken") ||
+  localStorage.getItem("askoxyToken") ||
+  "";
+
+const getPreferredRefreshToken = () =>
+  localStorage.getItem("refreshToken") ||
+  localStorage.getItem("adminRefreshToken") ||
+  localStorage.getItem("askoxyRefreshToken") ||
+  localStorage.getItem("askoxyRefresh") ||
+  "";
+
 let refreshPromise = null;
 
 const refreshTokens = async () => {
-  const refreshToken = localStorage.getItem("adminRefreshToken");
+  const refreshToken = getPreferredRefreshToken();
   const response = await axios.post(
     `${BASE_URL}/user-service/refresh-token`,
     { refreshToken },
     { headers: { "Content-Type": "application/json" } }
   );
   const { mobileOtpSession: newAccess, mobileNumber: newRefresh } = response.data;
-  if (newAccess) localStorage.setItem("adminAccessToken", newAccess);
-  if (newRefresh) localStorage.setItem("adminRefreshToken", newRefresh);
-  return newAccess;
+
+  if (newAccess) {
+    localStorage.setItem("accessToken", newAccess);
+    localStorage.setItem("adminAccessToken", newAccess);
+    localStorage.setItem("askoxyAccessToken", newAccess);
+  }
+  if (newRefresh) {
+    localStorage.setItem("refreshToken", newRefresh);
+    localStorage.setItem("adminRefreshToken", newRefresh);
+    localStorage.setItem("askoxyRefreshToken", newRefresh);
+  }
+
+  return newAccess || getPreferredAccessToken();
 };
 
-axiosInstance.interceptors.request.use(async (config) => {
-  let accessToken = localStorage.getItem("adminAccessToken");
-  if (!accessToken) return config;
+export const ensureFreshAccessToken = async () => {
+  let accessToken = getPreferredAccessToken();
+  if (!accessToken) return "";
 
   const expiry = getTokenExpiry(accessToken);
   const fiveMinutes = 5 * 60 * 1000;
@@ -43,7 +67,12 @@ axiosInstance.interceptors.request.use(async (config) => {
     accessToken = await refreshPromise;
   }
 
-  config.headers["Authorization"] = `Bearer ${accessToken}`;
+  return accessToken;
+};
+
+axiosInstance.interceptors.request.use(async (config) => {
+  const accessToken = await ensureFreshAccessToken();
+  if (accessToken) config.headers["Authorization"] = `Bearer ${accessToken}`;
   return config;
 });
 
