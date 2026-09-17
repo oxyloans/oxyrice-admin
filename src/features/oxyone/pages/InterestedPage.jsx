@@ -7,6 +7,7 @@ import {
   SearchOutlined,
   StarOutlined,
   RiseOutlined,
+  HistoryOutlined,
   BarChartOutlined,
   LineChartOutlined,
 } from "@ant-design/icons";
@@ -18,6 +19,7 @@ import isoWeek from "dayjs/plugin/isoWeek";
 import CommentsModal from "./CommentsModal";
 import { actionColumn, updatedCommentsColumn } from "./adminCommentsColumns";
 import UserStatCard from "../components/UserStatCard";
+import { parseServerDate } from "./sectionData";
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(weekday);
@@ -27,8 +29,9 @@ dayjs.extend(isoWeek);
 function PageSkeleton() {
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[860px]">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="overflow-x-auto">
+        <div className="grid grid-cols-5 gap-3 min-w-[860px] max-w-[1100px]">
+          {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="rounded-xl overflow-hidden shadow-sm">
             <div className="h-9 bg-gradient-to-br from-slate-200 to-slate-300" />
             <div className="h-14 bg-white border-l-[3px] border-l-slate-200 border border-slate-200 relative overflow-hidden">
@@ -42,7 +45,8 @@ function PageSkeleton() {
               />
             </div>
           </div>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <Skeleton active paragraph={{ rows: 8 }} />
@@ -69,6 +73,13 @@ const STAT_META = {
     grad: "linear-gradient(135deg,#0891b2,#06b6d4)",
     sub: "New interests today",
     icon: <RiseOutlined />,
+  },
+  yesterday: {
+    label: "Yesterday",
+    accent: "#7c3aed",
+    grad: "linear-gradient(135deg,#7c3aed,#a855f7)",
+    sub: "Previous day's interests",
+    icon: <HistoryOutlined />,
   },
   week: {
     label: "This Week",
@@ -175,6 +186,9 @@ export default function InterestedPage() {
   const todayCount = all.filter(
     (r) => r.createdAt && dayjs(r.createdAt).isSame(dayjs(), "day"),
   ).length;
+  const yesterdayCount = all.filter(
+    (r) => r.createdAt && dayjs(r.createdAt).isSame(dayjs().subtract(1, "day"), "day"),
+  ).length;
   const weekCount = all.filter(
     (r) =>
       r.createdAt &&
@@ -191,6 +205,8 @@ export default function InterestedPage() {
     if (!r.createdAt) return false;
     const d = dayjs(r.createdAt);
     if (activeFilter === "today") return d.isSame(dayjs(), "day");
+    if (activeFilter === "yesterday")
+      return d.isSame(dayjs().subtract(1, "day"), "day");
     if (activeFilter === "week")
       return (
         d.isSameOrAfter(dayjs().startOf("isoWeek"), "day") &&
@@ -211,7 +227,11 @@ export default function InterestedPage() {
         (r.journeyName || "").toLowerCase().includes(q)
       );
     })
-    .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
+    .sort(
+      (a, b) =>
+        (parseServerDate(b.createdAt)?.getTime() ?? 0) -
+        (parseServerDate(a.createdAt)?.getTime() ?? 0),
+    );
 
   /* ── Fetch the latest comment for each row on the visible page only ── */
   const visibleIdsKey = filtered
@@ -363,7 +383,8 @@ width: 220,
       </div>
 
       {/* ── Stat Cards (clickable filters) ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[860px]">
+      <div className="overflow-x-auto">
+        <div className="grid grid-cols-5 gap-3 min-w-[860px] max-w-[1100px]">
         <StatCard
           id="total"
           value={all.length}
@@ -379,6 +400,13 @@ width: 220,
           onClick={() => handleCardClick("today")}
         />
         <StatCard
+          id="yesterday"
+          value={yesterdayCount}
+          loading={loading && page === 0}
+          active={activeFilter === "yesterday"}
+          onClick={() => handleCardClick("yesterday")}
+        />
+        <StatCard
           id="week"
           value={weekCount}
           loading={loading && page === 0}
@@ -392,6 +420,7 @@ width: 220,
           active={activeFilter === "month"}
           onClick={() => handleCardClick("month")}
         />
+        </div>
       </div>
 
       {error ? (

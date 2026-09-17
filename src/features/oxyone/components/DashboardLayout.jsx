@@ -471,7 +471,7 @@ export default function DashboardLayout() {
       <main
         className={`transition-all duration-300 ease-in-out ${sidebarCollapsed ? "md:ml-16" : "md:ml-64"}`}
       >
-        <div className="pt-24 px-4 pb-4 flex flex-col gap-3.5">
+        <div className="pt-20 px-4 pb-4 flex flex-col gap-3.5">
           <Outlet />
         </div>
       </main>
