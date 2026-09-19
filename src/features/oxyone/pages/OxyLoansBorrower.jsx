@@ -178,6 +178,9 @@ export default function OxyLoansBorrower() {
       );
       const d = res.data ?? {};
       const rows = Array.isArray(d.listOfData) ? d.listOfData.map(normalizeBorrowerRow) : [];
+      // API doesn't guarantee ordering — sort newest first within the fetched
+      // page; missing/invalid dates fall back to epoch 0 so they sink last.
+      rows.sort((a, b) => new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0));
       setData(rows);
       setTotalCount(Number(d.totalCount) || rows.length);
       setPage(Number(d.pageNo) || pg);
@@ -279,7 +282,7 @@ export default function OxyLoansBorrower() {
           if (cardId === "month") return !dt.isBefore(monthStart, "day");
           return true;
         });
-        filtered.sort((a, b) => new Date(b.registeredDate) - new Date(a.registeredDate));
+        filtered.sort((a, b) => new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0));
         setData(filtered);
         setTotalCount(filtered.length);
         setPage(1);
@@ -317,7 +320,7 @@ export default function OxyLoansBorrower() {
           const dd = (r.registeredDate || "").slice(0, 10);
           return dd && dd >= f && dd <= t;
         });
-        filtered.sort((a, b) => new Date(b.registeredDate) - new Date(a.registeredDate));
+        filtered.sort((a, b) => new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0));
         setData(filtered);
         setTotalCount(filtered.length);
         setPage(1);
@@ -350,7 +353,7 @@ export default function OxyLoansBorrower() {
           r.email?.toLowerCase().includes(n.toLowerCase()) ||
           r.fullName?.toLowerCase().includes(n.toLowerCase())
         );
-        filtered.sort((a, b) => new Date(b.registeredDate) - new Date(a.registeredDate));
+        filtered.sort((a, b) => new Date(b.registeredDate || 0) - new Date(a.registeredDate || 0));
         setData(filtered);
         setTotalCount(filtered.length);
         setPage(1);

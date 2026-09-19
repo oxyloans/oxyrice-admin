@@ -215,8 +215,11 @@ export default function OxyGoldUsers() {
         allRows = allRows.concat(rest.flat());
       }
 
+      // dayjs(undefined) resolves to "now", not invalid — so a missing
+      // createdAt would otherwise sort as the newest row instead of sinking
+      // to the bottom. Fall back to epoch 0 to keep it last.
       allRows.sort(
-        (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf(),
+        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
       );
       setAllUsers(allRows);
 
@@ -330,24 +333,12 @@ export default function OxyGoldUsers() {
       render: (_, row) => {
         const name = [row.firstName, row.lastName].filter(Boolean).join(" ");
         return (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-8 h-8 rounded-lg flex-shrink-0 grid place-items-center text-white"
-              style={{ background: "linear-gradient(135deg,#0891b2,#06b6d4)" }}
-            >
-              {name ? (
-                <span className="font-black text-xs">{name[0].toUpperCase()}</span>
-              ) : (
-                <UserOutlined style={{ fontSize: 13 }} />
-              )}
+          <div className="min-w-0">
+            <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[160px]">
+              {name || <span className="text-slate-400 font-normal italic">No Name</span>}
             </div>
-            <div className="min-w-0">
-              <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[160px]">
-                {name || <span className="text-slate-400 font-normal italic">No Name</span>}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[160px]">
-                {row.email || <span className="text-slate-300">No email</span>}
-              </div>
+            <div className="text-[11px] text-slate-400 mt-0.5 truncate max-w-[160px]">
+              {row.email || <span className="text-slate-300">No email</span>}
             </div>
           </div>
         );

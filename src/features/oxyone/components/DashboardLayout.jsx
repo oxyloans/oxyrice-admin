@@ -43,6 +43,140 @@ function useActiveSection() {
   return match ? match[1] : "dashboard";
 }
 
+// Hoisted out of DashboardLayout: defining this inline in the render body
+// gave it a new function identity on every re-render (e.g. every nav click,
+// since that updates activeSection), which made React remount the whole
+// sidebar <nav> and reset its scroll position to the top. As a stable
+// top-level component, the same DOM node persists across navigations and
+// keeps whatever scroll position it had.
+function SidebarContent({
+  mobile = false,
+  sidebarCollapsed,
+  activeSection,
+  onNav,
+  onCloseMobile,
+}) {
+  const collapsed = !mobile && sidebarCollapsed;
+  return (
+    <div className="flex flex-col h-full pt-4">
+      {/* Logo */}
+      <div
+        className={`flex items-center gap-3 px-4 pb-4 mb-2 flex-shrink-0 border-b border-white/[0.08] ${collapsed ? "justify-center px-3" : ""}`}
+      >
+        <div
+          className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0"
+          style={{
+            background: "linear-gradient(135deg, #1AB394, #0f8a72)",
+            boxShadow: "0 4px 14px rgba(26,179,148,.4)",
+          }}
+        >
+          <OxyMark />
+        </div>
+        {!collapsed && (
+          <div className="flex flex-col leading-none">
+            <span className="text-[14.5px] font-black text-white tracking-wide">
+              OXYONE
+            </span>
+            <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 mt-1">
+              Admin Panel
+            </span>
+          </div>
+        )}
+        {/* Close btn — mobile only */}
+        {mobile && (
+          <button
+            onClick={onCloseMobile}
+            className="ml-auto w-7 h-7 rounded-lg grid place-items-center text-white/50 hover:text-white hover:bg-white/10 transition-all border-none bg-transparent cursor-pointer"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M18 6 6 18M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Nav — scrollable middle */}
+      <nav className="oxyone-sidebar-nav flex-1 overflow-y-auto overflow-x-hidden py-1 flex flex-col">
+        {NAV_SECTIONS.map((sec) => (
+          <div key={sec.label}>
+            {/* Section label — hidden when collapsed */}
+            {!collapsed && (
+              <div className="px-4 pt-3.5 pb-1 select-none">
+                <span className="text-[10px] font-bold tracking-[1.2px] uppercase text-white/35">
+                  {sec.label}
+                </span>
+              </div>
+            )}
+            {collapsed && (
+              <div className="mx-3 my-2 border-t border-white/10" />
+            )}
+            {sec.items.map((n) => {
+              const isActive = activeSection === n.key;
+              return (
+                <button
+                  key={n.key}
+                  onClick={() => onNav(n.key)}
+                  title={collapsed ? n.label : undefined}
+                  className={`w-full flex items-center gap-2.5 px-4 py-1.5 cursor-pointer transition-all duration-150 border-none text-left ${
+                    collapsed ? "justify-center px-0" : ""
+                  }
+                    ${
+                      isActive
+                        ? "text-white font-bold"
+                        : n.danger
+                          ? "text-white/70 hover:text-white font-medium"
+                          : "text-white/80 hover:text-white font-medium"
+                    }`}
+                  style={{
+                    background: isActive ? "#2d3748" : "transparent",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive)
+                      e.currentTarget.style.background = n.danger
+                        ? "rgba(239,68,68,.1)"
+                        : "rgba(255,255,255,.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.background = "";
+                  }}
+                >
+                  <span
+                    className="grid place-items-center flex-shrink-0 text-[15px]"
+                    style={{
+                      color: n.danger ? "#f87171" : "rgba(255,255,255,.9)",
+                    }}
+                  >
+                    {SIDEBAR_ICONS[n.icon]}
+                  </span>
+                  {!collapsed && (
+                    <span className="text-[12.5px] truncate flex-1">
+                      {n.label}
+                    </span>
+                  )}
+                  {!collapsed && (
+                    <RightOutlined
+                      style={{
+                        fontSize: 9,
+                        color: "rgba(255,255,255,.25)",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile drawer
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapse
@@ -107,129 +241,6 @@ export default function DashboardLayout() {
     setSearchFocused(false);
   };
 
-  /* ── Shared sidebar content ── */
-  const SidebarContent = ({ mobile = false }) => {
-    const collapsed = !mobile && sidebarCollapsed;
-    return (
-      <div className="flex flex-col h-full pt-4">
-        {/* Logo */}
-        <div
-          className={`flex items-center gap-3 px-4 pb-4 mb-2 flex-shrink-0 border-b border-white/[0.08] ${collapsed ? "justify-center px-3" : ""}`}
-        >
-          <div
-            className="w-9 h-9 rounded-xl grid place-items-center flex-shrink-0"
-            style={{
-              background: "linear-gradient(135deg, #1AB394, #0f8a72)",
-              boxShadow: "0 4px 14px rgba(26,179,148,.4)",
-            }}
-          >
-            <OxyMark />
-          </div>
-          {!collapsed && (
-            <div className="flex flex-col leading-none">
-              <span className="text-[14.5px] font-black text-white tracking-wide">
-                OXYONE
-              </span>
-              <span className="text-[9px] font-bold tracking-widest uppercase text-white/40 mt-1">
-                Admin Panel
-              </span>
-            </div>
-          )}
-          {/* Close btn — mobile only */}
-          {mobile && (
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="ml-auto w-7 h-7 rounded-lg grid place-items-center text-white/50 hover:text-white hover:bg-white/10 transition-all border-none bg-transparent cursor-pointer"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M18 6 6 18M6 6l12 12"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-
-        {/* Nav — scrollable middle */}
-        <nav className="oxyone-sidebar-nav flex-1 overflow-y-auto overflow-x-hidden py-1 flex flex-col">
-          {NAV_SECTIONS.map((sec) => (
-            <div key={sec.label}>
-              {/* Section label — hidden when collapsed */}
-              {!collapsed && (
-                <div className="px-4 pt-3.5 pb-1 select-none">
-                  <span className="text-[10px] font-bold tracking-[1.2px] uppercase text-white/35">
-                    {sec.label}
-                  </span>
-                </div>
-              )}
-              {collapsed && (
-                <div className="mx-3 my-2 border-t border-white/10" />
-              )}
-              {sec.items.map((n) => {
-                const isActive = activeSection === n.key;
-                return (
-                  <button
-                    key={n.key}
-                    onClick={() => handleNav(n.key)}
-                    title={collapsed ? n.label : undefined}
-                    className={`w-full flex items-center gap-2.5 px-4 py-1.5 cursor-pointer transition-all duration-150 border-none text-left ${
-                      collapsed ? "justify-center px-0" : ""
-                    }
-                      ${
-                        isActive
-                          ? "text-white font-bold"
-                          : n.danger
-                            ? "text-white/70 hover:text-white font-medium"
-                            : "text-white/80 hover:text-white font-medium"
-                      }`}
-                    style={{
-                      background: isActive ? "#2d3748" : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.background = n.danger
-                          ? "rgba(239,68,68,.1)"
-                          : "rgba(255,255,255,.05)";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) e.currentTarget.style.background = "";
-                    }}
-                  >
-                    <span
-                      className="grid place-items-center flex-shrink-0 text-[15px]"
-                      style={{
-                        color: n.danger ? "#f87171" : "rgba(255,255,255,.9)",
-                      }}
-                    >
-                      {SIDEBAR_ICONS[n.icon]}
-                    </span>
-                    {!collapsed && (
-                      <span className="text-[12.5px] truncate flex-1">
-                        {n.label}
-                      </span>
-                    )}
-                    {!collapsed && (
-                      <RightOutlined
-                        style={{
-                          fontSize: 9,
-                          color: "rgba(255,255,255,.25)",
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-      </div>
-    );
-  };
-
   return (
     <div
       className="min-h-screen bg-white"
@@ -252,7 +263,11 @@ export default function DashboardLayout() {
           boxShadow: "4px 0 24px rgba(0,0,0,.18)",
         }}
       >
-        <SidebarContent />
+        <SidebarContent
+          sidebarCollapsed={sidebarCollapsed}
+          activeSection={activeSection}
+          onNav={handleNav}
+        />
         {/* Desktop collapse toggle — fixed at bottom of sidebar */}
         <button
           className="hidden md:flex items-center justify-center w-full h-12 text-white/60 hover:text-white transition-all border-none bg-transparent cursor-pointer flex-shrink-0 group"
@@ -282,7 +297,13 @@ export default function DashboardLayout() {
           boxShadow: "8px 0 32px rgba(0,0,0,.35)",
         }}
       >
-        <SidebarContent mobile />
+        <SidebarContent
+          mobile
+          sidebarCollapsed={sidebarCollapsed}
+          activeSection={activeSection}
+          onNav={handleNav}
+          onCloseMobile={() => setSidebarOpen(false)}
+        />
       </aside>
 
       {/* ── Fixed header ── */}

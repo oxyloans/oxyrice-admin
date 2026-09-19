@@ -24,6 +24,14 @@ const PRODUCT_CARDS = [
   { key: "interested",     color: "#e11d48" },
 ];
 
+// Shorter names for these dashboard cards only — SECTIONS[key].title still
+// carries the full "OxyLoans Lender"/"OxyLoans Borrower" name used for the
+// page header and sidebar elsewhere.
+const CARD_TITLE_OVERRIDES = {
+  lender: "Lender",
+  borrower: "Borrower",
+};
+
 const CAMPAIGN_KEYS = [
   "rotaryData",
   "cbsData",
@@ -31,15 +39,17 @@ const CAMPAIGN_KEYS = [
   "ftcciData",
   "mumbaiData",
   "kukatpallyData",
-  "sudheerVakkalagaddaData",
   "talwarData",
   "ramMohanDarisaData",
+  "amfiData",
+  "radhaLinkedinData",
+  "naukariData",
+  "sudheerData",
+  "tahsildarData",
 ];
 
 function formatCount(n) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "k";
-  return String(n);
+  return Number(n).toLocaleString();
 }
 
 function ProductCard({ item, i, navigate, count, loading, label }) {
@@ -60,7 +70,7 @@ function ProductCard({ item, i, navigate, count, loading, label }) {
           {cfg.icon}
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-800 truncate">{cfg.title}</div>
+          <div className="text-sm font-medium text-slate-800 truncate">{CARD_TITLE_OVERRIDES[item.key] ?? cfg.title}</div>
           {label && <div className="text-[10px] font-bold mt-0.5" style={{ color }}>{label}</div>}
           {loading ? (
             <div className="h-7 w-16 bg-white/60 animate-pulse mt-1" />

@@ -37,9 +37,13 @@ export const isDirectAskoxyRequest = (endpoint = "") =>
   endpoint.includes("FtcciData") ||
   endpoint.includes("getAllMumbaiData") ||
   endpoint.includes("AllKukatpallyData") ||
-  endpoint.includes("sudheerVakkalagadda") ||
   endpoint.includes("getAllTalwarData") ||
-  endpoint.includes("getAllRamMohanDarisa");
+  endpoint.includes("getAllRamMohanDarisa") ||
+  endpoint.includes("amfi-reports") ||
+  endpoint.includes("radha-linkedin") ||
+  endpoint.includes("sa-naukari-records") ||
+  endpoint.includes("sudheer-data") ||
+  endpoint.includes("tahsildar");
 
 export const normalizeRows = (payload) => {
   if (Array.isArray(payload)) return payload;
@@ -76,27 +80,50 @@ export const extractTotalCount = (payload, fallbackLength) => {
   );
 };
 
-// Rows are re-uploaded/re-scraped over time, producing exact repeats of the
-// same person/record with only the timestamp differing. Keep just the
-// newest copy (rows are sorted newest-first before this runs), so
-// duplicates collapse down to the one at the top.
+// Rows are re-uploaded/re-scraped over time, producing repeats of the same
+// person/record with only the timestamp differing — and sometimes with
+// different fields filled in per copy (e.g. one scrape has an email, another
+// has a phone number). Keep just the first (newest, since rows are sorted
+// newest-first before this runs) copy's slot, but merge in any field left
+// blank there from later duplicates, so the kept record ends up as complete
+// as the data allows instead of missing fields the row was deduped from.
 const DEDUPE_IGNORE_KEYS = new Set(["createdAt", "resolvedOn"]);
 
-export function dedupeRows(rows, rowKeys) {
-  const signatureKeys = rowKeys.filter((k) => !DEDUPE_IGNORE_KEYS.has(k));
+const isBlankValue = (v) => {
+  const s = String(v ?? "").trim().toLowerCase();
+  return !s || ["-", "--", "n/a", "na", "null"].includes(s);
+};
+
+// `dedupeKeys` (optional) narrows which fields identify "the same record" —
+// e.g. AMFI matches on name + pin alone, since email/phone are exactly the
+// fields that vary between otherwise-duplicate copies. Defaults to every
+// rowKey, matching the old exact-match behavior for everything else.
+export function dedupeRows(rows, rowKeys, dedupeKeys) {
+  const signatureKeys = (dedupeKeys ?? rowKeys).filter(
+    (k) => !DEDUPE_IGNORE_KEYS.has(k),
+  );
   if (signatureKeys.length === 0) return rows;
 
-  const seen = new Set();
-  const result = [];
-  for (const row of rows) {
-    const signature = signatureKeys
+  const order = [];
+  const merged = new Map();
+  rows.forEach((row, i) => {
+    const raw = signatureKeys
       .map((k) => String(row[k] ?? "").trim().toLowerCase())
       .join("|");
-    if (signature && seen.has(signature)) continue;
-    if (signature) seen.add(signature);
-    result.push(row);
-  }
-  return result;
+    const signature = raw || `__unique_${i}__`;
+    const existing = merged.get(signature);
+    if (existing) {
+      for (const k of rowKeys) {
+        if (isBlankValue(existing[k]) && !isBlankValue(row[k])) {
+          existing[k] = row[k];
+        }
+      }
+    } else {
+      merged.set(signature, { ...row });
+      order.push(signature);
+    }
+  });
+  return order.map((signature) => merged.get(signature));
 }
 
 export function parseServerDate(value) {
@@ -106,9 +133,10 @@ export function parseServerDate(value) {
 }
 
 // Fetches one section's rows via the correct transport (direct + refreshed
-// bearer token vs adminApi), then applies the same name1/name2 merge, sort,
-// and dedup as the dedicated table page — so the count this returns always
-// matches what that page would show.
+// bearer token vs adminApi), then applies the same name merge (from
+// name1/name2 or firstName/lastName), sort, and dedup as the dedicated
+// table page — so the count this returns always matches what that page
+// would show.
 export async function fetchSectionRows(cfg) {
   let res;
   if (isDirectAskoxyRequest(cfg.endpoint)) {
@@ -131,17 +159,21 @@ export async function fetchSectionRows(cfg) {
   }
 
   let rows = normalizeRows(res?.data ?? []);
-  rows = rows.map((r) =>
-    !r.name && (r.name1 || r.name2)
-      ? { ...r, name: [r.name1, r.name2].filter(Boolean).join("\n") }
-      : r,
-  );
+  rows = rows.map((r) => {
+    if (!r.name && (r.name1 || r.name2)) {
+      return { ...r, name: [r.name1, r.name2].filter(Boolean).join("\n") };
+    }
+    if (!r.name && (r.firstName || r.lastName)) {
+      return { ...r, name: [r.firstName, r.lastName].filter(Boolean).join(" ") };
+    }
+    return r;
+  });
   rows.sort(
     (a, b) =>
       (parseServerDate(b.createdAt)?.getTime() ?? 0) -
       (parseServerDate(a.createdAt)?.getTime() ?? 0),
   );
-  rows = dedupeRows(rows, cfg.rowKeys);
+  rows = dedupeRows(rows, cfg.rowKeys, cfg.dedupeKeys);
   const total = extractTotalCount(res?.data, rows.length);
   return { rows, total };
 }

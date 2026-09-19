@@ -97,7 +97,7 @@ async function fetchMobilePages(mob, onChunk, signal) {
 
   const raw = res.data?.activeUsersResponse ?? res.data?.data ?? [];
   const rows = Array.isArray(raw) ? raw.map(normalizeUserRow) : [];
-  rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  rows.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
   onChunk(rows, rows.length);
   return rows;
 }

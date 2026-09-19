@@ -8,6 +8,14 @@ import {
   parseServerDate,
 } from "./sectionData.js";
 
+// Some feeds (e.g. AMFI) use a literal "-" / "N/A" instead of leaving a
+// field blank — treat those the same as missing so the table always shows
+// a consistent "—" rather than a stray dash.
+function isPlaceholderEmpty(value) {
+  const s = String(value ?? "").trim();
+  return !s || ["-", "--", "n/a", "na", "null"].includes(s.toLowerCase());
+}
+
 function formatDate(value) {
   const d = parseServerDate(value);
   if (!d) return "—";
@@ -346,7 +354,7 @@ function SectionTable({ cfg }) {
                   {tabCfg.rowKeys.map((k) => (
                     <td
                       key={k}
-                      className={`px-3 py-2 text-xs text-slate-900 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : "whitespace-nowrap"}`}
+                      className={`px-3 py-2 text-xs text-slate-900 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : "whitespace-nowrap"} ${k === "pin" || k === "telephoneR" || k === "telephoneO" ? "tabular-nums" : ""}`}
                     >
                       {k === "status" || k === "queryStatus" ? (
                         <span
@@ -368,7 +376,7 @@ function SectionTable({ cfg }) {
                         </span>
                       ) : k === "query" ? (
                         <span className="block max-w-[420px]">
-                          {row[k] || "—"}
+                          {isPlaceholderEmpty(row[k]) ? "—" : row[k]}
                         </span>
                       ) : k === "createdAt" || k === "resolvedOn" ? (
                         formatDate(row[k])
@@ -384,8 +392,10 @@ function SectionTable({ cfg }) {
                               <span key={li}>{line}</span>
                             ))}
                         </div>
+                      ) : isPlaceholderEmpty(row[k]) ? (
+                        <span className="text-slate-300">—</span>
                       ) : (
-                        row[k] || "—"
+                        row[k]
                       )}
                     </td>
                   ))}
