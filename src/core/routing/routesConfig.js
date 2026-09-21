@@ -510,6 +510,18 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/InterestedPage")),
   },
   {
+    path: "journeyScorecard",
+    element: lazy(() =>
+      import("../../features/oxyone/pages/JourneyScorecardPage"),
+    ),
+  },
+  {
+    path: "journeyScorecard/:journeyKey",
+    element: lazy(() =>
+      import("../../features/oxyone/pages/JourneyDetailPage"),
+    ),
+  },
+  {
     path: "settings",
     element: lazy(() => import("../../features/oxyone/pages/SettingsPage")),
   },

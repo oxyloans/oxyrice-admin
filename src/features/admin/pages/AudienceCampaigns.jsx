@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import {
-  Card,
   Row,
   Col,
   Button,
   Tag,
-  Typography,
-  Space,
+  // Typography,
   Table,
   Modal,
   Form,
   Input,
   Select,
   Divider,
-  Alert,
   Spin,
   Drawer,
   Upload,
@@ -32,19 +35,18 @@ import {
   UserOutlined,
   SyncOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
   DownloadOutlined,
   UploadOutlined,
   FileExcelOutlined,
   InboxOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import AdminPanelLayout from "../components/AdminPanelLayout";
 import * as XLSX from "xlsx";
 import BASE_URL from "../../../core/config/Config";
 import axiosInstance from "../../../core/config/axiosInstance";
 
-const { Title, Text } = Typography;
+// const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 const AUDIENCE_CONFIGS = [
@@ -55,7 +57,7 @@ const AUDIENCE_CONFIGS = [
     color: "#818cf8",
     method: "POST",
     endpoint: `${BASE_URL}/user-service/allOxyUsersAssignedToHelpDesk`,
-    payload: { pageNo: 1, pageSize: 500 },
+    payload: { pageNo: 1, pageSize: 1000 },
     hasEmailField: true,
     hasWhatsAppField: true,
     description:
@@ -67,7 +69,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "Kukatpally Regional Dataset",
     color: "#34d399",
     method: "GET",
-    endpoint: `${BASE_URL}/user-service/AllKukatpallyData?pageNo=1&pageSize=500`,
+    endpoint: `${BASE_URL}/user-service/AllKukatpallyData?pageNo=1&pageSize=1000`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description: "Regional contact records from Kukatpally zone.",
@@ -78,7 +80,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "Advocates & Legal Directory",
     color: "#a78bfa",
     method: "GET",
-    endpoint: `${BASE_URL}/user-service/getAllAdvocatesData?pageNo=1&pageSize=500`,
+    endpoint: `${BASE_URL}/user-service/getAllAdvocatesData?pageNo=1&pageSize=1000`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description:
@@ -90,7 +92,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "Thalwar Contacts List",
     color: "#fbbf24",
     method: "GET",
-    endpoint: `${BASE_URL}/user-service/getAllTalwarData?pageNo=1&pageSize=500`,
+    endpoint: `${BASE_URL}/user-service/getAllTalwarData?pageNo=1&pageSize=1000`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -102,7 +104,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "Mumbai Contacts & Network",
     color: "#f472b6",
     method: "GET",
-    endpoint: `${BASE_URL}/user-service/getAllMumbaiData?pageNo=1&pageSize=500`,
+    endpoint: `${BASE_URL}/user-service/getAllMumbaiData?pageNo=1&pageSize=1000`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -115,7 +117,7 @@ const AUDIENCE_CONFIGS = [
     color: "#22d3ee",
 
     method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/getAllRamMohanDarisa?page=0&size=500`,
+    endpoint: `${BASE_URL}/ai-service/agent/getAllRamMohanDarisa?page=0&size=1000`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description:
@@ -124,14 +126,14 @@ const AUDIENCE_CONFIGS = [
   {
     id: "sudheer-vakkalagadda",
     name: "Sudheer Vakkalagadda",
-    subtitle: "Agent Campaign Contacts",
-    color: "#22d3ee",
+    subtitle: "Sudheer Vakkalagadda Directory",
+    color: "#0ea5e9",
     method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/sudheerVakkalagadda?page=0&size=500`,
-    hasEmailField: false,
+    endpoint: `${BASE_URL}/ai-service/entity-records/sudheer-data?page=0&size=1000`,
+    hasEmailField: true,
     hasWhatsAppField: false,
     description:
-      "AI agent lead contacts list for Sudheer Vakkalagadda with responses.",
+      "Executive contact database for Sudheer Vakkalagadda with email and phone contacts.",
   },
   {
     id: "rotary-data",
@@ -139,7 +141,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "Rotary Members Network",
     color: "#818cf8",
     method: "GET",
-    endpoint: `${BASE_URL}/marketing-service/campgin/rotary-data?page=0&size=500`,
+    endpoint: `${BASE_URL}/marketing-service/campgin/rotary-data?page=0&size=1000`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -151,7 +153,7 @@ const AUDIENCE_CONFIGS = [
     subtitle: "CBS Student & Professional Network",
     color: "#a5b4fc",
     method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/getAllCbsData?page=0&size=500`,
+    endpoint: `${BASE_URL}/ai-service/agent/getAllCbsData?page=0&size=1000`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -163,16 +165,160 @@ const AUDIENCE_CONFIGS = [
     subtitle: "FTCCI Business Chamber Contacts",
     color: "#2dd4bf",
     method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/FtcciData?page=0&size=100`,
+    endpoint: `${BASE_URL}/ai-service/agent/FtcciData?page=0&size=1000`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
       "FTCCI Federation of Telangana & AP Chambers of Commerce member business contacts.",
   },
+  {
+    id: "radha-linkedin",
+    name: "Radha LinkedIn",
+    subtitle: "LinkedIn Professional Network",
+    color: "#0284c7",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/radha-linkedin?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "LinkedIn contact directory with company, designation and verified email addresses.",
+  },
+  {
+    id: "naukri-records",
+    name: "Naukri Records",
+    subtitle: "Naukri Candidate Profiles",
+    color: "#3b82f6",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/sa-naukari-records?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Naukri candidate dataset with experience, skills, mobile numbers, and email contacts.",
+  },
+  {
+    id: "amfi-reports",
+    name: "AMFI Reports",
+    subtitle: "AMFI Entity Directory",
+    color: "#14b8a6",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/amfi-reports?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "AMFI entity holder database with telephone contacts, city, and email addresses.",
+  },
+  {
+    id: "tahsildar-records",
+    name: "Tahsildar Records",
+    subtitle: "Tahsildar Administrative Contacts",
+    color: "#8b5cf6",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/tahsildar?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Administrative directory of Tahsildars with mobile, office numbers, and email addresses.",
+  },
+  {
+    id: "active-membership",
+    name: "Active Membership",
+    subtitle: "Active Membership Directory",
+    color: "#10b981",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/active-membership?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Active membership member directory with mobile numbers and verified email contacts.",
+  },
+  {
+    id: "ams-lost-customer-data",
+    name: "AMS Lost Customer Data",
+    subtitle: "AMS Lost Customer Directory",
+    color: "#f97316",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/ams-lost-customer-data?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Directory of AMS lost customer contacts with mobile numbers and email addresses.",
+  },
+  {
+    id: "saksham-data",
+    name: "Saksham Data",
+    subtitle: "Saksham Directory Contacts",
+    color: "#0284c7",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/saksham?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Comprehensive database of Saksham entity records with phone and email contacts.",
+  },
+  {
+    id: "tie-data",
+    name: "TiE Data",
+    subtitle: "TiE Network Members",
+    color: "#059669",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/tie-data?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "TiE entrepreneurship network members directory with primary and secondary emails.",
+  },
+  {
+    id: "two-years-service-data",
+    name: "Two Years Service Data",
+    subtitle: "Two Years Service Directory",
+    color: "#9333ea",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/two-years-service-data?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Directory of Two Years Service customer contacts with phone and email addresses.",
+  },
+  {
+    id: "unknown-data",
+    name: "Unknown Data",
+    subtitle: "Unknown Dataset Records",
+    color: "#64748b",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/unknow-data?page=0&size=1000`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description:
+      "Regional contact records with names, mobile numbers, and residential addresses.",
+  },
+  {
+    id: "naukri-ras",
+    name: "Naukri RAS",
+    subtitle: "Naukri RAS Profiles",
+    color: "#2563eb",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/naukri-ras?page=0&size=1000`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description:
+      "Candidate directory from Naukri RAS with candidate names and mobile numbers.",
+  },
+  {
+    id: "k2k-fintech",
+    name: "K2K Fintech",
+    subtitle: "K2K Fintech Directory",
+    color: "#059669",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/k2k-fintech?page=0&size=1000`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Directory of K2K Fintech contacts with phone numbers and email addresses.",
+  },
 ];
-
-const EMAIL_BATCH_SIZE = 500;
-const EMAIL_BULK_ENDPOINT = `${BASE_URL}/ai-automation/smtp/bulk/send`;
+const SOURCE_PAGE_SIZE = 500;
+const EMAIL_BATCH_SIZE = 3000;
+const EMAIL_BULK_ENDPOINT = `${BASE_URL}/ai-automation/email/send-campaign/bulk/direct`;
 
 const PLATFORM_OPTIONS = [
   { label: "ASKOXY", value: "askoxy" },
@@ -189,15 +335,18 @@ const SENDER_EMAIL_OPTIONS = [
   { label: "updates@oxyloans.in", value: "updates@oxyloans.in" },
   { label: "studyabroad@askoxy.ai", value: "studyabroad@askoxy.ai" },
   { label: "support@askoxy.ai", value: "support@askoxy.ai" },
-  {label:"admin@oxyloans.com",value:"admin@oxyloans.com"}
+  { label: "admin@oxyloans.com", value: "admin@oxyloans.com" },
 ];
 
 const extractEmailContacts = (usersList = []) => {
   return usersList
     .map((u) => {
       const clientName =
+        u.candidateName ||
+        u.holdersName ||
         u.userName ||
         u.name ||
+        (u.firstName ? `${u.firstName} ${u.lastName || ""}`.trim() : null) ||
         (u.name1 ? `${u.name1} ${u.name2 || ""}`.trim() : null) ||
         u.userId ||
         u.id ||
@@ -206,6 +355,11 @@ const extractEmailContacts = (usersList = []) => {
         u.emails ||
         u.email ||
         u.emailId ||
+        u.mailId ||
+        u.emailIds ||
+        u.emailAddress ||
+        u.email1 ||
+        u.email2 ||
         u.userEmail ||
         u.businessEmail ||
         u.mail;
@@ -219,13 +373,33 @@ const extractEmailContacts = (usersList = []) => {
     );
 };
 
-const chunkContacts = (contacts, size = EMAIL_BATCH_SIZE) => {
-  const chunks = [];
-  for (let i = 0; i < contacts.length; i += size) {
-    chunks.push(contacts.slice(i, i + size));
-  }
-  return chunks;
-};
+// const fetchContactsForRange = async (
+//   config,
+//   startRecordIndex,
+//   count,
+//   pageSize = SOURCE_PAGE_SIZE,
+// ) => {
+//   const startPage = Math.floor(startRecordIndex / pageSize);
+//   const offsetInFirstPage = startRecordIndex - startPage * pageSize;
+//   const combined = [];
+//   let pageIdx = startPage;
+
+//   while (combined.length - offsetInFirstPage < count) {
+//     const { contacts: pageContacts, rawCount } = await fetchContactsForSet(
+//       config,
+//       pageIdx,
+//       pageSize,
+//     );
+
+//     combined.push(...(pageContacts || []));
+
+//     if (!rawCount || rawCount === 0) break; // source truly exhausted
+//     if (rawCount < pageSize) break; // this really was the last page
+//     pageIdx += 1;
+//   }
+
+//   return combined.slice(offsetInFirstPage, offsetInFirstPage + count);
+// };
 
 const buildContactsExcelBlob = (contactsChunk) => {
   const worksheet = XLSX.utils.json_to_sheet(contactsChunk, {
@@ -286,24 +460,25 @@ const fetchContactsForSet = async (
       usersList = data.users;
     }
 
-    return extractEmailContacts(usersList);
+    const rawCount = usersList.length;
+    const contacts = extractEmailContacts(usersList);
+
+    return { contacts, rawCount };
   } catch (err) {
     console.error(`Error fetching contacts for set ${setIndex + 1}:`, err);
-    return [];
+    return { contacts: [], rawCount: 0 };
   }
 };
 
 const AudienceCampaigns = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [dataMap, setDataMap] = useState({});
   const [selectedAudience, setSelectedAudience] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Campaign Modal State
   const [campaignModalOpen, setCampaignModalOpen] = useState(false);
-  const [campaignType, setCampaignType] = useState("whatsapp"); // 'whatsapp', 'email', 'sms'
+  const [campaignType, setCampaignType] = useState("whatsapp");
   const [campaignTarget, setCampaignTarget] = useState(null);
   const [campaignForm] = Form.useForm();
   const [campaignSending, setCampaignSending] = useState(false);
@@ -329,6 +504,8 @@ const AudienceCampaigns = () => {
   const [bulkTestName, setBulkTestName] = useState("");
   const [bulkSendingTest, setBulkSendingTest] = useState(false);
   const [bulkPreviewOpen, setBulkPreviewOpen] = useState(false);
+  const contactsCacheRef = useRef({});
+  const [, forceCacheUpdate] = useState(0);
 
   const handleOpenBulkUpload = () => {
     setUploadedFile(null);
@@ -346,6 +523,38 @@ const AudienceCampaigns = () => {
       messageText: `Hello!\n\nWe have exciting updates tailored for you. Visit https://askoxy.ai to learn more.\n\nWarm regards,\nTeam ASKOXY`,
     });
     setBulkUploadModalOpen(true);
+  };
+
+  const ensureContactsForSet = async (config, setIndex) => {
+    if (!config) return [];
+    const needed = (setIndex + 1) * EMAIL_BATCH_SIZE;
+
+    let cache = contactsCacheRef.current[config.id] || {
+      contacts: [],
+      nextRawPage: 0,
+      exhausted: false,
+    };
+
+    while (cache.contacts.length < needed && !cache.exhausted) {
+      const { contacts: pageContacts, rawCount } = await fetchContactsForSet(
+        config,
+        cache.nextRawPage, 
+        SOURCE_PAGE_SIZE,
+      );
+
+      cache = {
+        contacts: [...cache.contacts, ...pageContacts],
+        nextRawPage: cache.nextRawPage + 1,
+        exhausted: !rawCount || rawCount < SOURCE_PAGE_SIZE,
+      };
+
+      contactsCacheRef.current[config.id] = cache;
+    }
+
+    forceCacheUpdate((n) => n + 1); 
+
+    const start = setIndex * EMAIL_BATCH_SIZE;
+    return cache.contacts.slice(start, start + EMAIL_BATCH_SIZE);
   };
 
   const handleFileChange = (file) => {
@@ -700,6 +909,54 @@ const AudienceCampaigns = () => {
       setDownloadingId(null);
     }
   };
+  const handleDownloadSetExcel = async (config, setIndex) => {
+    if (!config) return;
+    const downloadKey = `${config.id}-set-${setIndex}`;
+    setDownloadingId(downloadKey);
+    message.loading({
+      content: `Preparing Excel for Set ${setIndex + 1} (up to ${EMAIL_BATCH_SIZE.toLocaleString()} contacts)...`,
+      key: "downloadExcel",
+    });
+
+    try {
+      let contacts = await ensureContactsForSet(config, setIndex);
+
+      if ((!contacts || contacts.length === 0) && setIndex === 0) {
+        contacts = extractEmailContacts(dataMap[config.id]?.usersList || []);
+      }
+
+      if (!contacts || contacts.length === 0) {
+        message.warning({
+          content: `No records found for Set ${setIndex + 1} of ${config.name}`,
+          key: "downloadExcel",
+        });
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(contacts, {
+        header: ["clientName", "clientEmail"],
+      });
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Contacts");
+
+      const cleanFileName = `${config.name.replace(/[^a-zA-Z0-9]/g, "_")}_Set${setIndex + 1}_Contacts.xlsx`;
+      XLSX.writeFile(workbook, cleanFileName);
+
+      message.success({
+        content: `Downloaded Set ${setIndex + 1} (${contacts.length.toLocaleString()} contacts) for ${config.name}!`,
+        key: "downloadExcel",
+        duration: 4,
+      });
+    } catch (err) {
+      console.error("Set Excel download error:", err);
+      message.error({
+        content: `Failed to download Set ${setIndex + 1}: ${err.message || "Unknown error"}`,
+        key: "downloadExcel",
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   // ── Fetch Individual API ──────────────────────────────────────────────────
   const fetchSingleAudience = async (config) => {
@@ -741,8 +998,28 @@ const AudienceCampaigns = () => {
       let sampleEmail = 0;
 
       usersList.forEach((u) => {
-        const mob = u.mobileNumber || u.mobile || u.phone || u.phoneNumber;
-        const em = u.email || u.emailId || u.userEmail;
+        const mob =
+          u.mobileNumbers ||
+          u.mobileNumber ||
+          u.mobile ||
+          u.phone ||
+          u.phoneNumber ||
+          u.mobileNo ||
+          u.contactNo ||
+          u.telephoneR ||
+          u.telephoneO;
+        const em =
+          u.emails ||
+          u.email ||
+          u.emailId ||
+          u.mailId ||
+          u.emailIds ||
+          u.emailAddress ||
+          u.email1 ||
+          u.email2 ||
+          u.userEmail ||
+          u.businessEmail ||
+          u.mail;
 
         if (mob && String(mob).trim() && String(mob).trim() !== "null") {
           sampleMobile++;
@@ -865,8 +1142,7 @@ const AudienceCampaigns = () => {
     campaignForm.resetFields();
 
     if (type === "email") {
-      const totalCount =
-        data.totalCount || (data.usersList?.length || 0);
+      const totalCount = data.totalCount || data.usersList?.length || 0;
       const totalSets = Math.max(1, Math.ceil(totalCount / EMAIL_BATCH_SIZE));
       // By default select first set (Set 1)
       setSelectedSetIndex(0);
@@ -890,7 +1166,8 @@ const AudienceCampaigns = () => {
 
   const totalCustomerCount =
     campaignTarget?.data?.totalCount ||
-    (campaignTarget?.data?.usersList?.length || 0);
+    campaignTarget?.data?.usersList?.length ||
+    0;
   const totalCalculatedSets = Math.max(
     1,
     Math.ceil((totalCustomerCount || 1) / EMAIL_BATCH_SIZE),
@@ -995,7 +1272,14 @@ const AudienceCampaigns = () => {
       });
 
       try {
-        let contacts = await fetchContactsForSet(config, i, EMAIL_BATCH_SIZE);
+        message.loading({
+          content: `Fetching contacts for Set ${i + 1} (up to ${EMAIL_BATCH_SIZE.toLocaleString()} records)...`,
+          key: "campaign",
+        });
+
+        // Use the cache-based fetch so sets never overlap or re-scan
+        let contacts = await ensureContactsForSet(config, i);
+
         if (!contacts || contacts.length === 0) {
           const fallback = extractEmailContacts(
             campaignTarget?.data?.usersList || [],
@@ -1011,6 +1295,18 @@ const AudienceCampaigns = () => {
           );
         }
 
+        if (!contacts || contacts.length === 0) {
+          throw new Error(
+            `No valid email contacts could be found for Set ${i + 1}`,
+          );
+        }
+
+        message.loading({
+          content: `Dispatching ${contacts.length.toLocaleString()} emails for Set ${i + 1}...`,
+          key: "campaign",
+        });
+
+        // One combined Excel file for the whole set — sent in a single API call.
         const fileBlob = buildContactsExcelBlob(contacts);
         const formData = new FormData();
         formData.append("file", fileBlob, `contacts-set-${i + 1}.xlsx`);
@@ -1045,7 +1341,7 @@ const AudienceCampaigns = () => {
           }`,
         );
         setCampaignSending(false);
-        return; // stop on failure so user can retry
+        return;
       }
     }
 
@@ -1134,8 +1430,13 @@ const AudienceCampaigns = () => {
         key: "name",
         render: (_, record) => {
           const name =
+            record.candidateName ||
+            record.holdersName ||
             record.userName ||
             record.name ||
+            (record.firstName
+              ? `${record.firstName} ${record.lastName || ""}`.trim()
+              : null) ||
             (record.name1
               ? `${record.name1} ${record.name2 || ""}`.trim()
               : null) ||
@@ -1148,6 +1449,16 @@ const AudienceCampaigns = () => {
               {record.userType && (
                 <Tag color="blue" className="mt-1 text-xs">
                   {record.userType}
+                </Tag>
+              )}
+              {record.designation && (
+                <Tag color="purple" className="mt-1 text-xs">
+                  {record.designation}
+                </Tag>
+              )}
+              {record.title && (
+                <Tag color="cyan" className="mt-1 text-xs">
+                  {record.title}
                 </Tag>
               )}
             </div>
@@ -1163,6 +1474,11 @@ const AudienceCampaigns = () => {
             record.mobileNumber ||
             record.mobile ||
             record.phone ||
+            record.phoneNumber ||
+            record.mobileNo ||
+            record.contactNo ||
+            record.telephoneR ||
+            record.telephoneO ||
             record.secondaryMobile ||
             record.businessPhone;
           return mob && String(mob) !== "null" ? (
@@ -1183,7 +1499,10 @@ const AudienceCampaigns = () => {
             record.whastappNumber ||
             record.whatsappNumber ||
             record.mobileNumbers ||
-            record.mobileNumber;
+            record.mobileNumber ||
+            record.mobileNo ||
+            record.contactNo ||
+            record.phoneNumber;
           return wa && String(wa) !== "null" ? (
             <span className="font-semibold text-green-800 bg-green-50 px-2 py-0.5 rounded border border-green-200 text-xs">
               <WhatsAppOutlined className="mr-1 text-green-600" />
@@ -1202,7 +1521,13 @@ const AudienceCampaigns = () => {
             record.emails ||
             record.email ||
             record.emailId ||
-            record.businessEmail;
+            record.mailId ||
+            record.emailIds ||
+            record.emailAddress ||
+            record.email1 ||
+            record.email2 ||
+            record.businessEmail ||
+            record.mail;
           return em && String(em) !== "null" ? (
             <span className="text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-xs">
               <MailOutlined className="mr-1 text-blue-600" />
@@ -1219,15 +1544,32 @@ const AudienceCampaigns = () => {
         render: (_, record) => {
           return (
             <div className="text-xs text-gray-600 space-y-0.5">
+              {record.email1 && record.email2 && (
+                <div>✉ Email 2: {record.email2}</div>
+              )}
+              {record.currentDesignationAndCompany && (
+                <div>💼 {record.currentDesignationAndCompany}</div>
+              )}
+              {record.company && <div>🏢 {record.company}</div>}
+              {record.jobTitle && <div>💼 {record.jobTitle}</div>}
+              {record.workExperience && <div>⏱ Exp: {record.workExperience}</div>}
+              {record.salary && <div>💰 CTC: {record.salary}</div>}
+              {record.keySkills && <div>🛠 Skills: {record.keySkills}</div>}
+              {record.officeNumber && <div>☎ Office: {record.officeNumber}</div>}
+              {record.officeAddress && <div>🏛 {record.officeAddress}</div>}
               {record.clubName && <div>🏢 Club: {record.clubName}</div>}
               {record.city && (
                 <div>
                   📍 {record.city}
+                  {record.pin ? ` - ${record.pin}` : ""}
                   {record.state ? `, ${record.state}` : ""}
                 </div>
               )}
+              {record.location && <div>📍 {record.location}</div>}
               {record.classification && <div>💼 {record.classification}</div>}
-              {record.address && !record.city && <div>📍 {record.address}</div>}
+              {record.address && !record.city && !record.officeAddress && (
+                <div>📍 {record.address}</div>
+              )}
               {record.comments && <div>💬 {record.comments}</div>}
             </div>
           );
@@ -1319,7 +1661,7 @@ const AudienceCampaigns = () => {
               <div className="h-px bg-emerald-100/70 my-3.5" />
               <div className="text-[11px] text-slate-500 font-medium truncate">
                 AskOxy · Kukatpally · Thalwar · Advocates · Mumbai · Rotary ·
-                CBS · FTCCI
+                CBS · FTCCI · Radha · AMFI · Naukri · Tahsildar · Active Membership · AMS · Saksham · TiE · Two Years
               </div>
             </div>
           </Col>
@@ -1649,10 +1991,7 @@ const AudienceCampaigns = () => {
                 rules={[{ required: true, message: "Platform is required" }]}
                 initialValue="askoxy"
               >
-                <Select
-                  className="rounded-lg h-9"
-                  options={PLATFORM_OPTIONS}
-                />
+                <Select className="rounded-lg h-9" options={PLATFORM_OPTIONS} />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
@@ -1663,7 +2002,9 @@ const AudienceCampaigns = () => {
                   </span>
                 }
                 name="campaignName"
-                rules={[{ required: true, message: "Campaign name is required" }]}
+                rules={[
+                  { required: true, message: "Campaign name is required" },
+                ]}
               >
                 <Input
                   placeholder="e.g. Festival Update 2026"
@@ -1789,7 +2130,9 @@ const AudienceCampaigns = () => {
               </div>
             }
             name="messageText"
-            rules={[{ required: true, message: "Please enter message content" }]}
+            rules={[
+              { required: true, message: "Please enter message content" },
+            ]}
           >
             <TextArea
               rows={5}
@@ -1867,8 +2210,9 @@ const AudienceCampaigns = () => {
                   <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <DatabaseOutlined className="text-indigo-600" />
                     <span>
-                      Select Recipient Set (500 recipients per set)
-                    </span>
+                      Select Recipient Set ({EMAIL_BATCH_SIZE.toLocaleString()}{" "}
+                      recipients per set)
+                    </span>{" "}
                   </div>
                   <div className="text-[11px] text-slate-500 mt-0.5">
                     Total Pool:{" "}
@@ -1882,10 +2226,18 @@ const AudienceCampaigns = () => {
                   type="link"
                   icon={<DownloadOutlined />}
                   className="text-xs font-semibold p-0 text-slate-600 hover:text-indigo-600 flex items-center gap-1"
-                  onClick={() => handleDownloadExcel(campaignTarget?.config)}
-                  loading={downloadingId === campaignTarget?.config?.id}
+                  onClick={() =>
+                    handleDownloadSetExcel(
+                      campaignTarget?.config,
+                      selectedSetIndex,
+                    )
+                  }
+                  loading={
+                    downloadingId ===
+                    `${campaignTarget?.config?.id}-set-${selectedSetIndex}`
+                  }
                 >
-                  Export Excel
+                  Export Set {selectedSetIndex + 1} Excel
                 </Button>
               </div>
 
@@ -1926,16 +2278,21 @@ const AudienceCampaigns = () => {
                 <div>
                   Selected Target:{" "}
                   <strong className="text-indigo-600 font-bold">
-                    Set {(selectedSetIndex !== null && selectedSetIndex !== undefined ? selectedSetIndex + 1 : 1)}
+                    Set{" "}
+                    {selectedSetIndex !== null && selectedSetIndex !== undefined
+                      ? selectedSetIndex + 1
+                      : 1}
                   </strong>{" "}
                   (
                   {(
-                    (selectedSetIndex || 0) * EMAIL_BATCH_SIZE + 1
+                    (selectedSetIndex || 0) * EMAIL_BATCH_SIZE +
+                    1
                   ).toLocaleString()}{" "}
                   -{" "}
                   {Math.min(
                     ((selectedSetIndex || 0) + 1) * EMAIL_BATCH_SIZE,
-                    totalCustomerCount || ((selectedSetIndex || 0) + 1) * EMAIL_BATCH_SIZE,
+                    totalCustomerCount ||
+                      ((selectedSetIndex || 0) + 1) * EMAIL_BATCH_SIZE,
                   ).toLocaleString()}
                   ) · approx{" "}
                   <strong className="text-slate-800">
@@ -1943,7 +2300,8 @@ const AudienceCampaigns = () => {
                       EMAIL_BATCH_SIZE,
                       Math.max(
                         0,
-                        totalCustomerCount - (selectedSetIndex || 0) * EMAIL_BATCH_SIZE,
+                        totalCustomerCount -
+                          (selectedSetIndex || 0) * EMAIL_BATCH_SIZE,
                       ),
                     ).toLocaleString()}{" "}
                     recipients
@@ -2117,7 +2475,10 @@ const AudienceCampaigns = () => {
                 </div>
               </div>
             </div>
-            <Tag color="indigo" className="text-xs font-semibold px-2.5 py-0.5 m-0 uppercase">
+            <Tag
+              color="indigo"
+              className="text-xs font-semibold px-2.5 py-0.5 m-0 uppercase"
+            >
               BULK SPREADSHEET
             </Tag>
           </div>
@@ -2175,7 +2536,9 @@ const AudienceCampaigns = () => {
                 Click or drag Excel / CSV file here to upload
               </p>
               <p className="ant-upload-hint text-[11px] text-slate-400 m-0 mt-1">
-                Required columns: <code>clientEmail</code> (or <code>email</code>) and <code>clientName</code> (or <code>name</code>).
+                Required columns: <code>clientEmail</code> (or{" "}
+                <code>email</code>) and <code>clientName</code> (or{" "}
+                <code>name</code>).
               </p>
             </Upload.Dragger>
 
@@ -2187,7 +2550,9 @@ const AudienceCampaigns = () => {
                     {uploadedFile?.name}
                   </span>
                   <span className="text-[11px] text-emerald-600">
-                    · <strong>{uploadedContacts.length.toLocaleString()}</strong> valid email recipients parsed
+                    ·{" "}
+                    <strong>{uploadedContacts.length.toLocaleString()}</strong>{" "}
+                    valid email recipients parsed
                   </span>
                 </div>
                 <Tag color="success" className="text-xs font-bold m-0">
@@ -2210,10 +2575,7 @@ const AudienceCampaigns = () => {
                 rules={[{ required: true, message: "Platform is required" }]}
                 initialValue="askoxy"
               >
-                <Select
-                  className="rounded-lg h-9"
-                  options={PLATFORM_OPTIONS}
-                />
+                <Select className="rounded-lg h-9" options={PLATFORM_OPTIONS} />
               </Form.Item>
             </Col>
             <Col xs={24} sm={12}>
@@ -2224,7 +2586,9 @@ const AudienceCampaigns = () => {
                   </span>
                 }
                 name="campaignName"
-                rules={[{ required: true, message: "Campaign name is required" }]}
+                rules={[
+                  { required: true, message: "Campaign name is required" },
+                ]}
                 initialValue="Custom Bulk Campaign"
               >
                 <Input
@@ -2331,7 +2695,9 @@ const AudienceCampaigns = () => {
               </div>
             }
             name="messageText"
-            rules={[{ required: true, message: "Please enter message content" }]}
+            rules={[
+              { required: true, message: "Please enter message content" },
+            ]}
           >
             <TextArea
               rows={5}
@@ -2417,7 +2783,8 @@ const AudienceCampaigns = () => {
               icon={<SendOutlined />}
               className="rounded-lg font-bold shadow-md px-6 h-10 border-0 bg-indigo-600 hover:bg-indigo-700"
             >
-              Dispatch to {uploadedContacts.length.toLocaleString()} Uploaded Contact(s)
+              Dispatch to {uploadedContacts.length.toLocaleString()} Uploaded
+              Contact(s)
             </Button>
           </div>
         </Form>
@@ -2470,7 +2837,8 @@ const AudienceCampaigns = () => {
                   &gt;
                 </div>
                 <Tag color="blue" className="m-0 text-[10px]">
-                  {bulkForm.getFieldValue("platform")?.toUpperCase() || "ASKOXY"}
+                  {bulkForm.getFieldValue("platform")?.toUpperCase() ||
+                    "ASKOXY"}
                 </Tag>
               </div>
               <div className="text-xs text-slate-600 mb-1.5">
@@ -2481,7 +2849,8 @@ const AudienceCampaigns = () => {
                 <span className="font-semibold text-slate-400 text-xs">
                   Subject:{" "}
                 </span>{" "}
-                {bulkForm.getFieldValue("emailSubject") || "(No subject provided)"}
+                {bulkForm.getFieldValue("emailSubject") ||
+                  "(No subject provided)"}
               </div>
             </div>
 

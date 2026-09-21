@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import adminApi from "../../../core/config/axiosInstance";
 import { useAdminComments } from "../util/useAdminComments";
-import { Table, Button, Input, Skeleton, Tag } from "antd";
+import { Table, Button, Input, Skeleton, Tag, DatePicker } from "antd";
 import {
   ReloadOutlined,
   SearchOutlined,
@@ -10,6 +11,7 @@ import {
   HistoryOutlined,
   BarChartOutlined,
   LineChartOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
@@ -24,6 +26,8 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(weekday);
 dayjs.extend(isoWeek);
+
+const { RangePicker } = DatePicker;
 
 /* ── Page skeleton while first load ─────────────────────── */
 function PageSkeleton() {
@@ -149,12 +153,14 @@ const TABLE_COMPONENTS = {
 };
 
 export default function InterestedPage() {
+  const navigate = useNavigate();
   const [all, setAll] = useState([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [dateRange, setDateRange] = useState(null);
   const [activeFilter, setActiveFilter] = useState("total");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 10;
@@ -227,6 +233,15 @@ export default function InterestedPage() {
         (r.journeyName || "").toLowerCase().includes(q)
       );
     })
+    .filter((r) => {
+      if (!dateRange || !dateRange[0] || !dateRange[1]) return true;
+      if (!r.createdAt) return false;
+      const d = dayjs(r.createdAt);
+      return (
+        d.isSameOrAfter(dateRange[0].startOf("day")) &&
+        d.isSameOrBefore(dateRange[1].endOf("day"))
+      );
+    })
     .sort(
       (a, b) =>
         (parseServerDate(b.createdAt)?.getTime() ?? 0) -
@@ -250,6 +265,7 @@ export default function InterestedPage() {
     setPage(0);
     setSearchInput("");
     setSearch("");
+    setDateRange(null);
   };
 
   const columns = [
@@ -366,20 +382,34 @@ width: 220,
             </div>
           </div>
         </div>
-        <Button
-          icon={<ReloadOutlined />}
-          onClick={fetchData}
-          style={{
-            borderRadius: 8,
-            height: 32,
-            fontWeight: 600,
-            fontSize: 12,
-            border: "1px solid #e2e8f0",
-            flexShrink: 0,
-          }}
-        >
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            icon={<TrophyOutlined />}
+            onClick={() => navigate("/oxyone/journeyScorecard")}
+            style={{
+              borderRadius: 8,
+              height: 32,
+              fontWeight: 600,
+              fontSize: 12,
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            Interested Scorecard
+          </Button>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={fetchData}
+            style={{
+              borderRadius: 8,
+              height: 32,
+              fontWeight: 600,
+              fontSize: 12,
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* ── Stat Cards (clickable filters) ── */}
@@ -479,6 +509,16 @@ width: 220,
                 }}
                 allowClear
                 style={{ width: 240, borderRadius: 7, height: 30 }}
+              />
+              <RangePicker
+                value={dateRange}
+                onChange={(vals) => {
+                  setDateRange(vals);
+                  setPage(0);
+                }}
+                format="DD-MM-YYYY"
+                allowClear
+                style={{ borderRadius: 7, height: 30 }}
               />
               <Button
                 icon={<SearchOutlined />}

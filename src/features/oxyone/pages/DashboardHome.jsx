@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { SECTIONS } from "./config.jsx";
 import { PRODUCT_COUNTS } from "../util/productCounts.js";
 import { fetchSectionRows } from "./sectionData.js";
+import { JOURNEY_CATEGORIES, classifyJourney, inTimeBucket } from "./journeyCategories";
+import adminApi from "../../../core/config/axiosInstance";
 import { UsergroupAddOutlined } from "@ant-design/icons";
 import {
   Bar, BarChart, CartesianGrid, Cell, LabelList,
@@ -23,6 +25,9 @@ const PRODUCT_CARDS = [
   { key: "partnerlender",  color: "#059669" },
   { key: "interested",     color: "#e11d48" },
 ];
+
+// All product cards roll up into the registered-users totals below.
+const TOTAL_CARDS = PRODUCT_CARDS;
 
 // Shorter names for these dashboard cards only — SECTIONS[key].title still
 // carries the full "OxyLoans Lender"/"OxyLoans Borrower" name used for the
@@ -52,25 +57,56 @@ function formatCount(n) {
   return Number(n).toLocaleString();
 }
 
-function ProductCard({ item, i, navigate, count, loading, label }) {
-  const cfg = SECTIONS[item.key];
-  const color = item.color;
+function SummaryCard({ icon, title, subtitle, value, unit, loading, accent, gradient, bg, border }) {
   return (
     <div
-      onClick={() => navigate(`/oxyone/${item.key}`)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/oxyone/${item.key}`); } }}
+      className="relative overflow-hidden rounded-xl p-3.5 min-w-0"
+      style={{ background: bg, border: `2px solid ${border}`, boxShadow: `0 2px 10px ${accent}12` }}
+    >
+      <div className="flex items-center gap-2.5 mb-2">
+        <div
+          className="w-8 h-8 rounded-lg grid place-items-center text-sm flex-shrink-0"
+          style={{ background: gradient, color: "#fff", boxShadow: `0 3px 8px ${accent}30` }}
+        >
+          {icon}
+        </div>
+        <div className="text-[12.5px] font-black text-slate-800 leading-tight truncate">{title}</div>
+      </div>
+      {loading && value == null ? (
+        <div className="h-8 w-24 rounded-lg animate-pulse bg-white/60" />
+      ) : (
+        <div className="text-2xl font-black leading-none" style={{ color: accent }}>
+          {value == null ? "—" : value.toLocaleString()}
+        </div>
+      )}
+      <div className="text-[10px] text-slate-400 font-semibold mt-1">{unit}</div>
+      <div className="text-[10px] text-slate-400 mt-1 leading-snug">{subtitle}</div>
+    </div>
+  );
+}
+
+function ProductCard({ item, i, navigate, count, loading, label, icon, title, path, wrap }) {
+  const cfg = SECTIONS[item.key];
+  const color = item.color;
+  const cardIcon = icon ?? cfg.icon;
+  const cardTitle = title ?? (CARD_TITLE_OVERRIDES[item.key] ?? cfg.title);
+  const dest = `/oxyone/${path ?? item.key}`;
+  return (
+    <div
+      onClick={() => navigate(dest)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(dest); } }}
       role="button"
       tabIndex={0}
-      className="group h-[100px] rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2"
-      style={{ animationDelay: `${i * 50}ms`, animation: "fadeUp .5s ease both", background: "#ffffff", border: `1.5px solid ${color}40`, boxShadow: `0 2px 8px ${color}15` }}
+      className={`group ${wrap ? "h-[150px]" : "h-[100px]"} rounded-xl cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg relative overflow-hidden focus:outline-none focus:ring-2 focus:ring-offset-2`}
+      style={{ animationDelay: `${i * 50}ms`, animation: "fadeUp .5s ease both", background: "#ffffff", border: `2px solid ${color}65`, boxShadow: `0 2px 8px ${color}15` }}
     >
       <div className="absolute -right-6 -bottom-8 w-24 h-24 rounded-full pointer-events-none transition-transform duration-300 group-hover:scale-125" style={{ background: `${color}0d` }} />
-      <div className="relative z-10 h-full flex items-center gap-2.5 px-3">
+      <div className={`relative z-10 flex items-center gap-2.5 px-3 h-full ${wrap ? "py-3" : ""}`}>
         <div className="w-9 h-9 rounded-lg grid place-items-center text-base flex-shrink-0 transition-transform duration-200 group-hover:scale-110" style={{ background: `${color}12`, color }}>
-          {cfg.icon}
+          {cardIcon}
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-medium text-slate-800 truncate">{CARD_TITLE_OVERRIDES[item.key] ?? cfg.title}</div>
+          <div className={`text-sm font-medium text-slate-800 ${wrap ? "leading-snug" : "truncate"}`}>{cardTitle}</div>
           {label && <div className="text-[10px] font-bold mt-0.5" style={{ color }}>{label}</div>}
           {loading ? (
             <div className="h-7 w-16 bg-white/60 animate-pulse mt-1" />
@@ -84,6 +120,7 @@ function ProductCard({ item, i, navigate, count, loading, label }) {
     </div>
   );
 }
+
 
 export default function DashboardHome() {
   const navigate = useNavigate();
@@ -107,25 +144,29 @@ export default function DashboardHome() {
     Object.fromEntries(PRODUCT_CARDS.map((c) => [c.key, !!TODAY_FETCHERS[c.key]]))
   );
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadProductCounts = () => {
     PRODUCT_CARDS.forEach(({ key }) => {
       const fn = FETCHERS[key];
       if (fn) {
         fn()
-          .then((v) => { if (!cancelled) setCounts((c) => ({ ...c, [key]: v })); })
-          .catch(() => { if (!cancelled) setCounts((c) => ({ ...c, [key]: null })); })
-          .finally(() => { if (!cancelled) setLoading((l) => ({ ...l, [key]: false })); });
+          .then((v) => setCounts((c) => ({ ...c, [key]: v })))
+          .catch(() => setCounts((c) => ({ ...c, [key]: c[key] ?? null })))
+          .finally(() => setLoading((l) => ({ ...l, [key]: false })));
       }
       const tf = TODAY_FETCHERS[key];
       if (tf) {
         tf()
-          .then((v) => { if (!cancelled) setTodayCounts((c) => ({ ...c, [key]: v })); })
-          .catch(() => { if (!cancelled) setTodayCounts((c) => ({ ...c, [key]: null })); })
-          .finally(() => { if (!cancelled) setTodayLoading((l) => ({ ...l, [key]: false })); });
+          .then((v) => setTodayCounts((c) => ({ ...c, [key]: v })))
+          .catch(() => setTodayCounts((c) => ({ ...c, [key]: c[key] ?? null })))
+          .finally(() => setTodayLoading((l) => ({ ...l, [key]: false })));
       }
     });
-    return () => { cancelled = true; };
+  };
+
+  useEffect(() => {
+    loadProductCounts();
+    const id = setInterval(loadProductCounts, 30_000);
+    return () => clearInterval(id);
   }, []);
 
   const loadCampaignCounts = () => {
@@ -155,6 +196,32 @@ export default function DashboardHome() {
     return () => clearInterval(id);
   }, []);
 
+  const [journeyAll, setJourneyAll] = useState([]);
+  const [journeyLoading, setJourneyLoading] = useState(true);
+
+  const loadJourneyData = () => {
+    adminApi
+      .get("/marketing-service/campgin/getAllInterestedUsres")
+      .then((res) => setJourneyAll(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {})
+      .finally(() => setJourneyLoading(false));
+  };
+
+  useEffect(() => {
+    loadJourneyData();
+    const id = setInterval(loadJourneyData, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const journeyCards = JOURNEY_CATEGORIES.map((cat) => {
+    const rows = journeyAll.filter((r) => classifyJourney(r) === cat.key);
+    return {
+      ...cat,
+      total: rows.length,
+      today: rows.filter((r) => inTimeBucket(r, "today")).length,
+    };
+  });
+
   const chartData = PRODUCT_CARDS.map(({ key, color }) => ({
     key,
     name: SECTIONS[key].title.replace("OxyLoans ", ""),
@@ -164,142 +231,54 @@ export default function DashboardHome() {
 
   // Grand total — sums all resolved counts, updates live as each platform resolves
   const grandTotal = useMemo(() => {
-    const vals = PRODUCT_CARDS.map(({ key }) => counts[key]).filter((v) => v != null);
-    return vals.length === PRODUCT_CARDS.length
+    const vals = TOTAL_CARDS.map(({ key }) => counts[key]).filter((v) => v != null);
+    return vals.length === TOTAL_CARDS.length
       ? vals.reduce((a, b) => a + b, 0)
       : null;
   }, [counts]);
 
-  const allLoading = PRODUCT_CARDS.some(({ key }) => loading[key]);
+  const allLoading = TOTAL_CARDS.some(({ key }) => loading[key]);
   const totalUser = grandTotal != null && campaignTotal != null
     ? grandTotal + campaignTotal
     : null;
   const totalUserLoading = allLoading || campaignLoadingState;
 
-  // Auto-refresh every 30 seconds to stay dynamic
-  useEffect(() => {
-    const id = setInterval(() => {
-      PRODUCT_CARDS.forEach(({ key }) => {
-        const fn = FETCHERS[key];
-        if (fn) fn().then((v) => setCounts((c) => ({ ...c, [key]: v ?? c[key] }))).catch(() => {});
-      });
-    }, 30_000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <div className="flex flex-col gap-5" style={{ animation: "fadeUp .3s ease both" }}>
 
-      {/* ── Total users banner ── */}
-      <div
-        className="relative overflow-hidden rounded-xl px-5 py-3 flex items-center justify-between gap-3"
-        style={{
-          background: "linear-gradient(135deg,#ecfdf5 0%,#d1fae5 50%,#eff6ff 100%)",
-          border: "1px solid #a7f3d0",
-          boxShadow: "0 2px 12px #05966910",
-        }}
-      >
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="w-10 h-10 rounded-lg grid place-items-center text-lg flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#059669,#047857)", color: "#fff", boxShadow: "0 4px 12px #05966930" }}
-          >
-            <UsergroupAddOutlined />
-          </div>
-          <div>
-            <div className="text-slate-800 font-black text-[16px] mt-0.5 leading-tight">Total User</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Registered users plus campaign records</div>
-          </div>
-        </div>
+      {/* ── Summary cards: total user / registered / campaign ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <SummaryCard
+          icon={<UsergroupAddOutlined />}
+          title="Total User"
+          value={totalUser}
+          loading={totalUserLoading}
+          accent="#059669"
+          gradient="linear-gradient(135deg,#059669,#047857)"
+          bg="linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%)"
+          border="#a7f3d0"
+        />
+        <SummaryCard
+          icon={<UsergroupAddOutlined />}
+          title="Total Registered Users"
 
-        <div className="relative z-10 text-right flex-shrink-0">
-          {totalUserLoading && totalUser == null ? (
-            <div className="h-10 w-28 rounded-xl animate-pulse bg-slate-200" />
-          ) : (
-            <>
-              <div className="text-3xl font-black leading-none" style={{ color: "#059669" }}>
-                {totalUser == null ? "—" : totalUser.toLocaleString()}
-              </div>
-              <div className="text-[11px] text-slate-400 font-semibold mt-1">total users</div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ── Grand Total Banner ── */}
-      <div
-        className="relative overflow-hidden rounded-xl px-5 py-3 flex items-center justify-between gap-3"
-        style={{
-          background: "linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 50%,#f0fdf4 100%)",
-          border: "1px solid #bae6fd",
-          boxShadow: "0 2px 12px #0891b210",
-        }}
-      >
-        {/* bg decoration */}
-        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full pointer-events-none" style={{ background: "#0891b208" }} />
-        <div className="absolute right-20 bottom-0 w-20 h-20 rounded-full pointer-events-none" style={{ background: "#05966908" }} />
-
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="w-10 h-10 rounded-lg grid place-items-center text-lg flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#0891b2,#0e7490)", color: "#fff", boxShadow: "0 4px 12px #0891b230" }}
-          >
-            <UsergroupAddOutlined />
-          </div>
-          <div>
-            <div className="text-slate-800 font-black text-[16px] mt-0.5 leading-tight">Total Registered Users</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Live count across all OXYONE products</div>
-          </div>
-        </div>
-
-        <div className="relative z-10 text-right flex-shrink-0">
-          {allLoading && grandTotal == null ? (
-            <div className="h-10 w-28 rounded-xl animate-pulse bg-slate-200" />
-          ) : (
-            <>
-              <div className="text-3xl font-black leading-none" style={{ color: "#0891b2" }}>
-                {grandTotal == null ? "—" : grandTotal.toLocaleString()}
-              </div>
-              <div className="text-[11px] text-slate-400 font-semibold mt-1">registered users</div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ── Total campaign records ── */}
-      <div
-        className="relative overflow-hidden rounded-xl px-5 py-3 flex items-center justify-between gap-3"
-        style={{
-          background: "linear-gradient(135deg,#fff7ed 0%,#fef3c7 50%,#f0fdf4 100%)",
-          border: "1px solid #fde68a",
-          boxShadow: "0 2px 12px #d9770610",
-        }}
-      >
-        <div className="relative z-10 flex items-center gap-4">
-          <div
-            className="w-10 h-10 rounded-lg grid place-items-center text-lg flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#d97706,#b45309)", color: "#fff", boxShadow: "0 4px 12px #d9770630" }}
-          >
-            <UsergroupAddOutlined />
-          </div>
-          <div>
-            <div className="text-slate-800 font-black text-[16px] mt-0.5 leading-tight">Total Campaign Records</div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Live count across all campaign data</div>
-          </div>
-        </div>
-
-        <div className="relative z-10 text-right flex-shrink-0">
-          {campaignLoadingState && campaignTotal == null ? (
-            <div className="h-10 w-28 rounded-xl animate-pulse bg-slate-200" />
-          ) : (
-            <>
-              <div className="text-3xl font-black leading-none" style={{ color: "#d97706" }}>
-                {campaignTotal == null ? "—" : campaignTotal.toLocaleString()}
-              </div>
-              <div className="text-[11px] text-slate-400 font-semibold mt-1">total records</div>
-            </>
-          )}
-        </div>
+          value={grandTotal}
+          loading={allLoading}
+          accent="#0891b2"
+          gradient="linear-gradient(135deg,#0891b2,#0e7490)"
+          bg="linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 100%)"
+          border="#bae6fd"
+        />
+        <SummaryCard
+          icon={<UsergroupAddOutlined />}
+          title="Total Campaign Records"
+          value={campaignTotal}
+          loading={campaignLoadingState}
+          accent="#d97706"
+          gradient="linear-gradient(135deg,#d97706,#b45309)"
+          bg="linear-gradient(135deg,#fff7ed 0%,#fef3c7 100%)"
+          border="#fde68a"
+        />
       </div>
 
       {/* ── Today's registrations ── */}
@@ -322,21 +301,47 @@ export default function DashboardHome() {
         </div>
       </div>
 
-      {/* ── Total user cards ── */}
-      <div className="text-[15px] font-black text-slate-900 mt-4 mb-0">
-        Users Across All OXYONE products.
+      {/* ── Interested Users ── */}
+      <div>
+        <div className="text-[15px] font-black text-slate-900 mb-2">
+          Today's Interested Users
+        </div>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
+          {journeyCards.map((card, i) => (
+            <ProductCard
+              key={`journey-${card.key}`}
+              item={card}
+              i={i}
+              navigate={navigate}
+              count={card.today}
+              loading={journeyLoading}
+              label="Today"
+              icon={card.icon}
+              title={card.label}
+              path={`journeyScorecard/${card.key}`}
+              wrap
+            />
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
-        {PRODUCT_CARDS.map((item, i) => (
-          <ProductCard
-            key={item.key}
-            item={item}
-            i={i}
-            navigate={navigate}
-            count={counts[item.key]}
-            loading={!!loading[item.key]}
-          />
-        ))}
+
+      {/* ── Total user cards ── */}
+      <div>
+        <div className="text-[15px] font-black text-slate-900 mb-2">
+          Users Across All OXYONE products.
+        </div>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
+          {PRODUCT_CARDS.map((item, i) => (
+            <ProductCard
+              key={item.key}
+              item={item}
+              i={i}
+              navigate={navigate}
+              count={counts[item.key]}
+              loading={!!loading[item.key]}
+            />
+          ))}
+        </div>
       </div>
 
       {/* ── Bar chart ── */}

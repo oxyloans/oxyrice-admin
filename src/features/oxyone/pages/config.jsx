@@ -29,6 +29,7 @@ export const NAV_SECTIONS = [
       { icon: "oxygold", label: "OxyGold", key: "oxygold" },
       { icon: "partnerlender", label: "Oxyloans Partner", key: "partnerlender" },
       { icon: "interested", label: "Interested", key: "interested" },
+      { icon: "journeyScorecard", label: "Interested Scorecard", key: "journeyScorecard" },
     ],
   },
   {
@@ -136,6 +137,12 @@ export const SECTIONS = {
     subtitle: "Users who expressed interest",
     color: "#e11d48",
     icon: <StarOutlined />,
+  },
+  journeyScorecard: {
+    title: "Interested Scorecard",
+    subtitle: "Today/Yesterday/Week/Month per registration journey",
+    color: "#0284c7",
+    icon: <TrophyOutlined />,
   },
   settings: {
     title: "Settings",

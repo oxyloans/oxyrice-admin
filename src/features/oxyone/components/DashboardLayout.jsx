@@ -20,6 +20,7 @@ import "antd/dist/reset.css";
 import "./OxyoneTables.css";
 import { OxyMark } from "../pages/icons";
 import { NAV_SECTIONS, SECTIONS } from "../pages/config.jsx";
+import { JOURNEY_CATEGORIES } from "../pages/journeyCategories";
 
 const SIDEBAR_ICONS = {
   dashboard: <DashboardOutlined />,
@@ -31,6 +32,7 @@ const SIDEBAR_ICONS = {
   partner: <TeamOutlined />,
   partnerlender: <TeamOutlined />,
   interested: <StarOutlined />,
+  journeyScorecard: <TrophyOutlined />,
   settings: <SettingOutlined />,
   logout: <LogoutOutlined />,
   database: <DatabaseOutlined />,
@@ -41,6 +43,26 @@ function useActiveSection() {
   if (pathname === "/oxyone" || pathname === "/oxyone/") return "dashboard";
   const match = pathname.match(/^\/oxyone\/([^/]+)/);
   return match ? match[1] : "dashboard";
+}
+
+// On a specific journey's page (/oxyone/journeyScorecard/:journeyKey), the
+// header should show that journey's own name/icon/color instead of the
+// generic "Interested Scorecard" section title.
+function useHeaderInfo(activeSection) {
+  const { pathname } = useLocation();
+  if (activeSection === "journeyScorecard") {
+    const match = pathname.match(/^\/oxyone\/journeyScorecard\/([^/]+)/);
+    const journey = match && JOURNEY_CATEGORIES.find((c) => c.key === match[1]);
+    if (journey) {
+      return {
+        title: journey.label,
+        subtitle: "Registration journey",
+        color: journey.color,
+        icon: journey.icon,
+      };
+    }
+  }
+  return SECTIONS[activeSection];
 }
 
 // Hoisted out of DashboardLayout: defining this inline in the render body
@@ -184,6 +206,7 @@ export default function DashboardLayout() {
   const [searchFocused, setSearchFocused] = useState(false);
   const navigate = useNavigate();
   const activeSection = useActiveSection();
+  const headerInfo = useHeaderInfo(activeSection);
   const searchRef = useRef(null);
 
   // Close mobile drawer on route change
@@ -325,24 +348,24 @@ export default function DashboardLayout() {
         </button>
 
         {/* Active page title */}
-        {SECTIONS[activeSection] && (
+        {headerInfo && (
           <div className="flex items-center gap-2.5 min-w-0">
             <span
               className="w-9 h-9 rounded-xl grid place-items-center text-base flex-shrink-0"
               style={{
-                background: SECTIONS[activeSection].color + "18",
-                color: SECTIONS[activeSection].color,
+                background: headerInfo.color + "18",
+                color: headerInfo.color,
               }}
             >
-              {SECTIONS[activeSection].icon}
+              {headerInfo.icon}
             </span>
             <div className="flex flex-col leading-tight min-w-0">
               <span className="text-[17px] font-extrabold text-slate-900 truncate tracking-tight">
-                {SECTIONS[activeSection].title}
+                {headerInfo.title}
               </span>
-              {SECTIONS[activeSection].subtitle && (
+              {headerInfo.subtitle && (
                 <span className="text-[11px] text-slate-400 font-medium truncate">
-                  {SECTIONS[activeSection].subtitle}
+                  {headerInfo.subtitle}
                 </span>
               )}
             </div>
