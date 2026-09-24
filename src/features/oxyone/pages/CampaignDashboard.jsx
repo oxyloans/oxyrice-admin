@@ -2,25 +2,12 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { DatabaseOutlined } from "@ant-design/icons";
 import { SECTIONS } from "./config.jsx";
-import { readSessionCache, writeSessionCache, fetchSectionRows } from "./sectionData.js";
-
-// One entry per Campaign Data dataset — mirrors the "Campaign Data" group in
-// config.jsx's NAV_SECTIONS (minus this dashboard itself).
-const CAMPAIGN_KEYS = [
-  "rotaryData",
-  "cbsData",
-  "advocatesData",
-  "ftcciData",
-  "mumbaiData",
-  "kukatpallyData",
-  "talwarData",
-  "ramMohanDarisaData",
-  "amfiData",
-  "radhaLinkedinData",
-  "naukariData",
-  "sudheerData",
-  "tahsildarData",
-];
+import {
+  CAMPAIGN_KEYS,
+  readSessionCache,
+  writeSessionCache,
+  fetchSectionRows,
+} from "./sectionData.js";
 
 function formatCount(n) {
   return Number(n).toLocaleString();

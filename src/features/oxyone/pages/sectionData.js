@@ -7,6 +7,32 @@ import adminApi, { ensureFreshAccessToken } from "../../../core/config/axiosInst
 export const CACHE_PREFIX = "oxyoneSectionCache:";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
+export const CAMPAIGN_KEYS = [
+  "askoxyHelpdeskData",
+  "rotaryData",
+  "cbsData",
+  "advocatesData",
+  "ftcciData",
+  "mumbaiData",
+  "kukatpallyData",
+  "talwarData",
+  "ramMohanDarisaData",
+  "amfiData",
+  "radhaLinkedinData",
+  "naukariData",
+  "sudheerData",
+  "tahsildarData",
+  "activeMembershipData",
+  "amsLostCustomerData",
+  "clientWiseAumData",
+  "k2kFintechData",
+  "sakshamData",
+  "tieData",
+  "twoYearsServiceData",
+  "unknownData",
+  "naukriRasData",
+];
+
 export function readSessionCache(key) {
   try {
     const raw = sessionStorage.getItem(CACHE_PREFIX + key);
@@ -31,6 +57,7 @@ export function writeSessionCache(key, rows, total) {
 }
 
 export const isDirectAskoxyRequest = (endpoint = "") =>
+  endpoint.includes("allOxyUsersAssignedToHelpDesk") ||
   endpoint.includes("rotary-data") ||
   endpoint.includes("getAllCbsData") ||
   endpoint.includes("getAllAdvocatesData") ||
@@ -43,7 +70,16 @@ export const isDirectAskoxyRequest = (endpoint = "") =>
   endpoint.includes("radha-linkedin") ||
   endpoint.includes("sa-naukari-records") ||
   endpoint.includes("sudheer-data") ||
-  endpoint.includes("tahsildar");
+  endpoint.includes("tahsildar") ||
+  endpoint.includes("active-membership") ||
+  endpoint.includes("ams-lost-customer-data") ||
+  endpoint.includes("client-wise-aum-report") ||
+  endpoint.includes("k2k-fintech") ||
+  endpoint.includes("saksham") ||
+  endpoint.includes("tie-data") ||
+  endpoint.includes("two-years-service-data") ||
+  endpoint.includes("unknow-data") ||
+  endpoint.includes("naukri-ras");
 
 export const normalizeRows = (payload) => {
   if (Array.isArray(payload)) return payload;
@@ -160,6 +196,13 @@ export async function fetchSectionRows(cfg) {
 
   let rows = normalizeRows(res?.data ?? []);
   rows = rows.map((r) => {
+    if (cfg.mergeEmailFields) {
+      const email = cfg.mergeEmailFields
+        .map((key) => r[key])
+        .filter((value) => !isBlankValue(value))
+        .join("\n");
+      r = { ...r, email };
+    }
     if (!r.name && (r.name1 || r.name2)) {
       return { ...r, name: [r.name1, r.name2].filter(Boolean).join("\n") };
     }

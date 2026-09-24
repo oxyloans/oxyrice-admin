@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { SECTIONS } from "./config.jsx";
 import { PRODUCT_COUNTS } from "../util/productCounts.js";
-import { fetchSectionRows } from "./sectionData.js";
+import { CAMPAIGN_KEYS, fetchSectionRows } from "./sectionData.js";
 import { JOURNEY_CATEGORIES, classifyJourney, inTimeBucket } from "./journeyCategories";
 import adminApi from "../../../core/config/axiosInstance";
 import { UsergroupAddOutlined } from "@ant-design/icons";
@@ -36,22 +36,6 @@ const CARD_TITLE_OVERRIDES = {
   lender: "Lender",
   borrower: "Borrower",
 };
-
-const CAMPAIGN_KEYS = [
-  "rotaryData",
-  "cbsData",
-  "advocatesData",
-  "ftcciData",
-  "mumbaiData",
-  "kukatpallyData",
-  "talwarData",
-  "ramMohanDarisaData",
-  "amfiData",
-  "radhaLinkedinData",
-  "naukariData",
-  "sudheerData",
-  "tahsildarData",
-];
 
 function formatCount(n) {
   return Number(n).toLocaleString();
@@ -233,7 +217,7 @@ export default function DashboardHome() {
   const grandTotal = useMemo(() => {
     const vals = TOTAL_CARDS.map(({ key }) => counts[key]).filter((v) => v != null);
     return vals.length === TOTAL_CARDS.length
-      ? vals.reduce((a, b) => a + b, 0)
+      ? vals.reduce((total, value) => total + Number(value), 0)
       : null;
   }, [counts]);
 

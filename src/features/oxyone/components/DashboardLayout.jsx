@@ -5,6 +5,7 @@ import {
   BuildOutlined,
   DashboardOutlined,
   DatabaseOutlined,
+  DownOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -79,6 +80,7 @@ function SidebarContent({
   onCloseMobile,
 }) {
   const collapsed = !mobile && sidebarCollapsed;
+  const [campaignDataOpen, setCampaignDataOpen] = useState(true);
   return (
     <div className="flex flex-col h-full pt-4">
       {/* Logo */}
@@ -128,16 +130,30 @@ function SidebarContent({
           <div key={sec.label}>
             {/* Section label — hidden when collapsed */}
             {!collapsed && (
-              <div className="px-4 pt-3.5 pb-1 select-none">
+              <button
+                type="button"
+                onClick={() => {
+                  if (sec.label === "Campaign Data") {
+                    setCampaignDataOpen((open) => !open);
+                  }
+                }}
+                aria-expanded={sec.label === "Campaign Data" ? campaignDataOpen : undefined}
+                className={`w-full flex items-center justify-between px-4 pt-3.5 pb-1 select-none border-none bg-transparent text-left ${sec.label === "Campaign Data" ? "cursor-pointer" : "cursor-default"}`}
+              >
                 <span className="text-[10px] font-bold tracking-[1.2px] uppercase text-white/35">
                   {sec.label}
                 </span>
-              </div>
+                {sec.label === "Campaign Data" && (
+                  <DownOutlined
+                    className={`text-[9px] text-white/35 transition-transform ${campaignDataOpen ? "" : "-rotate-90"}`}
+                  />
+                )}
+              </button>
             )}
             {collapsed && (
               <div className="mx-3 my-2 border-t border-white/10" />
             )}
-            {sec.items.map((n) => {
+            {(sec.label !== "Campaign Data" || campaignDataOpen) && sec.items.map((n) => {
               const isActive = activeSection === n.key;
               return (
                 <button
