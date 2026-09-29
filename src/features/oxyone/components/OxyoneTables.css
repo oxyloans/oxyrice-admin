@@ -21,6 +21,37 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* Sidebar rows — premium smooth style */
+.oxyone-sidebar-nav {
+  padding: 0.3rem 0.5rem 0.25rem;
+}
+
+.oxy-side-row {
+  background: rgba(148, 163, 184, 0.02);
+  border-color: rgba(148, 163, 184, 0.06);
+  color: #e2e8f0;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  transition: all 0.2s ease;
+}
+
+.oxy-side-row:hover {
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.08), rgba(15, 23, 42, 0.18));
+  border-color: rgba(148, 163, 184, 0.12);
+  color: #ffffff;
+  transform: translateX(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 18px rgba(15, 23, 42, 0.18);
+}
+
+.oxy-side-row.is-active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(14, 165, 233, 0.18));
+  border-color: rgba(125, 211, 252, 0.28);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 24px rgba(59, 130, 246, 0.18);
+}
+
 /* Campaign Data section — admin dashboard style */
 
 .oxyone-section-card {

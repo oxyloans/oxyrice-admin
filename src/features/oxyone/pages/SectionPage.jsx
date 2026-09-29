@@ -28,6 +28,23 @@ function formatDate(value) {
   });
 }
 
+function formatDateOnly(value) {
+  const d = parseServerDate(value);
+  if (!d) return "—";
+  return d.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatRupees(value) {
+  if (value == null || value === "") return "—";
+  const n = Number(value);
+  if (Number.isNaN(n)) return value;
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
 // Age = time from when the query was raised to when it was closed
 // (resolvedOn), or to now if it's still open.
 function formatAge(row) {
@@ -380,6 +397,10 @@ function SectionTable({ cfg }) {
                         </span>
                       ) : k === "createdAt" || k === "resolvedOn" ? (
                         formatDate(row[k])
+                      ) : k === "fdCreated" ? (
+                        formatDateOnly(row[k])
+                      ) : k === "amount" || k === "fdAmount" ? (
+                        <span className="tabular-nums">{formatRupees(row[k])}</span>
                       ) : k === "age" ? (
                         <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full inline-block">
                           {formatAge(row)}

@@ -111,6 +111,7 @@ export const extractTotalCount = (payload, fallbackLength) => {
   return (
     payload.totalElements ??
     payload.totalCount ??
+    payload.totalRecords ??
     payload.total ??
     fallbackLength
   );
@@ -175,7 +176,14 @@ export function parseServerDate(value) {
 // would show.
 export async function fetchSectionRows(cfg) {
   let res;
-  if (isDirectAskoxyRequest(cfg.endpoint)) {
+  if (cfg.apiKeyEndpoint) {
+    // OxyLoans external APIs: fetch a fresh encrypted key first, then send
+    // it as X-Api-Key on the actual data request.
+    const keyRes = await axios.post(cfg.apiKeyEndpoint);
+    const apiKey = keyRes?.data?.encryptedData;
+    if (!apiKey) throw new Error("Failed to obtain API key");
+    res = await axios.get(cfg.endpoint, { headers: { "X-Api-Key": apiKey } });
+  } else if (isDirectAskoxyRequest(cfg.endpoint)) {
     const token = await ensureFreshAccessToken();
     const requestConfig = {
       headers: {
@@ -211,10 +219,11 @@ export async function fetchSectionRows(cfg) {
     }
     return r;
   });
+  const sortKey = cfg.sortKey ?? "createdAt";
   rows.sort(
     (a, b) =>
-      (parseServerDate(b.createdAt)?.getTime() ?? 0) -
-      (parseServerDate(a.createdAt)?.getTime() ?? 0),
+      (parseServerDate(b[sortKey])?.getTime() ?? 0) -
+      (parseServerDate(a[sortKey])?.getTime() ?? 0),
   );
   rows = dedupeRows(rows, cfg.rowKeys, cfg.dedupeKeys);
   const total = extractTotalCount(res?.data, rows.length);

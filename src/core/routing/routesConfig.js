@@ -474,6 +474,26 @@ const oxyOneRoutes = [
     element: lazy(() => import("../../features/oxyone/pages/CampaignDashboard")),
   },
   {
+    path: "abroadDashboard",
+    element: lazy(() => import("../../features/oxyone/pages/AbroadDashboard")),
+  },
+  {
+    path: "abroadConsultancies",
+    element: lazy(() => import("../../features/oxyone/pages/AbroadConsultancies")),
+  },
+  {
+    path: "abroadUniversities",
+    element: lazy(() => import("../../features/oxyone/pages/AbroadUniversities")),
+  },
+  {
+    path: "abroadCountries",
+    element: lazy(() => import("../../features/oxyone/pages/AbroadCountries")),
+  },
+  {
+    path: "abroadLeadPersons",
+    element: lazy(() => import("../../features/oxyone/pages/AbroadLeadPersons")),
+  },
+  {
     path: "queriesAskoxy",
     element: lazy(() => import("../../features/oxyone/pages/QueriesUsers")),
   },
