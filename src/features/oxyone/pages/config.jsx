@@ -14,6 +14,8 @@ import {
   LineChartOutlined,
   DatabaseOutlined,
   GlobalOutlined,
+  AuditOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import BASE_URL from "../../../core/config/Config";
 
@@ -28,7 +30,7 @@ export const NAV_SECTIONS = [
       { icon: "askoxy", label: "AskOxy.AI", key: "askoxy" },
       { icon: "oxybricks", label: "OxyBricks", key: "oxybricks" },
       { icon: "oxygold", label: "OxyGold", key: "oxygold" },
-      { icon: "partnerlender", label: "Oxyloans Partner", key: "partnerlender" },
+      { icon: "partnerlender", label: "OxyLoans Partner", key: "partnerlender" },
       { icon: "interested", label: "Interested", key: "interested" },
       { icon: "journeyScorecard", label: "Interested Scorecard", key: "journeyScorecard" },
     ],
@@ -43,11 +45,22 @@ export const NAV_SECTIONS = [
       { icon: "borrower", label: "OxyLoans Borrower", key: "queriesBorrower" },
     ],
   },
+  {     
+    label: "OxyLoans 5 Actors",
+    items: [
+      { icon: "dashboard", label: "Dashboard", key: "actorsDashboard" },
+      { icon: "lender", label: "Active Lender", key: "activeLenders" },
+      // Hidden until their APIs are wired in actorsData.js.
+      // { icon: "borrower", label: "Active Borrower", key: "activeBorrowers" },
+      // { icon: "advocate", label: "Active Advocate", key: "activeAdvocates" },
+      // { icon: "partner", label: "Active Partner", key: "activePartners" },
+      // { icon: "recoveryAgent", label: "Active Recovery Agent", key: "activeRecoveryAgents" },
+    ],
+  },
     {
     label: "Campaign Data",
     items: [
 { icon: "dashboard", label: "Dashboard", key: "campaignDashboard" },
-      { icon: "database", label: "AskOxy Users", key: "askoxyHelpdeskData" },
       { icon: "database", label: "Rotary Data", key: "rotaryData" },
       { icon: "database", label: "CBS Data", key: "cbsData" },
       { icon: "database", label: "Advocate Data", key: "advocatesData" },
@@ -70,6 +83,7 @@ export const NAV_SECTIONS = [
       { icon: "database", label: "Two Years Service Data", key: "twoYearsServiceData" },
       { icon: "database", label: "Unknown Data", key: "unknownData" },
       { icon: "database", label: "Naukri RAS", key: "naukriRasData" },
+      { icon: "database", label: "NBFC Data", key: "nbfcData" },
     ],
   },
   {
@@ -260,16 +274,19 @@ export const SECTIONS = {
     color: "#7c3aed",
     icon: <DatabaseOutlined />,
     endpoint: `${BASE_URL}/marketing-service/campgin/rotary-data?page=0&size=50`,
-    columns: ["Name", "Club", "City", "State", "Mobile", "Email", "Joined"],
+    columns: ["Name", "Club", "City", "Mobile", "Email"],
     rowKeys: [
       "name",
       "clubName",
-      "city", 
-      "state",
+      "city",
       "mobileNumbers",
       "emails",
-      "createdAt",
     ],
+    // HelpDesk comments, keyed by each row's `id` (rotary rows have no userId).
+    // Read-only: show the comments column without the add/change option.
+    comments: { idKey: "id", readOnly: true },
+    // Wrap long club names/emails so the table fits without a horizontal scroll
+    wrapCells: true,
   },
   cbsData: {
     title: "CBS Data",
@@ -528,6 +545,16 @@ export const SECTIONS = {
     rowKeys: ["name", "mobileNumber"],
     dedupeKeys: ["name", "mobileNumber"],
   },
+  nbfcData: {
+    title: "NBFC Data",
+    subtitle: "NBFC company contact directory",
+    color: "#0f766e",
+    icon: <DatabaseOutlined />,
+    endpoint: `${BASE_URL}/ai-service/entity-records/nbfc-data?page=0&size=50`,
+    columns: ["Name", "Email", "Office Address"],
+    rowKeys: ["name", "email", "officeAddress"],
+    dedupeKeys: ["name", "email"],
+  },
   queriesDashboard: {
     title: "Queries Dashboard",
     subtitle: "Overview of all queries",
@@ -557,6 +584,42 @@ export const SECTIONS = {
     subtitle: "Queries raised by borrowers",
     color: "#7c3aed",
     icon: <WalletOutlined />,
+  },
+  actorsDashboard: {
+    title: "5 Actors Dashboard",
+    subtitle: "Overview of active lenders, borrowers, advocates, partners and recovery agents",
+    color: "#2563eb",
+    icon: <DashboardOutlined />,
+  },
+  activeLenders: {
+    title: "Active Lenders",
+    subtitle: "Currently active lenders",
+    color: "#2563eb",
+    icon: <BankOutlined />,
+  },
+  activeBorrowers: {
+    title: "Active Borrowers",
+    subtitle: "Currently active borrowers",
+    color: "#7c3aed",
+    icon: <WalletOutlined />,
+  },
+  activeAdvocates: {
+    title: "Active Advocates",
+    subtitle: "Currently active advocates",
+    color: "#6d28d9",
+    icon: <AuditOutlined />,
+  },
+  activePartners: {
+    title: "Active Partners",
+    subtitle: "Currently active partners",
+    color: "#059669",
+    icon: <TeamOutlined />,
+  },
+  activeRecoveryAgents: {
+    title: "Active Recovery Agents",
+    subtitle: "Currently active recovery agents",
+    color: "#e11d48",
+    icon: <SafetyCertificateOutlined />,
   },
 };
 /* ── Dashboard Overview stats ────────────────────────────────

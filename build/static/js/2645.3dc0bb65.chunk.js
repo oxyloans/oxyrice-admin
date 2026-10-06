@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[2645],{22645(e,l,a){a.r(l),a.d(l,{default:()=>u});var n=a(21969),r=a(90964),t=a(70579);function u(){return(0,t.jsx)(n.A,{url:r.KH.lender,label:"Lender",plural:"lenders"})}}}]);
+//# sourceMappingURL=2645.3dc0bb65.chunk.js.map

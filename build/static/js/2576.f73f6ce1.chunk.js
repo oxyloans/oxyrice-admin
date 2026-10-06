@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[2576],{62576(a,e,r){r.r(e),r.d(e,{default:()=>u});var l=r(21969),t=r(90964),n=r(70579);function u(){return(0,n.jsx)(l.A,{url:t.KH.partner,label:"Partner",plural:"partners"})}}}]);
+//# sourceMappingURL=2576.f73f6ce1.chunk.js.map

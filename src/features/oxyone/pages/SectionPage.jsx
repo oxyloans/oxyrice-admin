@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { SECTIONS } from "./config.jsx";
+import { useAdminComments } from "../util/useAdminComments";
+import CommentsModal from "./CommentsModal";
+import { updatedCommentsColumn } from "./adminCommentsColumns";
 import {
   readSessionCache,
   writeSessionCache,
@@ -162,6 +165,25 @@ function SectionTable({ cfg }) {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
+  // Optional HelpDesk comments column (cfg.comments = { idKey }). The comments
+  // hook/API key on `userId`, so expose the row's own id under that name.
+  const commentsCfg = tabCfg.comments;
+  const comments = useAdminComments();
+  const withCommentId = (row) =>
+    commentsCfg ? { ...row, userId: row[commentsCfg.idKey] } : row;
+  const commentsCol = commentsCfg
+    ? updatedCommentsColumn(comments.rowComments, comments.openCommentsModal, {
+        readOnly: !!commentsCfg.readOnly,
+      })
+    : null;
+  const visibleIdsKey = commentsCfg
+    ? paginated.map((r) => r[commentsCfg.idKey]).filter(Boolean).join(",")
+    : "";
+  useEffect(() => {
+    if (visibleIdsKey) comments.prefetchRowComments(visibleIdsKey.split(","));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleIdsKey]);
+
   const pillClass = (val) => {
     const map = {
       active: "bg-emerald-50 text-emerald-600",
@@ -298,6 +320,11 @@ function SectionTable({ cfg }) {
                     {c}
                   </th>
                 ))}
+                {commentsCol && (
+                  <th className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap">
+                    Comments
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -355,6 +382,11 @@ function SectionTable({ cfg }) {
                     {c}
                   </th>
                 ))}
+                {commentsCol && (
+                  <th className="text-[11px] font-extrabold tracking-[.5px] uppercase text-slate-800 px-3 py-2 text-left bg-slate-50 border-b-2 border-slate-200 whitespace-nowrap">
+                    Comments
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -371,7 +403,7 @@ function SectionTable({ cfg }) {
                   {tabCfg.rowKeys.map((k) => (
                     <td
                       key={k}
-                      className={`px-3 py-2 text-xs text-slate-900 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : "whitespace-nowrap"} ${k === "pin" || k === "telephoneR" || k === "telephoneO" ? "tabular-nums" : ""}`}
+                      className={`px-3 py-2 text-xs text-slate-900 border-b border-slate-100 ${k === "query" ? "whitespace-normal break-words min-w-[260px]" : tabCfg.wrapCells ? "whitespace-normal break-words" : "whitespace-nowrap"} ${k === "pin" || k === "telephoneR" || k === "telephoneO" ? "tabular-nums" : ""}`}
                     >
                       {k === "status" || k === "queryStatus" ? (
                         <span
@@ -420,6 +452,11 @@ function SectionTable({ cfg }) {
                       )}
                     </td>
                   ))}
+                  {commentsCol && (
+                    <td className="px-3 py-1 text-xs text-slate-900 border-b border-slate-100 min-w-[240px] max-w-[300px]">
+                      {commentsCol.render(null, withCommentId(row))}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -475,6 +512,10 @@ function SectionTable({ cfg }) {
             </button>
           </div>
         </div>
+      )}
+
+      {commentsCfg && (
+        <CommentsModal c={comments} readOnly={!!commentsCfg.readOnly} />
       )}
     </div>
   );

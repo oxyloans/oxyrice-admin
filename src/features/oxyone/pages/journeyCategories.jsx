@@ -10,13 +10,7 @@ import {
   AuditOutlined,
   BankOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import isoWeek from "dayjs/plugin/isoWeek";
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
-dayjs.extend(isoWeek);
+import { inDayRange, quickRangeKeys, regDayKey, regTime } from "../util/registrationDates";
 
 /* ── Journey/registration categories shared by the overview and detail
    pages. Matched against askOxyOfers + journeyName + projectType, so
@@ -105,7 +99,7 @@ export const STAT_META = {
   week: {
     label: "This Week",
     accent: "#059669",
-    sub: "Mon – Sun",
+    sub: "Last 7 days",
     icon: <BarChartOutlined />,
   },
   month: {
@@ -116,19 +110,25 @@ export const STAT_META = {
   },
 };
 
+// Interested-users API rows with the local registration day (`_day`) and
+// time (`_time`) precomputed from the UTC `createdAt`, newest first.
+export function withRegDay(data) {
+  const rows = (Array.isArray(data) ? data : []).map((r) => ({
+    ...r,
+    _day: regDayKey(r.createdAt),
+    _time: regTime(r.createdAt),
+  }));
+  rows.sort((a, b) => b._time - a._time);
+  return rows;
+}
+
+// Same buckets as every other registration card: today, yesterday,
+// last 7 days, month to date — on the viewer's local day.
 export function inTimeBucket(record, bucket) {
   if (bucket === "total") return true;
-  if (!record.createdAt) return false;
-  const d = dayjs(record.createdAt);
-  if (bucket === "today") return d.isSame(dayjs(), "day");
-  if (bucket === "yesterday") return d.isSame(dayjs().subtract(1, "day"), "day");
-  if (bucket === "week")
-    return (
-      d.isSameOrAfter(dayjs().startOf("isoWeek"), "day") &&
-      d.isSameOrBefore(dayjs().endOf("isoWeek"), "day")
-    );
-  if (bucket === "month") return d.isSame(dayjs(), "month");
-  return true;
+  const day = record._day ?? regDayKey(record.createdAt);
+  const range = quickRangeKeys(bucket);
+  return range ? inDayRange(day, range[0], range[1]) : true;
 }
 
 /* ── Custom table styling — matches InterestedPage ───────── */

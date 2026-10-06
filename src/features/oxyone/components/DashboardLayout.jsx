@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
+  AuditOutlined,
+  SafetyCertificateOutlined,
+  UsergroupAddOutlined,
   BankOutlined,
   BuildOutlined,
   DashboardOutlined,
@@ -39,11 +42,14 @@ const SIDEBAR_ICONS = {
   logout: <LogoutOutlined />,
   database: <DatabaseOutlined />,
   university: <BankOutlined />,
+  advocate: <AuditOutlined />,
+  recoveryAgent: <SafetyCertificateOutlined />,
 };
 
 const GROUP_ICONS = {
   "USERS REGISTRATIONS": <TeamOutlined />,
   Queries: <QuestionCircleOutlined />,
+  "OxyLoans 5 Actors": <UsergroupAddOutlined />,
   "Campaign Data": <DatabaseOutlined />,
   "Abroad Data": <GlobalOutlined />,
 };

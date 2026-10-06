@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
-import { Table, DatePicker, Button, Input, Skeleton, Tabs } from "antd";
+import { Table, DatePicker, Button, Input, Skeleton, Tabs, message } from "antd";
 import {
   UserOutlined,
   SearchOutlined,
@@ -14,6 +14,14 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import UserStatCard from "../components/UserStatCard";
+import {
+  countQuickRanges,
+  formatRegDate,
+  inDayRange,
+  quickRangeKeys,
+  regDayKey,
+  regTime,
+} from "../util/registrationDates";
 
 const API_BASE = "https://meta.oxyloans.com/api/oxygold-api/auth/viewAllUsers";
 const API_KEY = "bwjpL6+95jM2BFkBQfHteyT7eSVNQpLKBPuHQihGzNo=";
@@ -131,178 +139,128 @@ const TABLE_COMPONENTS = {
   },
 };
 
-function filterByCard(rows, cardId) {
-  const todayStr = dayjs().format("YYYY-MM-DD");
-  const yesterdayStr = dayjs().subtract(1, "day").format("YYYY-MM-DD");
-  const weekStart = dayjs().subtract(6, "day").startOf("day");
-  const monthStart = dayjs().startOf("month").startOf("day");
-  return rows.filter((r) => {
-    const d = r.createdAt ? r.createdAt.slice(0, 10) : null;
-    if (!d) return false;
-    const dt = dayjs(d);
-    if (cardId === "today") return d === todayStr;
-    if (cardId === "yesterday") return d === yesterdayStr;
-    if (cardId === "week") return !dt.isBefore(weekStart, "day");
-    if (cardId === "month") return !dt.isBefore(monthStart, "day");
-    return true;
+// API rejects size > 100.
+const FETCH_BATCH_SIZE = 100;
+
+const fetchGoldPage = async (page) => {
+  const res = await axios.get(API_BASE, {
+    params: { page, size: FETCH_BATCH_SIZE },
+    headers: { "X-Api-Key": API_KEY },
   });
+  const p = res.data?.data ?? res.data ?? {};
+  return {
+    rows: Array.isArray(p.content) ? p.content : [],
+    totalElements: Number(p.totalElements) || 0,
+    totalPages: Number(p.totalPages) || 1,
+  };
+};
+
+// Every OxyGold user, newest first, with the local registration day
+// precomputed. Rejects if any page fails so counts are never silently short.
+async function fetchAllGoldUsers() {
+  const first = await fetchGoldPage(0);
+  const rest = await Promise.all(
+    Array.from({ length: Math.max(0, first.totalPages - 1) }, (_, i) => fetchGoldPage(i + 1)),
+  );
+  const seen = new Set();
+  const rows = first.rows
+    .concat(...rest.map((p) => p.rows))
+    .filter((r) => r.userId == null || (!seen.has(r.userId) && seen.add(r.userId)))
+    .map((r) => ({ ...r, _day: regDayKey(r.createdAt), _time: regTime(r.createdAt) }));
+  rows.sort((a, b) => b._time - a._time);
+  return rows;
 }
 
-function filterByDate(rows, from, to) {
-  const f = from.format("YYYY-MM-DD");
-  const t = to.format("YYYY-MM-DD");
-  return rows.filter((r) => {
-    const d = r.createdAt ? r.createdAt.slice(0, 10) : null;
-    return d && d >= f && d <= t;
-  });
+function matchesMobile(r, n) {
+  return [r.phoneNumber, r.whatsappNumber, r.alternativeNumber].some((v) => v && String(v).includes(n));
 }
 
 export default function OxyGoldUsers() {
   const today = dayjs();
   const [allUsers, setAllUsers] = useState([]);
-  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [page, setPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
-  const [activeCard, setActiveCard] = useState(null);
   const [activeTab, setActiveTab] = useState("date");
   const [fromDate, setFromDate] = useState(today.subtract(6, "day"));
   const [toDate, setToDate] = useState(today);
   const [mobileInput, setMobileInput] = useState("");
+  // { type: "all" } | { type: "card", card } | { type: "date", from, to }
+  const [filter, setFilter] = useState({ type: "all" });
   const [mobile, setMobile] = useState("");
-  const [stats, setStats] = useState({ total: null, today: null, yesterday: null, week: null, month: null });
-  const [statsLoading, setStatsLoading] = useState(true);
 
-  const fromRef = useRef(fromDate);
-  const toRef = useRef(toDate);
-  fromRef.current = fromDate;
-  toRef.current = toDate;
-
-  const paginate = useCallback((rows, pg = 0) => {
-    const start = pg * PAGE_SIZE;
-    setData(rows.slice(start, start + PAGE_SIZE));
-    setTotalElements(rows.length);
-    setPage(pg);
-  }, []);
-
-  const fetchStats = useCallback(async () => {
-    setStatsLoading(true);
+  const fetchAll = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
-      const first = await axios.get(API_BASE, {
-        params: { page: 0, size: 100 },
-        headers: { "X-Api-Key": API_KEY },
-      });
-      const pagination = first.data?.data ?? first.data ?? {};
-      const totalEl = Number(pagination.totalElements) || 0;
-      const totalPages = Number(pagination.totalPages) || 1;
-      const firstRows = Array.isArray(pagination.content) ? pagination.content : [];
-
-      let allRows = [...firstRows];
-      if (totalPages > 1) {
-        const rest = await Promise.all(
-          Array.from({ length: totalPages - 1 }, (_, i) =>
-            axios.get(API_BASE, {
-              params: { page: i + 1, size: 100 },
-              headers: { "X-Api-Key": API_KEY },
-            }).then((r) => {
-              const p = r.data?.data ?? r.data ?? {};
-              return Array.isArray(p.content) ? p.content : [];
-            }).catch(() => [])
-          )
-        );
-        allRows = allRows.concat(rest.flat());
-      }
-
-      // dayjs(undefined) resolves to "now", not invalid — so a missing
-      // createdAt would otherwise sort as the newest row instead of sinking
-      // to the bottom. Fall back to epoch 0 to keep it last.
-      allRows.sort(
-        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-      );
-      setAllUsers(allRows);
-
-      const todayStr = dayjs().format("YYYY-MM-DD");
-      const yesterdayStr = dayjs().subtract(1, "day").format("YYYY-MM-DD");
-      const weekStart = dayjs().subtract(6, "day").startOf("day");
-      const monthStart = dayjs().startOf("month").startOf("day");
-
-      let todayCount = 0, yesterdayCount = 0, weekCount = 0, monthCount = 0;
-      for (const row of allRows) {
-        const d = row.createdAt ? row.createdAt.slice(0, 10) : null;
-        if (!d) continue;
-        const dt = dayjs(d);
-        if (d === todayStr) todayCount++;
-        if (d === yesterdayStr) yesterdayCount++;
-        if (!dt.isBefore(weekStart, "day")) weekCount++;
-        if (!dt.isBefore(monthStart, "day")) monthCount++;
-      }
-
-      setStats({ total: totalEl, today: todayCount, yesterday: yesterdayCount, week: weekCount, month: monthCount });
-
-      // Default: show all users
-      paginate(allRows, 0);
-    } catch {
-      /* keep nulls */
+      setAllUsers(await fetchAllGoldUsers());
+    } catch (err) {
+      console.error("OxyGold API error:", err);
+      setLoadError(true);
+      message.error("Failed to load OxyGold users. Please try again.");
     } finally {
       setInitialLoad(false);
-      setStatsLoading(false);
       setLoading(false);
     }
-  }, [paginate]);
+  }, []);
 
-  useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  const stats = useMemo(
+    () => (loadError ? {} : { total: allUsers.length, ...countQuickRanges(allUsers, (r) => r._day) }),
+    [allUsers, loadError],
+  );
+
+  // Card/date filter first, then mobile search within it. Paging always
+  // slices this list, so the active filter survives page changes.
+  const filtered = useMemo(() => {
+    let rows = allUsers;
+    if (filter.type === "card") {
+      const [f, t] = quickRangeKeys(filter.card);
+      rows = rows.filter((r) => inDayRange(r._day, f, t));
+    } else if (filter.type === "date") {
+      rows = rows.filter((r) => inDayRange(r._day, filter.from, filter.to));
+    }
+    return mobile ? rows.filter((r) => matchesMobile(r, mobile)) : rows;
+  }, [allUsers, filter, mobile]);
+
+  const data = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalElements = filtered.length;
+  const activeCard = filter.type === "card" ? filter.card : null;
 
   // Card click — sets card filter, switches to date tab, clears search
   const handleCardClick = useCallback((cardId) => {
     setMobileInput("");
     setMobile("");
-    if (cardId === "total") {
-      setActiveCard(null);
-      setActiveTab("date");
-      paginate(allUsers, 0);
-      return;
-    }
-    setActiveCard(cardId);
     setActiveTab("date");
-    paginate(filterByCard(allUsers, cardId), 0);
-  }, [allUsers, paginate]);
+    setFilter(cardId === "total" ? { type: "all" } : { type: "card", card: cardId });
+    setPage(0);
+  }, []);
 
   const handleRemoveFilter = useCallback(() => {
-    setActiveCard(null);
     setMobileInput("");
     setMobile("");
-    paginate(allUsers, 0);
-  }, [allUsers, paginate]);
+    setFilter({ type: "all" });
+    setPage(0);
+  }, []);
 
   // Date search — clears card filter
   const handleDateSearch = useCallback(() => {
-    setActiveCard(null);
+    if (!fromDate || !toDate) return;
     setMobileInput("");
     setMobile("");
-    paginate(filterByDate(allUsers, fromRef.current, toRef.current), 0);
-  }, [allUsers, paginate]);
+    setFilter({ type: "date", from: fromDate.format("YYYY-MM-DD"), to: toDate.format("YYYY-MM-DD") });
+    setPage(0);
+  }, [fromDate, toDate]);
 
-  // Mobile search — works within active card filter if set
+  // Mobile search — works within the active card/date filter
   const handleMobileSearch = useCallback((num) => {
-    const n = num?.trim();
-    setMobile(n || "");
-    const base = activeCard ? filterByCard(allUsers, activeCard) : allUsers;
-    if (!n) { paginate(base, 0); return; }
-    paginate(base.filter((r) => r.phoneNumber?.includes(n) || r.whatsappNumber?.includes(n)), 0);
-  }, [allUsers, activeCard, paginate]);
+    setMobile((num ?? "").trim());
+    setPage(0);
+  }, []);
 
-  const handlePageChange = useCallback((pg) => {
-    if (mobile) {
-      const base = activeCard ? filterByCard(allUsers, activeCard) : allUsers;
-      paginate(base.filter((r) => r.phoneNumber?.includes(mobile) || r.whatsappNumber?.includes(mobile)), pg - 1);
-    } else if (activeCard) {
-      paginate(filterByCard(allUsers, activeCard), pg - 1);
-    } else {
-      paginate(allUsers, pg - 1);
-    }
-  }, [allUsers, activeCard, mobile, paginate]);
+  const handlePageChange = useCallback((pg) => setPage(pg - 1), []);
 
   const columns = [
     {
@@ -377,16 +335,18 @@ export default function OxyGoldUsers() {
       dataIndex: "createdAt",
       width: 120,
       align: "center",
-      render: (v) =>
-        v ? (
+      render: (v) => {
+        const d = formatRegDate(v);
+        return d ? (
           <div className="text-center">
             <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-900 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md">
               <CalendarOutlined style={{ fontSize: 10, color: "#0891b2" }} />
-              {v.slice(0, 10)}
+              {d.date}
             </span>
-            <div className="text-[11px] text-slate-400 mt-1">{v.slice(11, 16)}</div>
+            <div className="text-[11px] text-slate-400 mt-1">{d.time}</div>
           </div>
-        ) : <span className="text-slate-300">—</span>,
+        ) : <span className="text-slate-300">—</span>;
+      },
     },
   ];
 
@@ -403,10 +363,17 @@ export default function OxyGoldUsers() {
             className="cursor-pointer"
             style={{ outline: activeCard === id ? `2px solid ${CARD_META[id].accent}` : "none", borderRadius: 12 }}
           >
-            <UserStatCard meta={CARD_META[id]} value={stats[id]} loading={statsLoading} />
+            <UserStatCard meta={CARD_META[id]} value={stats[id]} loading={loading} />
           </div>
         ))}
       </div>
+
+      {loadError && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-rose-50 border border-rose-200 text-[12px] font-semibold text-rose-700">
+          <span>Couldn't load OxyGold users.</span>
+          <Button size="small" onClick={fetchAll}>Retry</Button>
+        </div>
+      )}
 
       {/* Table Card */}
       <div className="bg-white border border-slate-200 shadow-sm min-w-0">
@@ -414,7 +381,7 @@ export default function OxyGoldUsers() {
         <div className="px-3 pt-1 bg-slate-50 border-b border-slate-100">
           <Tabs
             activeKey={activeTab}
-            onChange={(k) => { setActiveTab(k); setActiveCard(null); }}
+            onChange={setActiveTab}
             size="small"
             items={[
               { key: "date", label: "Search by Date" },
@@ -444,7 +411,7 @@ export default function OxyGoldUsers() {
                     <span className="text-[11px] font-semibold text-slate-500">From</span>
                     <DatePicker
                       value={fromDate}
-                      onChange={(v) => { setFromDate(v); fromRef.current = v; }}
+                      onChange={(v) => v && setFromDate(v)}
                       format="YYYY-MM-DD"
                       allowClear={false}
                       disabledDate={(d) => toDate && d.isAfter(toDate, "day")}
@@ -455,7 +422,7 @@ export default function OxyGoldUsers() {
                     <span className="text-[11px] font-semibold text-slate-500">To</span>
                     <DatePicker
                       value={toDate}
-                      onChange={(v) => { setToDate(v); toRef.current = v; }}
+                      onChange={(v) => v && setToDate(v)}
                       format="YYYY-MM-DD"
                       allowClear={false}
                       disabledDate={(d) => fromDate && d.isBefore(fromDate, "day")}

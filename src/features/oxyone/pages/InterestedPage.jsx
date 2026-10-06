@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import adminApi from "../../../core/config/axiosInstance";
 import { useAdminComments } from "../util/useAdminComments";
@@ -13,19 +13,16 @@ import {
   LineChartOutlined,
   TrophyOutlined,
 } from "@ant-design/icons";
-import dayjs from "dayjs";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import weekday from "dayjs/plugin/weekday";
-import isoWeek from "dayjs/plugin/isoWeek";
 import CommentsModal from "./CommentsModal";
-import { actionColumn, updatedCommentsColumn } from "./adminCommentsColumns";
+import { updatedCommentsColumn } from "./adminCommentsColumns";
 import UserStatCard from "../components/UserStatCard";
-import { parseServerDate } from "./sectionData";
-dayjs.extend(isSameOrAfter);
-dayjs.extend(isSameOrBefore);
-dayjs.extend(weekday);
-dayjs.extend(isoWeek);
+import { withRegDay } from "./journeyCategories";
+import {
+  countQuickRanges,
+  formatRegDate,
+  inDayRange,
+  quickRangeKeys,
+} from "../util/registrationDates";
 
 const { RangePicker } = DatePicker;
 
@@ -89,7 +86,7 @@ const STAT_META = {
     label: "This Week",
     accent: "#059669",
     grad: "linear-gradient(135deg,#059669,#10b981)",
-    sub: "Mon – Sun",
+    sub: "Last 7 days",
     icon: <BarChartOutlined />,
   },
   month: {
@@ -174,7 +171,7 @@ export default function InterestedPage() {
       const res = await adminApi.get(
         "/marketing-service/campgin/getAllInterestedUsres",
       );
-      setAll(Array.isArray(res.data) ? res.data : []);
+      setAll(withRegDay(res.data));
       setPage(0);
     } catch {
       setError("Failed to load data. Please try again.");
@@ -189,42 +186,23 @@ export default function InterestedPage() {
   }, [fetchData]);
 
   /* ── Dynamic counts derived from data ──────────────────── */
-  const todayCount = all.filter(
-    (r) => r.createdAt && dayjs(r.createdAt).isSame(dayjs(), "day"),
-  ).length;
-  const yesterdayCount = all.filter(
-    (r) => r.createdAt && dayjs(r.createdAt).isSame(dayjs().subtract(1, "day"), "day"),
-  ).length;
-  const weekCount = all.filter(
-    (r) =>
-      r.createdAt &&
-      dayjs(r.createdAt).isSameOrAfter(dayjs().startOf("isoWeek"), "day") &&
-      dayjs(r.createdAt).isSameOrBefore(dayjs().endOf("isoWeek"), "day"),
-  ).length;
-  const monthCount = all.filter(
-    (r) => r.createdAt && dayjs(r.createdAt).isSame(dayjs(), "month"),
-  ).length;
+  const counts = useMemo(() => countQuickRanges(all, (r) => r._day), [all]);
 
   /* ── Card filter + search filter ───────────────────────── */
-  const dateFiltered = all.filter((r) => {
-    if (activeFilter === "total") return true;
-    if (!r.createdAt) return false;
-    const d = dayjs(r.createdAt);
-    if (activeFilter === "today") return d.isSame(dayjs(), "day");
-    if (activeFilter === "yesterday")
-      return d.isSame(dayjs().subtract(1, "day"), "day");
-    if (activeFilter === "week")
-      return (
-        d.isSameOrAfter(dayjs().startOf("isoWeek"), "day") &&
-        d.isSameOrBefore(dayjs().endOf("isoWeek"), "day")
-      );
-    if (activeFilter === "month") return d.isSame(dayjs(), "month");
-    return true;
-  });
+  const dateFiltered = useMemo(() => {
+    if (activeFilter === "total") return all;
+    const [f, t] = quickRangeKeys(activeFilter);
+    return all.filter((r) => inDayRange(r._day, f, t));
+  }, [all, activeFilter]);
 
-  const filtered = dateFiltered
-    .filter((r) => {
-      const q = search.toLowerCase();
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const hasRange = dateRange && dateRange[0] && dateRange[1];
+    const from = hasRange ? dateRange[0].format("YYYY-MM-DD") : "";
+    const to = hasRange ? dateRange[1].format("YYYY-MM-DD") : "";
+    return dateFiltered.filter((r) => {
+      if (hasRange && !inDayRange(r._day, from, to)) return false;
+      if (!q) return true;
       return (
         (r.mobileNumber || "").includes(q) ||
         (r.userId || "").toLowerCase().includes(q) ||
@@ -232,21 +210,8 @@ export default function InterestedPage() {
         (r.askOxyOfers || "").toLowerCase().includes(q) ||
         (r.journeyName || "").toLowerCase().includes(q)
       );
-    })
-    .filter((r) => {
-      if (!dateRange || !dateRange[0] || !dateRange[1]) return true;
-      if (!r.createdAt) return false;
-      const d = dayjs(r.createdAt);
-      return (
-        d.isSameOrAfter(dateRange[0].startOf("day")) &&
-        d.isSameOrBefore(dateRange[1].endOf("day"))
-      );
-    })
-    .sort(
-      (a, b) =>
-        (parseServerDate(b.createdAt)?.getTime() ?? 0) -
-        (parseServerDate(a.createdAt)?.getTime() ?? 0),
-    );
+    });
+  }, [dateFiltered, search, dateRange]);
 
   /* ── Fetch the latest comment for each row on the visible page only ── */
   const visibleIdsKey = filtered
@@ -340,27 +305,27 @@ width: 130,
       dataIndex: "createdAt",
 width: 220,
       align: "center",
-      render: (v) =>
-        v ? (
+      render: (v) => {
+        const d = formatRegDate(v);
+        return d ? (
           <div>
-            <div className="text-xs font-bold text-slate-900">
-              {v.slice(0, 10)}
-            </div>
+            <div className="text-xs font-bold text-slate-900">{d.date}</div>
             <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
-              {v.slice(11, 16)}
+              {d.time}
             </div>
           </div>
         ) : (
           <span className="text-slate-300">—</span>
-        ),
+        );
+      },
     },
-    actionColumn(comments.openCommentsModal, { readOnly: true }),
     {
       ...updatedCommentsColumn(
         comments.rowComments,
         comments.openCommentsModal,
         { readOnly: true },
       ),
+      title: "Comments",
       align: "left",
     },
   ];
@@ -424,28 +389,28 @@ width: 220,
         />
         <StatCard
           id="today"
-          value={todayCount}
+          value={counts.today}
           loading={loading && page === 0}
           active={activeFilter === "today"}
           onClick={() => handleCardClick("today")}
         />
         <StatCard
           id="yesterday"
-          value={yesterdayCount}
+          value={counts.yesterday}
           loading={loading && page === 0}
           active={activeFilter === "yesterday"}
           onClick={() => handleCardClick("yesterday")}
         />
         <StatCard
           id="week"
-          value={weekCount}
+          value={counts.week}
           loading={loading && page === 0}
           active={activeFilter === "week"}
           onClick={() => handleCardClick("week")}
         />
         <StatCard
           id="month"
-          value={monthCount}
+          value={counts.month}
           loading={loading && page === 0}
           active={activeFilter === "month"}
           onClick={() => handleCardClick("month")}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import adminApi from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
-import { Table, Button, Input, DatePicker, Skeleton, Empty, Tabs } from "antd";
+import { Table, Button, Input, DatePicker, Skeleton, Empty, Tabs, message } from "antd";
 import {
   SearchOutlined,
   CheckCircleOutlined,
@@ -366,18 +366,30 @@ function RegisteredUsersTab() {
   const PAGE_SIZE = 20;
 
   // The API has no date-range/mobile-search params, so we load the full
-  // list once (pageSize covers current + near-term growth) and filter
-  // client-side, the same way the stat cards and date filter behave.
+  // list and filter client-side, the same way the stat cards and date
+  // filter behave. Keep paging until we have `count` rows so the counts
+  // don't silently stop growing once the list outgrows one page.
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${BASE_URL}/auth-service/auth/oxybricks-registered-users?pageIndex=0&pageSize=5000&sortBy=createdAt&sortOrder=DESC`,
-      );
-      const rows = Array.isArray(res.data?.data) ? res.data.data : [];
-      setRawData(rows);
+      const PAGE = 5000;
+      const MAX_PAGES = 50;
+      let rows = [];
+      let count = Infinity;
+      for (let pageIndex = 0; pageIndex < MAX_PAGES && rows.length < count; pageIndex++) {
+        const res = await axios.get(`${BASE_URL}/auth-service/auth/oxybricks-registered-users`, {
+          params: { pageIndex, pageSize: PAGE, sortBy: "createdAt", sortOrder: "DESC" },
+        });
+        const batch = Array.isArray(res.data?.data) ? res.data.data : [];
+        count = Number(res.data?.count) || 0;
+        rows = rows.concat(batch);
+        if (batch.length < PAGE) break;
+      }
+      const seen = new Set();
+      setRawData(rows.filter((r) => !r.userId || (!seen.has(r.userId) && seen.add(r.userId))));
     } catch {
       setRawData([]);
+      message.error("Failed to load OxyBricks registered users. Please try again.");
     } finally {
       setLoading(false);
       setInitialLoad(false);

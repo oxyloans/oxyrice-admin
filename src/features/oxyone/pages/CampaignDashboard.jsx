@@ -5,7 +5,6 @@ import { SECTIONS } from "./config.jsx";
 import {
   CAMPAIGN_KEYS,
   readSessionCache,
-  writeSessionCache,
   fetchSectionRows,
 } from "./sectionData.js";
 
@@ -80,9 +79,10 @@ export default function CampaignDashboard() {
         setLoading((l) => ({ ...l, [key]: false }));
       }
 
-      fetchSectionRows(cfg)
-        .then(({ rows, total }) => {
-          writeSessionCache(storageKey, rows, total);
+      // Counts only need the server total — one page is enough. Don't write
+      // this partial row set into the cache SectionPage reads its rows from.
+      fetchSectionRows(cfg, { allPages: false })
+        .then(({ total }) => {
           setCounts((c) => ({ ...c, [key]: total }));
         })
         .catch(() => {

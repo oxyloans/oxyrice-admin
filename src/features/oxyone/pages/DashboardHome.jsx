@@ -155,7 +155,7 @@ export default function DashboardHome() {
 
   const loadCampaignCounts = () => {
     CAMPAIGN_KEYS.forEach((key) => {
-      fetchSectionRows(SECTIONS[key])
+      fetchSectionRows(SECTIONS[key], { allPages: false })
         .then(({ total, rows }) => {
           setCampaignCounts((current) => ({
             ...current,

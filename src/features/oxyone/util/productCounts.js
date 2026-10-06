@@ -2,6 +2,12 @@ import adminApi from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
 import axios from "axios";
 import dayjs from "dayjs";
+import { regDayKey } from "./registrationDates";
+import {
+  OXYLOANS_API_KEY,
+  OXYLOANS_CONTACT_URLS,
+  loadContactsSince,
+} from "./oxyloansContacts";
 
 const toCount = (value) => {
   const count = Number(value);
@@ -10,14 +16,9 @@ const toCount = (value) => {
 
 const todayStr = () => dayjs().format("YYYY-MM-DD");
 
-// OxyLoans fintech API
-const OXYLOANS_API_KEY = "oxy_contact_ff0ccf7744c64875af1de19c54650a17";
-const OXYLOANS_LENDER_URL =
-  "https://fintech.oxyloans.com/oxyloans/v1/user/admin/lenderContactList";
-const OXYLOANS_BORROWER_URL =
-  "https://fintech.oxyloans.com/oxyloans/v1/user/admin/borrowerContactList";
-const OXYLOANS_PARTNER_URL =
-  "https://fintech.oxyloans.com/oxyloans/v1/user/admin/partnerContactList";
+const OXYLOANS_LENDER_URL = OXYLOANS_CONTACT_URLS.lender;
+const OXYLOANS_BORROWER_URL = OXYLOANS_CONTACT_URLS.borrower;
+const OXYLOANS_PARTNER_URL = OXYLOANS_CONTACT_URLS.partner;
 
 const fetchOxyLoansCount = async (url) => {
   const res = await axios.post(
@@ -29,15 +30,12 @@ const fetchOxyLoansCount = async (url) => {
   return toCount(d.totalCount ?? d.total ?? d.count);
 };
 
+// Same local-day bucketing as the Lender/Borrower/Partner pages, paging
+// back far enough to cover all of today rather than a fixed first page.
 const fetchOxyLoansTodayCount = async (url) => {
-  const res = await axios.post(
-    url,
-    { pageNo: 1, pageSize: 200 },
-    { headers: { "X-Api-Key": OXYLOANS_API_KEY } }
-  );
-  const rows = Array.isArray(res.data?.listOfData) ? res.data.listOfData : [];
   const t = todayStr();
-  return rows.filter((r) => (r.registeredDate || "").slice(0, 10) === t).length;
+  const rows = await loadContactsSince(url, dayjs());
+  return rows.filter((r) => r._day === t).length;
 };
 
 export const PRODUCT_COUNTS = [
@@ -77,11 +75,7 @@ export const PRODUCT_COUNTS = [
       const rows = Array.isArray(res.data?.data) ? res.data.data : [];
       const t = todayStr();
       // registeredDate comes back as "DD/MM/YYYY", not ISO.
-      const toIso = (d) => {
-        const [dd, mm, yyyy] = (d || "").split("/");
-        return dd && mm && yyyy ? `${yyyy}-${mm}-${dd}` : "";
-      };
-      return rows.filter((r) => toIso(r.registeredDate) === t).length;
+      return rows.filter((r) => regDayKey(r.registeredDate) === t).length;
     },
   },
   {
@@ -108,13 +102,13 @@ export const PRODUCT_COUNTS = [
             axios.get("https://meta.oxyloans.com/api/oxygold-api/auth/viewAllUsers", {
               params: { page: i + 1, size: 100 },
               headers: { "X-Api-Key": "bwjpL6+95jM2BFkBQfHteyT7eSVNQpLKBPuHQihGzNo=" },
-            }).then((r) => Array.isArray(r.data?.data?.content) ? r.data.data.content : []).catch(() => [])
+            }).then((r) => Array.isArray(r.data?.data?.content) ? r.data.data.content : [])
           )
         );
         rows = rows.concat(rest.flat());
       }
       const t = todayStr();
-      return rows.filter((r) => (r.createdAt || "").slice(0, 10) === t).length;
+      return rows.filter((r) => regDayKey(r.createdAt) === t).length;
     },
   },
   {
@@ -132,7 +126,7 @@ export const PRODUCT_COUNTS = [
       const res = await adminApi.get("/marketing-service/campgin/getAllInterestedUsres");
       if (!Array.isArray(res.data)) return null;
       const t = todayStr();
-      return res.data.filter((r) => (r.createdAt || r.registeredDate || "").slice(0, 10) === t).length;
+      return res.data.filter((r) => regDayKey(r.createdAt || r.registeredDate) === t).length;
     },
   },
 ];

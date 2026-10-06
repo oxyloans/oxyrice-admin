@@ -4,7 +4,6 @@ import adminApi from "../../../core/config/axiosInstance";
 import { Table, Button, Input, Skeleton, DatePicker, Empty } from "antd";
 import { ReloadOutlined, SearchOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { parseServerDate } from "./sectionData";
 import UserStatCard from "../components/UserStatCard";
 import { useAdminComments } from "../util/useAdminComments";
 import CommentsModal from "./CommentsModal";
@@ -14,7 +13,13 @@ import {
   classifyJourney,
   STAT_META,
   TABLE_COMPONENTS,
+  withRegDay,
 } from "./journeyCategories";
+import {
+  countQuickRanges,
+  formatRegDate,
+  inDayRange,
+} from "../util/registrationDates";
 
 /* ── Page skeleton while first load ─────────────────────── */
 function PageSkeleton() {
@@ -62,7 +67,7 @@ export default function JourneyDetailPage() {
       const res = await adminApi.get(
         "/marketing-service/campgin/getAllInterestedUsres",
       );
-      setAll(Array.isArray(res.data) ? res.data : []);
+      setAll(withRegDay(res.data));
     } catch {
       setError("Failed to load data. Please try again.");
     } finally {
@@ -83,22 +88,10 @@ export default function JourneyDetailPage() {
   // Today/Yesterday/Week/Month/Total breakdown — always computed from every
   // record for this journey, independent of the current date filter, so the
   // cards stay accurate reference points no matter what's on screen.
-  const stats = useMemo(() => {
-    const yesterday = today.subtract(1, "day");
-    const weekStart = today.subtract(6, "day");
-    let todayN = 0, yestN = 0, weekN = 0, monthN = 0;
-    rows.forEach((r) => {
-      const d = parseServerDate(r.createdAt);
-      if (!d) return;
-      const dj = dayjs(d);
-      if (dj.isSame(today, "day")) todayN++;
-      if (dj.isSame(yesterday, "day")) yestN++;
-      if (!dj.isBefore(weekStart, "day") && !dj.isAfter(today, "day")) weekN++;
-      if (dj.isSame(today, "month")) monthN++;
-    });
-    return { total: rows.length, today: todayN, yesterday: yestN, week: weekN, month: monthN };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]);
+  const stats = useMemo(
+    () => ({ total: rows.length, ...countQuickRanges(rows, (r) => r._day) }),
+    [rows],
+  );
 
   const quickFetch = useCallback((id, start, end) => {
     setActiveQuick(id);
@@ -119,11 +112,9 @@ export default function JourneyDetailPage() {
   }, []);
 
   const dateFiltered = useMemo(() => {
-    return rows.filter((r) => {
-      const d = parseServerDate(r.createdAt);
-      return d && !dayjs(d).isBefore(fromDate, "day") && !dayjs(d).isAfter(toDate, "day");
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const from = fromDate.format("YYYY-MM-DD");
+    const to = toDate.format("YYYY-MM-DD");
+    return rows.filter((r) => inDayRange(r._day, from, to));
   }, [rows, fromDate, toDate]);
 
   const searchFiltered = useMemo(() => {
@@ -138,15 +129,8 @@ export default function JourneyDetailPage() {
 
   const displayed = search.trim() ? searchFiltered : showAll ? rows : dateFiltered;
 
-  const filteredRows = useMemo(
-    () =>
-      [...displayed].sort(
-        (a, b) =>
-          (parseServerDate(b.createdAt)?.getTime() ?? 0) -
-          (parseServerDate(a.createdAt)?.getTime() ?? 0),
-      ),
-    [displayed],
-  );
+  // Rows are already newest first (withRegDay).
+  const filteredRows = displayed;
 
   const handleSearch = useCallback((val) => {
     setActiveQuick(null);
@@ -229,17 +213,19 @@ export default function JourneyDetailPage() {
       dataIndex: "createdAt",
       width: 160,
       align: "center",
-      render: (v) =>
-        v ? (
+      render: (v) => {
+        const d = formatRegDate(v);
+        return d ? (
           <div>
-            <div className="text-xs font-bold text-slate-900">{v.slice(0, 10)}</div>
+            <div className="text-xs font-bold text-slate-900">{d.date}</div>
             <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
-              {v.slice(11, 16)}
+              {d.time}
             </div>
           </div>
         ) : (
           <span className="text-slate-300">—</span>
-        ),
+        );
+      },
     },
     // actionColumn(comments.openCommentsModal, { readOnly: true }),
     {
