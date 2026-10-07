@@ -13,6 +13,10 @@ import {
   Input,
   Select,
   DatePicker,
+  TimePicker,
+  InputNumber,
+  Switch,
+  Tag,
   Spin,
   Row,
   Col,
@@ -29,6 +33,42 @@ import BASE_URL from "../../../core/config/Config";
 import useAuth from '../../../shared/hooks/useAuth';
 const { Option } = Select;
 
+const formatOfferDate = (dateVal) => {
+  if (!dateVal) return "";
+  if (Array.isArray(dateVal)) {
+    const [y, m, d] = dateVal;
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+  return dayjs(dateVal).format("YYYY-MM-DD");
+};
+
+const parseOfferDateToDayjs = (dateVal) => {
+  if (!dateVal) return null;
+  if (Array.isArray(dateVal)) {
+    const [y, m, d] = dateVal;
+    return dayjs(new Date(y, m - 1, d));
+  }
+  return dayjs(dateVal);
+};
+
+const DescriptionCell = ({ text }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return <span>-</span>;
+  if (text.length <= 40) return <span>{text}</span>;
+  return (
+    <div className="text-left text-xs max-w-[280px]">
+      <span>{expanded ? text : `${text.slice(0, 40)}...`}</span>
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="ml-1 text-blue-600 hover:underline font-semibold cursor-pointer bg-transparent border-0 p-0 text-xs inline"
+      >
+        {expanded ? "Show less" : "Show more"}
+      </button>
+    </div>
+  );
+};
+
 const Coupons = () => {
   const [coupons, setCoupons] = useState([]);
   const [filteredCoupons, setFilteredCoupons] = useState([]);
@@ -43,13 +83,42 @@ const Coupons = () => {
   const [activeTab, setActiveTab] = useState("PRIVATE");
   const [items, setItems] = useState([]); // <-- Add this line
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isGoldSilverModalVisible, setIsGoldSilverModalVisible] = useState(false);
+  const [goldSilverSubmitting, setGoldSilverSubmitting] = useState(false);
+  const [goldSilverCategories, setGoldSilverCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [fetchedCategoryId, setFetchedCategoryId] = useState("");
+  const [goldSilverForm] = Form.useForm();
+  const [goldSilverOffers, setGoldSilverOffers] = useState([]);
+  const [fetchingGoldSilver, setFetchingGoldSilver] = useState(false);
+  const [isGoldSilverEditMode, setIsGoldSilverEditMode] = useState(false);
+  const [editingGoldSilverId, setEditingGoldSilverId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const { accessToken } = useAuth();
 
+  const fetchGoldSilverOffers = useCallback(async () => {
+    setFetchingGoldSilver(true);
+    try {
+      const response = await axiosInstance.get(
+        `${BASE_URL}/order-service/getGoldSilverItemOffer`
+      );
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.data || [];
+      setGoldSilverOffers(data);
+    } catch (error) {
+      console.error("Error fetching Gold & Silver offers:", error);
+      message.error("Failed to fetch Gold & Silver coupon offers.");
+    } finally {
+      setFetchingGoldSilver(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCoupons();
-  }, []);
+    fetchGoldSilverOffers();
+  }, [fetchGoldSilverOffers]);
   const tabFilteredCoupons = filteredCoupons.filter(
     (coupon) => coupon.status === activeTab,
   );
@@ -445,6 +514,289 @@ const Coupons = () => {
     }
   };
 
+  const fetchGoldSilverCategories = async (catType) => {
+    if (!catType) return;
+    setCategoriesLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `${BASE_URL}/product-service/getGoldOrSilverItems?categoryType=${catType}`
+      );
+      const rawCategories =
+        response.data?.categories ||
+        response.data?.data ||
+        (Array.isArray(response.data) ? response.data : []);
+      setGoldSilverCategories(rawCategories);
+      const firstId = rawCategories[0]?.categoryId || "";
+      setFetchedCategoryId(firstId);
+      goldSilverForm.setFieldsValue({
+        categoryId: firstId,
+      });
+    } catch (error) {
+      console.error("Error fetching category ID:", error);
+      message.error("Failed to fetch Category ID for " + catType);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
+  const showGoldSilverModal = () => {
+    setIsGoldSilverEditMode(false);
+    setEditingGoldSilverId(null);
+    goldSilverForm.resetFields();
+    setFetchedCategoryId("");
+    goldSilverForm.setFieldsValue({
+      categoryType: "GOLD",
+      couponCode: "",
+      couponName: "",
+      description: "",
+      discountType: "instnace",
+      discountValue: 100,
+      memberCount: 1,
+      isActive: true,
+      offerStartDate: dayjs(),
+      offerStartTime: dayjs("10:00 AM", "h:mm A"),
+      offerEndDate: dayjs(),
+      offerEndTime: dayjs("7:00 AM", "h:mm A"),
+    });
+    setIsGoldSilverModalVisible(true);
+    fetchGoldSilverCategories("GOLD");
+  };
+
+  const showGoldSilverEditModal = (record) => {
+    setIsGoldSilverEditMode(true);
+    setEditingGoldSilverId(record.id);
+    setFetchedCategoryId(record.categoryId || "");
+
+    const startDate = parseOfferDateToDayjs(record.offerStartDate);
+    const endDate = parseOfferDateToDayjs(record.offerEndDate);
+    const startTime = record.offerStartTime
+      ? dayjs(record.offerStartTime, "h:mm A")
+      : null;
+    const endTime = record.offerEndTime
+      ? dayjs(record.offerEndTime, "h:mm A")
+      : null;
+
+    goldSilverForm.setFieldsValue({
+      categoryId: record.categoryId,
+      categoryType: record.categoryType,
+      couponCode: record.couponCode,
+      couponName: record.couponName,
+      description: record.description || "",
+      discountType: record.discountType || "instnace",
+      discountValue: record.discountValue,
+      memberCount: record.memberCount || 1,
+      isActive: record.active ?? record.activeNow ?? record.isActive ?? true,
+      offerStartDate: startDate,
+      offerStartTime: startTime,
+      offerEndDate: endDate,
+      offerEndTime: endTime,
+    });
+
+    setIsGoldSilverModalVisible(true);
+  };
+
+  const handleGoldSilverCancel = () => {
+    setIsGoldSilverModalVisible(false);
+    setIsGoldSilverEditMode(false);
+    setEditingGoldSilverId(null);
+    goldSilverForm.resetFields();
+    setGoldSilverCategories([]);
+    setFetchedCategoryId("");
+  };
+
+  const handleGoldSilverCategoryTypeChange = (value) => {
+    setFetchedCategoryId("");
+    goldSilverForm.setFieldsValue({ categoryId: undefined });
+    fetchGoldSilverCategories(value);
+  };
+
+  const handleCreateGoldSilverCoupon = async () => {
+    try {
+      const values = await goldSilverForm.validateFields();
+      const catId = values.categoryId || fetchedCategoryId;
+      if (!catId) {
+        message.error(
+          "Category ID not loaded from API. Please re-select Category Type.",
+        );
+        return;
+      }
+      setGoldSilverSubmitting(true);
+
+      const payload = {
+        categoryId: catId,
+        categoryType: values.categoryType,
+        couponCode: values.couponCode?.trim(),
+        couponName: values.couponName?.trim(),
+        description: values.description?.trim() || "",
+        discountType: values.discountType,
+        discountValue: Number(values.discountValue),
+        isActive: Boolean(values.isActive),
+        memberCount: Number(values.memberCount || 0),
+        offerStartDate: values.offerStartDate
+          ? values.offerStartDate.format("YYYY-MM-DD")
+          : "",
+        offerStartTime: values.offerStartTime
+          ? values.offerStartTime.format("h:mm A")
+          : "",
+        offerEndDate: values.offerEndDate
+          ? values.offerEndDate.format("YYYY-MM-DD")
+          : "",
+        offerEndTime: values.offerEndTime
+          ? values.offerEndTime.format("h:mm A")
+          : "",
+      };
+
+      if (isGoldSilverEditMode) {
+        payload.id = editingGoldSilverId;
+        await axiosInstance.patch(
+          `${BASE_URL}/order-service/updateGoldSilverItemOffer`,
+          payload,
+        );
+        message.success("Gold & Silver offer coupon updated successfully!");
+      } else {
+        await axiosInstance.post(
+          `${BASE_URL}/order-service/createGoldSilverItemOffer`,
+          payload,
+        );
+        message.success("Gold & Silver offer coupon created successfully!");
+      }
+
+      handleGoldSilverCancel();
+      fetchGoldSilverOffers();
+      fetchCoupons();
+    } catch (error) {
+      console.error("Error creating/updating Gold/Silver coupon:", error);
+      if (error?.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else if (error?.message && !error?.errorFields) {
+        message.error(error.message);
+      }
+    } finally {
+      setGoldSilverSubmitting(false);
+    }
+  };
+
+  const goldSilverColumns = [
+    {
+      title: "S.NO",
+      key: "serialNo",
+      render: (text, record, index) =>
+        index + 1 + (currentPage - 1) * entriesPerPage,
+      align: "center",
+      width: 70,
+    },
+    {
+      title: "Coupon Code",
+      dataIndex: "couponCode",
+      key: "couponCode",
+      align: "center",
+      className: "font-semibold",
+    },
+    {
+      title: "Coupon Name",
+      dataIndex: "couponName",
+      key: "couponName",
+      align: "center",
+    },
+    {
+      title: "Category",
+      dataIndex: "categoryType",
+      key: "categoryType",
+      align: "center",
+      render: (type) => (
+        <Tag color={type === "GOLD" ? "gold" : "cyan"}>
+          {type || "N/A"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Discount Type",
+      dataIndex: "discountType",
+      key: "discountType",
+      align: "center",
+      render: (type) => (
+        <span>
+          {type === "instnace" ? "Instant (instnace)" : type || "-"}
+        </span>
+      ),
+    },
+    {
+      title: "Discount Value",
+      dataIndex: "discountValue",
+      key: "discountValue",
+      align: "center",
+      render: (val) => (val !== undefined && val !== null ? `₹${val}` : "-"),
+    },
+    {
+      title: "Member Count",
+      dataIndex: "memberCount",
+      key: "memberCount",
+      align: "center",
+      render: (val) => val ?? "-",
+    },
+    {
+      title: "Start Date & Time",
+      key: "startPeriod",
+      align: "center",
+      render: (_, record) => {
+        const dateStr = formatOfferDate(record.offerStartDate);
+        const timeStr = record.offerStartTime || "";
+        return dateStr || timeStr ? `${dateStr} ${timeStr}`.trim() : "-";
+      },
+    },
+    {
+      title: "End Date & Time",
+      key: "endPeriod",
+      align: "center",
+      render: (_, record) => {
+        const dateStr = formatOfferDate(record.offerEndDate);
+        const timeStr = record.offerEndTime || "";
+        return dateStr || timeStr ? `${dateStr} ${timeStr}`.trim() : "-";
+      },
+    },
+    {
+      title: "Status",
+      key: "status",
+      align: "center",
+      render: (_, record) => {
+        const isActive = record.activeNow ?? record.active ?? record.isActive;
+        return (
+          <Tag color={isActive ? "green" : "red"}>
+            {isActive ? "Active" : "Inactive"}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      align: "center",
+      width: 260,
+      render: (desc) => <DescriptionCell text={desc} />,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      align: "center",
+      width: 110,
+      render: (_, record) => (
+        <Button
+          onClick={() => showGoldSilverEditModal(record)}
+          style={{
+            backgroundColor: "#23C6C8",
+            color: "white",
+            borderColor: "#23C6C8",
+            fontWeight: 500,
+          }}
+          size="middle"
+        >
+          Update
+        </Button>
+      ),
+    },
+  ];
+
   const handleCancel = () => {
     setIsModalVisible(false);
     form.resetFields();
@@ -517,7 +869,19 @@ const Coupons = () => {
   const tabItems = [
     { key: "PRIVATE", label: "Private Coupons" },
     { key: "PUBLIC", label: "Public Coupons" },
+    { key: "GOLD_SILVER", label: "Gold & Silver Coupons" },
   ];
+
+  const filteredGoldSilverOffers = goldSilverOffers.filter((offer) => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    return (
+      offer.couponCode?.toLowerCase().includes(term) ||
+      offer.couponName?.toLowerCase().includes(term) ||
+      offer.categoryType?.toLowerCase().includes(term) ||
+      offer.description?.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <AdminPanelLayout>
@@ -526,14 +890,28 @@ const Coupons = () => {
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-4">
             <h2 className="text-xl font-bold">Coupon List</h2>
-            <Button
-              style={{ backgroundColor: "#1C84C6", color: "white" }}
-              onClick={() => showModal()}
-              className="flex items-center gap-2"
-            >
-              <FaPlus />
-              Add New Coupon
-            </Button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                style={{ backgroundColor: "#1C84C6", color: "white" }}
+                onClick={() => showModal()}
+                className="flex items-center gap-2"
+              >
+                <FaPlus />
+                Add New Coupon
+              </Button>
+              <Button
+                style={{
+                  backgroundColor: "#16a34a",
+                  borderColor: "#16a34a",
+                  color: "white",
+                }}
+                onClick={showGoldSilverModal}
+                className="flex items-center gap-2"
+              >
+                <FaPlus />
+                Create Gold & Silver Coupon
+              </Button>
+            </div>
           </div>
 
           {/* Filter & Search Section */}
@@ -563,63 +941,66 @@ const Coupons = () => {
               <Input
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full sm:w-[150px]"
-                placeholder="Search coupons..."
+                className="w-full sm:w-[180px]"
+                placeholder={
+                  activeTab === "GOLD_SILVER"
+                    ? "Search gold/silver..."
+                    : "Search coupons..."
+                }
               />
             </Col>
           </Row>
 
-          {/* {fetching ? (
+          <Tabs
+            activeKey={activeTab}
+            onChange={(key) => {
+              setActiveTab(key);
+              setCurrentPage(1);
+            }}
+            items={tabItems}
+          />
+
+          {activeTab === "GOLD_SILVER" ? (
+            fetchingGoldSilver ? (
+              <div className="flex justify-center items-center h-64">
+                <Spin size="medium" />
+              </div>
+            ) : (
+              <Table
+                dataSource={filteredGoldSilverOffers}
+                columns={goldSilverColumns}
+                rowKey="id"
+                pagination={{
+                  pageSize: entriesPerPage,
+                  current: currentPage,
+                  onChange: handlePageChange,
+                  total: filteredGoldSilverOffers.length,
+                }}
+                scroll={{ x: "100%" }}
+                bordered
+                loading={fetchingGoldSilver}
+              />
+            )
+          ) : fetching ? (
             <div className="flex justify-center items-center h-64">
               <Spin size="medium" />
             </div>
           ) : (
             <Table
-              dataSource={filteredCoupons}
+              dataSource={filteredCoupons.filter((c) => c.status === activeTab)}
               columns={columns}
               rowKey="couponId"
               pagination={{
                 pageSize: entriesPerPage,
                 current: currentPage,
                 onChange: handlePageChange,
-                total: filteredCoupons.length,
+                total: filteredCoupons.filter((c) => c.status === activeTab)
+                  .length,
               }}
               scroll={{ x: "100%" }}
               bordered
               loading={fetching}
             />
-          )} */}
-
-          {fetching ? (
-            <div className="flex justify-center items-center h-64">
-              <Spin size="medium" />
-            </div>
-          ) : (
-            <>
-              <Tabs
-                activeKey={activeTab}
-                onChange={(key) => setActiveTab(key)}
-                items={tabItems}
-              />
-
-              <Table
-                dataSource={filteredCoupons.filter(
-                  (c) => c.status === activeTab,
-                )}
-                columns={columns}
-                rowKey="couponId"
-                pagination={{
-                  pageSize: entriesPerPage,
-                  current: currentPage,
-                  onChange: handlePageChange,
-                  total: filteredCoupons.filter((c) => c.status === activeTab)
-                    .length,
-                }}
-                scroll={{ x: "100%" }}
-                bordered
-                loading={fetching}
-              />
-            </>
           )}
         </div>
       </div>
@@ -855,6 +1236,7 @@ const Coupons = () => {
                   <Option value="RICE">RICE</Option>
                   <Option value="Grocery">GROCERY</Option>
                   <Option value="GOLD">GOLD</Option>
+                  <Option value="SILVER">SILVER</Option>
                   <Option value="CONTAINERS">CONTAINERS</Option>
                 </Select>
               </Form.Item>
@@ -866,6 +1248,241 @@ const Coupons = () => {
                 label="User Mobile Numbers (comma separated)"
               >
                 <Input placeholder="+919347967774,+919059433013,+919908636995" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
+      {/* Gold & Silver Item Offer Coupon Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+            <span
+              style={{
+                display: "inline-block",
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                backgroundColor: isGoldSilverEditMode ? "#23C6C8" : "#16a34a",
+              }}
+            />
+            <span>
+              {isGoldSilverEditMode
+                ? "Update Gold / Silver Coupon Offer"
+                : "Create Gold / Silver Coupon Offer"}
+            </span>
+          </div>
+        }
+        open={isGoldSilverModalVisible}
+        onCancel={handleGoldSilverCancel}
+        onOk={handleCreateGoldSilverCoupon}
+        confirmLoading={goldSilverSubmitting}
+        okText={
+          isGoldSilverEditMode ? "Update Coupon Offer" : "Create Coupon Offer"
+        }
+        okButtonProps={{
+          style: {
+            backgroundColor: isGoldSilverEditMode ? "#23C6C8" : "#16a34a",
+            borderColor: isGoldSilverEditMode ? "#23C6C8" : "#16a34a",
+          },
+        }}
+        destroyOnClose
+        width={750}
+      >
+        <Form form={goldSilverForm} layout="vertical" className="mt-4">
+          <Row gutter={16}>
+            <Col xs={24}>
+              <Form.Item
+                label="Category Type"
+                name="categoryType"
+                rules={[
+                  { required: true, message: "Please select category type!" },
+                ]}
+              >
+                <Select
+                  placeholder="Select Category Type"
+                  onChange={handleGoldSilverCategoryTypeChange}
+                >
+                  <Option value="GOLD">GOLD</Option>
+                  <Option value="SILVER">SILVER</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Coupon Code"
+                name="couponCode"
+                rules={[
+                  { required: true, message: "Please enter coupon code!" },
+                ]}
+              >
+                <Input
+                  placeholder="e.g. GOLD100"
+                  onChange={(e) =>
+                    goldSilverForm.setFieldsValue({
+                      couponCode: e.target.value.toUpperCase(),
+                    })
+                  }
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Coupon Name"
+                name="couponName"
+                rules={[
+                  { required: true, message: "Please enter coupon name!" },
+                ]}
+              >
+                <Input placeholder="e.g. OXYGOLD" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Discount Type"
+                name="discountType"
+                rules={[
+                  { required: true, message: "Please select discount type!" },
+                ]}
+              >
+                <Select placeholder="Select discount type">
+                  <Option value="instnace">Instant Discount (instnace)</Option>
+                  <Option value="Flat">Flat Discount (Flat)</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Discount Value"
+                name="discountValue"
+                rules={[
+                  { required: true, message: "Please enter discount value!" },
+                ]}
+              >
+                <InputNumber
+                  min={0}
+                  className="w-full"
+                  placeholder="e.g. 100"
+                  prefix="₹"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Member Count"
+                name="memberCount"
+                rules={[
+                  { required: true, message: "Please enter member count!" },
+                ]}
+              >
+                <InputNumber
+                  min={1}
+                  className="w-full"
+                  placeholder="e.g. 1"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Is Active"
+                name="isActive"
+                valuePropName="checked"
+              >
+                <Switch
+                  checkedChildren="Active"
+                  unCheckedChildren="Inactive"
+                  defaultChecked
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Offer Start Date"
+                name="offerStartDate"
+                rules={[
+                  { required: true, message: "Please select start date!" },
+                ]}
+              >
+                <DatePicker className="w-full" format="YYYY-MM-DD" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Offer Start Time"
+                name="offerStartTime"
+                rules={[
+                  { required: true, message: "Please select start time!" },
+                ]}
+              >
+                <TimePicker
+                  className="w-full"
+                  format="h:mm A"
+                  use12Hours
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Offer End Date"
+                name="offerEndDate"
+                rules={[
+                  { required: true, message: "Please select end date!" },
+                ]}
+              >
+                <DatePicker className="w-full" format="YYYY-MM-DD" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Offer End Time"
+                name="offerEndTime"
+                rules={[
+                  { required: true, message: "Please select end time!" },
+                ]}
+              >
+                <TimePicker
+                  className="w-full"
+                  format="h:mm A"
+                  use12Hours
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24}>
+              <Form.Item
+                label="Description"
+                name="description"
+                rules={[
+                  { required: true, message: "Please enter description!" },
+                ]}
+              >
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Enter offer description e.g. Special offer for gold & silver items"
+                />
               </Form.Item>
             </Col>
           </Row>

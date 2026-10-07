@@ -49,30 +49,19 @@ import axiosInstance from "../../../core/config/axiosInstance";
 // const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const AUDIENCE_CONFIGS = [
+const RAW_AUDIENCE_CONFIGS = [
   {
-    id: "askoxy-helpdesk",
-    name: "AskOxy Users",
-    subtitle: "Askoxy Registered Users",
-    color: "#818cf8",
-    method: "POST",
-    endpoint: `${BASE_URL}/user-service/allOxyUsersAssignedToHelpDesk`,
-    payload: { pageNo: 1, pageSize: 1000 },
-    hasEmailField: true,
-    hasWhatsAppField: true,
-    description:
-      "Registered AskOxy platform users assigned across HelpDesk support.",
-  },
-  {
-    id: "kukatpally-data",
-    name: "Kukatpally Data",
-    subtitle: "Kukatpally Regional Dataset",
-    color: "#34d399",
+    id: "active-membership",
+    name: "Active Membership",
+    subtitle: "Active Membership Directory",
+    color: "#10b981",
     method: "GET",
-    endpoint: `${BASE_URL}/user-service/AllKukatpallyData?pageNo=1&pageSize=1000`,
-    hasEmailField: false,
+    endpoint: `${BASE_URL}/ai-service/entity-records/active-membership?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/active-membership/excel`,
+    hasEmailField: true,
     hasWhatsAppField: false,
-    description: "Regional contact records from Kukatpally zone.",
+    description:
+      "Active membership member directory with mobile numbers and verified email contacts.",
   },
   {
     id: "advocates-data",
@@ -81,119 +70,11 @@ const AUDIENCE_CONFIGS = [
     color: "#a78bfa",
     method: "GET",
     endpoint: `${BASE_URL}/user-service/getAllAdvocatesData?pageNo=1&pageSize=1000`,
+    excelEndpoint: `${BASE_URL}/user-service/getAllAdvocatesData/excel`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description:
       "Verified contact database of advocates and legal practitioners.",
-  },
-  {
-    id: "thalwar-data",
-    name: "Thalwar Data",
-    subtitle: "Thalwar Contacts List",
-    color: "#fbbf24",
-    method: "GET",
-    endpoint: `${BASE_URL}/user-service/getAllTalwarData?pageNo=1&pageSize=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Customer database with mobile numbers and verified email addresses.",
-  },
-  {
-    id: "mumbai-data",
-    name: "Mumbai Data",
-    subtitle: "Mumbai Contacts & Network",
-    color: "#f472b6",
-    method: "GET",
-    endpoint: `${BASE_URL}/user-service/getAllMumbaiData?pageNo=1&pageSize=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Mumbai regional network directory with email and mobile contacts.",
-  },
-  {
-    id: "ram-mohan-data",
-    name: "Ram Mohan Data",
-    subtitle: "Darisa Campaign Contacts",
-    color: "#22d3ee",
-
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/getAllRamMohanDarisa?page=0&size=1000`,
-    hasEmailField: false,
-    hasWhatsAppField: false,
-    description:
-      "AI agent lead contacts list for Ram Mohan Darisa with call responses.",
-  },
-  {
-    id: "sudheer-vakkalagadda",
-    name: "Sudheer Vakkalagadda",
-    subtitle: "Sudheer Vakkalagadda Directory",
-    color: "#0ea5e9",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/sudheer-data?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Executive contact database for Sudheer Vakkalagadda with email and phone contacts.",
-  },
-  {
-    id: "rotary-data",
-    name: "Rotary Data",
-    subtitle: "Rotary Members Network",
-    color: "#818cf8",
-    method: "GET",
-    endpoint: `${BASE_URL}/marketing-service/campgin/rotary-data?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Rotary members contact directory with phone numbers and email addresses.",
-  },
-  {
-    id: "cbs-data",
-    name: "CBS Data",
-    subtitle: "CBS Student & Professional Network",
-    color: "#a5b4fc",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/getAllCbsData?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "CBS international student and professional contacts with country and LinkedIn data.",
-  },
-  {
-    id: "ftcci-data",
-    name: "FTCCI Data",
-    subtitle: "FTCCI Business Chamber Contacts",
-    color: "#2dd4bf",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/agent/FtcciData?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "FTCCI Federation of Telangana & AP Chambers of Commerce member business contacts.",
-  },
-  {
-    id: "radha-linkedin",
-    name: "Radha LinkedIn",
-    subtitle: "LinkedIn Professional Network",
-    color: "#0284c7",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/radha-linkedin?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "LinkedIn contact directory with company, designation and verified email addresses.",
-  },
-  {
-    id: "naukri-records",
-    name: "Naukri Records",
-    subtitle: "Naukri Candidate Profiles",
-    color: "#3b82f6",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/sa-naukari-records?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Naukri candidate dataset with experience, skills, mobile numbers, and email contacts.",
   },
   {
     id: "amfi-reports",
@@ -202,34 +83,11 @@ const AUDIENCE_CONFIGS = [
     color: "#14b8a6",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/amfi-reports?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/amfi-reports/excel`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
       "AMFI entity holder database with telephone contacts, city, and email addresses.",
-  },
-  {
-    id: "tahsildar-records",
-    name: "Tahsildar Records",
-    subtitle: "Tahsildar Administrative Contacts",
-    color: "#8b5cf6",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/tahsildar?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Administrative directory of Tahsildars with mobile, office numbers, and email addresses.",
-  },
-  {
-    id: "active-membership",
-    name: "Active Membership",
-    subtitle: "Active Membership Directory",
-    color: "#10b981",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/active-membership?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Active membership member directory with mobile numbers and verified email contacts.",
   },
   {
     id: "ams-lost-customer-data",
@@ -238,10 +96,180 @@ const AUDIENCE_CONFIGS = [
     color: "#f97316",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/ams-lost-customer-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/ams-lost-customer-data/excel`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
       "Directory of AMS lost customer contacts with mobile numbers and email addresses.",
+  },
+  {
+    id: "askoxy-helpdesk",
+    name: "AskOxy Users",
+    subtitle: "Askoxy Registered Users",
+    color: "#818cf8",
+    method: "POST",
+    endpoint: `${BASE_URL}/user-service/allOxyUsersAssignedToHelpDesk`,
+    excelEndpoint: `${BASE_URL}/user-service/allOxyUsersAssignedToHelpDesk/excel`,
+    payload: { pageNo: 1, pageSize: 1000 },
+    hasEmailField: true,
+    hasWhatsAppField: true,
+    description:
+      "Registered AskOxy platform users assigned across HelpDesk support.",
+  },
+  {
+    id: "cbs-data",
+    name: "CBS Data",
+    subtitle: "CBS Student & Professional Network",
+    color: "#a5b4fc",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/agent/getAllCbsData?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/agent/getAllCbsData/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "CBS international student and professional contacts with country and LinkedIn data.",
+  },
+  {
+    id: "client-wise-aum-report",
+    name: "Client Wise AUM Report",
+    subtitle: "AUM Portfolio & Equity Records",
+    color: "#0284c7",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/client-wise-aum-report?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/client-wise-aum-report/excel`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description:
+      "Client-wise AUM report including branch codes, UCID, advisors, equity products, and total AUM values.",
+  },
+  {
+    id: "ftcci-data",
+    name: "FTCCI Data",
+    subtitle: "FTCCI Business Chamber Contacts",
+    color: "#2dd4bf",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/agent/FtcciData?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/agent/FtcciData/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "FTCCI Federation of Telangana & AP Chambers of Commerce member business contacts.",
+  },
+  {
+    id: "k2k-fintech",
+    name: "K2K Fintech",
+    subtitle: "K2K Fintech Directory",
+    color: "#059669",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/k2k-fintech?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/k2k-fintech/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Directory of K2K Fintech contacts with phone numbers and email addresses.",
+  },
+  {
+    id: "kukatpally-data",
+    name: "Kukatpally Data",
+    subtitle: "Kukatpally Regional Dataset",
+    color: "#34d399",
+    method: "GET",
+    endpoint: `${BASE_URL}/user-service/AllKukatpallyData?pageNo=1&pageSize=1000`,
+    excelEndpoint: `${BASE_URL}/user-service/AllKukatpallyData/excel`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description: "Regional contact records from Kukatpally zone.",
+  },
+  {
+    id: "mumbai-data",
+    name: "Mumbai Data",
+    subtitle: "Mumbai Contacts & Network",
+    color: "#f472b6",
+    method: "GET",
+    endpoint: `${BASE_URL}/user-service/getAllMumbaiData?pageNo=1&pageSize=1000`,
+    excelEndpoint: `${BASE_URL}/user-service/getAllMumbaiData/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Mumbai regional network directory with email and mobile contacts.",
+  },
+  {
+    id: "naukri-ras",
+    name: "Naukri RAS",
+    subtitle: "Naukri RAS Profiles",
+    color: "#2563eb",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/naukri-ras?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/naukri-ras/excel`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description:
+      "Candidate directory from Naukri RAS with candidate names and mobile numbers.",
+  },
+  {
+    id: "nbfc-data",
+    name: "NBFC Data",
+    subtitle: "Non-Banking Financial Companies Directory",
+    color: "#d97706",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/nbfc-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/nbfc-data/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: true,
+    description:
+      "Directory of Non-Banking Financial Companies with verified emails, contact details, and registered offices.",
+  },
+  {
+    id: "radha-linkedin",
+    name: "Radha LinkedIn",
+    subtitle: "LinkedIn Professional Network",
+    color: "#0284c7",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/radha-linkedin?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/radha-linkedin/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "LinkedIn contact directory with company, designation and verified email addresses.",
+  },
+  {
+    id: "ram-mohan-data",
+    name: "Ram Mohan Data",
+    subtitle: "Darisa Campaign Contacts",
+    color: "#22d3ee",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/agent/getAllRamMohanDarisa?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/agent/getAllRamMohanDarisa/excel`,
+    hasEmailField: false,
+    hasWhatsAppField: false,
+    description:
+      "AI agent lead contacts list for Ram Mohan Darisa with call responses.",
+  },
+  {
+    id: "rotary-data",
+    name: "Rotary Data",
+    subtitle: "Rotary Members Network",
+    color: "#818cf8",
+    method: "GET",
+    endpoint: `${BASE_URL}/marketing-service/campgin/rotary-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/marketing-service/campgin/rotary-data/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Rotary members contact directory with phone numbers and email addresses.",
+  },
+  {
+    id: "sa-naukari-records",
+    name: "SA Naukari Records",
+    subtitle: "Candidate & Recruitment Profiles",
+    color: "#3b82f6",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/sa-naukari-records?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/sa-naukari-records/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Candidate directory from SA Naukari with work experience, key skills, mobile numbers, and email contacts.",
   },
   {
     id: "saksham-data",
@@ -250,10 +278,50 @@ const AUDIENCE_CONFIGS = [
     color: "#0284c7",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/saksham?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/saksham/excel`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
       "Comprehensive database of Saksham entity records with phone and email contacts.",
+  },
+  {
+    id: "sudheer-vakkalagadda",
+    name: "Sudheer Vakkalagadda",
+    subtitle: "Sudheer Vakkalagadda Directory",
+    color: "#0ea5e9",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/sudheer-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/sudheer-data/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Executive contact database for Sudheer Vakkalagadda with email and phone contacts.",
+  },
+  {
+    id: "tahsildar-records",
+    name: "Tahsildar Records",
+    subtitle: "Tahsildar Administrative Contacts",
+    color: "#8b5cf6",
+    method: "GET",
+    endpoint: `${BASE_URL}/ai-service/entity-records/tahsildar?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/tahsildar/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Administrative directory of Tahsildars with mobile, office numbers, and email addresses.",
+  },
+  {
+    id: "thalwar-data",
+    name: "Thalwar Data",
+    subtitle: "Thalwar Contacts List",
+    color: "#fbbf24",
+    method: "GET",
+    endpoint: `${BASE_URL}/user-service/getAllTalwarData?pageNo=1&pageSize=1000`,
+    excelEndpoint: `${BASE_URL}/user-service/getAllTalwarData/excel`,
+    hasEmailField: true,
+    hasWhatsAppField: false,
+    description:
+      "Customer database with mobile numbers and verified email addresses.",
   },
   {
     id: "tie-data",
@@ -262,6 +330,7 @@ const AUDIENCE_CONFIGS = [
     color: "#059669",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/tie-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/tie-data/excel`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -274,6 +343,7 @@ const AUDIENCE_CONFIGS = [
     color: "#9333ea",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/two-years-service-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/two-years-service-data/excel`,
     hasEmailField: true,
     hasWhatsAppField: false,
     description:
@@ -286,36 +356,31 @@ const AUDIENCE_CONFIGS = [
     color: "#64748b",
     method: "GET",
     endpoint: `${BASE_URL}/ai-service/entity-records/unknow-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/unknow-data/excel`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description:
       "Regional contact records with names, mobile numbers, and residential addresses.",
   },
   {
-    id: "naukri-ras",
-    name: "Naukri RAS",
-    subtitle: "Naukri RAS Profiles",
-    color: "#2563eb",
+    id: "wam-data",
+    name: "WAM Data",
+    subtitle: "WAM Directory Records",
+    color: "#8b5cf6",
     method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/naukri-ras?page=0&size=1000`,
+    endpoint: `${BASE_URL}/ai-service/entity-records/wam-data?page=0&size=1000`,
+    excelEndpoint: `${BASE_URL}/ai-service/entity-records/wam-data/excel`,
     hasEmailField: false,
     hasWhatsAppField: false,
     description:
-      "Candidate directory from Naukri RAS with candidate names and mobile numbers.",
-  },
-  {
-    id: "k2k-fintech",
-    name: "K2K Fintech",
-    subtitle: "K2K Fintech Directory",
-    color: "#059669",
-    method: "GET",
-    endpoint: `${BASE_URL}/ai-service/entity-records/k2k-fintech?page=0&size=1000`,
-    hasEmailField: true,
-    hasWhatsAppField: false,
-    description:
-      "Directory of K2K Fintech contacts with phone numbers and email addresses.",
+      "WAM directory records with contact names and mobile numbers.",
   },
 ];
+
+// Automatically sort A-Z so any existing or newly added dataset is always presented in alphabetical order
+const AUDIENCE_CONFIGS = [...RAW_AUDIENCE_CONFIGS].sort((a, b) =>
+  a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+);
 const SOURCE_PAGE_SIZE = 500;
 const EMAIL_BATCH_SIZE = 3000;
 const EMAIL_BULK_ENDPOINT = `${BASE_URL}/ai-automation/email/send-campaign/bulk/direct`;
@@ -342,6 +407,7 @@ const extractEmailContacts = (usersList = []) => {
   return usersList
     .map((u) => {
       const clientName =
+        u.clientName ||
         u.candidateName ||
         u.holdersName ||
         u.userName ||
@@ -372,34 +438,6 @@ const extractEmailContacts = (usersList = []) => {
         String(c.clientEmail).trim() !== "null",
     );
 };
-
-// const fetchContactsForRange = async (
-//   config,
-//   startRecordIndex,
-//   count,
-//   pageSize = SOURCE_PAGE_SIZE,
-// ) => {
-//   const startPage = Math.floor(startRecordIndex / pageSize);
-//   const offsetInFirstPage = startRecordIndex - startPage * pageSize;
-//   const combined = [];
-//   let pageIdx = startPage;
-
-//   while (combined.length - offsetInFirstPage < count) {
-//     const { contacts: pageContacts, rawCount } = await fetchContactsForSet(
-//       config,
-//       pageIdx,
-//       pageSize,
-//     );
-
-//     combined.push(...(pageContacts || []));
-
-//     if (!rawCount || rawCount === 0) break; // source truly exhausted
-//     if (rawCount < pageSize) break; // this really was the last page
-//     pageIdx += 1;
-//   }
-
-//   return combined.slice(offsetInFirstPage, offsetInFirstPage + count);
-// };
 
 const buildContactsExcelBlob = (contactsChunk) => {
   const worksheet = XLSX.utils.json_to_sheet(contactsChunk, {
@@ -783,116 +821,78 @@ const AudienceCampaigns = () => {
     }
   };
 
-  // ── Download Dataset to Excel ─────────────────────────────────────────────
+  // ── Download Dataset to Excel (Backend /excel API) ──────────────────────────
   const handleDownloadExcel = async (config) => {
     if (!config) return;
-    const targetData = dataMap[config.id] || {};
     setDownloadingId(config.id);
     message.loading({
-      content: `Preparing Excel download for ${config.name}...`,
+      content: `Downloading Excel for ${config.name}...`,
       key: "downloadExcel",
     });
 
+    const excelUrl =
+      config.excelEndpoint ||
+      `${config.endpoint.split("?")[0].replace(/\/+$/, "")}/excel`;
+
     try {
-      let records = [];
-
-      if (targetData.usersList && targetData.usersList.length > 0) {
-        records = targetData.usersList;
-      }
-
-      if (records.length === 0) {
-        let res;
-        if (config.method === "POST") {
-          res = await axiosInstance.post(config.endpoint, {
-            ...(config.payload || {}),
-            pageNo: 1,
-            pageSize: 500,
+      let res;
+      try {
+        // Primary attempt: GET call for excel binary download (as documented in Swagger)
+        res = await axiosInstance.get(excelUrl, {
+          responseType: "blob",
+        });
+      } catch (getErr) {
+        // If GET returned 405 Method Not Allowed or config method is POST, attempt POST with payload
+        if (config.method === "POST" || getErr.response?.status === 405) {
+          res = await axiosInstance.post(excelUrl, config.payload || {}, {
+            responseType: "blob",
           });
         } else {
-          let url = config.endpoint;
-          if (url.includes("pageNo=")) {
-            url = url
-              .replace(/pageNo=\d+/, "pageNo=1")
-              .replace(/pageSize=\d+/, "pageSize=500");
-          } else if (url.includes("page=")) {
-            url = url
-              .replace(/page=\d+/, "page=0")
-              .replace(/size=\d+/, "size=500");
-          } else {
-            const sep = url.includes("?") ? "&" : "?";
-            url = `${url}${sep}page=0&size=500`;
-          }
-          res = await axiosInstance.get(url);
+          throw getErr;
         }
-        const fetched = res?.data || {};
-        if (Array.isArray(fetched)) records = fetched;
-        else if (fetched.activeUsersResponse)
-          records = fetched.activeUsersResponse;
-        else if (fetched.content) records = fetched.content;
-        else if (fetched.data) records = fetched.data;
-        else if (fetched.users) records = fetched.users;
       }
 
-      if (!records || records.length === 0) {
-        message.warning({
-          content: `No records found to download for ${config.name}`,
-          key: "downloadExcel",
-        });
-        return;
+      // Check if server returned a JSON error response within blob
+      if (res?.data?.type && res.data.type.includes("json")) {
+        const text = await res.data.text();
+        let errMsg = "Server returned an error for Excel export";
+        try {
+          const parsed = JSON.parse(text);
+          errMsg = parsed.message || parsed.error || errMsg;
+        } catch (_) {
+          errMsg = text || errMsg;
+        }
+        throw new Error(errMsg);
       }
 
-      const normalizedData = records.map((item, idx) => {
-        const name =
-          item.userName ||
-          item.name ||
-          (item.name1 ? `${item.name1} ${item.name2 || ""}`.trim() : null) ||
-          item.fullName ||
-          "Customer";
-        const email =
-          item.emails ||
-          item.email ||
-          item.emailId ||
-          item.userEmail ||
-          item.businessEmail ||
-          item.mail ||
-          "-";
-        const phone =
-          item.mobileNumbers ||
-          item.mobileNumber ||
-          item.mobile ||
-          item.phone ||
-          item.phoneNumber ||
-          item.secondaryMobile ||
-          "-";
-        const city =
-          item.city ||
-          item.address ||
-          item.businessAddress ||
-          item.country ||
-          "-";
-        const role =
-          item.classification || item.role || item.businessName || "-";
+      // Extract filename from Content-Disposition header if available
+      let cleanFileName = `${config.name.replace(/[^a-zA-Z0-9_-]/g, "_")}_Data.xlsx`;
+      const disposition =
+        res.headers?.["content-disposition"] ||
+        res.headers?.["Content-Disposition"];
+      if (disposition) {
+        const filenameMatch = disposition.match(
+          /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+        );
+        if (filenameMatch && filenameMatch[1]) {
+          cleanFileName = filenameMatch[1].replace(/['"]/g, "").trim();
+        }
+      }
 
-        return {
-          "S.No": idx + 1,
-          "Customer Name": name,
-          "Email Address": email,
-          "Phone Number": phone,
-          "City / Location": city,
-          "Role / Organization": role,
-          ...item,
-        };
+      // Create download anchor and trigger browser download
+      const blob = new Blob([res.data], {
+        type:
+          res.headers?.["content-type"] ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-
-      const worksheet = XLSX.utils.json_to_sheet(normalizedData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Data");
-
-      const cleanFileName = `${config.name.replace(
-        /[^a-zA-Z0-9]/g,
-        "_",
-      )}_Contacts.xlsx`;
-      XLSX.writeFile(workbook, cleanFileName);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.setAttribute("download", cleanFileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
 
       message.success({
         content: `Successfully downloaded ${cleanFileName}!`,
@@ -900,11 +900,124 @@ const AudienceCampaigns = () => {
         duration: 4,
       });
     } catch (err) {
-      console.error("Excel download error:", err);
-      message.error({
-        content: `Failed to download Excel: ${err.message || "Unknown error"}`,
-        key: "downloadExcel",
-      });
+      console.warn("Backend Excel download failed, falling back to local generation:", err);
+
+      // Fallback: Generate Excel on client side from loaded records or API sample
+      try {
+        const targetData = dataMap[config.id] || {};
+        let records = [];
+
+        if (targetData.usersList && targetData.usersList.length > 0) {
+          records = targetData.usersList;
+        }
+
+        if (records.length === 0) {
+          let fallbackRes;
+          if (config.method === "POST") {
+            fallbackRes = await axiosInstance.post(config.endpoint, {
+              ...(config.payload || {}),
+              pageNo: 1,
+              pageSize: 500,
+            });
+          } else {
+            let url = config.endpoint;
+            if (url.includes("pageNo=")) {
+              url = url
+                .replace(/pageNo=\d+/, "pageNo=1")
+                .replace(/pageSize=\d+/, "pageSize=500");
+            } else if (url.includes("page=")) {
+              url = url
+                .replace(/page=\d+/, "page=0")
+                .replace(/size=\d+/, "size=500");
+            } else {
+              const sep = url.includes("?") ? "&" : "?";
+              url = `${url}${sep}page=0&size=500`;
+            }
+            fallbackRes = await axiosInstance.get(url);
+          }
+          const fetched = fallbackRes?.data || {};
+          if (Array.isArray(fetched)) records = fetched;
+          else if (fetched.activeUsersResponse)
+            records = fetched.activeUsersResponse;
+          else if (fetched.content) records = fetched.content;
+          else if (fetched.data) records = fetched.data;
+          else if (fetched.users) records = fetched.users;
+        }
+
+        if (!records || records.length === 0) {
+          message.error({
+            content: `Failed to download Excel: ${err.message || "No data available"}`,
+            key: "downloadExcel",
+          });
+          return;
+        }
+
+        const normalizedData = records.map((item, idx) => {
+          const name =
+            item.clientName ||
+            item.userName ||
+            item.name ||
+            (item.name1 ? `${item.name1} ${item.name2 || ""}`.trim() : null) ||
+            item.fullName ||
+            "Customer";
+          const email =
+            item.emails ||
+            item.email ||
+            item.emailId ||
+            item.userEmail ||
+            item.businessEmail ||
+            item.mail ||
+            "-";
+          const phone =
+            item.mobileNumbers ||
+            item.mobileNumber ||
+            item.mobile ||
+            item.phone ||
+            item.phoneNumber ||
+            item.secondaryMobile ||
+            "-";
+          const city =
+            item.city ||
+            item.address ||
+            item.businessAddress ||
+            item.country ||
+            "-";
+          const role =
+            item.classification || item.role || item.businessName || "-";
+
+          return {
+            "S.No": idx + 1,
+            "Customer Name": name,
+            "Email Address": email,
+            "Phone Number": phone,
+            "City / Location": city,
+            "Role / Organization": role,
+            ...item,
+          };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(normalizedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Customer Data");
+
+        const cleanFileName = `${config.name.replace(
+          /[^a-zA-Z0-9]/g,
+          "_"
+        )}_Contacts.xlsx`;
+        XLSX.writeFile(workbook, cleanFileName);
+
+        message.success({
+          content: `Downloaded ${cleanFileName}!`,
+          key: "downloadExcel",
+          duration: 4,
+        });
+      } catch (fallbackErr) {
+        console.error("Fallback Excel download error:", fallbackErr);
+        message.error({
+          content: `Failed to download Excel: ${err.message || fallbackErr.message || "Unknown error"}`,
+          key: "downloadExcel",
+        });
+      }
     } finally {
       setDownloadingId(null);
     }
@@ -1110,7 +1223,7 @@ const AudienceCampaigns = () => {
     };
   }, [dataMap]);
 
-  // ── Filtered Audiences ────────────────────────────────────────────────────
+  // ── Filtered Audiences (Guaranteed Alphabetical A-Z Order) ────────────────
   const filteredAudiences = useMemo(() => {
     return AUDIENCE_CONFIGS.filter((cfg) => {
       const q = searchTerm.trim().toLowerCase();
@@ -1120,7 +1233,9 @@ const AudienceCampaigns = () => {
         cfg.subtitle.toLowerCase().includes(q) ||
         cfg.description.toLowerCase().includes(q)
       );
-    });
+    }).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+    );
   }, [searchTerm]);
 
   // ── Open Campaign Modal ───────────────────────────────────────────────────
@@ -1430,6 +1545,7 @@ const AudienceCampaigns = () => {
         key: "name",
         render: (_, record) => {
           const name =
+            record.clientName ||
             record.candidateName ||
             record.holdersName ||
             record.userName ||
@@ -1459,6 +1575,11 @@ const AudienceCampaigns = () => {
               {record.title && (
                 <Tag color="cyan" className="mt-1 text-xs">
                   {record.title}
+                </Tag>
+              )}
+              {record.clientCode && (
+                <Tag color="geekblue" className="mt-1 text-xs font-mono">
+                  Code: {record.clientCode}
                 </Tag>
               )}
             </div>
@@ -1544,6 +1665,16 @@ const AudienceCampaigns = () => {
         render: (_, record) => {
           return (
             <div className="text-xs text-gray-600 space-y-0.5">
+              {record.advisorName && (
+                <div>👤 Advisor: {record.advisorName}</div>
+              )}
+              {record.product && <div>📦 Product: {record.product}</div>}
+              {record.totalAum && (
+                <div>
+                  💵 Total AUM: ₹{Number(record.totalAum).toLocaleString()}
+                </div>
+              )}
+              {record.branchCode && <div>🏢 Branch: {record.branchCode}</div>}
               {record.email1 && record.email2 && (
                 <div>✉ Email 2: {record.email2}</div>
               )}
