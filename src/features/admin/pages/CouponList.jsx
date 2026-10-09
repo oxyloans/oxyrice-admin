@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import axiosInstance from "../../../core/config/axiosInstance";
 import dayjs from "dayjs";
 
@@ -106,7 +106,14 @@ const Coupons = () => {
       const data = Array.isArray(response.data)
         ? response.data
         : response.data?.data || [];
-      setGoldSilverOffers(data);
+      const sortedData = [...data].sort((a, b) => {
+        const nameA = (a.couponName || a.couponCode || "").trim().toLowerCase();
+        const nameB = (b.couponName || b.couponCode || "").trim().toLowerCase();
+        const cmp = nameA.localeCompare(nameB);
+        if (cmp !== 0) return cmp;
+        return (a.couponCode || "").trim().localeCompare((b.couponCode || "").trim());
+      });
+      setGoldSilverOffers(sortedData);
     } catch (error) {
       console.error("Error fetching Gold & Silver offers:", error);
       message.error("Failed to fetch Gold & Silver coupon offers.");
@@ -552,6 +559,7 @@ const Coupons = () => {
       discountType: "instnace",
       discountValue: 100,
       memberCount: 1,
+      active: true,
       isActive: true,
       offerStartDate: dayjs(),
       offerStartTime: dayjs("10:00 AM", "h:mm A"),
@@ -576,6 +584,10 @@ const Coupons = () => {
       ? dayjs(record.offerEndTime, "h:mm A")
       : null;
 
+    const isCurrentActive = Boolean(
+      record.active ?? record.activeNow ?? record.isActive ?? true
+    );
+
     goldSilverForm.setFieldsValue({
       categoryId: record.categoryId,
       categoryType: record.categoryType,
@@ -585,7 +597,8 @@ const Coupons = () => {
       discountType: record.discountType || "instnace",
       discountValue: record.discountValue,
       memberCount: record.memberCount || 1,
-      isActive: record.active ?? record.activeNow ?? record.isActive ?? true,
+      active: isCurrentActive,
+      isActive: isCurrentActive,
       offerStartDate: startDate,
       offerStartTime: startTime,
       offerEndDate: endDate,
@@ -630,7 +643,9 @@ const Coupons = () => {
         description: values.description?.trim() || "",
         discountType: values.discountType,
         discountValue: Number(values.discountValue),
-        isActive: Boolean(values.isActive),
+        active: Boolean(values.active ?? values.activeNow ?? values.isActive),
+        isActive: Boolean(values.active ?? values.activeNow ?? values.isActive),
+        activeNow: Boolean(values.active ?? values.activeNow ?? values.isActive),
         memberCount: Number(values.memberCount || 0),
         offerStartDate: values.offerStartDate
           ? values.offerStartDate.format("YYYY-MM-DD")
@@ -691,18 +706,21 @@ const Coupons = () => {
       key: "couponCode",
       align: "center",
       className: "font-semibold",
+      sorter: (a, b) => (a.couponCode || "").localeCompare(b.couponCode || ""),
     },
     {
       title: "Coupon Name",
       dataIndex: "couponName",
       key: "couponName",
       align: "center",
+      sorter: (a, b) => (a.couponName || "").localeCompare(b.couponName || ""),
     },
     {
       title: "Category",
       dataIndex: "categoryType",
       key: "categoryType",
       align: "center",
+      sorter: (a, b) => (a.categoryType || "").localeCompare(b.categoryType || ""),
       render: (type) => (
         <Tag color={type === "GOLD" ? "gold" : "cyan"}>
           {type || "N/A"}
@@ -725,6 +743,7 @@ const Coupons = () => {
       dataIndex: "discountValue",
       key: "discountValue",
       align: "center",
+      sorter: (a, b) => Number(a.discountValue || 0) - Number(b.discountValue || 0),
       render: (val) => (val !== undefined && val !== null ? `₹${val}` : "-"),
     },
     {
@@ -732,6 +751,7 @@ const Coupons = () => {
       dataIndex: "memberCount",
       key: "memberCount",
       align: "center",
+      sorter: (a, b) => Number(a.memberCount || 0) - Number(b.memberCount || 0),
       render: (val) => val ?? "-",
     },
     {
@@ -756,13 +776,19 @@ const Coupons = () => {
     },
     {
       title: "Status",
-      key: "status",
+      dataIndex: "active",
+      key: "active",
       align: "center",
-      render: (_, record) => {
-        const isActive = record.activeNow ?? record.active ?? record.isActive;
+      sorter: (a, b) =>
+        Number(Boolean(a.active ?? a.activeNow ?? a.isActive)) -
+        Number(Boolean(b.active ?? b.activeNow ?? b.isActive)),
+      render: (active, record) => {
+        const isCurrentActive = Boolean(
+          active ?? record.active ?? record.activeNow ?? record.isActive
+        );
         return (
-          <Tag color={isActive ? "green" : "red"}>
-            {isActive ? "Active" : "Inactive"}
+          <Tag color={isCurrentActive ? "green" : "red"}>
+            {isCurrentActive ? "Active" : "Inactive"}
           </Tag>
         );
       },
@@ -872,16 +898,28 @@ const Coupons = () => {
     { key: "GOLD_SILVER", label: "Gold & Silver Coupons" },
   ];
 
-  const filteredGoldSilverOffers = goldSilverOffers.filter((offer) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      offer.couponCode?.toLowerCase().includes(term) ||
-      offer.couponName?.toLowerCase().includes(term) ||
-      offer.categoryType?.toLowerCase().includes(term) ||
-      offer.description?.toLowerCase().includes(term)
-    );
-  });
+  const filteredGoldSilverOffers = useMemo(() => {
+    return goldSilverOffers
+      .filter((offer) => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+          offer.couponCode?.toLowerCase().includes(term) ||
+          offer.couponName?.toLowerCase().includes(term) ||
+          offer.categoryType?.toLowerCase().includes(term) ||
+          offer.description?.toLowerCase().includes(term)
+        );
+      })
+      .sort((a, b) => {
+        const nameA = (a.couponName || a.couponCode || "").trim().toLowerCase();
+        const nameB = (b.couponName || b.couponCode || "").trim().toLowerCase();
+        const cmp = nameA.localeCompare(nameB, undefined, { sensitivity: "base" });
+        if (cmp !== 0) return cmp;
+        return (a.couponCode || "").trim().localeCompare((b.couponCode || "").trim(), undefined, {
+          sensitivity: "base",
+        });
+      });
+  }, [goldSilverOffers, searchTerm]);
 
   return (
     <AdminPanelLayout>
@@ -1397,8 +1435,8 @@ const Coupons = () => {
 
             <Col xs={24} sm={12}>
               <Form.Item
-                label="Is Active"
-                name="isActive"
+                label="Active"
+                name="active"
                 valuePropName="checked"
               >
                 <Switch

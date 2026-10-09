@@ -189,14 +189,14 @@ const AssistantsList = () => {
 
   // ---------- Delete Agent ----------
   const handlePermanentDeleteAgent = async (record) => {
-    if (!record?.assistantId) {
-      message.error("Missing assistantId");
-      return Promise.reject(new Error("Missing assistantId"));
-    }
+    // if (!record?.assistantId) {
+    //   message.error("Missing assistantId");
+    //   return Promise.reject(new Error("Missing assistantId"));
+    // }
 
     try {
       const url = `${BASE_URL}/ai-service/agent/delete/${encodeURIComponent(
-        record.assistantId,
+        record.agentId,
       )}`;
 
       const res = await fetch(url, {
@@ -224,14 +224,14 @@ const AssistantsList = () => {
   };
 
   const handleStatusChanegDeleteAgent = async (record) => {
-    if (!record?.assistantId) {
-      message.error("Missing assistantId");
-      return Promise.reject(new Error("Missing assistantId"));
-    }
+    // if (!record?.assistantId) {
+    //   message.error("Missing assistantId");
+    //   return Promise.reject(new Error("Missing assistantId"));
+    // }
 
     try {
       const url = `${BASE_URL}/ai-service/agent/deleteId/${encodeURIComponent(
-        record.assistantId,
+        record.agentId,
       )}`;
 
       const res = await fetch(url, {
@@ -476,12 +476,12 @@ const AssistantsList = () => {
       await form.validateFields();
       const values = form.getFieldsValue();
 
-      if (!selectedAssistant || !selectedAssistant.assistantId) {
-        message.error("Missing assistantId");
-        return;
-      }
-      const payload = {
-        assistanId: selectedAssistant.assistantId,
+      // if (!selectedAssistant || !selectedAssistant.assistantId) {
+      //   message.error("Missing assistantId");
+      //   return;
+      // }
+      const payload = { 
+        id: selectedAssistant.agentId,
         userId,
         adminComments:
           values.status === "PENDING" || values.status === "REJECTED"
