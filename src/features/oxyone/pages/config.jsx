@@ -51,10 +51,10 @@ export const NAV_SECTIONS = [
       { icon: "dashboard", label: "Dashboard", key: "actorsDashboard" },
       { icon: "lender", label: "Active Lender", key: "activeLenders" },
       // Hidden until their APIs are wired in actorsData.js.
-      // { icon: "borrower", label: "Active Borrower", key: "activeBorrowers" },
-      // { icon: "advocate", label: "Active Advocate", key: "activeAdvocates" },
-      // { icon: "partner", label: "Active Partner", key: "activePartners" },
-      // { icon: "recoveryAgent", label: "Active Recovery Agent", key: "activeRecoveryAgents" },
+      { icon: "borrower", label: "Active Borrower", key: "activeBorrowers" },
+      { icon: "advocate", label: "Active Advocate", key: "activeAdvocates" },
+      { icon: "partner", label: "Active Partner", key: "activePartners" },
+      { icon: "recoveryAgent", label: "Active Recovery Agent", key: "activeRecoveryAgents" },
     ],
   },
     {
