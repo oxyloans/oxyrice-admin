@@ -26,6 +26,8 @@ import {
   TrophyOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  FilePdfOutlined,
+  ExportOutlined,
 } from "@ant-design/icons";
 import "antd/dist/reset.css";
 
@@ -57,6 +59,13 @@ const GetAllJobs = () => {
   // Resume modal
   const [resumeModal, setResumeModal] = useState(false);
   const [resumeUrl, setResumeUrl] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
+
+  const handleCloseResumeModal = () => {
+    setResumeModal(false);
+    setResumeUrl("");
+    setResumeLoading(false);
+  };
 
   // Round modal
   const [roundModal, setRoundModal] = useState(false);
@@ -262,18 +271,29 @@ const GetAllJobs = () => {
       dataIndex: "resumeUrl",
       key: "resumeUrl",
       align: "center",
-      render: (url) =>
-        url ? (
+      render: (url, record) => {
+        if (!url) return "N/A";
+
+        const userId = record?.userId;
+        const startingUrl = `https://oxybricksv1test.s3.ap-south-1.amazonaws.com/null/${userId}`;
+        const fullUrl = url.startsWith("http")
+          ? url
+          : `${startingUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+
+        return (
           <Button
             size="small"
             style={{ color: "#008cba", borderColor: "#008cba" }}
-            onClick={() => { setResumeUrl(""); setTimeout(() => { setResumeUrl(url); setResumeModal(true); }, 0); }}
+            onClick={() => {
+              setResumeLoading(true);
+              setResumeUrl(fullUrl);
+              setResumeModal(true);
+            }}
           >
             View Resume
           </Button>
-        ) : (
-          "N/A"
-        ),
+        );
+      },
     },
     {
       title: "Applied Date",
@@ -512,21 +532,79 @@ const GetAllJobs = () => {
 
         {/* Resume Modal */}
         <Modal
-          title="Resume"
+          title={
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 28 }}>
+              <Space size={8}>
+                <FilePdfOutlined style={{ color: "#008cba", fontSize: 18 }} />
+                <span style={{ fontWeight: 600, fontSize: 15 }}>Applicant Resume</span>
+              </Space>
+              {/* {resumeUrl && (
+                <Button
+                  size="small"
+                  type="link"
+                  icon={<ExportOutlined />}
+                  href={resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 12, padding: 0 }}
+                >
+                  Open in New Tab
+                </Button>
+              )} */}
+            </div>
+          }
           open={resumeModal}
-          onCancel={() => { setResumeModal(false); setResumeUrl(""); }}
-          footer={[<Button key="close" onClick={() => { setResumeModal(false); setResumeUrl(""); }}>Close</Button>]}
-          width={860}
-          styles={{ body: { padding: 0, height: "75vh" } }}
+          onCancel={handleCloseResumeModal}
+          footer={[
+            <Button key="close" onClick={handleCloseResumeModal}>
+              Close
+            </Button>,
+          ]}
+          width={720}
+          centered
+          styles={{
+            body: {
+              padding: 0,
+              height: "65vh",
+              position: "relative",
+              overflow: "hidden",
+              backgroundColor: "#f9fafb",
+            },
+          }}
         >
-          <iframe
-            key={resumeUrl}
-            src={`https://docs.google.com/gview?url=${encodeURIComponent(resumeUrl)}&embedded=true`}
-            title="Resume"
-            width="100%"
-            height="100%"
-            style={{ border: "none", minHeight: "70vh" }}
-          />
+          {resumeLoading && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#f9fafb",
+                zIndex: 10,
+              }}
+            >
+              <Spin size="large" />
+              <Text style={{ marginTop: 14, color: "#6b7280", fontSize: 13 }}>
+                Loading resume preview...
+              </Text>
+            </div>
+          )}
+          {resumeUrl && (
+            <iframe
+              key={resumeUrl}
+              src={`https://docs.google.com/gview?url=${encodeURIComponent(resumeUrl)}&embedded=true`}
+              title="Resume"
+              width="100%"
+              height="100%"
+              style={{ border: "none" }}
+              onLoad={() => setResumeLoading(false)}
+            />
+          )}
         </Modal>
 
         {/* Cover Letter Modal */}
