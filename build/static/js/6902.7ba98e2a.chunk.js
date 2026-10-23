@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[6902],{36902(t,e,a){a.r(e),a.d(e,{default:()=>u});var l=a(79508),n=a(76750),s=a(70579);const{entityPlural:c,fetchRows:i}=(0,n.n8)("activeAdvocates");function u(){return(0,s.jsx)(l.A,{entityPlural:c,fetchRows:i})}}}]);
+//# sourceMappingURL=6902.7ba98e2a.chunk.js.map

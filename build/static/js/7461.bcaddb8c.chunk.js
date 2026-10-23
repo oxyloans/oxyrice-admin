@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[7461],{17461(t,e,a){a.r(e),a.d(e,{default:()=>u});var l=a(79508),n=a(76750),r=a(70579);const{entityPlural:s,fetchRows:i}=(0,n.n8)("activeBorrowers");function u(){return(0,r.jsx)(l.A,{entityPlural:s,fetchRows:i})}}}]);
+//# sourceMappingURL=7461.bcaddb8c.chunk.js.map

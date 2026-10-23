@@ -521,23 +521,22 @@ const oxyOneRoutes = [
     path: "activeLenders",
     element: lazy(() => import("../../features/oxyone/pages/ActiveLenders")),
   },
-  // Hidden until their APIs are wired in actorsData.js.
-  // {
-  //   path: "activeBorrowers",
-  //   element: lazy(() => import("../../features/oxyone/pages/ActiveBorrowers")),
-  // },
-  // {
-  //   path: "activeAdvocates",
-  //   element: lazy(() => import("../../features/oxyone/pages/ActiveAdvocates")),
-  // },
-  // {
-  //   path: "activePartners",
-  //   element: lazy(() => import("../../features/oxyone/pages/ActivePartners")),
-  // },
-  // {
-  //   path: "activeRecoveryAgents",
-  //   element: lazy(() => import("../../features/oxyone/pages/ActiveRecoveryAgents")),
-  // },
+  {
+    path: "activeBorrowers",
+    element: lazy(() => import("../../features/oxyone/pages/ActiveBorrowers")),
+  },
+  {
+    path: "activeAdvocates",
+    element: lazy(() => import("../../features/oxyone/pages/ActiveAdvocates")),
+  },
+  {
+    path: "activePartners",
+    element: lazy(() => import("../../features/oxyone/pages/ActivePartners")),
+  },
+  {
+    path: "activeRecoveryAgents",
+    element: lazy(() => import("../../features/oxyone/pages/ActiveRecoveryAgents")),
+  },
   {
     path: "oxygold",
     element: lazy(() => import("../../features/oxyone/pages/OxyGoldUsers")),

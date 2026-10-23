@@ -1,0 +1,2 @@
+"use strict";(globalThis.webpackChunkadmintemplate=globalThis.webpackChunkadmintemplate||[]).push([[2857],{52857(t,e,a){a.r(e),a.d(e,{default:()=>u});var n=a(79508),l=a(76750),s=a(70579);const{entityPlural:c,fetchRows:i}=(0,l.n8)("activeRecoveryAgents");function u(){return(0,s.jsx)(n.A,{entityPlural:c,fetchRows:i})}}}]);
+//# sourceMappingURL=2857.e8f2439f.chunk.js.map

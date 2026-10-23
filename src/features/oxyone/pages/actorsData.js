@@ -28,12 +28,11 @@ async function fetchActiveLenders() {
 // returning the raw rows array (see fetchActiveLenders above).
 export const ACTOR_SOURCES = [
   { key: "activeLenders", entityPlural: "Active Lenders", color: "#2563eb", fetchRows: fetchActiveLenders },
-  // Hidden until their APIs are wired — uncomment together with their nav
-  // entries in config.jsx and routes in routesConfig.js.
-  // { key: "activeBorrowers", entityPlural: "Active Borrowers", color: "#7c3aed", fetchRows: undefined },
-  // { key: "activeAdvocates", entityPlural: "Active Advocates", color: "#6d28d9", fetchRows: undefined },
-  // { key: "activePartners", entityPlural: "Active Partners", color: "#059669", fetchRows: undefined },
-  // { key: "activeRecoveryAgents", entityPlural: "Active Recovery Agents", color: "#e11d48", fetchRows: undefined },
+  // APIs pending — pages render the same UI with an "API not connected" state.
+  { key: "activeBorrowers", entityPlural: "Active Borrowers", color: "#7c3aed", fetchRows: undefined },
+  { key: "activeAdvocates", entityPlural: "Active Advocates", color: "#6d28d9", fetchRows: undefined },
+  { key: "activePartners", entityPlural: "Active Partners", color: "#059669", fetchRows: undefined },
+  { key: "activeRecoveryAgents", entityPlural: "Active Recovery Agents", color: "#e11d48", fetchRows: undefined },
 ];
 
 export const actorSource = (key) => ACTOR_SOURCES.find((s) => s.key === key);
