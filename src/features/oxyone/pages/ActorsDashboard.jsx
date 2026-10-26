@@ -48,7 +48,8 @@ function ActorCard({ item, i, navigate, count, loading, label, color }) {
 function countsFor(rows) {
   const today = dayjs().format("YYYY-MM-DD");
   const todayCount = rows.filter((r) => actorRowDate(r) === today).length;
-  return { total: rows.length, today: todayCount };
+  // Prefer the API-reported total (rows.total) when the source provides one.
+  return { total: rows.total ?? rows.length, today: todayCount };
 }
 
 const SECTIONS_TO_SHOW = [
