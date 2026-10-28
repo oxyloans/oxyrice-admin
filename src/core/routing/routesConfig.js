@@ -52,6 +52,12 @@ const CorporateData = lazy(
 const RadhaSirCorporateImages = lazy(
   () => import("../../features/tasks/pages/RadhaSirCorporateImages"),
 );
+const EmployeeInfoDetails = lazy(
+  () => import("../../features/tasks/pages/EmployeeInfoDetails"),
+);
+const EmployeeTasksStatusBased = lazy(
+  () => import("../../features/tasks/pages/EmployeeTasksStatusBased"),
+);
 
 // Study Abroad Admin
 const StudyAbroadCitySummury = lazy(
@@ -443,6 +449,11 @@ const taskManagementRoutes = [
   { path: "corporate-data", element: CorporateData },
   { path: "radha-sir-corporate-images", element: RadhaSirCorporateImages },
   { path: "assigned-tasks-status-based", element: AssignedTasksStatusBased },
+  { path: "employee-tasks/:userId", element: EmployeeTasksStatusBased },
+  { path: "employee-tasks", element: EmployeeTasksStatusBased },
+  { path: "user-tasks/:userId", element: EmployeeTasksStatusBased },
+  { path: "user-tasks", element: EmployeeTasksStatusBased },
+  { path: "employee-info-details", element: EmployeeInfoDetails },
 ].map((route) => ({
   ...route,
   loginPath: TASK_LOGIN,

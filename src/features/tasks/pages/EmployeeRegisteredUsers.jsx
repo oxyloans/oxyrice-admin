@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   Alert,
@@ -16,8 +17,8 @@ import {
 } from "antd";
 import {
   SearchOutlined,
-  ReloadOutlined,
   UserOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import axiosInstance from "../../../core/config/axiosInstance";
 import BASE_URL from "../../../core/config/Config";
@@ -33,7 +34,7 @@ const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
 
 /* ─── Mobile Card ─── */
-const MobileCard = ({ record, index, onToggleStatus }) => {
+const MobileCard = ({ record, index, onToggleStatus, onViewTasks }) => {
   const isInactive = record.testUser === true;
   const isVerified = record.emailVerified === "true";
   const createdDate = record.createdAt
@@ -51,7 +52,7 @@ const MobileCard = ({ record, index, onToggleStatus }) => {
         boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
           <Text style={{ fontSize: 12, color: "#8c8c8c", minWidth: 24, textAlign: "right" }}>
             {index}.
@@ -65,21 +66,38 @@ const MobileCard = ({ record, index, onToggleStatus }) => {
             )}
           </div>
         </div>
-        <Button
-          size="small"
-          onClick={() => onToggleStatus(record)}
-          style={{
-            borderRadius: 6,
-            fontSize: 12,
-            fontWeight: 600,
-            color: isInactive ? "#ff4d4f" : "#52c41a",
-            borderColor: isInactive ? "#ffccc7" : "#b7eb8f",
-            background: isInactive ? "#fff2f0" : "#f6ffed",
-            minWidth: 72,
-          }}
-        >
-          {isInactive ? "Inactive" : "Active"}
-        </Button>
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+          <Button
+            size="small"
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => onViewTasks && onViewTasks(record)}
+            style={{
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              background: "#008cba",
+              borderColor: "#008cba",
+            }}
+          >
+            Tasks
+          </Button>
+          <Button
+            size="small"
+            onClick={() => onToggleStatus(record)}
+            style={{
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              color: isInactive ? "#ff4d4f" : "#52c41a",
+              borderColor: isInactive ? "#ffccc7" : "#b7eb8f",
+              background: isInactive ? "#fff2f0" : "#f6ffed",
+              minWidth: 70,
+            }}
+          >
+            {isInactive ? "Inactive" : "Active"}
+          </Button>
+        </div>
       </div>
 
       <div style={{ borderTop: "1px solid #f5f5f5", paddingTop: 10, display: "flex", flexDirection: "column", gap: 5 }}>
@@ -108,6 +126,7 @@ const MobileCard = ({ record, index, onToggleStatus }) => {
 
 /* ═══════════════ Main Component ═══════════════ */
 const EmployeeRegisteredUsers = () => {
+  const navigate = useNavigate();
   const screens = useBreakpoint();
   const isMobile = !screens.md;
 
@@ -118,6 +137,17 @@ const EmployeeRegisteredUsers = () => {
   const [searchText, setSearchText] = useState("");
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  const handleViewTasks = (record) => {
+    navigate(`/taskmanagement/employee-tasks/${record.userId}`, {
+      state: {
+        userId: record.userId,
+        userName: record.name,
+        userEmail: record.mail,
+        employee: record,
+      },
+    });
+  };
 
   const fetchEmployees = useCallback(async () => {
     setLoading(true);
@@ -187,9 +217,9 @@ const EmployeeRegisteredUsers = () => {
       title: "S.No",
       key: "serial",
       align: "center",
-     
+      width: 70,
       render: (_, __, index) => (
-        <Text style={{ fontSize: 13, color: "#595959", fontWeight: 600 }}>
+        <Text strong style={{ color: "#595959" }}>
           {(current - 1) * pageSize + index + 1}
         </Text>
       ),
@@ -198,9 +228,9 @@ const EmployeeRegisteredUsers = () => {
       title: "User ID",
       dataIndex: "lastFourDigitsUserId",
       align: "center",
-     
+      width: 100,
       render: (v) => (
-        <Text style={{ fontSize: 12, color: "#595959", fontFamily: "monospace" }}>
+        <Text style={{ fontFamily: "monospace", color: "#595959" }}>
           {v || "—"}
         </Text>
       ),
@@ -209,10 +239,9 @@ const EmployeeRegisteredUsers = () => {
       title: "Name",
       dataIndex: "name",
       align: "left",
-      
       sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
       render: (text) => (
-        <Text strong style={{ color: "#1a1a1a", fontSize: 13 }}>
+        <Text strong style={{ color: "#1a1a1a" }}>
           {text || "—"}
         </Text>
       ),
@@ -221,34 +250,19 @@ const EmployeeRegisteredUsers = () => {
       title: "Email",
       dataIndex: "mail",
       align: "left",
-    
       render: (text) => (
-        <Text copyable={{ tooltips: ["Copy", "Copied!"] }} style={{ fontSize: 13, color: "#595959" }}>
+        <Text style={{ color: "#595959" }}>
           {text || "—"}
         </Text>
       ),
     },
     {
-      title: "Verified",
-      dataIndex: "emailVerified",
-      align: "center",
-    
-      render: (verified) => {
-        const yes = verified === "true";
-        return (
-          <Text style={{ fontSize: 12, fontWeight: 600, color: yes ? "#52c41a" : "#ff4d4f" }}>
-            {yes ? "Yes" : "No"}
-          </Text>
-        );
-      },
-    },
-    {
       title: "Mobile",
       dataIndex: "empNumber",
       align: "center",
-  
+      width: 140,
       render: (text) => (
-        <Text copyable={{ tooltips: ["Copy", "Copied!"] }} style={{ fontSize: 13, color: "#595959" }}>
+        <Text style={{ color: "#595959" }}>
           {text || "—"}
         </Text>
       ),
@@ -257,10 +271,10 @@ const EmployeeRegisteredUsers = () => {
       title: "Joined",
       dataIndex: "createdAt",
       align: "center",
-   
+      width: 190,
       sorter: (a, b) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
       render: (date) => (
-        <Text style={{ fontSize: 12, color: "#8c8c8c" }}>
+        <Text type="secondary">
           {date ? dayjs.utc(date).tz("Asia/Kolkata").format("DD MMM YYYY, hh:mm A") : "—"}
         </Text>
       ),
@@ -269,7 +283,7 @@ const EmployeeRegisteredUsers = () => {
       title: "Status",
       dataIndex: "testUser",
       align: "center",
-     
+      width: 110,
       filters: [
         { text: "Active", value: false },
         { text: "Inactive", value: true },
@@ -289,7 +303,7 @@ const EmployeeRegisteredUsers = () => {
                 color: isInactive ? "#ff4d4f" : "#52c41a",
                 borderColor: isInactive ? "#ffccc7" : "#b7eb8f",
                 background: isInactive ? "#fff2f0" : "#f6ffed",
-                minWidth: 80,
+                minWidth: 76,
                 transition: "all 0.2s ease",
               }}
             >
@@ -298,6 +312,34 @@ const EmployeeRegisteredUsers = () => {
           </Tooltip>
         );
       },
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      width: 120,
+      render: (_, record) => (
+        <Tooltip title="View Tasks">
+          <Button
+            type="primary"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewTasks(record)}
+            style={{
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              background: "#008cba",
+              borderColor: "#008cba",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            View Tasks
+          </Button>
+        </Tooltip>
+      ),
     },
   ];
 
@@ -313,73 +355,42 @@ const EmployeeRegisteredUsers = () => {
         <div
           style={{
             background: "#fff",
-            border: "1px solid #e8e8e8",
-            borderRadius: 10,
-            padding: isMobile ? "14px 12px" : "14px 20px",
+     
+            padding: isMobile ? "12px 14px" : "14px 20px",
             marginBottom: 16,
           }}
         >
-          <Row gutter={[16, 12]} align="middle">
-            {/* LEFT — Title + subtitle */}
-            <Col xs={24} sm={12} md={10}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <UserOutlined style={{ fontSize: 16, color: "#595959" }} />
-                <Title level={5} style={{ margin: 0, color: "#1a1a1a", fontWeight: 700, fontSize: 15 }}>
+          <Row justify="space-between" align="middle" gutter={[16, 12]}>
+            {/* LEFT — only title */}
+            <Col xs={24} sm={12} md={14}>
+              <div style={{ display: "flex", align: "center", gap: 8 }}>
+                <UserOutlined style={{ fontSize: 18, color: "#1677ff" }} />
+                <Title level={4} style={{ margin: 0, fontWeight: 600 }}>
                   Employee Users
                 </Title>
-                <span
-                  style={{
-                    background: "#f5f5f5",
-                    border: "1px solid #e8e8e8",
-                    borderRadius: 20,
-                    padding: "0px 10px",
-                    fontSize: 11,
-                    color: "#595959",
-                    fontWeight: 600,
-                  }}
-                >
-                  {employees.length} total
-                </span>
+
               </div>
-              <Text style={{ fontSize: 12, color: "#8c8c8c", marginTop: 3, display: "block" }}>
-                Manage registered employee accounts and access status.
-              </Text>
             </Col>
 
-            {/* RIGHT — Search + Refresh */}
-            <Col xs={24} sm={12} md={14}>
-              <Row gutter={[8, 0]} justify={isMobile ? "start" : "end"} align="middle" wrap={false}>
-                <Col flex="1" style={{ maxWidth: 340 }}>
-                  <Input
-                    prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
-                    placeholder="Search name, email, ID, mobile..."
-                    value={searchText}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    allowClear
-                    style={{ borderRadius: 8, fontSize: 13, width: "100%" }}
-                  />
-                </Col>
-                <Col flex="none">
-                  <Tooltip title="Refresh">
-                    <Button
-                      icon={<ReloadOutlined />}
-                      onClick={() => { handleReset(); fetchEmployees(); }}
-                      loading={loading}
-                      style={{ borderRadius: 8, marginLeft: 8 }}
-                    >
-                      {screens.lg ? "Refresh" : ""}
-                    </Button>
-                  </Tooltip>
-                </Col>
-              </Row>
-              {searchText && (
-                <div style={{ textAlign: isMobile ? "left" : "right", marginTop: 6 }}>
-                  <Text style={{ fontSize: 12, color: "#8c8c8c" }}>
-                    {filteredEmployees.length} result{filteredEmployees.length !== 1 ? "s" : ""} for{" "}
-                    <Text strong style={{ color: "#1a1a1a" }}>"{searchText}"</Text>
-                  </Text>
-                </div>
-              )}
+            {/* RIGHT — Search functionality */}
+            <Col xs={24} sm={12} md={10} style={{ display: "flex", justifyContent: isMobile ? "flex-start" : "flex-end" }}>
+              <div style={{ width: "100%", maxWidth: 320 }}>
+                <Input
+                  prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
+                  placeholder="Search name, email, ID, mobile..."
+                  value={searchText}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  allowClear
+                  style={{ borderRadius: 8, width: "100%" }}
+                />
+                {searchText && (
+                  <div style={{ textAlign: isMobile ? "left" : "right", marginTop: 4 }}>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      {filteredEmployees.length} result{filteredEmployees.length !== 1 ? "s" : ""}
+                    </Text>
+                  </div>
+                )}
+              </div>
             </Col>
           </Row>
         </div>
@@ -421,6 +432,7 @@ const EmployeeRegisteredUsers = () => {
                     record={record}
                     index={(current - 1) * pageSize + i + 1}
                     onToggleStatus={handleToggleStatus}
+                    onViewTasks={handleViewTasks}
                   />
                 ))}
                 <div
@@ -465,7 +477,7 @@ const EmployeeRegisteredUsers = () => {
               rowKey={(record) => record.userId || record.mail}
               loading={loading}
               size="middle"
-              scroll={{ x: true }}
+              scroll={{x:true}}
               rowClassName={(_, i) => (i % 2 === 0 ? "emp-row-even" : "emp-row-odd")}
               pagination={{
                 current,

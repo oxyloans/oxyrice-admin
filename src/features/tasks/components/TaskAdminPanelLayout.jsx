@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 import { Layout, Menu, Row, Grid } from "antd";
 import {
@@ -10,7 +10,7 @@ import {
   BarChartOutlined,
   TeamOutlined,
   CalendarOutlined,
-  BankOutlined,
+ 
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   ClockCircleOutlined,
@@ -18,9 +18,9 @@ import {
   FileDoneOutlined,
   VideoCameraOutlined,
   PictureOutlined,
+  IdcardOutlined,
 } from "@ant-design/icons";
 
-import { Link } from "react-router-dom";
 import { MdLogout } from "react-icons/md";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -32,6 +32,7 @@ const TaskAdminPanelLayout = ({ children }) => {
   const screens = useBreakpoint();
   const [, setIsMobile] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const entryPoint = localStorage.getItem("entryPoint") || "direct";
   useEffect(() => {
     const handleResize = () => {
@@ -162,8 +163,38 @@ const TaskAdminPanelLayout = ({ children }) => {
       },
     ],
   },
+  {
+    key: "employeeInfo",
+    label: "Employee Information",
+    icon: <IdcardOutlined />,
+    dropdownItems: [
+      // {
+      //   key: "employee-info-details",
+      //   label: "Info Details",
+      //   link: "/taskmanagement/employee-info-details",
+      // },
+      {
+        key: "employee-register-users",
+        label: "Registered Users",
+        link: "/taskmanagement/employee_registered_users",
+      },
+    ],
+  },
  ];
 
+  // Automatically open the parent submenu when on a child page route
+  useEffect(() => {
+    const activeSubmenu = sidebarItems.find((item) =>
+      item.dropdownItems?.some(
+        (sub) =>
+          location.pathname === sub.link ||
+          (sub.link && location.pathname.startsWith(sub.link))
+      )
+    );
+    if (activeSubmenu) {
+      setOpenKeys([activeSubmenu.key]);
+    }
+  }, [location.pathname]);
 
   const toggleCollapse = () => {
     setCollapsed((prev) => !prev);
@@ -254,6 +285,12 @@ const TaskAdminPanelLayout = ({ children }) => {
           theme="" // or "" if you prefer default dark mode styles
           mode="inline"
           openKeys={openKeys}
+          selectedKeys={
+            sidebarItems
+              .flatMap((item) => item.dropdownItems || [item])
+              .filter((item) => item.link && (location.pathname === item.link || location.pathname.startsWith(item.link)))
+              .map((item) => item.key)
+          }
           onOpenChange={handleOpenChange}
           style={{
             color: "#A7B1C2",
