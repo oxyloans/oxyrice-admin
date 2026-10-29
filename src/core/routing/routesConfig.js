@@ -58,6 +58,9 @@ const EmployeeInfoDetails = lazy(
 const EmployeeTasksStatusBased = lazy(
   () => import("../../features/tasks/pages/EmployeeTasksStatusBased"),
 );
+const AllEmployeesAssignScorecard = lazy(
+  () => import("../../features/tasks/pages/AllEmployeesAssignScorecard"),
+);
 
 // Study Abroad Admin
 const StudyAbroadCitySummury = lazy(
@@ -449,6 +452,8 @@ const taskManagementRoutes = [
   { path: "corporate-data", element: CorporateData },
   { path: "radha-sir-corporate-images", element: RadhaSirCorporateImages },
   { path: "assigned-tasks-status-based", element: AssignedTasksStatusBased },
+  { path: "all-employees-assign-scorecard", element: AllEmployeesAssignScorecard },
+  { path: "allemployees-assign-scorecard", element: AllEmployeesAssignScorecard },
   { path: "employee-tasks/:userId", element: EmployeeTasksStatusBased },
   { path: "employee-tasks", element: EmployeeTasksStatusBased },
   { path: "user-tasks/:userId", element: EmployeeTasksStatusBased },

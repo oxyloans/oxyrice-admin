@@ -79,6 +79,11 @@ const TaskAdminPanelLayout = ({ children }) => {
          label: "Assigned Tasks",
          link: "/taskmanagement/assigned-tasks-status-based",
        },
+       {
+         key: "all-employees-assign-scorecard",
+         label: "Employee's Scorecard",
+         link: "/taskmanagement/all-employees-assign-scorecard",
+       },
      ],
    },
 
